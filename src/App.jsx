@@ -1,9 +1,17 @@
-import React from 'react'
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import SignupPage from "./pages/SignupPage";
+import LoginPage from "./pages/LoginPage";
 
 const App = () => {
   return (
-    <div className="text-6xl text-green-500 text-center uppercase font-medium">hello react</div>
-  )
-}
+    <div>
+      <Routes>
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </div>
+  );
+};
 
-export default App
+export default App;
