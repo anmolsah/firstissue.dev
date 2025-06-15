@@ -9,6 +9,7 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
+import logo from "../assets/logo01.png";
 
 const SignupPage = () => {
   const { signUp, signInWithGitHub, user } = useAuth();
@@ -86,12 +87,17 @@ const SignupPage = () => {
       <div className="max-w-md w-full">
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 p-8 shadow-xl">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <UserPlus className="h-8 w-8 text-white" />
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-2">
+              <img src={logo} className="h-16 w-16 text-white" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
-              Join FirstIssue.dev
-            </h2>
+            
+            <div className="flex items-center justify-center gap-2">
+              <p className="text-3xl font-bold text-gray-600 m-0 p-0">Join</p>
+              <p className="text-3xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors m-0 p-0">
+                FirstIssue.dev
+              </p>
+            </div>
+
             <p className="text-gray-600">
               Start your open source contribution journey today
             </p>
