@@ -1,6 +1,7 @@
 import React from "react";
 import { Heart, Coffee, Pizza, Gift } from "lucide-react";
 import toast from "react-hot-toast";
+import QR from "../assets/qrcode.jpg";
 
 const SupportPage = () => {
   const copyToClipboard = (text) => {
@@ -33,7 +34,7 @@ const SupportPage = () => {
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-2xl mb-6">
           <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
             <img
-              src="/your-qr-code.png"
+              src={QR}
               alt="UPI QR Code"
               className="w-48 h-48 mx-auto rounded-xl shadow-md"
               onError={(e) => {
@@ -57,7 +58,7 @@ const SupportPage = () => {
                 onClick={() => copyToClipboard("annicode@okaxis")}
               >
                 <code className="text-lg font-mono text-indigo-600 font-semibold">
-                  annicode@okaxis
+                  8250676762@ybl
                 </code>
                 <p className="text-xs text-gray-500 mt-1 group-hover:text-indigo-600 transition-colors">
                   Click to copy
