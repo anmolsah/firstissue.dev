@@ -1,15 +1,16 @@
 import React from "react";
 import { Heart, Coffee, Pizza, Gift } from "lucide-react";
+import toast from "react-hot-toast";
 
 const SupportPage = () => {
   const copyToClipboard = (text) => {
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        alert("UPI ID copied to clipboard!");
+        toast.success("✅ UPI ID copied to clipboard!");
       })
       .catch(() => {
-        alert("Failed to copy UPI ID");
+        toast.error("❌ Failed to copy UPI ID");
       });
   };
 
