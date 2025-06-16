@@ -8,10 +8,10 @@ const SupportPage = () => {
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        toast.success("✅ UPI ID copied to clipboard!");
+        toast.success("UPI ID copied to clipboard!");
       })
       .catch(() => {
-        toast.error("❌ Failed to copy UPI ID");
+        toast.error("Failed to copy UPI ID");
       });
   };
 
