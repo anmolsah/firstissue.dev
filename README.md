@@ -387,8 +387,8 @@ If you find Open Source Buddy helpful, consider supporting the project:
 # 🚀 FirstIssue.dev
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Made With](https://img.shields.io/badge/Made%20with-React-blue)
-![Deployment](https://img.shields.io/badge/Deploy-Netlify%2FVercel-green)
+![Open Source](https://img.shields.io/badge/Open%20Source-Yes-blue)
+
 
 **FirstIssue.dev** helps beginner developers find and track beginner-friendly GitHub issues — all in one clean, simple app.
 
@@ -396,8 +396,7 @@ Whether you're new to open source or looking for your next contribution, this pl
 
 ✅ Discover curated beginner issues  
 ✅ Bookmark and manage what you're working on  
-✅ Track your contribution journey  
-✅ Get AI help to learn GitHub step-by-step  
+✅ Track your contribution journey   
 
 ---
 
@@ -407,7 +406,6 @@ Whether you're new to open source or looking for your next contribution, this pl
 - 📌 **Bookmark issues** for later
 - 🔨 **Update status** like `applied`, `working on`, or `done`
 - 📊 **Track your contribution progress**
-- 🤖 **AI Assistant** for complete beginners
 - 🔐 **Secure login** using Supabase
 - 🖼️ **Clean and modern UI**, fully responsive
 
