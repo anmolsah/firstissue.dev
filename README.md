@@ -1,6 +1,6 @@
-# 🚀 Open Source Buddy
+<!-- # 🚀 FirstIssue.Dev
 
-**Your Gateway to Open Source Contributions**
+**Your Gateway to FirstIssue.Dev**
 
 Open Source Buddy is a full-stack web application designed to help developers—especially beginners—discover, track, and contribute to open source projects with confidence. Find beginner-friendly GitHub issues, bookmark them, and track your contribution journey from start to finish.
 
@@ -381,4 +381,73 @@ If you find Open Source Buddy helpful, consider supporting the project:
 
 **Made with ❤️ for the open source community**
 
-*Happy Contributing! 🚀*
+*Happy Contributing! 🚀* -->
+
+
+# 🚀 FirstIssue.dev
+
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Made With](https://img.shields.io/badge/Made%20with-React-blue)
+![Deployment](https://img.shields.io/badge/Deploy-Netlify%2FVercel-green)
+
+**FirstIssue.dev** helps beginner developers find and track beginner-friendly GitHub issues — all in one clean, simple app.
+
+Whether you're new to open source or looking for your next contribution, this platform helps you:
+
+✅ Discover curated beginner issues  
+✅ Bookmark and manage what you're working on  
+✅ Track your contribution journey  
+✅ Get AI help to learn GitHub step-by-step  
+
+---
+
+## ✨ Features
+
+- 🔍 **Search beginner-friendly issues** (like `good first issue`, `help wanted`)
+- 📌 **Bookmark issues** for later
+- 🔨 **Update status** like `applied`, `working on`, or `done`
+- 📊 **Track your contribution progress**
+- 🤖 **AI Assistant** for complete beginners
+- 🔐 **Secure login** using Supabase
+- 🖼️ **Clean and modern UI**, fully responsive
+
+---
+
+## 🛠️ Tech Stack
+
+- **React.js + Vite**
+- **Tailwind CSS**
+- **Supabase** (Auth + Database)
+- **GitHub REST API**
+- **Lucide React Icons**
+
+---
+
+## 🧪 Try It Locally
+
+```bash
+# Clone this repo
+git clone https://github.com/yourusername/firstissue.dev.git
+
+# Go inside the folder
+cd firstissue.dev
+
+# Install dependencies
+npm install
+
+# Start the dev server
+npm run dev
+```
+
+Set your `.env` file with Supabase keys (see `.env.example`).
+
+---
+
+## 🙌 Want to Contribute?
+
+We’d love your help!  
+Check out the [CONTRIBUTING.md](CONTRIBUTING.md) guide to get started.
+
+---
+
+Made with 💙 by [Anmol](https://github.com/anmolsah)
