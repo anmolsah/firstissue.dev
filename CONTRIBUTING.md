@@ -18,7 +18,9 @@ This project is beginner-focused, and we welcome **developers of all levels**.
 ## 📁 Project Setup
 
 1. **Fork this repository**
+```bash
 Fork this repository by clicking on the fork button on the top of this page. This will create a copy of this repository in your account.
+```
 
 2. **Clone it locally**  
    ```bash
@@ -62,9 +64,11 @@ Fork this repository by clicking on the fork button on the top of this page. Thi
 ---
 
 ## 💬 Need Help?
+  
+If you have any questions or need help, feel free to open an issue or connect on LinkedIn!
 
-New to GitHub or open source?  
-Ask anything — we’re here to help! 
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat&logo=linkedin)](https://www.linkedin.com/in/anmol-sah-551083238/)
+
 ---
 
 Made with 💙 for the open source community.
