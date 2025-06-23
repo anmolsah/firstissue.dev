@@ -25,7 +25,7 @@ Fork this repository by clicking on the fork button on the top of this page. Thi
 2. **Clone it locally**  
    ```bash
    git clone https://github.com/anmolsah/firstissue.dev.git
-   <!-- cd firstissue.dev -->
+
    ```
 
 3. **Install dependencies**  
