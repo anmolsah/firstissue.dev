@@ -427,10 +427,10 @@ Whether you're new to open source or looking for your next contribution, this pl
 
 ```bash
 # Clone this repo
-git clone https://github.com/yourusername/firstissue.dev.git
+git clone git@github.com:anmolsah/firstissue.dev.git
 
-# Go inside the folder
-cd firstissue.dev
+## Go inside the folder
+## cd firstissue.dev
 
 # Install dependencies
 npm install
