@@ -45,12 +45,12 @@ const Navbar = () => {
             to="/"
             className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 transition-colors"
           >
-            {/* <Code2 className="h-8 w-8" /> */}
+           
             <img className="w-8 h-8" src={logo} alt="" />
             <span className="text-xl font-bold">FirstIssue.dev</span>
           </Link>
 
-          {/* Desktop Navigation */}
+          
           <div className="hidden md:flex items-center space-x-1">
             {navLinks.map(({ to, icon: Icon, label }) => (
               <Link
