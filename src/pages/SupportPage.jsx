@@ -73,15 +73,15 @@ const SupportPage = () => {
               <div className="flex justify-center gap-2 flex-wrap">
                 <div className="flex items-center gap-1 px-3 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
                   <Coffee className="h-4 w-4" />
-                  ₹29
+                  ₹99
                 </div>
                 <div className="flex items-center gap-1 px-3 py-2 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
                   <Pizza className="h-4 w-4" />
-                  ₹49
+                  ₹199
                 </div>
                 <div className="flex items-center gap-1 px-3 py-2 bg-pink-100 text-pink-700 rounded-full text-sm font-medium">
                   <Heart className="h-4 w-4" />
-                  ₹99
+                  ₹299
                 </div>
               </div>
             </div>
