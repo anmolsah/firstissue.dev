@@ -21,6 +21,7 @@ This project is beginner-focused, and we welcome **developers of all levels**.
 2. **Clone it locally**  
    ```bash
    git clone https://github.com/anmolsah/firstissue.dev.git
+   <!-- cd firstissue.dev -->
    ```
 
 3. **Install dependencies**  
