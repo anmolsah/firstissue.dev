@@ -18,6 +18,8 @@ This project is beginner-focused, and we welcome **developers of all levels**.
 ## 📁 Project Setup
 
 1. **Fork this repository**
+Fork this repository by clicking on the fork button on the top of this page. This will create a copy of this repository in your account.
+
 2. **Clone it locally**  
    ```bash
    git clone https://github.com/anmolsah/firstissue.dev.git
