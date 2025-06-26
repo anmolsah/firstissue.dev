@@ -20,7 +20,13 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      await signOut();
+    } catch (error) {
+      // Handle sign out error gracefully - even if server session is not found,
+      // the client should proceed with logout
+      console.log('Sign out completed (server session may have already expired)');
+    }
     navigate("/");
     setIsOpen(false);
   };
