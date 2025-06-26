@@ -58,6 +58,13 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
+    
+    // If the session doesn't exist on the server, treat it as a successful sign-out
+    // since the user is effectively logged out from the client's perspective
+    if (error && error.message === 'Session from session_id claim in JWT does not exist') {
+      return { error: null };
+    }
+    
     return { error };
   };
 
