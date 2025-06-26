@@ -47,7 +47,7 @@ import StatusPage from "./pages/StatusPage";
 import ProfilePage from "./pages/ProfilePage";
 import SupportPage from "./pages/SupportPage";
 import ExplorePage from "./pages/ExplorePage";
-import Footer from "./components/Footer"; 
+import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 
 const App = () => {
@@ -68,7 +68,7 @@ const App = () => {
             <Route path="/explore" element={<ExplorePage />} />
           </Routes>
         </div>
-        <Footer /> 
+        <Footer />
       </div>
     </AuthProvider>
   );

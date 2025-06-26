@@ -1,8 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
-import { ExternalLink, Trash2, Clock, CheckCircle, AlertCircle, PlayCircle } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
+import {
+  ExternalLink,
+  Trash2,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  PlayCircle,
+} from "lucide-react";
 
 const BookmarksPage = () => {
   const { user } = useAuth();
@@ -12,15 +19,20 @@ const BookmarksPage = () => {
   const [updatingStatus, setUpdatingStatus] = useState(null);
 
   const statusOptions = [
-    { value: 'saved', label: 'Saved', icon: Clock, color: 'gray' },
-    { value: 'applied', label: 'Applied', icon: AlertCircle, color: 'blue' },
-    { value: 'working_on', label: 'Working On', icon: PlayCircle, color: 'yellow' },
-    { value: 'done', label: 'Done', icon: CheckCircle, color: 'green' }
+    { value: "saved", label: "Saved", icon: Clock, color: "gray" },
+    { value: "applied", label: "Applied", icon: AlertCircle, color: "blue" },
+    {
+      value: "working_on",
+      label: "Working On",
+      icon: PlayCircle,
+      color: "yellow",
+    },
+    { value: "done", label: "Done", icon: CheckCircle, color: "green" },
   ];
 
   useEffect(() => {
     if (!user) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
     fetchBookmarks();
@@ -29,15 +41,15 @@ const BookmarksPage = () => {
   const fetchBookmarks = async () => {
     try {
       const { data, error } = await supabase
-        .from('bookmarks')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .from("bookmarks")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
 
       if (error) throw error;
       setBookmarks(data || []);
     } catch (error) {
-      console.error('Error fetching bookmarks:', error);
+      console.error("Error fetching bookmarks:", error);
     } finally {
       setLoading(false);
     }
@@ -47,55 +59,60 @@ const BookmarksPage = () => {
     setUpdatingStatus(bookmarkId);
     try {
       const { error } = await supabase
-        .from('bookmarks')
+        .from("bookmarks")
         .update({ status: newStatus })
-        .eq('id', bookmarkId);
+        .eq("id", bookmarkId);
 
       if (error) throw error;
 
-      setBookmarks(prev =>
-        prev.map(bookmark =>
+      setBookmarks((prev) =>
+        prev.map((bookmark) =>
           bookmark.id === bookmarkId
             ? { ...bookmark, status: newStatus }
             : bookmark
         )
       );
     } catch (error) {
-      console.error('Error updating status:', error);
-      alert('Failed to update status. Please try again.');
+      console.error("Error updating status:", error);
+      alert("Failed to update status. Please try again.");
     } finally {
       setUpdatingStatus(null);
     }
   };
 
   const deleteBookmark = async (bookmarkId) => {
-    if (!confirm('Are you sure you want to remove this bookmark?')) return;
+    if (!confirm("Are you sure you want to remove this bookmark?")) return;
 
     try {
       const { error } = await supabase
-        .from('bookmarks')
+        .from("bookmarks")
         .delete()
-        .eq('id', bookmarkId);
+        .eq("id", bookmarkId);
 
       if (error) throw error;
 
-      setBookmarks(prev => prev.filter(bookmark => bookmark.id !== bookmarkId));
+      setBookmarks((prev) =>
+        prev.filter((bookmark) => bookmark.id !== bookmarkId)
+      );
     } catch (error) {
-      console.error('Error deleting bookmark:', error);
-      alert('Failed to delete bookmark. Please try again.');
+      console.error("Error deleting bookmark:", error);
+      alert("Failed to delete bookmark. Please try again.");
     }
   };
 
   const getStatusConfig = (status) => {
-    return statusOptions.find(option => option.value === status) || statusOptions[0];
+    return (
+      statusOptions.find((option) => option.value === status) ||
+      statusOptions[0]
+    );
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
@@ -115,22 +132,27 @@ const BookmarksPage = () => {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">My Bookmarks</h1>
-        <p className="text-gray-600">Track your saved issues and manage your contribution progress</p>
+        <p className="text-gray-600">
+          Track your saved issues and manage your contribution progress
+        </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {statusOptions.map(({ value, label, icon: Icon, color }) => {
-          const count = bookmarks.filter(b => b.status === value).length;
+          const count = bookmarks.filter((b) => b.status === value).length;
           const colorClasses = {
-            gray: 'bg-gray-100 text-gray-700',
-            blue: 'bg-blue-100 text-blue-700',
-            yellow: 'bg-yellow-100 text-yellow-700',
-            green: 'bg-green-100 text-green-700'
+            gray: "bg-gray-100 text-gray-700",
+            blue: "bg-blue-100 text-blue-700",
+            yellow: "bg-yellow-100 text-yellow-700",
+            green: "bg-green-100 text-green-700",
           };
-          
+
           return (
-            <div key={value} className={`p-4 rounded-xl ${colorClasses[color]}`}>
+            <div
+              key={value}
+              className={`p-4 rounded-xl ${colorClasses[color]}`}
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium opacity-75">{label}</p>
@@ -147,10 +169,15 @@ const BookmarksPage = () => {
       {bookmarks.length === 0 ? (
         <div className="text-center py-12 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20">
           <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No bookmarks yet</h3>
-          <p className="text-gray-600 mb-6">Start by exploring issues and bookmarking the ones you're interested in.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No bookmarks yet
+          </h3>
+          <p className="text-gray-600 mb-6">
+            Start by exploring issues and bookmarking the ones you're interested
+            in.
+          </p>
           <button
-            onClick={() => navigate('/explore')}
+            onClick={() => navigate("/explore")}
             className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all duration-200"
           >
             Explore Issues
@@ -161,9 +188,12 @@ const BookmarksPage = () => {
           {bookmarks.map((bookmark) => {
             const statusConfig = getStatusConfig(bookmark.status);
             const StatusIcon = statusConfig.icon;
-            
+
             return (
-              <div key={bookmark.id} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:shadow-lg transition-all duration-300">
+              <div
+                key={bookmark.id}
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:shadow-lg transition-all duration-300"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
@@ -181,7 +211,7 @@ const BookmarksPage = () => {
                       Bookmarked on {formatDate(bookmark.created_at)}
                     </p>
                   </div>
-                  
+
                   <div className="flex items-center gap-2 ml-4">
                     <a
                       href={bookmark.issue_url}
@@ -192,7 +222,7 @@ const BookmarksPage = () => {
                     >
                       <ExternalLink className="h-5 w-5" />
                     </a>
-                    
+
                     <button
                       onClick={() => deleteBookmark(bookmark.id)}
                       className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
@@ -202,13 +232,17 @@ const BookmarksPage = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <StatusIcon className={`h-5 w-5 text-${statusConfig.color}-600`} />
-                    <span className="text-sm font-medium text-gray-700">Status:</span>
+                    <StatusIcon
+                      className={`h-5 w-5 text-${statusConfig.color}-600`}
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      Status:
+                    </span>
                   </div>
-                  
+
                   <select
                     value={bookmark.status}
                     onChange={(e) => updateStatus(bookmark.id, e.target.value)}
@@ -216,7 +250,9 @@ const BookmarksPage = () => {
                     className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
                   >
                     {statusOptions.map(({ value, label }) => (
-                      <option key={value} value={value}>{label}</option>
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
                     ))}
                   </select>
                 </div>
