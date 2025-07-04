@@ -1,0 +1,6 @@
+# robots.txt for https://firstissue.dev
+
+User-agent: *
+Allow: /
+
+Sitemap: https://firstissue.dev/sitemap.xml
