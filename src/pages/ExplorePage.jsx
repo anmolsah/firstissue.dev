@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Search, Filter, ExternalLink, Star, GitFork, Calendar, Bookmark, BookmarkCheck } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const ExplorePage = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [bookmarkedIssues, setBookmarkedIssues] = useState(new Set());
@@ -89,9 +91,17 @@ const ExplorePage = () => {
     return query;
   };
 
+  const handleGitHubView = (url) => {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   const handleBookmark = async (issue) => {
     if (!user) {
-      alert('Please log in to bookmark issues');
+      navigate('/login');
       return;
     }
 
@@ -151,6 +161,20 @@ const ExplorePage = () => {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Explore Open Source Issues</h1>
         <p className="text-gray-600">Discover beginner-friendly issues to start your contribution journey</p>
+        {!user && (
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-800 text-sm">
+              <strong>Note:</strong> Please{' '}
+              <button 
+                onClick={() => navigate('/login')}
+                className="text-blue-600 hover:text-blue-700 underline font-medium"
+              >
+                sign in
+              </button>{' '}
+              to bookmark issues and view them on GitHub.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
@@ -257,28 +281,25 @@ const ExplorePage = () => {
                     <button
                       onClick={() => handleBookmark(issue)}
                       className={`p-2 rounded-lg transition-all duration-200 ${
-                        bookmarkedIssues.has(issue.html_url)
+                        user && bookmarkedIssues.has(issue.html_url)
                           ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
                           : 'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600'
                       }`}
-                      disabled={!user}
-                      title={user ? (bookmarkedIssues.has(issue.html_url) ? 'Remove bookmark' : 'Bookmark issue') : 'Login to bookmark'}
+                      title={user ? (bookmarkedIssues.has(issue.html_url) ? 'Remove bookmark' : 'Bookmark issue') : 'Sign in to bookmark'}
                     >
-                      {bookmarkedIssues.has(issue.html_url) ? 
+                      {user && bookmarkedIssues.has(issue.html_url) ? 
                         <BookmarkCheck className="h-5 w-5" /> : 
                         <Bookmark className="h-5 w-5" />
                       }
                     </button>
                     
-                    <a
-                      href={issue.html_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <button
+                      onClick={() => handleGitHubView(issue.html_url)}
                       className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors"
-                      title="View on GitHub"
+                      title={user ? "View on GitHub" : "Sign in to view on GitHub"}
                     >
                       <ExternalLink className="h-5 w-5" />
-                    </a>
+                    </button>
                   </div>
                 </div>
                 
