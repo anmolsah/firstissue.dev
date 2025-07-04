@@ -19,12 +19,12 @@ const ExplorePage = () => {
 
   const languages = [
     'javascript', 'python', 'java', 'typescript', 'react', 'vue', 'angular',
-    'node.js', 'go', 'rust', 'php', 'ruby', 'swift', 'kotlin', 'dart'
+    'node.js', 'go', 'rust', 'php', 'ruby', 'swift', 'kotlin', 'dart', 'c++'
   ];
 
   const labels = [
     'good first issue', 'help wanted', 'beginner friendly', 'hacktoberfest',
-    'documentation', 'bug', 'enhancement', 'up for grabs'
+    'documentation', 'bug', 'enhancement', 'up for grabs', 'gsoc', 'easy'
   ];
 
   useEffect(() => {
