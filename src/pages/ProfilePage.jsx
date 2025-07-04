@@ -34,14 +34,10 @@ const ProfilePage = () => {
     }
   };
 
+
+
   const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      // Handle sign out error gracefully - even if server session is not found,
-      // the client should proceed with logout
-      console.log('Sign out completed (server session may have already expired)');
-    }
+    await signOut();
     navigate('/');
   };
 
