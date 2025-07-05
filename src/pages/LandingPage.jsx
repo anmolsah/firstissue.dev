@@ -149,13 +149,6 @@ const LandingPage = () => {
               {user ? "Explore Issues" : "Get Started"}
               <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-
-            {/* <Link
-              to="/explore"
-              className="px-8 py-4 border-2 border-indigo-200 text-indigo-600 rounded-xl font-semibold text-lg hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-300"
-            >
-              Browse Issues
-            </Link> */}
           </div>
         </div>
       </section>
@@ -229,7 +222,7 @@ const LandingPage = () => {
           </h2>
           <p className="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
             Join thousands of developers who have made their first contributions
-            with Open Source Buddy.
+            with Firstissue.dev.
           </p>
           <Link
             to={user ? "/explore" : "/signup"}
