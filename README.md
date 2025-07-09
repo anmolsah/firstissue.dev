@@ -25,6 +25,25 @@ Whether you're new to open source or looking for your next contribution, this pl
 
 ---
 
+
+---
+
+## 🖼️ Preview
+
+Here’s a quick look at the FirstIssue.dev platform:
+
+### 🏠 Homepage
+![Homepage Screenshot](./public/firstissue01.png)
+
+### 🔍 Explore Page
+![Explore Screenshot](./public/firstissue04.png)
+
+### 📌 Bookmarks & Status Tracker
+![Bookmarks Screenshot](./public/firstissue03.png)
+
+---
+
+
 ## 🛠️ Tech Stack
 
 - **React.js + Vite**
