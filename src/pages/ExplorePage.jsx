@@ -3,7 +3,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, ExternalLink, Star, GitFork, Calendar, Bookmark, BookmarkCheck, 
-  Users, Clock, TrendingUp, Building, Shield, ChevronDown, Loader2, RefreshCw 
+  Users, Clock, TrendingUp, Building, Shield, ChevronDown, Loader2, RefreshCw,
+  Award, Zap, CheckCircle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -17,6 +18,9 @@ const ExplorePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
+  const [trustedRepos, setTrustedRepos] = useState([]);
+  const [loadingTrusted, setLoadingTrusted] = useState(true);
+  const [selectedTab, setSelectedTab] = useState('github'); // 'github' or 'trusted'
   const [filters, setFilters] = useState({
     language: '',
     labels: ['good first issue'],
@@ -71,11 +75,33 @@ const ExplorePage = () => {
   ];
 
   useEffect(() => {
-    resetAndFetch();
+    if (selectedTab === 'github') {
+      resetAndFetch();
+    } else {
+      fetchTrustedRepos();
+    }
     if (user) {
       fetchBookmarkedIssues();
     }
-  }, [filters, user]);
+  }, [filters, user, selectedTab]);
+
+  const fetchTrustedRepos = async () => {
+    setLoadingTrusted(true);
+    try {
+      const { data, error } = await supabase
+        .from('trusted_repos')
+        .select('*')
+        .eq('is_active', true)
+        .order('stars', { ascending: false });
+      
+      if (error) throw error;
+      setTrustedRepos(data || []);
+    } catch (error) {
+      console.error('Error fetching trusted repos:', error);
+    } finally {
+      setLoadingTrusted(false);
+    }
+  };
 
   const resetAndFetch = () => {
     setCurrentPage(1);
@@ -379,294 +405,448 @@ const ExplorePage = () => {
         )}
       </div>
 
-      {/* Advanced Filters */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-white/20">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Programming Language</label>
-              <select
-                value={filters.language}
-                onChange={(e) => setFilters({ ...filters, language: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                <option value="">All Languages</option>
-                {languages.map(lang => (
-                  <option key={lang} value={lang}>{lang}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Keywords</label>
-              <input
-                type="text"
-                value={filters.keywords}
-                onChange={(e) => setFilters({ ...filters, keywords: e.target.value })}
-                placeholder="Search in title and description..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
-            </div>
-          </div>
-
-          {/* Middle Column */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Issue Labels</label>
-              <div className="flex flex-wrap gap-2">
-                {labelOptions.map(({ value, label, color }) => (
-                  <button
-                    key={value}
-                    onClick={() => toggleLabel(value)}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
-                      filters.labels.includes(value)
-                        ? `bg-${color}-100 text-${color}-700 ring-2 ring-${color}-300`
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                <select
-                  value={filters.sort}
-                  onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                >
-                  {sortOptions.map(({ value, label }) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Min Stars</label>
-                <select
-                  value={filters.minStars}
-                  onChange={(e) => setFilters({ ...filters, minStars: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
-                >
-                  {minStarsOptions.map(({ value, label }) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Recent Activity</label>
-              <select
-                value={filters.recentActivity}
-                onChange={(e) => setFilters({ ...filters, recentActivity: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              >
-                {activityOptions.map(({ value, label }) => (
-                  <option key={value} value={value}>{label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="space-y-3">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={filters.excludeArchived}
-                  onChange={(e) => setFilters({ ...filters, excludeArchived: e.target.checked })}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span className="ml-2 text-sm text-gray-700">Exclude archived repos</span>
-              </label>
-
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={filters.verifiedOnly}
-                  onChange={(e) => setFilters({ ...filters, verifiedOnly: e.target.checked })}
-                  className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span className="ml-2 text-sm text-gray-700">Verified orgs only</span>
-              </label>
-            </div>
-          </div>
+      {/* Tab Navigation */}
+      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-2 mb-8 border border-white/20">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setSelectedTab('github')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+              selectedTab === 'github'
+                ? 'bg-indigo-600 text-white shadow-lg'
+                : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50'
+            }`}
+          >
+            <Search className="h-5 w-5" />
+            GitHub Issues
+            <span className={`px-2 py-1 text-xs rounded-full ${
+              selectedTab === 'github' 
+                ? 'bg-white/20 text-white' 
+                : 'bg-gray-200 text-gray-600'
+            }`}>
+              {totalCount > 0 ? totalCount.toLocaleString() : 'Live'}
+            </span>
+          </button>
+          
+          <button
+            onClick={() => setSelectedTab('trusted')}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+              selectedTab === 'trusted'
+                ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                : 'text-gray-600 hover:text-purple-600 hover:bg-purple-50'
+            }`}
+          >
+            <Award className="h-5 w-5" />
+            Trusted Repos
+            <span className={`px-2 py-1 text-xs rounded-full ${
+              selectedTab === 'trusted' 
+                ? 'bg-white/20 text-white' 
+                : 'bg-gray-200 text-gray-600'
+            }`}>
+              Curated
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* Issues List */}
-      {loading ? (
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-          <span className="ml-3 text-gray-600">Finding quality issues...</span>
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {issues.length === 0 ? (
-            <div className="text-center py-12 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20">
-              <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No issues found</h3>
-              <p className="text-gray-600">Try adjusting your filters to find more issues.</p>
+      {/* Advanced Filters */}
+      {selectedTab === 'github' && (
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-white/20">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left Column */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Programming Language</label>
+                <select
+                  value={filters.language}
+                  onChange={(e) => setFilters({ ...filters, language: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="">All Languages</option>
+                  {languages.map(lang => (
+                    <option key={lang} value={lang}>{lang}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Keywords</label>
+                <input
+                  type="text"
+                  value={filters.keywords}
+                  onChange={(e) => setFilters({ ...filters, keywords: e.target.value })}
+                  placeholder="Search in title and description..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                />
+              </div>
             </div>
-          ) : (
-            <>
-              {issues.map((issue) => {
-                const repoInfo = getRepoInfo(issue);
-                const isVerified = isVerifiedOrg(repoInfo.owner);
-                
-                return (
-                  <div key={issue.id} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                    {/* Repository Header */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <img 
-                          src={issue.user.avatar_url} 
-                          alt={repoInfo.owner}
-                          className="h-8 w-8 rounded-full"
-                        />
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-sm font-medium text-indigo-600">
-                              {repoInfo.fullName}
-                            </span>
-                            {isVerified && (
-                              <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                                <Shield className="h-3 w-3" />
-                                Verified
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
-                            <span className="flex items-center gap-1">
-                              <Star className="h-3 w-3" />
-                              {formatNumber(issue.score || 0)}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <GitFork className="h-3 w-3" />
-                              {formatNumber(Math.floor(Math.random() * 1000))}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Users className="h-3 w-3" />
-                              {formatNumber(Math.floor(Math.random() * 100))}
-                            </span>
+
+            {/* Middle Column */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Issue Labels</label>
+                <div className="flex flex-wrap gap-2">
+                  {labelOptions.map(({ value, label, color }) => (
+                    <button
+                      key={value}
+                      onClick={() => toggleLabel(value)}
+                      className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
+                        filters.labels.includes(value)
+                          ? `bg-${color}-100 text-${color}-700 ring-2 ring-${color}-300`
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                  <select
+                    value={filters.sort}
+                    onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  >
+                    {sortOptions.map(({ value, label }) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Min Stars</label>
+                  <select
+                    value={filters.minStars}
+                    onChange={(e) => setFilters({ ...filters, minStars: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                  >
+                    {minStarsOptions.map(({ value, label }) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column */}
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Recent Activity</label>
+                <select
+                  value={filters.recentActivity}
+                  onChange={(e) => setFilters({ ...filters, recentActivity: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  {activityOptions.map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-3">
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={filters.excludeArchived}
+                    onChange={(e) => setFilters({ ...filters, excludeArchived: e.target.checked })}
+                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Exclude archived repos</span>
+                </label>
+
+                <label className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={filters.verifiedOnly}
+                    onChange={(e) => setFilters({ ...filters, verifiedOnly: e.target.checked })}
+                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Verified orgs only</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Issues List */}
+      {selectedTab === 'github' ? (
+        // GitHub Issues Content
+        loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            <span className="ml-3 text-gray-600">Finding quality issues...</span>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {issues.length === 0 ? (
+              <div className="text-center py-12 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20">
+                <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No issues found</h3>
+                <p className="text-gray-600">Try adjusting your filters to find more issues.</p>
+              </div>
+            ) : (
+              <>
+                {issues.map((issue) => {
+                  const repoInfo = getRepoInfo(issue);
+                  const isVerified = isVerifiedOrg(repoInfo.owner);
+                  
+                  return (
+                    <div key={issue.id} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                      {/* Repository Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={issue.user.avatar_url} 
+                            alt={repoInfo.owner}
+                            className="h-8 w-8 rounded-full"
+                          />
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium text-indigo-600">
+                                {repoInfo.fullName}
+                              </span>
+                              {isVerified && (
+                                <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                  <Shield className="h-3 w-3" />
+                                  Verified
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                              <span className="flex items-center gap-1">
+                                <Star className="h-3 w-3" />
+                                {formatNumber(issue.score || 0)}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <GitFork className="h-3 w-3" />
+                                {formatNumber(Math.floor(Math.random() * 1000))}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Users className="h-3 w-3" />
+                                {formatNumber(Math.floor(Math.random() * 100))}
+                              </span>
+                            </div>
                           </div>
                         </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleBookmark(issue)}
+                            className={`p-2 rounded-lg transition-all duration-200 ${
+                              user && bookmarkedIssues.has(issue.html_url)
+                                ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
+                                : 'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600'
+                            }`}
+                            title={user ? (bookmarkedIssues.has(issue.html_url) ? 'Remove bookmark' : 'Bookmark issue') : 'Sign in to bookmark'}
+                          >
+                            {user && bookmarkedIssues.has(issue.html_url) ? 
+                              <BookmarkCheck className="h-5 w-5" /> : 
+                              <Bookmark className="h-5 w-5" />
+                            }
+                          </button>
+                          
+                          <button
+                            onClick={() => handleGitHubView(issue.html_url)}
+                            className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors"
+                            title={user ? "View on GitHub" : "Sign in to view on GitHub"}
+                          >
+                            <ExternalLink className="h-5 w-5" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Issue Content */}
+                      <div className="mb-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          {issue.labels.slice(0, 4).map((label) => (
+                            <span
+                              key={label.id}
+                              className="px-2 py-1 text-xs font-medium rounded-full"
+                              style={{
+                                backgroundColor: `#${label.color}20`,
+                                color: `#${label.color}`
+                              }}
+                            >
+                              {label.name}
+                            </span>
+                          ))}
+                          {issue.labels.length > 4 && (
+                            <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+                              +{issue.labels.length - 4} more
+                            </span>
+                          )}
+                        </div>
+                        
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                          {issue.title}
+                        </h3>
+                        
+                        <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+                          {issue.body ? issue.body.substring(0, 300) + '...' : 'No description available'}
+                        </p>
                       </div>
                       
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => handleBookmark(issue)}
-                          className={`p-2 rounded-lg transition-all duration-200 ${
-                            user && bookmarkedIssues.has(issue.html_url)
-                              ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
-                              : 'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600'
-                          }`}
-                          title={user ? (bookmarkedIssues.has(issue.html_url) ? 'Remove bookmark' : 'Bookmark issue') : 'Sign in to bookmark'}
-                        >
-                          {user && bookmarkedIssues.has(issue.html_url) ? 
-                            <BookmarkCheck className="h-5 w-5" /> : 
-                            <Bookmark className="h-5 w-5" />
-                          }
-                        </button>
+                      {/* Issue Footer */}
+                      <div className="flex items-center justify-between text-sm text-gray-500">
+                        <div className="flex items-center gap-4">
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-4 w-4" />
+                            Updated {formatDate(issue.updated_at)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            💬 {issue.comments}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            👍 {issue.reactions?.['+1'] || 0}
+                          </span>
+                        </div>
                         
-                        <button
-                          onClick={() => handleGitHubView(issue.html_url)}
-                          className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors"
-                          title={user ? "View on GitHub" : "Sign in to view on GitHub"}
-                        >
-                          <ExternalLink className="h-5 w-5" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <img 
+                            src={issue.user.avatar_url} 
+                            alt={issue.user.login}
+                            className="h-5 w-5 rounded-full"
+                          />
+                          <span>{issue.user.login}</span>
+                        </div>
                       </div>
                     </div>
+                  );
+                })}
 
-                    {/* Issue Content */}
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        {issue.labels.slice(0, 4).map((label) => (
-                          <span
-                            key={label.id}
-                            className="px-2 py-1 text-xs font-medium rounded-full"
-                            style={{
-                              backgroundColor: `#${label.color}20`,
-                              color: `#${label.color}`
-                            }}
-                          >
-                            {label.name}
-                          </span>
-                        ))}
-                        {issue.labels.length > 4 && (
-                          <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
-                            +{issue.labels.length - 4} more
-                          </span>
-                        )}
+                {/* Load More Button */}
+                {hasMore && (
+                  <div className="text-center py-8">
+                    <button
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 flex items-center gap-2 mx-auto"
+                    >
+                      {loadingMore ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          Loading more...
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-5 w-5" />
+                          Load More Issues
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )
+      ) : (
+        // Trusted Repos Content
+        <div>
+          <div className="mb-6 p-6 bg-gradient-to-r from-purple-600 via-pink-600 to-indigo-600 rounded-2xl text-white">
+            <div className="flex items-center gap-3 mb-3">
+              <Award className="h-8 w-8" />
+              <div>
+                <h2 className="text-2xl font-bold">Trusted Repositories</h2>
+                <p className="text-purple-100">Hand-picked, beginner-friendly open source projects</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-6 text-sm text-purple-100">
+              <div className="flex items-center gap-1">
+                <CheckCircle className="h-4 w-4" />
+                Verified Quality
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="h-4 w-4" />
+                Active Community
+              </div>
+              <div className="flex items-center gap-1">
+                <Zap className="h-4 w-4" />
+                Beginner Friendly
+              </div>
+            </div>
+          </div>
+
+          {loadingTrusted ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+              <span className="ml-3 text-gray-600">Loading trusted repositories...</span>
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-6">
+              {trustedRepos.map((repo) => (
+                <div key={repo.id} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  {/* Repository Header */}
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="text-lg font-semibold text-gray-900">
+                          {repo.title}
+                        </span>
+                        <div className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          repo.difficulty === 'beginner' ? 'bg-green-100 text-green-700' :
+                          repo.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {repo.difficulty}
+                        </div>
                       </div>
-                      
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-                        {issue.title}
-                      </h3>
-                      
-                      <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-                        {issue.body ? issue.body.substring(0, 300) + '...' : 'No description available'}
+                      <div className="text-sm text-indigo-600 font-medium mb-2">
+                        {repo.name}
+                      </div>
+                      <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                        {repo.description}
                       </p>
                     </div>
-                    
-                    {/* Issue Footer */}
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <div className="flex items-center gap-4">
-                        <span className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          Updated {formatDate(issue.updated_at)}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          💬 {issue.comments}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          👍 {issue.reactions?.['+1'] || 0}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <img 
-                          src={issue.user.avatar_url} 
-                          alt={issue.user.login}
-                          className="h-5 w-5 rounded-full"
-                        />
-                        <span>{issue.user.login}</span>
-                      </div>
-                    </div>
                   </div>
-                );
-              })}
 
-              {/* Load More Button */}
-              {hasMore && (
-                <div className="text-center py-8">
-                  <button
-                    onClick={loadMore}
-                    disabled={loadingMore}
-                    className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 flex items-center gap-2 mx-auto"
-                  >
-                    {loadingMore ? (
-                      <>
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                        Loading more...
-                      </>
-                    ) : (
-                      <>
-                        <ChevronDown className="h-5 w-5" />
-                        Load More Issues
-                      </>
-                    )}
-                  </button>
+                  {/* Repository Stats */}
+                  <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <Star className="h-4 w-4" />
+                      {formatNumber(repo.stars)}
+                    </span>
+                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                      {repo.language}
+                    </span>
+                  </div>
+
+                  {/* Tags */}
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {repo.tags.slice(0, 3).map((tag, index) => (
+                      <span
+                        key={index}
+                        className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleGitHubView(repo.github_url)}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                      View Repository
+                    </button>
+                    
+                    <button
+                      onClick={() => window.open(`${repo.github_url}/issues?q=is:open+label:"good first issue"`, '_blank')}
+                      className="px-4 py-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors font-medium"
+                      title="View beginner issues"
+                    >
+                      Issues
+                    </button>
+                  </div>
                 </div>
-              )}
-            </>
+              ))}
+            </div>
           )}
         </div>
       )}
@@ -675,6 +855,7 @@ const ExplorePage = () => {
 };
 
 export default ExplorePage;
+
 
 // import React, { useState, useEffect } from 'react';
 // import { useAuth } from '../contexts/AuthContext';
