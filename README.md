@@ -38,9 +38,11 @@ Here’s a quick look at the FirstIssue.dev platform:
 ### 🔍 Explore Page
 ![Explore Screenshot](./public/firstissue04.png)
 
-### 📌 Bookmarks & Status Tracker
+### 📌 Trusted Repos
 ![Bookmarks Screenshot](./public/firstissue03.png)
 
+### 📌 Bookmarks
+![Bookmarks Screenshot](./public/firstissue05.png)
 ---
 
 
