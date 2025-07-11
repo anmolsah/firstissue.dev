@@ -16,12 +16,27 @@ Whether you're new to open source or looking for your next contribution, this pl
 
 ## ✨ Features
 
-- 🔍 **Search beginner-friendly issues** (like `good first issue`, `help wanted`)
-- 📌 **Bookmark issues** for later
-- 🔨 **Update status** like `applied`, `working on`, or `done`
-- 📊 **Track your contribution progress**
-- 🔐 **Secure login** using Supabase
-- 🖼️ **Clean and modern UI**, fully responsive
+- 🔍 **Search beginner-friendly issues**  
+  Find issues labeled with `good first issue`, `help wanted`, and more from GitHub's public repositories.
+
+- 📌 **Bookmark issues** for later  
+  Save issues you're interested in and access them anytime from your dashboard.
+
+- 🔨 **Update contribution status**  
+  Mark issues as `applied`, `working on`, or `done` to track your progress.
+
+- 📝 **Add manual contributions**  
+  Contributed outside FirstIssue.dev? No problem. Manually add repositories you've contributed to and manage their status.
+
+- 📊 **Track your contribution progress**  
+  Visualize your progress with personalized stats and history.
+
+- 🔐 **Secure login with Supabase**  
+  Keep your bookmarks and activity private and synced across devices.
+
+- 🖼️ **Clean and modern UI**  
+  Fully responsive design built with React and Tailwind CSS for a seamless experience across all devices.
+
 
 ---
 
