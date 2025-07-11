@@ -54,10 +54,13 @@ Here’s a quick look at the FirstIssue.dev platform:
 ![Explore Screenshot](./public/firstissue04.png)
 
 ### 📌 Trusted Repos
-![Bookmarks Screenshot](./public/firstissue03.png)
+![Trusted Repos Screenshot](./public/firstissue03.png)
 
 ### 📌 Bookmarks
 ![Bookmarks Screenshot](./public/firstissue05.png)
+
+### 📌 Profile
+![Profile Screenshot](./public/firstissue08.png)
 ---
 
 
