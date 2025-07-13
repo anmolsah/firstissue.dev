@@ -55,7 +55,7 @@ const SupportPage = () => {
               <p className="text-sm font-medium text-gray-700 mb-2">UPI ID:</p>
               <div
                 className="bg-white px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors group"
-                onClick={() => copyToClipboard("annicode@okaxis")}
+                onClick={() => copyToClipboard("8250676762@ybl")}
               >
                 <code className="text-lg font-mono text-indigo-600 font-semibold">
                   8250676762@ybl
