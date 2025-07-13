@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, ExternalLink, Star, GitFork, Calendar, Bookmark, BookmarkCheck, 
   Users, Clock, TrendingUp, Building, Shield, ChevronDown, Loader2, RefreshCw,
-  Award, Zap, CheckCircle, AlertCircle, X
+  Award, Zap, CheckCircle
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -21,10 +21,9 @@ const ExplorePage = () => {
   const [trustedRepos, setTrustedRepos] = useState([]);
   const [loadingTrusted, setLoadingTrusted] = useState(true);
   const [selectedTab, setSelectedTab] = useState('github'); // 'github' or 'trusted'
-  const [error, setError] = useState('');
   const [filters, setFilters] = useState({
     language: '',
-    labels: ['good-first-issue'],
+    labels: ['good first issue'],
     keywords: '',
     sort: 'updated',
     minStars: '10',
@@ -40,15 +39,14 @@ const ExplorePage = () => {
   ];
 
   const labelOptions = [
-    { value: 'good-first-issue', label: 'Good First Issue', color: 'green' },
-    { value: 'help-wanted', label: 'Help Wanted', color: 'blue' },
-    { value: 'beginner-friendly', label: 'Beginner Friendly', color: 'purple' },
+    { value: 'good first issue', label: 'Good First Issue', color: 'green' },
+    { value: 'help wanted', label: 'Help Wanted', color: 'blue' },
+    { value: 'beginner friendly', label: 'Beginner Friendly', color: 'purple' },
     { value: 'hacktoberfest', label: 'Hacktoberfest', color: 'orange' },
     { value: 'documentation', label: 'Documentation', color: 'yellow' },
     { value: 'bug', label: 'Bug Fix', color: 'red' },
     { value: 'enhancement', label: 'Enhancement', color: 'indigo' },
-    { value: 'up-for-grabs', label: 'Up for Grabs', color: 'pink' },
-    { value: 'first-timers-only', label: 'First Timers Only', color: 'emerald' }
+    { value: 'up for grabs', label: 'Up for Grabs', color: 'pink' }
   ];
 
   const sortOptions = [
@@ -141,6 +139,11 @@ const ExplorePage = () => {
         // Log the query for debugging
         console.log('GitHub Query:', query);
         console.log('Total Results:', data.total_count);
+        console.log('First few results:', data.items?.slice(0, 3).map(item => ({
+          title: item.title,
+          labels: item.labels.map(l => l.name),
+          url: item.html_url
+        })));
         
         const filteredIssues = await filterHighQualityIssues(data.items || []);
         
@@ -154,11 +157,13 @@ const ExplorePage = () => {
         setHasMore(filteredIssues.length === 20 && page * 20 < data.total_count);
         setCurrentPage(page);
       } else {
+        const errorText = await response.text();
+        console.error('GitHub API Error:', response.status, response.statusText, errorText);
         console.error('Failed to fetch issues:', response.status, response.statusText);
         if (response.status === 403) {
           setError('Rate limit exceeded. Please try again later or add a GitHub token.');
         } else if (response.status === 422) {
-          setError('Invalid search query. Please adjust your filters.');
+          setError(`Invalid search query: ${errorText}. Please adjust your filters.`);
         } else {
           setError('Failed to fetch issues. Please try again.');
         }
@@ -177,18 +182,10 @@ const ExplorePage = () => {
     
     // Add labels with proper GitHub search syntax
     if (filters.labels.length > 0) {
-      // Use OR logic for multiple labels - any issue with at least one of these labels
-      const labelQueries = filters.labels.map(label => `label:"${label}"`);
-      if (labelQueries.length === 1) {
-        query += ` ${labelQueries[0]}`;
-      } else {
-        query += ` (${labelQueries.join(' OR ')})`;
-      }
-      if (labelQueries.length === 1) {
-        query += ` ${labelQueries[0]}`;
-      } else {
-        query += ` (${labelQueries.join(' OR ')})`;
-      }
+      // GitHub API expects labels without quotes for OR logic
+      filters.labels.forEach(label => {
+        query += ` label:"${label}"`;
+      });
     }
     
     // Add language filter
@@ -198,15 +195,7 @@ const ExplorePage = () => {
     
     // Add keywords
     if (filters.keywords) {
-      // Search in title and body
-      const keywords = filters.keywords.trim();
-      if (keywords) {
-        query += ` ${keywords} in:title,body`;
-      }
-      const keywords = filters.keywords.trim();
-      if (keywords) {
-        query += ` ${keywords} in:title,body`;
-      }
+      query += ` ${filters.keywords}`;
     }
     
     // Add minimum stars filter
@@ -236,98 +225,35 @@ const ExplorePage = () => {
       query += ` archived:false`;
     }
     
-    // Add quality filters to get real, active issues
-    query += ` archived:false is:public`;
+    // Add quality filters
+    query += ` is:public`;
     
-    // Exclude common spam/low-quality labels
-    query += ` -label:duplicate -label:invalid -label:wontfix -label:spam`;
-    
-    // Prioritize issues with some engagement for quality
-    if (filters.sort === 'comments' || filters.sort === 'reactions') {
-      query += ` comments:>=1`;
-    }
-    
-    // Exclude very old issues (older than 2 years) unless specifically searching for them
-    if (filters.recentActivity === 'any') {
-      const twoYearsAgo = new Date();
-      twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-      query += ` created:>=${twoYearsAgo.toISOString().split('T')[0]}`;
-    query += ` archived:false is:public`;
-    
-    // Exclude common spam patterns
+    // Exclude low-quality labels
     query += ` -label:duplicate -label:invalid -label:wontfix`;
     
-    // Prioritize issues with some engagement
-    if (filters.sort === 'comments') {
-      query += ` comments:>=1`;
-    }
+    console.log('GitHub Search Query:', query);
     
     return query;
   };
 
   const filterHighQualityIssues = async (rawIssues) => {
-    // Enhanced filtering for high-quality issues
+    // Basic filtering for quality issues
     return rawIssues.filter(issue => {
       const repoUrl = issue.repository_url;
       const repoName = repoUrl.split('/').slice(-2).join('/');
       
-      // Exclude known spammy patterns and test repositories
+      // Exclude obvious spam patterns
       const spammyPatterns = [
         /test-repo/i,
-        /test$/i,
-        /testing/i,
-        /practice/i,
-        /learning/i,
-        /tutorial/i,
-        /example/i,
-        /demo/i,
-        /sample/i,
-        /playground/i,
-        /experiment/i,
-        /hello-world/i,
-        /first-repo/i
+        /hello-world/i
       ];
       
       const isSpammy = spammyPatterns.some(pattern => pattern.test(repoName));
       
-      // Ensure issue has meaningful content and engagement
+      // Basic content check
       const hasContent = issue.title && issue.title.length > 10;
-      const hasDescription = issue.body && issue.body.length > 30;
       
-      // Check for minimum engagement (comments or reactions)
-      const hasEngagement = issue.comments > 0 || 
-                           (issue.reactions && Object.values(issue.reactions).some(count => count > 0));
-      
-      // Check if issue is not too old without activity
-      const lastUpdate = new Date(issue.updated_at);
-      const oneYearAgo = new Date();
-      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-      const isRecentlyActive = lastUpdate > oneYearAgo;
-      
-      // Exclude issues with certain negative indicators
-      const hasNegativeLabels = issue.labels.some(label => 
-        ['wontfix', 'duplicate', 'invalid', 'spam', 'closed'].includes(label.name.toLowerCase())
-      );
-      
-      // Prefer issues with beginner-friendly labels
-      const hasBeginnerLabels = issue.labels.some(label => 
-        ['good first issue', 'help wanted', 'beginner friendly', 'easy', 'starter'].some(
-          beginnerLabel => label.name.toLowerCase().includes(beginnerLabel)
-        )
-      );
-      
-      // Quality score based on multiple factors
-      const qualityScore = (
-        (hasContent ? 1 : 0) +
-        (hasDescription ? 1 : 0) +
-        (hasEngagement ? 1 : 0) +
-        (isRecentlyActive ? 1 : 0) +
-        (hasBeginnerLabels ? 2 : 0) +
-        (!hasNegativeLabels ? 1 : 0)
-      );
-      
-      // Return issues with good quality score
-      return !isSpammy && qualityScore >= 3;
+      return !isSpammy && hasContent;
     });
   };
 
@@ -493,20 +419,6 @@ const ExplorePage = () => {
           </div>
         )}
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-          <span className="text-red-700 text-sm">{error}</span>
-          <button
-            onClick={() => setError('')}
-            className="ml-auto text-red-600 hover:text-red-700"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      )}
 
       {/* Tab Navigation */}
       <div className="bg-white/80 backdrop-blur-sm rounded-xl p-2 mb-8 border border-white/20">
@@ -933,7 +845,7 @@ const ExplorePage = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleGitHubView(repo.github_url)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200 cursor-pointer"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200"
                     >
                       <ExternalLink className="h-4 w-4" />
                       View Repository
@@ -958,5 +870,3 @@ const ExplorePage = () => {
 };
 
 export default ExplorePage;
-
-
