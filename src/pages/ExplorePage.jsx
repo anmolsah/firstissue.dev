@@ -933,7 +933,7 @@ const ExplorePage = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleGitHubView(repo.github_url)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200 cursor-pointer"
                     >
                       <ExternalLink className="h-4 w-4" />
                       View Repository
