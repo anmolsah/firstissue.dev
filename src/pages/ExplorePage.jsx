@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Search, Filter, ExternalLink, Star, GitFork, Calendar, Bookmark, BookmarkCheck, 
   Users, Clock, TrendingUp, Building, Shield, ChevronDown, Loader2, RefreshCw,
-  Award, Zap, CheckCircle
+  Award, Zap, CheckCircle, AlertCircle, X
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
@@ -21,9 +21,10 @@ const ExplorePage = () => {
   const [trustedRepos, setTrustedRepos] = useState([]);
   const [loadingTrusted, setLoadingTrusted] = useState(true);
   const [selectedTab, setSelectedTab] = useState('github'); // 'github' or 'trusted'
+  const [error, setError] = useState('');
   const [filters, setFilters] = useState({
     language: '',
-    labels: ['good first issue'],
+    labels: ['good-first-issue'],
     keywords: '',
     sort: 'updated',
     minStars: '10',
@@ -39,14 +40,15 @@ const ExplorePage = () => {
   ];
 
   const labelOptions = [
-    { value: 'good first issue', label: 'Good First Issue', color: 'green' },
-    { value: 'help wanted', label: 'Help Wanted', color: 'blue' },
-    { value: 'beginner friendly', label: 'Beginner Friendly', color: 'purple' },
+    { value: 'good-first-issue', label: 'Good First Issue', color: 'green' },
+    { value: 'help-wanted', label: 'Help Wanted', color: 'blue' },
+    { value: 'beginner-friendly', label: 'Beginner Friendly', color: 'purple' },
     { value: 'hacktoberfest', label: 'Hacktoberfest', color: 'orange' },
     { value: 'documentation', label: 'Documentation', color: 'yellow' },
     { value: 'bug', label: 'Bug Fix', color: 'red' },
     { value: 'enhancement', label: 'Enhancement', color: 'indigo' },
-    { value: 'up for grabs', label: 'Up for Grabs', color: 'pink' }
+    { value: 'up-for-grabs', label: 'Up for Grabs', color: 'pink' },
+    { value: 'first-timers-only', label: 'First Timers Only', color: 'emerald' }
   ];
 
   const sortOptions = [
@@ -124,13 +126,22 @@ const ExplorePage = () => {
         {
           headers: {
             'Accept': 'application/vnd.github.v3+json',
-            'User-Agent': 'OpenSourceBuddy/1.0'
+            'User-Agent': 'OpenSourceBuddy/1.0',
+            // Add GitHub token if available for higher rate limits
+            ...(import.meta.env.VITE_GITHUB_TOKEN && {
+              'Authorization': `token ${import.meta.env.VITE_GITHUB_TOKEN}`
+            })
           }
         }
       );
       
       if (response.ok) {
         const data = await response.json();
+        
+        // Log the query for debugging
+        console.log('GitHub Query:', query);
+        console.log('Total Results:', data.total_count);
+        
         const filteredIssues = await filterHighQualityIssues(data.items || []);
         
         if (reset) {
@@ -143,14 +154,18 @@ const ExplorePage = () => {
         setHasMore(filteredIssues.length === 20 && page * 20 < data.total_count);
         setCurrentPage(page);
       } else {
-        console.error('Failed to fetch issues:', response.status);
+        console.error('Failed to fetch issues:', response.status, response.statusText);
         if (response.status === 403) {
-          throw new Error('Rate limit exceeded. Please try again later.');
+          setError('Rate limit exceeded. Please try again later or add a GitHub token.');
+        } else if (response.status === 422) {
+          setError('Invalid search query. Please adjust your filters.');
+        } else {
+          setError('Failed to fetch issues. Please try again.');
         }
       }
     } catch (error) {
       console.error('Error fetching issues:', error);
-      // Show user-friendly error message
+      setError(error.message || 'An error occurred while fetching issues.');
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -160,10 +175,20 @@ const ExplorePage = () => {
   const buildAdvancedGitHubQuery = () => {
     let query = 'state:open type:issue';
     
-    // Add labels with OR logic
+    // Add labels with proper GitHub search syntax
     if (filters.labels.length > 0) {
-      const labelQuery = filters.labels.map(label => `label:"${label}"`).join(' ');
-      query += ` (${labelQuery})`;
+      // Use OR logic for multiple labels - any issue with at least one of these labels
+      const labelQueries = filters.labels.map(label => `label:"${label}"`);
+      if (labelQueries.length === 1) {
+        query += ` ${labelQueries[0]}`;
+      } else {
+        query += ` (${labelQueries.join(' OR ')})`;
+      }
+      if (labelQueries.length === 1) {
+        query += ` ${labelQueries[0]}`;
+      } else {
+        query += ` (${labelQueries.join(' OR ')})`;
+      }
     }
     
     // Add language filter
@@ -173,7 +198,15 @@ const ExplorePage = () => {
     
     // Add keywords
     if (filters.keywords) {
-      query += ` ${filters.keywords}`;
+      // Search in title and body
+      const keywords = filters.keywords.trim();
+      if (keywords) {
+        query += ` ${keywords} in:title,body`;
+      }
+      const keywords = filters.keywords.trim();
+      if (keywords) {
+        query += ` ${keywords} in:title,body`;
+      }
     }
     
     // Add minimum stars filter
@@ -203,42 +236,98 @@ const ExplorePage = () => {
       query += ` archived:false`;
     }
     
-    // Add quality filters
-    query += ` is:public`;
+    // Add quality filters to get real, active issues
+    query += ` archived:false is:public`;
+    
+    // Exclude common spam/low-quality labels
+    query += ` -label:duplicate -label:invalid -label:wontfix -label:spam`;
+    
+    // Prioritize issues with some engagement for quality
+    if (filters.sort === 'comments' || filters.sort === 'reactions') {
+      query += ` comments:>=1`;
+    }
+    
+    // Exclude very old issues (older than 2 years) unless specifically searching for them
+    if (filters.recentActivity === 'any') {
+      const twoYearsAgo = new Date();
+      twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+      query += ` created:>=${twoYearsAgo.toISOString().split('T')[0]}`;
+    query += ` archived:false is:public`;
+    
+    // Exclude common spam patterns
+    query += ` -label:duplicate -label:invalid -label:wontfix`;
+    
+    // Prioritize issues with some engagement
+    if (filters.sort === 'comments') {
+      query += ` comments:>=1`;
+    }
     
     return query;
   };
 
   const filterHighQualityIssues = async (rawIssues) => {
-    // Filter out issues from low-quality or spammy repositories
+    // Enhanced filtering for high-quality issues
     return rawIssues.filter(issue => {
       const repoUrl = issue.repository_url;
       const repoName = repoUrl.split('/').slice(-2).join('/');
       
-      // Exclude known spammy patterns
+      // Exclude known spammy patterns and test repositories
       const spammyPatterns = [
         /test-repo/i,
+        /test$/i,
+        /testing/i,
         /practice/i,
         /learning/i,
         /tutorial/i,
         /example/i,
         /demo/i,
-        /sample/i
+        /sample/i,
+        /playground/i,
+        /experiment/i,
+        /hello-world/i,
+        /first-repo/i
       ];
       
       const isSpammy = spammyPatterns.some(pattern => pattern.test(repoName));
       
-      // Ensure issue has meaningful content
+      // Ensure issue has meaningful content and engagement
       const hasContent = issue.title && issue.title.length > 10;
-      const hasDescription = issue.body && issue.body.length > 20;
+      const hasDescription = issue.body && issue.body.length > 30;
       
-      // Check if issue is not too old (more than 6 months without activity)
+      // Check for minimum engagement (comments or reactions)
+      const hasEngagement = issue.comments > 0 || 
+                           (issue.reactions && Object.values(issue.reactions).some(count => count > 0));
+      
+      // Check if issue is not too old without activity
       const lastUpdate = new Date(issue.updated_at);
-      const sixMonthsAgo = new Date();
-      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-      const isRecentlyActive = lastUpdate > sixMonthsAgo;
+      const oneYearAgo = new Date();
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+      const isRecentlyActive = lastUpdate > oneYearAgo;
       
-      return !isSpammy && hasContent && (hasDescription || issue.comments > 0) && isRecentlyActive;
+      // Exclude issues with certain negative indicators
+      const hasNegativeLabels = issue.labels.some(label => 
+        ['wontfix', 'duplicate', 'invalid', 'spam', 'closed'].includes(label.name.toLowerCase())
+      );
+      
+      // Prefer issues with beginner-friendly labels
+      const hasBeginnerLabels = issue.labels.some(label => 
+        ['good first issue', 'help wanted', 'beginner friendly', 'easy', 'starter'].some(
+          beginnerLabel => label.name.toLowerCase().includes(beginnerLabel)
+        )
+      );
+      
+      // Quality score based on multiple factors
+      const qualityScore = (
+        (hasContent ? 1 : 0) +
+        (hasDescription ? 1 : 0) +
+        (hasEngagement ? 1 : 0) +
+        (isRecentlyActive ? 1 : 0) +
+        (hasBeginnerLabels ? 2 : 0) +
+        (!hasNegativeLabels ? 1 : 0)
+      );
+      
+      // Return issues with good quality score
+      return !isSpammy && qualityScore >= 3;
     });
   };
 
@@ -404,6 +493,20 @@ const ExplorePage = () => {
           </div>
         )}
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
+          <span className="text-red-700 text-sm">{error}</span>
+          <button
+            onClick={() => setError('')}
+            className="ml-auto text-red-600 hover:text-red-700"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
 
       {/* Tab Navigation */}
       <div className="bg-white/80 backdrop-blur-sm rounded-xl p-2 mb-8 border border-white/20">
@@ -857,337 +960,3 @@ const ExplorePage = () => {
 export default ExplorePage;
 
 
-// import React, { useState, useEffect } from 'react';
-// import { useAuth } from '../contexts/AuthContext';
-// import { useNavigate } from 'react-router-dom';
-// import { Search, Filter, ExternalLink, Star, GitFork, Calendar, Bookmark, BookmarkCheck } from 'lucide-react';
-// import { supabase } from '../lib/supabase';
-
-// const ExplorePage = () => {
-//   const { user } = useAuth();
-//   const navigate = useNavigate();
-//   const [issues, setIssues] = useState([]);
-//   const [loading, setLoading] = useState(false);
-//   const [bookmarkedIssues, setBookmarkedIssues] = useState(new Set());
-//   const [filters, setFilters] = useState({
-//     language: '',
-//     label: 'good first issue',
-//     keywords: '',
-//     sort: 'updated'
-//   });
-
-//   const languages = [
-//     'javascript', 'python', 'java', 'typescript', 'react', 'vue', 'angular',
-//     'node.js', 'go', 'rust', 'php', 'ruby', 'swift', 'kotlin', 'dart', 'c++'
-//   ];
-
-//   const labels = [
-//     'good first issue', 'help wanted', 'beginner friendly', 'hacktoberfest',
-//     'documentation', 'bug', 'enhancement', 'up for grabs', 'gsoc', 'easy'
-//   ];
-
-//   useEffect(() => {
-//     fetchIssues();
-//     if (user) {
-//       fetchBookmarkedIssues();
-//     }
-//   }, [filters, user]);
-
-//   const fetchIssues = async () => {
-//     setLoading(true);
-//     try {
-//       const query = buildGitHubQuery();
-//       const response = await fetch(
-//         `https://api.github.com/search/issues?q=${encodeURIComponent(query)}&sort=${filters.sort}&per_page=20`
-//       );
-      
-//       if (response.ok) {
-//         const data = await response.json();
-//         setIssues(data.items || []);
-//       } else {
-//         console.error('Failed to fetch issues');
-//       }
-//     } catch (error) {
-//       console.error('Error fetching issues:', error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const fetchBookmarkedIssues = async () => {
-//     if (!user) return;
-    
-//     try {
-//       const { data, error } = await supabase
-//         .from('bookmarks')
-//         .select('issue_url')
-//         .eq('user_id', user.id);
-      
-//       if (error) throw error;
-      
-//       const bookmarkedUrls = new Set(data.map(bookmark => bookmark.issue_url));
-//       setBookmarkedIssues(bookmarkedUrls);
-//     } catch (error) {
-//       console.error('Error fetching bookmarks:', error);
-//     }
-//   };
-
-//   const buildGitHubQuery = () => {
-//     let query = 'state:open type:issue';
-    
-//     if (filters.label) {
-//       query += ` label:"${filters.label}"`;
-//     }
-    
-//     if (filters.language) {
-//       query += ` language:${filters.language}`;
-//     }
-    
-//     if (filters.keywords) {
-//       query += ` ${filters.keywords}`;
-//     }
-    
-//     return query;
-//   };
-
-//   const handleGitHubView = (url) => {
-//     if (!user) {
-//       navigate('/login');
-//       return;
-//     }
-//     window.open(url, '_blank', 'noopener,noreferrer');
-//   };
-
-//   const handleBookmark = async (issue) => {
-//     if (!user) {
-//       navigate('/login');
-//       return;
-//     }
-
-//     const isBookmarked = bookmarkedIssues.has(issue.html_url);
-    
-//     try {
-//       if (isBookmarked) {
-//         // Remove bookmark
-//         const { error } = await supabase
-//           .from('bookmarks')
-//           .delete()
-//           .eq('user_id', user.id)
-//           .eq('issue_url', issue.html_url);
-        
-//         if (error) throw error;
-        
-//         setBookmarkedIssues(prev => {
-//           const newSet = new Set(prev);
-//           newSet.delete(issue.html_url);
-//           return newSet;
-//         });
-//       } else {
-//         // Add bookmark
-//         const { error } = await supabase
-//           .from('bookmarks')
-//           .insert({
-//             user_id: user.id,
-//             title: issue.title,
-//             issue_url: issue.html_url,
-//             repo_name: issue.repository_url.split('/').slice(-2).join('/'),
-//             language: filters.language || 'unknown',
-//             status: 'saved'
-//           });
-        
-//         if (error) throw error;
-        
-//         setBookmarkedIssues(prev => new Set([...prev, issue.html_url]));
-//       }
-//     } catch (error) {
-//       console.error('Error managing bookmark:', error);
-//       alert('Failed to update bookmark. Please try again.');
-//     }
-//   };
-
-//   const formatDate = (dateString) => {
-//     const date = new Date(dateString);
-//     return date.toLocaleDateString('en-US', { 
-//       month: 'short', 
-//       day: 'numeric', 
-//       year: 'numeric' 
-//     });
-//   };
-
-//   return (
-//     <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-//       {/* Header */}
-//       <div className="mb-8">
-//         <h1 className="text-3xl font-bold text-gray-900 mb-2">Explore Open Source Issues</h1>
-//         <p className="text-gray-600">Discover beginner-friendly issues to start your contribution journey</p>
-//         {!user && (
-//           <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-//             <p className="text-blue-800 text-sm">
-//               <strong>Note:</strong> Please{' '}
-//               <button 
-//                 onClick={() => navigate('/login')}
-//                 className="text-blue-600 hover:text-blue-700 underline font-medium"
-//               >
-//                 sign in
-//               </button>{' '}
-//               to bookmark issues and view them on GitHub.
-//             </p>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Filters */}
-//       <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-white/20">
-//         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-//           <div>
-//             <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
-//             <select
-//               value={filters.language}
-//               onChange={(e) => setFilters({ ...filters, language: e.target.value })}
-//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-//             >
-//               <option value="">All Languages</option>
-//               {languages.map(lang => (
-//                 <option key={lang} value={lang}>{lang}</option>
-//               ))}
-//             </select>
-//           </div>
-
-//           <div>
-//             <label className="block text-sm font-medium text-gray-700 mb-2">Label</label>
-//             <select
-//               value={filters.label}
-//               onChange={(e) => setFilters({ ...filters, label: e.target.value })}
-//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-//             >
-//               {labels.map(label => (
-//                 <option key={label} value={label}>{label}</option>
-//               ))}
-//             </select>
-//           </div>
-
-//           <div>
-//             <label className="block text-sm font-medium text-gray-700 mb-2">Keywords</label>
-//             <input
-//               type="text"
-//               value={filters.keywords}
-//               onChange={(e) => setFilters({ ...filters, keywords: e.target.value })}
-//               placeholder="Search keywords..."
-//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-//             />
-//           </div>
-
-//           <div>
-//             <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-//             <select
-//               value={filters.sort}
-//               onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
-//               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-//             >
-//               <option value="updated">Recently Updated</option>
-//               <option value="created">Recently Created</option>
-//               <option value="comments">Most Commented</option>
-//             </select>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Issues List */}
-//       {loading ? (
-//         <div className="flex justify-center items-center py-12">
-//           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-//           <span className="ml-3 text-gray-600">Loading issues...</span>
-//         </div>
-//       ) : (
-//         <div className="space-y-6">
-//           {issues.length === 0 ? (
-//             <div className="text-center py-12 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20">
-//               <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-//               <h3 className="text-lg font-medium text-gray-900 mb-2">No issues found</h3>
-//               <p className="text-gray-600">Try adjusting your filters to find more issues.</p>
-//             </div>
-//           ) : (
-//             issues.map((issue) => (
-//               <div key={issue.id} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-//                 <div className="flex justify-between items-start mb-4">
-//                   <div className="flex-1">
-//                     <div className="flex items-center gap-2 mb-2">
-//                       <span className="text-sm font-medium text-indigo-600">
-//                         {issue.repository_url.split('/').slice(-2).join('/')}
-//                       </span>
-//                       {issue.labels.map((label) => (
-//                         <span
-//                           key={label.id}
-//                           className="px-2 py-1 text-xs font-medium rounded-full"
-//                           style={{
-//                             backgroundColor: `#${label.color}20`,
-//                             color: `#${label.color}`
-//                           }}
-//                         >
-//                           {label.name}
-//                         </span>
-//                       ))}
-//                     </div>
-//                     <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
-//                       {issue.title}
-//                     </h3>
-//                     <p className="text-gray-600 text-sm line-clamp-3 mb-4">
-//                       {issue.body ? issue.body.substring(0, 200) + '...' : 'No description available'}
-//                     </p>
-//                   </div>
-                  
-//                   <div className="flex items-center gap-2 ml-4">
-//                     <button
-//                       onClick={() => handleBookmark(issue)}
-//                       className={`p-2 rounded-lg transition-all duration-200 ${
-//                         user && bookmarkedIssues.has(issue.html_url)
-//                           ? 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200'
-//                           : 'bg-gray-100 text-gray-600 hover:bg-indigo-100 hover:text-indigo-600'
-//                       }`}
-//                       title={user ? (bookmarkedIssues.has(issue.html_url) ? 'Remove bookmark' : 'Bookmark issue') : 'Sign in to bookmark'}
-//                     >
-//                       {user && bookmarkedIssues.has(issue.html_url) ? 
-//                         <BookmarkCheck className="h-5 w-5" /> : 
-//                         <Bookmark className="h-5 w-5" />
-//                       }
-//                     </button>
-                    
-//                     <button
-//                       onClick={() => handleGitHubView(issue.html_url)}
-//                       className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors"
-//                       title={user ? "View on GitHub" : "Sign in to view on GitHub"}
-//                     >
-//                       <ExternalLink className="h-5 w-5" />
-//                     </button>
-//                   </div>
-//                 </div>
-                
-//                 <div className="flex items-center justify-between text-sm text-gray-500">
-//                   <div className="flex items-center gap-4">
-//                     <span className="flex items-center gap-1">
-//                       <Calendar className="h-4 w-4" />
-//                       {formatDate(issue.updated_at)}
-//                     </span>
-//                     <span className="flex items-center gap-1">
-//                       💬 {issue.comments}
-//                     </span>
-//                   </div>
-//                   <div className="flex items-center gap-1">
-//                     <img 
-//                       src={issue.user.avatar_url} 
-//                       alt={issue.user.login}
-//                       className="h-6 w-6 rounded-full"
-//                     />
-//                     <span>{issue.user.login}</span>
-//                   </div>
-//                 </div>
-//               </div>
-//             ))
-//           )}
-//         </div>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default ExplorePage;
