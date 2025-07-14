@@ -1,19 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
 
-/* Dark mode root styles */
-:root {
-  color-scheme: light;
-}
-
-:root.dark {
-  color-scheme: dark;
-}
-
 body {
   font-family: "Inter", system-ui, -apple-system, sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .line-clamp-2 {
@@ -39,25 +29,13 @@ body {
   background: #f1f5f9;
 }
 
-.dark ::-webkit-scrollbar-track {
-  background: #374151;
-}
-
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #6b7280;
-}
-
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #9ca3af;
 }
 
 /* Smooth transitions for all interactive elements */
@@ -67,32 +45,4 @@ body {
     backdrop-filter;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
-}
-
-/* Dark mode specific improvements */
-.dark {
-  color-scheme: dark;
-}
-
-/* Ensure proper contrast for form elements in dark mode */
-.dark input,
-.dark textarea,
-.dark select {
-  background-color: rgb(55 65 81);
-  border-color: rgb(75 85 99);
-  color: rgb(243 244 246);
-}
-
-.dark input:focus,
-.dark textarea:focus,
-.dark select:focus {
-  border-color: rgb(99 102 241);
-  box-shadow: 0 0 0 3px rgb(99 102 241 / 0.1);
-}
-
-/* Dark mode toast styles */
-.dark .Toaster__toast {
-  background-color: rgb(31 41 55) !important;
-  color: rgb(243 244 246) !important;
-  border: 1px solid rgb(75 85 99) !important;
 }

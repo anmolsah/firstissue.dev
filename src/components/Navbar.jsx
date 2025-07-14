@@ -1,7 +1,6 @@
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import ThemeToggle from "./ThemeToggle";
 import {
   Code2,
   Menu,
@@ -39,12 +38,12 @@ const Navbar = () => {
     : [{ to: "/support", icon: Heart, label: "Support Me" }];
 
   return (
-    <nav className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-white/20 dark:border-gray-700/20 sticky top-0 z-50 transition-colors duration-300">
+    <nav className="bg-white/80 backdrop-blur-md border-b border-white/20 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link
             to="/"
-            className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+            className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 transition-colors"
           >
            
             <img className="w-8 h-8" src={logo} alt="" />
@@ -59,10 +58,10 @@ const Navbar = () => {
                 to={to}
                 className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive(to)
-                    ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
+                    ? "bg-indigo-100 text-indigo-700"
                     : to === "/support"
-                    ? "text-pink-600 hover:text-pink-700 hover:bg-pink-50 dark:text-pink-400 dark:hover:text-pink-300 dark:hover:bg-pink-900/20"
-                    : "text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 dark:text-gray-300 dark:hover:text-indigo-400 dark:hover:bg-indigo-900/20"
+                    ? "text-pink-600 hover:text-pink-700 hover:bg-pink-50"
+                    : "text-gray-600 hover:text-indigo-600 hover:bg-indigo-50"
                 }`}
               >
                 <Icon
@@ -73,8 +72,6 @@ const Navbar = () => {
                 <span>{label}</span>
               </Link>
             ))}
-
-            <ThemeToggle className="ml-2" />
 
             {user ? (
               <button
@@ -87,7 +84,7 @@ const Navbar = () => {
               <div className="flex items-center space-x-2 ml-4">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
                 >
                   Login
                 </Link>
@@ -105,7 +102,7 @@ const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 dark:text-gray-300 dark:hover:text-indigo-400 dark:hover:bg-indigo-900/20 transition-colors"
+              className="p-2 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
             >
               {isOpen ? (
                 <X className="h-6 w-6" />
@@ -120,10 +117,6 @@ const Navbar = () => {
         {isOpen && (
           <div className="md:hidden pb-4">
             <div className="space-y-1">
-              <div className="px-3 py-2">
-                <ThemeToggle />
-              </div>
-              
               {navLinks.map(({ to, icon: Icon, label }) => (
                 <Link
                   key={to}
@@ -131,10 +124,10 @@ const Navbar = () => {
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive(to)
-                      ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300"
+                      ? "bg-indigo-100 text-indigo-700"
                       : to === "/support"
-                      ? "text-pink-600 hover:text-pink-700 hover:bg-pink-50 dark:text-pink-400 dark:hover:text-pink-300 dark:hover:bg-pink-900/20"
-                      : "text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 dark:text-gray-300 dark:hover:text-indigo-400 dark:hover:bg-indigo-900/20"
+                      ? "text-pink-600 hover:text-pink-700 hover:bg-pink-50"
+                      : "text-gray-600 hover:text-indigo-600 hover:bg-indigo-50"
                   }`}
                 >
                   <Icon
@@ -149,16 +142,16 @@ const Navbar = () => {
               {user ? (
                 <button
                   onClick={handleSignOut}
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
                 >
                   Sign Out
                 </button>
               ) : (
-                <div className="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div className="pt-2 border-t border-gray-200">
                   <Link
                     to="/login"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 dark:text-gray-300 dark:hover:text-indigo-400 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                    className="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                   >
                     Login
                   </Link>
