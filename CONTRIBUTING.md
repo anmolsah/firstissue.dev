@@ -1,21 +1,21 @@
-# 🤝 Contributing to FirstIssue.dev
+#  Contributing to FirstIssue.dev
 
 Thank you for considering contributing to **FirstIssue.dev**!  
 This project is beginner-focused, and we welcome **developers of all levels**.
 
 ---
 
-## 🛠️ Ways You Can Help
+##  Ways You Can Help
 
-- 📦 Fix bugs
-- 🌟 Suggest or build new features
-- 🎨 Improve UI/UX
-- 📄 Write or improve documentation
-- 🧪 Test and report issues
+-  Fix bugs
+-  Suggest or build new features
+-  Improve UI/UX
+-  Write or improve documentation
+-  Test and report issues
 
 ---
 
-## 📁 Project Setup
+##  Project Setup
 
 1. **Fork this repository**
 ```bash
@@ -43,7 +43,7 @@ Fork this repository by clicking on the fork button on the top of this page. Thi
 
 ---
 
-## 🧑‍💻 Make a Contribution
+##  Make a Contribution
 
 1. Create a branch:  
    ```bash
@@ -63,7 +63,7 @@ Fork this repository by clicking on the fork button on the top of this page. Thi
 
 ---
 
-## 💬 Need Help?
+##  Need Help?
   
 If you have any questions or need help, feel free to open an issue or connect on LinkedIn!
 
