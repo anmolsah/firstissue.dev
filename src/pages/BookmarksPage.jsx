@@ -18,6 +18,12 @@ const BookmarksPage = () => {
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingStatus, setUpdatingStatus] = useState(null);
+  const [deleteDialog, setDeleteDialog] = useState({
+    isOpen: false,
+    bookmarkId: null,
+    bookmarkTitle: "",
+    loading: false,
+  });
 
   const statusOptions = [
     { value: "saved", label: "Saved", icon: Clock, color: "gray" },
@@ -82,7 +88,7 @@ const BookmarksPage = () => {
   };
 
   const deleteBookmark = async (bookmarkId) => {
-    if (!confirm("Are you sure you want to remove this bookmark?")) return;
+    setDeleteDialog((prev) => ({ ...prev, loading: true }));
 
     try {
       const { error } = await supabase
@@ -95,12 +101,46 @@ const BookmarksPage = () => {
       setBookmarks((prev) =>
         prev.filter((bookmark) => bookmark.id !== bookmarkId)
       );
+
+      // Close dialog and reset state
+      setDeleteDialog({
+        isOpen: false,
+        bookmarkId: null,
+        bookmarkTitle: "",
+        loading: false,
+      });
     } catch (error) {
       console.error("Error deleting bookmark:", error);
       alert("Failed to delete bookmark. Please try again.");
+    } finally {
+      setDeleteDialog((prev) => ({ ...prev, loading: false }));
     }
   };
 
+  const openDeleteDialog = (bookmark) => {
+    setDeleteDialog({
+      isOpen: true,
+      bookmarkId: bookmark.id,
+      bookmarkTitle: bookmark.title,
+      loading: false,
+    });
+  };
+
+  const closeDeleteDialog = () => {
+    if (deleteDialog.loading) return; // Prevent closing while deleting
+    setDeleteDialog({
+      isOpen: false,
+      bookmarkId: null,
+      bookmarkTitle: "",
+      loading: false,
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (deleteDialog.bookmarkId) {
+      deleteBookmark(deleteDialog.bookmarkId);
+    }
+  };
   const getStatusConfig = (status) => {
     return (
       statusOptions.find((option) => option.value === status) ||
