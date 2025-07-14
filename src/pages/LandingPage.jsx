@@ -171,12 +171,12 @@ const LandingPage = () => {
           <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 bg-clip-text text-transparent mb-8 leading-tight">
             Find Your First
             <br />
-            <span className="text-gray-900">Open Source</span>
+            <span className="text-gray-900 dark:text-white">Open Source</span>
             <br />
             Contribution
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
             Discover beginner-friendly GitHub issues, track your progress, and
             start your open source journey with confidence.
           </p>
@@ -193,12 +193,13 @@ const LandingPage = () => {
       </section>
 
       <section className="py-20 bg-white/50 backdrop-blur-sm">
+      <section className="py-20 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
               Join Our Growing Community
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-gray-600 dark:text-gray-300">
               Real-time statistics from our platform
             </p>
           </div>
@@ -208,10 +209,10 @@ const LandingPage = () => {
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
                   <stat.icon className="h-8 w-8 text-white" />
                 </div>
-                <div className="text-3xl font-bold text-gray-900 mb-2">
+                <div className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
                   {stat.value}
                 </div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
+                <div className="text-gray-600 dark:text-gray-300 font-medium">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -221,10 +222,10 @@ const LandingPage = () => {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Everything You Need to Start Contributing
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
               Our platform provides all the tools and guidance you need to make
               your first open source contribution.
             </p>
@@ -234,15 +235,15 @@ const LandingPage = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+                className="group p-6 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-gray-700/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
               >
                 <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl mb-6 group-hover:scale-110 transition-transform duration-300">
                   <feature.icon className="h-6 w-6 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
                   {feature.description}
                 </p>
               </div>

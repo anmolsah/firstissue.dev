@@ -208,12 +208,12 @@ const BookmarksPage = () => {
 
       {/* Bookmarks List */}
       {bookmarks.length === 0 ? (
-        <div className="text-center py-12 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20">
+        <div className="text-center py-12 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-gray-700/20">
           <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
             No bookmarks yet
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
             Start by exploring issues and bookmarking the ones you're interested
             in.
           </p>
@@ -233,22 +233,23 @@ const BookmarksPage = () => {
             return (
               <div
                 key={bookmark.id}
-                className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:shadow-lg transition-all duration-300"
+                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 dark:border-gray-700/20 hover:shadow-lg transition-all duration-300"
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-sm font-medium text-indigo-600">
+                      <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
                         {bookmark.repo_name}
                       </span>
-                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">
+                      <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full">
                         {bookmark.language}
                       </span>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                       {bookmark.title}
                     </h3>
-                    <p className="text-sm text-gray-500 mb-4">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                       Bookmarked on {formatDate(bookmark.created_at)}
                     </p>
                   </div>
@@ -277,9 +278,9 @@ const BookmarksPage = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <StatusIcon
-                      className={`h-5 w-5 text-${statusConfig.color}-600`}
+                      className={`h-5 w-5 text-${statusConfig.color}-600 dark:text-${statusConfig.color}-400`}
                     />
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                       Status:
                     </span>
                   </div>
@@ -288,7 +289,7 @@ const BookmarksPage = () => {
                     value={bookmark.status}
                     onChange={(e) => updateStatus(bookmark.id, e.target.value)}
                     disabled={updatingStatus === bookmark.id}
-                    className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
+                    className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
                   >
                     {statusOptions.map(({ value, label }) => (
                       <option key={value} value={value}>
