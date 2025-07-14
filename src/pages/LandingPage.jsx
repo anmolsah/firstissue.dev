@@ -192,6 +192,7 @@ const LandingPage = () => {
         </div>
       </section>
 
+      <section className="py-20 bg-white/50 backdrop-blur-sm">
       <section className="py-20 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm transition-colors duration-300">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -274,3 +275,6 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
+  )
+}
