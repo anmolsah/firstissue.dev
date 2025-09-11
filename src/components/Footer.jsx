@@ -7,7 +7,6 @@ const Footer = () => {
   return (
     <footer className="w-full bg-gray-50 border-t border-gray-200 py-6">
       <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-        
         <div className="flex flex-col md:flex-row items-center gap-2 text-sm text-gray-600">
           <span>© {new Date().getFullYear()}</span>
           <Link
@@ -20,7 +19,6 @@ const Footer = () => {
           <span>— Made with 💙 by Anmol</span>
         </div>
 
-        
         <div className="flex gap-5">
           <a
             href="https://github.com/anmolsah"

@@ -21,7 +21,7 @@ const Navbar = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate('/');
+    navigate("/");
     setIsOpen(false);
   };
 
@@ -45,12 +45,10 @@ const Navbar = () => {
             to="/"
             className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 transition-colors"
           >
-           
             <img className="w-8 h-8" src={logo} alt="" />
             <span className="text-xl font-bold">FirstIssue.dev</span>
           </Link>
 
-          
           <div className="hidden md:flex items-center space-x-1">
             {navLinks.map(({ to, icon: Icon, label }) => (
               <Link
