@@ -1,102 +1,151 @@
-import React from "react";
-import { Heart, Coffee, Pizza, Gift } from "lucide-react";
-import toast from "react-hot-toast";
+import React, { useState } from "react"; // 1. Import useState
+import { Heart, Coffee, Pizza, Copy } from "lucide-react";
+import toast, { Toaster } from "react-hot-toast"; // Pro-tip: Make sure <Toaster /> is in your root component
 import QR from "../assets/qrcode.jpg";
 
 const SupportPage = () => {
+  // 2. Add state to track if the QR image fails to load
+  const [qrError, setQrError] = useState(false);
+
   const copyToClipboard = (text) => {
     navigator.clipboard
       .writeText(text)
       .then(() => {
-        toast.success("UPI ID copied to clipboard!");
+        toast.success("UPI ID copied successfully!", {
+          style: {
+            background: "#1e293b",
+            color: "#fff",
+            border: "1px solid #475569",
+          },
+        });
       })
       .catch(() => {
-        toast.error("Failed to copy UPI ID");
+        toast.error("Failed to copy UPI ID", {
+          style: {
+            background: "#1e293b",
+            color: "#fff",
+            border: "1px solid #475569",
+          },
+        });
       });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
-      <div className="max-w-md w-full text-center">
-        <div className="mb-8">
-          <div className="w-20 h-20 bg-gradient-to-r from-pink-500 to-red-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
-            <Heart className="h-10 w-10 text-white" />
+    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="relative max-w-2xl w-full">
+        {/* Header Section */}
+        <div className="text-center mb-12">
+          <div className="relative inline-block">
+            <div className="absolute -inset-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur-3xl opacity-50 animate-pulse"></div>
+            <div className="relative w-24 h-24 bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+              <Heart className="h-12 w-12 text-white" />
+            </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-600 via-red-600 to-orange-600 bg-clip-text text-transparent mb-4">
-            Support this Project ❤️
+
+          <h1 className="text-5xl md:text-6xl font-black text-white mb-6">
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
+              Support Development
+            </span>
+            <br />
+            <span className="text-white">& Fuel Innovation</span>
           </h1>
-          <p className="text-lg text-gray-600 leading-relaxed">
-            If you've found this tool helpful, you can support me by scanning
-            the UPI QR code or sending a tip to my UPI ID 🙏
+
+          <p className="text-xl text-gray-300 leading-relaxed max-w-lg mx-auto">
+            Your contribution directly supports the continuous development of
+            tools that empower developers worldwide.
           </p>
         </div>
 
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-white/20 shadow-2xl mb-6">
-          <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
-            <img
-              src={QR}
-              alt="UPI QR Code"
-              className="w-48 h-48 mx-auto rounded-xl shadow-md"
-              onError={(e) => {
-                e.target.style.display = "none";
-                e.target.nextSibling.style.display = "flex";
-              }}
-            />
-
-            <div className="w-48 h-48 mx-auto rounded-xl bg-gradient-to-br from-indigo-100 to-purple-100 border-2 border-dashed border-indigo-300 items-center justify-center flex-col hidden">
-              <div className="text-6xl mb-2">📱</div>
-              <p className="text-sm text-gray-600 font-medium">QR Code</p>
-              <p className="text-xs text-gray-500">Placeholder</p>
+        {/* Main Card */}
+        <div className="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl">
+          {/* QR Code Section */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-white text-center mb-6">
+              Scan & Contribute
+            </h2>
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+              <div className="relative bg-slate-900/50 rounded-2xl p-8 border border-slate-700/50">
+                {/* 3. Conditionally render the image or the fallback div */}
+                {qrError ? (
+                  <div className="w-64 h-64 mx-auto rounded-xl bg-gradient-to-br from-slate-800 to-slate-700 border border-slate-600 flex items-center justify-center flex-col">
+                    <div className="text-7xl mb-4 opacity-50">📱</div>
+                    <p className="text-lg text-gray-300 font-semibold">
+                      QR Code Unavailable
+                    </p>
+                    <p className="text-sm text-gray-500">Please use UPI ID</p>
+                  </div>
+                ) : (
+                  <img
+                    src={QR}
+                    alt="UPI QR Code"
+                    className="w-64 h-64 mx-auto rounded-xl shadow-2xl"
+                    onError={() => setQrError(true)} // 4. On error, update the state
+                  />
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl p-6 border border-indigo-200 shadow-lg">
-            <div className="mb-4">
-              <p className="text-sm font-medium text-gray-700 mb-2">UPI ID:</p>
+          {/* UPI ID Section */}
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold text-white text-center mb-4">
+              Or Pay via UPI ID
+            </h3>
+            <div className="relative group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
               <div
-                className="bg-white px-4 py-3 rounded-lg border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors group"
+                className="relative bg-slate-900/80 backdrop-blur-sm border border-slate-600 rounded-xl p-4 cursor-pointer hover:bg-slate-800/80 transition-all duration-300 group"
                 onClick={() => copyToClipboard("8250676762@ybl")}
               >
-                <code className="text-lg font-mono text-indigo-600 font-semibold">
-                  8250676762@ybl
-                </code>
-                <p className="text-xs text-gray-500 mt-1 group-hover:text-indigo-600 transition-colors">
-                  Click to copy
-                </p>
-              </div>
-            </div>
-
-            <div className="border-t border-indigo-200 pt-4">
-              <p className="text-sm font-medium text-gray-700 mb-3">
-                Suggested tips:
-              </p>
-              <div className="flex justify-center gap-2 flex-wrap">
-                <div className="flex items-center gap-1 px-3 py-2 bg-orange-100 text-orange-700 rounded-full text-sm font-medium">
-                  <Coffee className="h-4 w-4" />
-                  ₹99
-                </div>
-                <div className="flex items-center gap-1 px-3 py-2 bg-yellow-100 text-yellow-700 rounded-full text-sm font-medium">
-                  <Pizza className="h-4 w-4" />
-                  ₹199
-                </div>
-                <div className="flex items-center gap-1 px-3 py-2 bg-pink-100 text-pink-700 rounded-full text-sm font-medium">
-                  <Heart className="h-4 w-4" />
-                  ₹299
+                <div className="flex items-center justify-between">
+                  <code className="text-xl font-mono text-white font-bold tracking-wider">
+                    8250676762@ybl
+                  </code>
+                  <div className="flex items-center gap-2">
+                    <Copy className="h-5 w-5 text-gray-400 group-hover:text-white transition-colors" />
+                    <span className="text-sm text-gray-400 group-hover:text-white transition-colors">
+                      Click to copy
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Suggested Amounts */}
+          <div className="mb-8">
+            <h4 className="text-lg font-semibold text-white text-center mb-4">
+              Quick Support Options
+            </h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-gradient-to-br from-orange-500/20 to-orange-600/20 border border-orange-500/30 rounded-xl p-4 text-center hover:scale-105 transition-transform duration-300">
+                <Coffee className="h-8 w-8 text-orange-400 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-white">₹99</p>
+                <p className="text-sm text-orange-300">Coffee</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-yellow-500/20 to-yellow-600/20 border border-yellow-500/30 rounded-xl p-4 text-center hover:scale-105 transition-transform duration-300">
+                <Pizza className="h-8 w-8 text-yellow-400 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-white">₹199</p>
+                <p className="text-sm text-yellow-300">Lunch</p>
+              </div>
+
+              <div className="bg-gradient-to-br from-pink-500/20 to-pink-600/20 border border-pink-500/30 rounded-xl p-4 text-center hover:scale-105 transition-transform duration-300">
+                <Heart className="h-8 w-8 text-pink-400 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-white">₹299</p>
+                <p className="text-sm text-pink-300">Champion</p>
+              </div>
+            </div>
+          </div>
+
+          {/* I removed the "Thank You" message from the main card as it feels more like a post-donation message, but you can add it back if you like! */}
         </div>
 
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Gift className="h-5 w-5 text-green-600" />
-            <span className="font-semibold text-green-800">Thank You!</span>
-          </div>
-          <p className="text-sm text-green-700">
-            Your support helps me continue building useful tools for the
-            developer community. Every contribution, no matter how small, is
-            deeply appreciated! 🚀
+        {/* Footer */}
+        <div className="text-center mt-8">
+          <p className="text-gray-500 text-sm">
+            Built with ❤️ for the developer community
           </p>
         </div>
       </div>
