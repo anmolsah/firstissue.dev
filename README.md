@@ -43,7 +43,7 @@ Whether you're new to open source or looking for your next contribution, this pl
 
 ---
 
-## 🖼️ Preview
+<!-- ## 🖼️ Preview
 
 Here’s a quick look at the FirstIssue.dev platform:
 
@@ -60,7 +60,7 @@ Here’s a quick look at the FirstIssue.dev platform:
 ![Bookmarks Screenshot](./public/firstissue05.png)
 
 ### 📌 Profile
-![Profile Screenshot](./public/firstissue08.png)
+![Profile Screenshot](./public/firstissue08.png) -->
 ---
 
 
