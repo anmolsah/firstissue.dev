@@ -161,7 +161,7 @@ const BookmarksPage = () => {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
           <span className="ml-3 text-gray-600">Loading bookmarks...</span>
         </div>
       </div>
@@ -219,7 +219,7 @@ const BookmarksPage = () => {
           </p>
           <button
             onClick={() => navigate("/explore")}
-            className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all duration-200"
+            className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-lg font-medium hover:from-red-700 hover:to-orange-700 transition-all duration-200"
           >
             Explore Issues
           </button>
@@ -238,7 +238,7 @@ const BookmarksPage = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-medium text-indigo-600">
+                      <span className="text-sm font-medium text-red-600">
                         {bookmark.repo_name}
                       </span>
                       <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-full">
@@ -258,7 +258,7 @@ const BookmarksPage = () => {
                       href={bookmark.issue_url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors"
+                      className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
                       title="View on GitHub"
                     >
                       <ExternalLink className="h-5 w-5" />
@@ -288,7 +288,7 @@ const BookmarksPage = () => {
                     value={bookmark.status}
                     onChange={(e) => updateStatus(bookmark.id, e.target.value)}
                     disabled={updatingStatus === bookmark.id}
-                    className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:opacity-50"
+                    className="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent disabled:opacity-50"
                   >
                     {statusOptions.map(({ value, label }) => (
                       <option key={value} value={value}>

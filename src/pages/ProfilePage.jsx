@@ -144,7 +144,11 @@ const ProfilePage = () => {
   const getStatusConfig = (status) => {
     const configs = {
       planned: { icon: AlertCircle, color: "text-gray-600", bg: "bg-gray-100" },
-      in_progress: { icon: Plus, color: "text-blue-600", bg: "bg-blue-100" },
+      in_progress: {
+        icon: Plus,
+        color: "text-orange-600",
+        bg: "bg-orange-100",
+      },
       completed: {
         icon: CheckCircle,
         color: "text-green-600",
@@ -220,7 +224,7 @@ const ProfilePage = () => {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
           <span className="ml-3 text-gray-600">Loading profile...</span>
         </div>
       </div>
@@ -246,7 +250,7 @@ const ProfilePage = () => {
           <div className="lg:col-span-1">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-20 h-20 bg-gradient-to-r from-red-600 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <User className="h-10 w-10 text-white" />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">
@@ -291,16 +295,16 @@ const ProfilePage = () => {
           <div className="lg:col-span-3 space-y-8">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                <Award className="h-5 w-5 text-indigo-600" />
+                <Award className="h-5 w-5 text-red-600" />
                 Overall Contribution Statistics
               </h3>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-indigo-50 rounded-xl">
-                  <div className="text-2xl font-bold text-indigo-600 mb-1">
+                <div className="text-center p-4 bg-red-50 rounded-xl">
+                  <div className="text-2xl font-bold text-red-600 mb-1">
                     {combinedStats.total}
                   </div>
-                  <div className="text-sm text-indigo-700 font-medium">
+                  <div className="text-sm text-red-700 font-medium">
                     Total Contributions
                   </div>
                 </div>
@@ -323,22 +327,22 @@ const ProfilePage = () => {
                   </div>
                 </div>
 
-                <div className="text-center p-4 bg-blue-50 rounded-xl">
-                  <div className="text-2xl font-bold text-blue-600 mb-1">
+                <div className="text-center p-4 bg-orange-50 rounded-xl">
+                  <div className="text-2xl font-bold text-orange-600 mb-1">
                     {combinedStats.applied}
                   </div>
-                  <div className="text-sm text-blue-700 font-medium">
+                  <div className="text-sm text-orange-700 font-medium">
                     Planned/Applied
                   </div>
                 </div>
               </div>
 
-              <div className="mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
+              <div className="mt-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">
                     Completion Rate
                   </span>
-                  <span className="text-sm font-bold text-indigo-600">
+                  <span className="text-sm font-bold text-red-600">
                     {combinedStats.total > 0
                       ? Math.round(
                           (combinedStats.done / combinedStats.total) * 100
@@ -349,7 +353,7 @@ const ProfilePage = () => {
                 </div>
                 <div className="w-full bg-white/60 rounded-full h-2">
                   <div
-                    className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full h-2 transition-all duration-500"
+                    className="bg-gradient-to-r from-red-600 to-orange-600 rounded-full h-2 transition-all duration-500"
                     style={{
                       width: `${
                         combinedStats.total > 0
@@ -365,12 +369,12 @@ const ProfilePage = () => {
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Target className="h-5 w-5 text-purple-600" />
+                  <Target className="h-5 w-5 text-orange-600" />
                   Manual Contributions
                 </h3>
                 <button
                   onClick={() => setShowModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-105"
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-600 to-green-600 text-white rounded-lg font-medium hover:from-orange-700 hover:to-green-700 transition-all duration-200 transform hover:scale-105"
                 >
                   <Plus className="h-4 w-4" />
                   Add Contribution
@@ -399,7 +403,7 @@ const ProfilePage = () => {
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="font-medium text-indigo-600">
+                              <span className="font-medium text-red-600">
                                 {contribution.repository_name}
                               </span>
                               <div
@@ -425,7 +429,7 @@ const ProfilePage = () => {
                                 href={contribution.contribution_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-indigo-100 text-indigo-600 rounded-lg hover:bg-indigo-200 transition-colors"
+                                className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
                                 title="View contribution"
                               >
                                 <ExternalLink className="h-4 w-4" />
@@ -459,7 +463,7 @@ const ProfilePage = () => {
             {languageStats.length > 0 && (
               <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-purple-600" />
+                  <TrendingUp className="h-5 w-5 text-orange-600" />
                   Top Languages
                 </h3>
 
@@ -473,9 +477,9 @@ const ProfilePage = () => {
                         <div
                           className={`w-3 h-3 rounded-full ${
                             index === 0
-                              ? "bg-purple-500"
+                              ? "bg-red-500"
                               : index === 1
-                              ? "bg-blue-500"
+                              ? "bg-orange-500"
                               : index === 2
                               ? "bg-green-500"
                               : index === 3
@@ -492,9 +496,9 @@ const ProfilePage = () => {
                           <div
                             className={`h-2 rounded-full ${
                               index === 0
-                                ? "bg-purple-500"
+                                ? "bg-red-500"
                                 : index === 1
-                                ? "bg-blue-500"
+                                ? "bg-orange-500"
                                 : index === 2
                                 ? "bg-green-500"
                                 : index === 3
@@ -523,24 +527,24 @@ const ProfilePage = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button
                   onClick={() => navigate("/explore")}
-                  className="p-4 text-left bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-colors"
+                  className="p-4 text-left bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
                 >
-                  <h4 className="font-medium text-indigo-900 mb-1">
+                  <h4 className="font-medium text-red-900 mb-1">
                     Explore Issues
                   </h4>
-                  <p className="text-sm text-indigo-700">
+                  <p className="text-sm text-red-700">
                     Find new issues to contribute to
                   </p>
                 </button>
 
                 <button
                   onClick={() => navigate("/bookmarks")}
-                  className="p-4 text-left bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors"
+                  className="p-4 text-left bg-orange-50 hover:bg-orange-100 rounded-xl transition-colors"
                 >
-                  <h4 className="font-medium text-purple-900 mb-1">
+                  <h4 className="font-medium text-orange-900 mb-1">
                     View Bookmarks
                   </h4>
-                  <p className="text-sm text-purple-700">
+                  <p className="text-sm text-orange-700">
                     Manage your saved issues
                   </p>
                 </button>

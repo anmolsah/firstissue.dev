@@ -90,10 +90,10 @@ const SignupPage = () => {
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-2">
               <img src={logo} className="h-16 w-16 text-white" />
             </div>
-            
+
             <div className="flex items-center justify-center gap-2">
               <p className="text-3xl font-bold text-gray-600 m-0 p-0">Join</p>
-              <p className="text-3xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors m-0 p-0">
+              <p className="text-3xl font-bold text-red-600 hover:text-red-700 transition-colors m-0 p-0">
                 FirstIssue.dev
               </p>
             </div>
@@ -157,7 +157,7 @@ const SignupPage = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   placeholder="Enter your email"
                 />
               </div>
@@ -179,7 +179,7 @@ const SignupPage = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   placeholder="Create a password"
                 />
               </div>
@@ -204,7 +204,7 @@ const SignupPage = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
                   placeholder="Confirm your password"
                 />
               </div>
@@ -213,7 +213,7 @@ const SignupPage = () => {
             <button
               type="submit"
               disabled={loading || success}
-              className="w-full px-4 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-medium hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-lg font-medium hover:from-red-700 hover:to-orange-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
@@ -224,7 +224,7 @@ const SignupPage = () => {
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="text-indigo-600 hover:text-indigo-700 font-medium"
+                className="text-red-600 hover:text-red-700 font-medium"
               >
                 Sign in
               </Link>

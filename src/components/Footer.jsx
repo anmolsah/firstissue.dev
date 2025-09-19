@@ -11,12 +11,12 @@ const Footer = () => {
           <span>© {new Date().getFullYear()}</span>
           <Link
             to="/"
-            className="flex items-center space-x-2 text-indigo-600 hover:text-indigo-700 transition-colors"
+            className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors"
           >
             <img className="w-6 h-6" src={logo} alt="FirstIssue.dev logo" />
             <span className="text-base font-semibold">FirstIssue.dev</span>
           </Link>
-          <span>— Made with 💙 by Anmol</span>
+          <span>— Made with ❤️ by Anmol</span>
         </div>
 
         <div className="flex gap-5">
@@ -32,7 +32,7 @@ const Footer = () => {
             href="https://www.linkedin.com/in/anmol-sah-551083238/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-gray-600 hover:text-blue-600 transition-colors"
+            className="text-gray-600 hover:text-green-600 transition-colors"
           >
             <Linkedin className="w-5 h-5" />
           </a>

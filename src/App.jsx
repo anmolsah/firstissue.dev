@@ -16,7 +16,7 @@ import { Toaster } from "react-hot-toast";
 const App = () => {
   return (
     <AuthProvider>
-      <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <div className="min-h-screen flex flex-col bg-gradient-to-br from-orange-50 via-red-50 to-green-100">
         <Navbar />
         <Toaster position="top-right" reverseOrder={false} />
         <div className="flex-1">

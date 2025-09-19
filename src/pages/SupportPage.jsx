@@ -36,14 +36,14 @@ const SupportPage = () => {
         {/* Header Section */}
         <div className="text-center mb-12">
           <div className="relative inline-block">
-            <div className="absolute -inset-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur-3xl opacity-50 animate-pulse"></div>
-            <div className="relative w-24 h-24 bg-gradient-to-br from-purple-600 via-pink-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
+            <div className="absolute -inset-4 bg-gradient-to-r from-red-600 to-orange-600 rounded-full blur-3xl opacity-50 animate-pulse"></div>
+            <div className="relative w-24 h-24 bg-gradient-to-br from-red-600 via-orange-600 to-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-2xl">
               <Heart className="h-12 w-12 text-white" />
             </div>
           </div>
 
           <h1 className="text-5xl md:text-6xl font-black text-white mb-6">
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-red-400 via-orange-400 to-green-400 bg-clip-text text-transparent">
               Support Development
             </span>
             <br />
@@ -64,7 +64,7 @@ const SupportPage = () => {
               Scan & Contribute
             </h2>
             <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-orange-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
               <div className="relative bg-slate-900/50 rounded-2xl p-8 border border-slate-700/50">
                 {/* 3. Conditionally render the image or the fallback div */}
                 {qrError ? (
@@ -93,7 +93,7 @@ const SupportPage = () => {
               Or Pay via UPI ID
             </h3>
             <div className="relative group">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-red-600 to-orange-600 rounded-xl blur opacity-30 group-hover:opacity-50 transition duration-300"></div>
               <div
                 className="relative bg-slate-900/80 backdrop-blur-sm border border-slate-600 rounded-xl p-4 cursor-pointer hover:bg-slate-800/80 transition-all duration-300 group"
                 onClick={() => copyToClipboard("8250676762@ybl")}
