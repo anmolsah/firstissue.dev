@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 .env
-/docs
+interview.md
 
 # Editor directories and files
 .vscode/*

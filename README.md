@@ -3,14 +3,13 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Open Source](https://img.shields.io/badge/Open%20Source-Yes-blue)
 
-
 **FirstIssue.dev** helps beginner developers find and track beginner-friendly GitHub issues — all in one clean, simple app.
 
 Whether you're new to open source or looking for your next contribution, this platform helps you:
 
 ✅ Discover curated beginner issues  
 ✅ Bookmark and manage what you're working on  
-✅ Track your contribution journey   
+✅ Track your contribution journey
 
 ---
 
@@ -37,9 +36,7 @@ Whether you're new to open source or looking for your next contribution, this pl
 - 🖼️ **Clean and modern UI**  
   Fully responsive design built with React and Tailwind CSS for a seamless experience across all devices.
 
-
 ---
-
 
 ---
 
@@ -62,7 +59,6 @@ Here’s a quick look at the FirstIssue.dev platform:
 ### 📌 Profile
 ![Profile Screenshot](./public/firstissue08.png) -->
 ---
-
 
 ## 🛠️ Tech Stack
 
@@ -98,6 +94,42 @@ Set your `.env` file with Supabase keys (see `.env.example`).
 
 We’d love your help!  
 Check out the [CONTRIBUTING.md](CONTRIBUTING.md) guide to get started.
+
+---
+
+Made with 💙 by [Anmol](https://github.com/anmolsah)
+
+### Quick Start for Contributors
+
+1. 🍴 Fork this repository
+2. 📥 Clone your fork
+3. 🔧 Set up the development environment
+4. 🎯 Find an issue to work on
+5. 🚀 Submit a pull request
+
+### Find an Issue
+
+- 🟢 [First-timers only](https://github.com/anmolsah/firstissue.dev/labels/first-timers-only) - Perfect for your first contribution
+- 🟡 [Good first issue](https://github.com/anmolsah/firstissue.dev/labels/good%20first%20issue) - Beginner-friendly issues
+- 🟠 [Help wanted](https://github.com/anmolsah/firstissue.dev/labels/help%20wanted) - We need your help!
+
+### Contributors
+
+Thanks to all our amazing contributors! See [CONTRIBUTORS.md](CONTRIBUTORS.md)
+
+---
+
+## 📚 Documentation
+
+- [Contributing Guide](CONTRIBUTING.md)
+- [Interview Questions](docs/interview.md) - Great for learning!
+- [Issues to Create](docs/ISSUES_TO_CREATE.md) - For maintainers
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
 
 ---
 
