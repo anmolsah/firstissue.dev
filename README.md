@@ -93,7 +93,7 @@ Set your `.env` file with Supabase keys (see `.env.example`).
 ## 🙌 Want to Contribute?
 
 We’d love your help!  
-Check out the [CONTRIBUTING.md](docs/CONTRIBUTING.md) guide to get started.
+Check out the [CONTRIBUTING.md](./docs/CONTRIBUTING.md) guide to get started.
 
 ---
 
