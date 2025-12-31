@@ -3,7 +3,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
-  Filter,
   ExternalLink,
   Star,
   GitFork,
@@ -12,7 +11,6 @@ import {
   BookmarkCheck,
   Users,
   Clock,
-  TrendingUp,
   Building,
   Shield,
   ChevronDown,
@@ -36,7 +34,7 @@ const ExplorePage = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [trustedRepos, setTrustedRepos] = useState([]);
   const [loadingTrusted, setLoadingTrusted] = useState(true);
-  const [selectedTab, setSelectedTab] = useState("github"); // 'github' or 'trusted'
+  const [selectedTab, setSelectedTab] = useState("github");
   const [filters, setFilters] = useState({
     language: "",
     labels: ["good first issue"],
@@ -73,52 +71,37 @@ const ExplorePage = () => {
     "nextjs",
     "express",
   ];
-
   const labelOptions = [
-    { value: "good first issue", label: "Good First Issue", color: "green" },
+    { value: "good first issue", label: "Good First Issue", color: "emerald" },
     { value: "help wanted", label: "Help Wanted", color: "blue" },
     { value: "beginner friendly", label: "Beginner Friendly", color: "purple" },
     { value: "hacktoberfest", label: "Hacktoberfest", color: "orange" },
     { value: "documentation", label: "Documentation", color: "yellow" },
     { value: "bug", label: "Bug Fix", color: "red" },
-    { value: "enhancement", label: "Enhancement", color: "indigo" },
-    { value: "up for grabs", label: "Up for Grabs", color: "pink" },
   ];
-
   const sortOptions = [
     { value: "updated", label: "Recently Updated" },
     { value: "created", label: "Recently Created" },
     { value: "comments", label: "Most Discussed" },
-    { value: "reactions", label: "Most Reactions" },
   ];
-
   const minStarsOptions = [
     { value: "0", label: "Any Stars" },
     { value: "10", label: "10+ Stars" },
     { value: "50", label: "50+ Stars" },
     { value: "100", label: "100+ Stars" },
     { value: "500", label: "500+ Stars" },
-    { value: "1000", label: "1000+ Stars" },
   ];
-
   const activityOptions = [
     { value: "week", label: "Past Week" },
     { value: "month", label: "Past Month" },
     { value: "3months", label: "Past 3 Months" },
-    { value: "6months", label: "Past 6 Months" },
-    { value: "year", label: "Past Year" },
     { value: "any", label: "Any Time" },
   ];
 
   useEffect(() => {
-    if (selectedTab === "github") {
-      resetAndFetch();
-    } else {
-      fetchTrustedRepos();
-    }
-    if (user) {
-      fetchBookmarkedIssues();
-    }
+    if (selectedTab === "github") resetAndFetch();
+    else fetchTrustedRepos();
+    if (user) fetchBookmarkedIssues();
   }, [filters, user, selectedTab]);
 
   const fetchTrustedRepos = async () => {
@@ -129,7 +112,6 @@ const ExplorePage = () => {
         .select("*")
         .eq("is_active", true)
         .order("stars", { ascending: false });
-
       if (error) throw error;
       setTrustedRepos(data || []);
     } catch (error) {
@@ -147,12 +129,8 @@ const ExplorePage = () => {
   };
 
   const fetchIssues = async (page = 1, reset = false) => {
-    if (page === 1) {
-      setLoading(true);
-    } else {
-      setLoadingMore(true);
-    }
-
+    if (page === 1) setLoading(true);
+    else setLoadingMore(true);
     try {
       const query = buildAdvancedGitHubQuery();
       const response = await fetch(
@@ -163,70 +141,25 @@ const ExplorePage = () => {
           headers: {
             Accept: "application/vnd.github.v3+json",
             "User-Agent": "OpenSourceBuddy/1.0",
-            // Add GitHub token if available for higher rate limits
             ...(import.meta.env.VITE_GITHUB_TOKEN && {
               Authorization: `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
             }),
           },
         }
       );
-
       if (response.ok) {
         const data = await response.json();
-
-        // Log the query for debugging
-        console.log("GitHub Query:", query);
-        console.log("Total Results:", data.total_count);
-        console.log(
-          "First few results:",
-          data.items?.slice(0, 3).map((item) => ({
-            title: item.title,
-            labels: item.labels.map((l) => l.name),
-            url: item.html_url,
-          }))
-        );
-
         const filteredIssues = await filterHighQualityIssues(data.items || []);
-
-        if (reset) {
-          setIssues(filteredIssues);
-        } else {
-          setIssues((prev) => [...prev, ...filteredIssues]);
-        }
-
+        if (reset) setIssues(filteredIssues);
+        else setIssues((prev) => [...prev, ...filteredIssues]);
         setTotalCount(data.total_count);
         setHasMore(
           filteredIssues.length === 20 && page * 20 < data.total_count
         );
         setCurrentPage(page);
-      } else {
-        const errorText = await response.text();
-        console.error(
-          "GitHub API Error:",
-          response.status,
-          response.statusText,
-          errorText
-        );
-        console.error(
-          "Failed to fetch issues:",
-          response.status,
-          response.statusText
-        );
-        if (response.status === 403) {
-          setError(
-            "Rate limit exceeded. Please try again later or add a GitHub token."
-          );
-        } else if (response.status === 422) {
-          setError(
-            `Invalid search query: ${errorText}. Please adjust your filters.`
-          );
-        } else {
-          setError("Failed to fetch issues. Please try again.");
-        }
       }
     } catch (error) {
       console.error("Error fetching issues:", error);
-      setError(error.message || "An error occurred while fetching issues.");
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -235,39 +168,16 @@ const ExplorePage = () => {
 
   const buildAdvancedGitHubQuery = () => {
     let query = "state:open type:issue";
-
-    // Add labels with proper GitHub search syntax
-    if (filters.labels.length > 0) {
-      // GitHub API expects labels without quotes for OR logic
+    if (filters.labels.length > 0)
       filters.labels.forEach((label) => {
         query += ` label:"${label}"`;
       });
-    }
-
-    // Add language filter
-    if (filters.language) {
-      query += ` language:${filters.language}`;
-    }
-
-    // Add keywords
-    if (filters.keywords) {
-      query += ` ${filters.keywords}`;
-    }
-
-    // Add minimum stars filter
-    if (filters.minStars && filters.minStars !== "0") {
+    if (filters.language) query += ` language:${filters.language}`;
+    if (filters.keywords) query += ` ${filters.keywords}`;
+    if (filters.minStars && filters.minStars !== "0")
       query += ` stars:>=${filters.minStars}`;
-    }
-
-    // Add recent activity filter
     if (filters.recentActivity !== "any") {
-      const dateMap = {
-        week: "7",
-        month: "30",
-        "3months": "90",
-        "6months": "180",
-        year: "365",
-      };
+      const dateMap = { week: "7", month: "30", "3months": "90" };
       const days = dateMap[filters.recentActivity];
       if (days) {
         const date = new Date();
@@ -275,56 +185,30 @@ const ExplorePage = () => {
         query += ` updated:>=${date.toISOString().split("T")[0]}`;
       }
     }
-
-    // Exclude archived repositories
-    if (filters.excludeArchived) {
-      query += ` archived:false`;
-    }
-
-    // Add quality filters
-    query += ` is:public`;
-
-    // Exclude low-quality labels
-    query += ` -label:duplicate -label:invalid -label:wontfix`;
-
-    console.log("GitHub Search Query:", query);
-
+    if (filters.excludeArchived) query += ` archived:false`;
+    query += ` is:public -label:duplicate -label:invalid -label:wontfix`;
     return query;
   };
 
-  const filterHighQualityIssues = async (rawIssues) => {
-    // Basic filtering for quality issues
-    return rawIssues.filter((issue) => {
+  const filterHighQualityIssues = async (rawIssues) =>
+    rawIssues.filter((issue) => {
       const repoUrl = issue.repository_url;
       const repoName = repoUrl.split("/").slice(-2).join("/");
-
-      // Exclude obvious spam patterns
       const spammyPatterns = [/test-repo/i, /hello-world/i];
-
       const isSpammy = spammyPatterns.some((pattern) => pattern.test(repoName));
-
-      // Basic content check
       const hasContent = issue.title && issue.title.length > 10;
-
       return !isSpammy && hasContent;
     });
-  };
 
   const fetchBookmarkedIssues = async () => {
     if (!user) return;
-
     try {
       const { data, error } = await supabase
         .from("bookmarks")
         .select("issue_url")
         .eq("user_id", user.id);
-
       if (error) throw error;
-
-      const bookmarkedUrls = new Set(
-        data.map((bookmark) => bookmark.issue_url)
-      );
-      setBookmarkedIssues(bookmarkedUrls);
+      setBookmarkedIssues(new Set(data.map((b) => b.issue_url)));
     } catch (error) {
       console.error("Error fetching bookmarks:", error);
     }
@@ -343,9 +227,7 @@ const ExplorePage = () => {
       navigate("/login");
       return;
     }
-
     const isBookmarked = bookmarkedIssues.has(issue.html_url);
-
     try {
       if (isBookmarked) {
         const { error } = await supabase
@@ -353,40 +235,34 @@ const ExplorePage = () => {
           .delete()
           .eq("user_id", user.id)
           .eq("issue_url", issue.html_url);
-
         if (error) throw error;
-
         setBookmarkedIssues((prev) => {
           const newSet = new Set(prev);
           newSet.delete(issue.html_url);
           return newSet;
         });
       } else {
-        const { error } = await supabase.from("bookmarks").insert({
-          user_id: user.id,
-          title: issue.title,
-          issue_url: issue.html_url,
-          repo_name: issue.repository_url.split("/").slice(-2).join("/"),
-          language: filters.language || "unknown",
-          status: "saved",
-        });
-
+        const { error } = await supabase
+          .from("bookmarks")
+          .insert({
+            user_id: user.id,
+            title: issue.title,
+            issue_url: issue.html_url,
+            repo_name: issue.repository_url.split("/").slice(-2).join("/"),
+            language: filters.language || "unknown",
+            status: "saved",
+          });
         if (error) throw error;
-
         setBookmarkedIssues((prev) => new Set([...prev, issue.html_url]));
       }
     } catch (error) {
       console.error("Error managing bookmark:", error);
-      alert("Failed to update bookmark. Please try again.");
     }
   };
 
   const loadMore = () => {
-    if (!loadingMore && hasMore) {
-      fetchIssues(currentPage + 1, false);
-    }
+    if (!loadingMore && hasMore) fetchIssues(currentPage + 1, false);
   };
-
   const toggleLabel = (labelValue) => {
     setFilters((prev) => ({
       ...prev,
@@ -395,35 +271,26 @@ const ExplorePage = () => {
         : [...prev.labels, labelValue],
     }));
   };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
+    const diffDays = Math.ceil(Math.abs(now - date) / (1000 * 60 * 60 * 24));
     if (diffDays === 1) return "yesterday";
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
-    if (diffDays < 365) return `${Math.ceil(diffDays / 30)} months ago`;
-    return `${Math.ceil(diffDays / 365)} years ago`;
+    return `${Math.ceil(diffDays / 30)} months ago`;
   };
-
   const formatNumber = (num) => {
     if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
     if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
     return num.toString();
   };
-
   const getRepoInfo = (issue) => {
-    const repoUrl = issue.repository_url;
-    const [owner, repo] = repoUrl.split("/").slice(-2);
+    const [owner, repo] = issue.repository_url.split("/").slice(-2);
     return { owner, repo, fullName: `${owner}/${repo}` };
   };
-
-  const isVerifiedOrg = (owner) => {
-    // Common verified organizations and companies
-    const verifiedOrgs = [
+  const isVerifiedOrg = (owner) =>
+    [
       "microsoft",
       "google",
       "facebook",
@@ -431,34 +298,14 @@ const ExplorePage = () => {
       "amazon",
       "netflix",
       "uber",
-      "airbnb",
-      "spotify",
       "github",
-      "gitlab",
-      "atlassian",
-      "shopify",
-      "stripe",
       "vercel",
-      "netlify",
       "supabase",
-      "firebase",
-      "mongodb",
-      "redis",
-      "docker",
-      "kubernetes",
       "nodejs",
       "reactjs",
       "vuejs",
-      "angular",
-      "sveltejs",
       "tailwindlabs",
-      "chakra-ui",
-      "mui-org",
-      "ant-design",
-      "storybookjs",
-    ];
-    return verifiedOrgs.includes(owner.toLowerCase());
-  };
+    ].includes(owner.toLowerCase());
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -466,22 +313,22 @@ const ExplorePage = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-[#EEEEEE] mb-2">
               Explore Open Source Issues
             </h1>
-            <p className="text-gray-600">
+            <p className="text-[#EEEEEE]/60">
               Discover high-quality, beginner-friendly issues from active
               repositories
             </p>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-[#EEEEEE]/50">
               {totalCount > 0 && `${totalCount.toLocaleString()} issues found`}
             </div>
             <button
               onClick={resetAndFetch}
               disabled={loading}
-              className="mt-1 flex items-center gap-2 px-3 py-1 text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
+              className="mt-1 flex items-center gap-2 px-3 py-1 text-sm text-[#00ADB5] hover:text-[#00d4de] disabled:opacity-50"
             >
               <RefreshCw
                 className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
@@ -490,14 +337,13 @@ const ExplorePage = () => {
             </button>
           </div>
         </div>
-
         {!user && (
-          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800 text-sm">
+          <div className="p-4 bg-[#00ADB5]/10 border border-[#00ADB5]/30 rounded-lg">
+            <p className="text-[#00ADB5] text-sm">
               <strong>Note:</strong> Please{" "}
               <button
                 onClick={() => navigate("/login")}
-                className="text-blue-600 hover:text-blue-700 underline font-medium"
+                className="text-[#00ADB5] hover:text-[#00d4de] underline font-medium"
               >
                 sign in
               </button>{" "}
@@ -508,14 +354,14 @@ const ExplorePage = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-xl p-2 mb-8 border border-white/20">
+      <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl p-2 mb-8 border border-[#393E46]">
         <div className="flex gap-2">
           <button
             onClick={() => setSelectedTab("github")}
             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
               selectedTab === "github"
-                ? "bg-red-600 text-white shadow-lg"
-                : "text-gray-600 hover:text-red-600 hover:bg-red-50"
+                ? "bg-[#00ADB5] text-[#222831] shadow-lg"
+                : "text-[#EEEEEE]/60 hover:text-[#00ADB5] hover:bg-[#222831]"
             }`}
           >
             <Search className="h-5 w-5" />
@@ -523,20 +369,19 @@ const ExplorePage = () => {
             <span
               className={`px-2 py-1 text-xs rounded-full ${
                 selectedTab === "github"
-                  ? "bg-white/20 text-white"
-                  : "bg-gray-200 text-gray-600"
+                  ? "bg-[#222831]/30 text-[#222831]"
+                  : "bg-[#222831] text-[#EEEEEE]/60"
               }`}
             >
               {totalCount > 0 ? totalCount.toLocaleString() : "Live"}
             </span>
           </button>
-
           <button
             onClick={() => setSelectedTab("trusted")}
             className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
               selectedTab === "trusted"
-                ? "bg-gradient-to-r from-orange-600 to-green-600 text-white shadow-lg"
-                : "text-gray-600 hover:text-orange-600 hover:bg-orange-50"
+                ? "bg-[#00ADB5] text-[#222831] shadow-lg"
+                : "text-[#EEEEEE]/60 hover:text-[#00ADB5] hover:bg-[#222831]"
             }`}
           >
             <Award className="h-5 w-5" />
@@ -544,8 +389,8 @@ const ExplorePage = () => {
             <span
               className={`px-2 py-1 text-xs rounded-full ${
                 selectedTab === "trusted"
-                  ? "bg-white/20 text-white"
-                  : "bg-gray-200 text-gray-600"
+                  ? "bg-[#222831]/30 text-[#222831]"
+                  : "bg-[#222831] text-[#EEEEEE]/60"
               }`}
             >
               Curated
@@ -556,12 +401,11 @@ const ExplorePage = () => {
 
       {/* Advanced Filters */}
       {selectedTab === "github" && (
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-white/20">
+        <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-[#393E46]">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left Column */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
                   Programming Language
                 </label>
                 <select
@@ -569,7 +413,7 @@ const ExplorePage = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, language: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] focus:ring-2 focus:ring-[#00ADB5]"
                 >
                   <option value="">All Languages</option>
                   {languages.map((lang) => (
@@ -579,9 +423,8 @@ const ExplorePage = () => {
                   ))}
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
                   Keywords
                 </label>
                 <input
@@ -591,15 +434,13 @@ const ExplorePage = () => {
                     setFilters({ ...filters, keywords: e.target.value })
                   }
                   placeholder="Search in title and description..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40 focus:ring-2 focus:ring-[#00ADB5]"
                 />
               </div>
             </div>
-
-            {/* Middle Column */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
                   Issue Labels
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -609,8 +450,8 @@ const ExplorePage = () => {
                       onClick={() => toggleLabel(value)}
                       className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
                         filters.labels.includes(value)
-                          ? `bg-${color}-100 text-${color}-700 ring-2 ring-${color}-300`
-                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          ? `bg-${color}-500/30 text-${color}-400 ring-2 ring-${color}-500/50`
+                          : "bg-[#222831] text-[#EEEEEE]/60 hover:bg-[#222831]/80"
                       }`}
                     >
                       {label}
@@ -618,10 +459,9 @@ const ExplorePage = () => {
                   ))}
                 </div>
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
                     Sort By
                   </label>
                   <select
@@ -629,7 +469,7 @@ const ExplorePage = () => {
                     onChange={(e) =>
                       setFilters({ ...filters, sort: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] text-sm focus:ring-2 focus:ring-[#00ADB5]"
                   >
                     {sortOptions.map(({ value, label }) => (
                       <option key={value} value={value}>
@@ -638,9 +478,8 @@ const ExplorePage = () => {
                     ))}
                   </select>
                 </div>
-
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
                     Min Stars
                   </label>
                   <select
@@ -648,7 +487,7 @@ const ExplorePage = () => {
                     onChange={(e) =>
                       setFilters({ ...filters, minStars: e.target.value })
                     }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                    className="w-full px-3 py-2 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] text-sm focus:ring-2 focus:ring-[#00ADB5]"
                   >
                     {minStarsOptions.map(({ value, label }) => (
                       <option key={value} value={value}>
@@ -659,11 +498,9 @@ const ExplorePage = () => {
                 </div>
               </div>
             </div>
-
-            {/* Right Column */}
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
                   Recent Activity
                 </label>
                 <select
@@ -671,7 +508,7 @@ const ExplorePage = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, recentActivity: e.target.value })
                   }
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                  className="w-full px-3 py-2 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] focus:ring-2 focus:ring-[#00ADB5]"
                 >
                   {activityOptions.map(({ value, label }) => (
                     <option key={value} value={value}>
@@ -680,7 +517,6 @@ const ExplorePage = () => {
                   ))}
                 </select>
               </div>
-
               <div className="space-y-3">
                 <label className="flex items-center">
                   <input
@@ -692,13 +528,12 @@ const ExplorePage = () => {
                         excludeArchived: e.target.checked,
                       })
                     }
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="rounded border-[#393E46] text-[#00ADB5] focus:ring-[#00ADB5] bg-[#222831]"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
+                  <span className="ml-2 text-sm text-[#EEEEEE]/70">
                     Exclude archived repos
                   </span>
                 </label>
-
                 <label className="flex items-center">
                   <input
                     type="checkbox"
@@ -706,9 +541,9 @@ const ExplorePage = () => {
                     onChange={(e) =>
                       setFilters({ ...filters, verifiedOnly: e.target.checked })
                     }
-                    className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    className="rounded border-[#393E46] text-[#00ADB5] focus:ring-[#00ADB5] bg-[#222831]"
                   />
-                  <span className="ml-2 text-sm text-gray-700">
+                  <span className="ml-2 text-sm text-[#EEEEEE]/70">
                     Verified orgs only
                   </span>
                 </label>
@@ -720,23 +555,22 @@ const ExplorePage = () => {
 
       {/* Issues List */}
       {selectedTab === "github" ? (
-        // GitHub Issues Content
         loading ? (
           <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-            <span className="ml-3 text-gray-600">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ADB5]"></div>
+            <span className="ml-3 text-[#EEEEEE]/60">
               Finding quality issues...
             </span>
           </div>
         ) : (
           <div className="space-y-6">
             {issues.length === 0 ? (
-              <div className="text-center py-12 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20">
-                <Search className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <div className="text-center py-12 bg-[#393E46]/50 backdrop-blur-sm rounded-2xl border border-[#393E46]">
+                <Search className="h-12 w-12 text-[#EEEEEE]/40 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-[#EEEEEE] mb-2">
                   No issues found
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-[#EEEEEE]/60">
                   Try adjusting your filters to find more issues.
                 </p>
               </div>
@@ -745,13 +579,11 @@ const ExplorePage = () => {
                 {issues.map((issue) => {
                   const repoInfo = getRepoInfo(issue);
                   const isVerified = isVerifiedOrg(repoInfo.owner);
-
                   return (
                     <div
                       key={issue.id}
-                      className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                      className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46] hover:border-[#00ADB5]/50 transition-all duration-300 hover:-translate-y-1"
                     >
-                      {/* Repository Header */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                           <img
@@ -761,17 +593,17 @@ const ExplorePage = () => {
                           />
                           <div>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-red-600">
+                              <span className="text-sm font-medium text-[#00ADB5]">
                                 {repoInfo.fullName}
                               </span>
                               {isVerified && (
-                                <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                <div className="flex items-center gap-1 px-2 py-1 bg-[#00ADB5]/20 text-[#00ADB5] rounded-full text-xs font-medium">
                                   <Shield className="h-3 w-3" />
                                   Verified
                                 </div>
                               )}
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
+                            <div className="flex items-center gap-3 text-xs text-[#EEEEEE]/50 mt-1">
                               <span className="flex items-center gap-1">
                                 <Star className="h-3 w-3" />
                                 {formatNumber(issue.score || 0)}
@@ -787,14 +619,13 @@ const ExplorePage = () => {
                             </div>
                           </div>
                         </div>
-
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleBookmark(issue)}
                             className={`p-2 rounded-lg transition-all duration-200 ${
                               user && bookmarkedIssues.has(issue.html_url)
-                                ? "bg-yellow-100 text-yellow-600 hover:bg-yellow-200"
-                                : "bg-gray-100 text-gray-600 hover:bg-red-100 hover:text-red-600"
+                                ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
+                                : "bg-[#222831] text-[#EEEEEE]/60 hover:bg-[#00ADB5]/20 hover:text-[#00ADB5]"
                             }`}
                             title={
                               user
@@ -810,22 +641,15 @@ const ExplorePage = () => {
                               <Bookmark className="h-5 w-5" />
                             )}
                           </button>
-
                           <button
                             onClick={() => handleGitHubView(issue.html_url)}
-                            className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                            title={
-                              user
-                                ? "View on GitHub"
-                                : "Sign in to view on GitHub"
-                            }
+                            className="p-2 bg-[#00ADB5]/20 text-[#00ADB5] rounded-lg hover:bg-[#00ADB5]/30 transition-colors"
+                            title={user ? "View on GitHub" : "Sign in to view"}
                           >
                             <ExternalLink className="h-5 w-5" />
                           </button>
                         </div>
                       </div>
-
-                      {/* Issue Content */}
                       <div className="mb-4">
                         <div className="flex items-center gap-2 mb-3">
                           {issue.labels.slice(0, 4).map((label) => (
@@ -841,25 +665,21 @@ const ExplorePage = () => {
                             </span>
                           ))}
                           {issue.labels.length > 4 && (
-                            <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full">
+                            <span className="px-2 py-1 text-xs font-medium bg-[#222831] text-[#EEEEEE]/60 rounded-full">
                               +{issue.labels.length - 4} more
                             </span>
                           )}
                         </div>
-
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+                        <h3 className="text-lg font-semibold text-[#EEEEEE] mb-2 line-clamp-2">
                           {issue.title}
                         </h3>
-
-                        <p className="text-gray-600 text-sm line-clamp-3 mb-4">
+                        <p className="text-[#EEEEEE]/60 text-sm line-clamp-3 mb-4">
                           {issue.body
                             ? issue.body.substring(0, 300) + "..."
                             : "No description available"}
                         </p>
                       </div>
-
-                      {/* Issue Footer */}
-                      <div className="flex items-center justify-between text-sm text-gray-500">
+                      <div className="flex items-center justify-between text-sm text-[#EEEEEE]/50">
                         <div className="flex items-center gap-4">
                           <span className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />
@@ -872,7 +692,6 @@ const ExplorePage = () => {
                             👍 {issue.reactions?.["+1"] || 0}
                           </span>
                         </div>
-
                         <div className="flex items-center gap-2">
                           <img
                             src={issue.user.avatar_url}
@@ -885,14 +704,12 @@ const ExplorePage = () => {
                     </div>
                   );
                 })}
-
-                {/* Load More Button */}
                 {hasMore && (
                   <div className="text-center py-8">
                     <button
                       onClick={loadMore}
                       disabled={loadingMore}
-                      className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-lg font-medium hover:from-red-700 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 flex items-center gap-2 mx-auto"
+                      className="px-6 py-3 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all duration-200 disabled:opacity-50 flex items-center gap-2 mx-auto"
                     >
                       {loadingMore ? (
                         <>
@@ -913,38 +730,38 @@ const ExplorePage = () => {
           </div>
         )
       ) : (
-        // Trusted Repos Content
         <div>
-          <div className="mb-6 p-6 bg-gradient-to-r from-red-600 via-orange-600 to-green-600 rounded-2xl text-white">
+          <div className="mb-6 p-6 bg-gradient-to-r from-[#00ADB5]/20 to-[#393E46]/50 rounded-2xl border border-[#00ADB5]/30">
             <div className="flex items-center gap-3 mb-3">
-              <Award className="h-8 w-8" />
+              <Award className="h-8 w-8 text-[#00ADB5]" />
               <div>
-                <h2 className="text-2xl font-bold">Trusted Repositories</h2>
-                <p className="text-purple-100">
+                <h2 className="text-2xl font-bold text-[#EEEEEE]">
+                  Trusted Repositories
+                </h2>
+                <p className="text-[#EEEEEE]/60">
                   Hand-picked, beginner-friendly open source projects
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-6 text-sm text-purple-100">
+            <div className="flex items-center gap-6 text-sm text-[#EEEEEE]/60">
               <div className="flex items-center gap-1">
-                <CheckCircle className="h-4 w-4" />
+                <CheckCircle className="h-4 w-4 text-[#00ADB5]" />
                 Verified Quality
               </div>
               <div className="flex items-center gap-1">
-                <Users className="h-4 w-4" />
+                <Users className="h-4 w-4 text-[#00ADB5]" />
                 Active Community
               </div>
               <div className="flex items-center gap-1">
-                <Zap className="h-4 w-4" />
+                <Zap className="h-4 w-4 text-[#00ADB5]" />
                 Beginner Friendly
               </div>
             </div>
           </div>
-
           {loadingTrusted ? (
             <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-              <span className="ml-3 text-gray-600">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ADB5]"></div>
+              <span className="ml-3 text-[#EEEEEE]/60">
                 Loading trusted repositories...
               </span>
             </div>
@@ -953,69 +770,61 @@ const ExplorePage = () => {
               {trustedRepos.map((repo) => (
                 <div
                   key={repo.id}
-                  className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20 hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                  className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46] hover:border-[#00ADB5]/50 transition-all duration-300 hover:-translate-y-1"
                 >
-                  {/* Repository Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-lg font-semibold text-gray-900">
+                        <span className="text-lg font-semibold text-[#EEEEEE]">
                           {repo.title}
                         </span>
                         <div
                           className={`px-2 py-1 text-xs font-medium rounded-full ${
                             repo.difficulty === "beginner"
-                              ? "bg-green-100 text-green-700"
+                              ? "bg-emerald-500/20 text-emerald-400"
                               : repo.difficulty === "intermediate"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : "bg-red-100 text-red-700"
+                              ? "bg-amber-500/20 text-amber-400"
+                              : "bg-red-500/20 text-red-400"
                           }`}
                         >
                           {repo.difficulty}
                         </div>
                       </div>
-                      <div className="text-sm text-red-600 font-medium mb-2">
+                      <div className="text-sm text-[#00ADB5] font-medium mb-2">
                         {repo.name}
                       </div>
-                      <p className="text-gray-600 text-sm line-clamp-2 mb-3">
+                      <p className="text-[#EEEEEE]/60 text-sm line-clamp-2 mb-3">
                         {repo.description}
                       </p>
                     </div>
                   </div>
-
-                  {/* Repository Stats */}
-                  <div className="flex items-center gap-4 mb-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 mb-4 text-sm text-[#EEEEEE]/50">
                     <span className="flex items-center gap-1">
                       <Star className="h-4 w-4" />
                       {formatNumber(repo.stars)}
                     </span>
-                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                    <span className="px-2 py-1 bg-[#222831] text-[#EEEEEE]/70 rounded-full text-xs font-medium">
                       {repo.language}
                     </span>
                   </div>
-
-                  {/* Tags */}
                   <div className="flex flex-wrap gap-2 mb-4">
                     {repo.tags.slice(0, 3).map((tag, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full"
+                        className="px-2 py-1 text-xs font-medium bg-[#00ADB5]/20 text-[#00ADB5] rounded-full"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-
-                  {/* Actions */}
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleGitHubView(repo.github_url)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-600 to-green-600 text-white rounded-lg font-medium hover:from-orange-700 hover:to-green-700 transition-all duration-200 cursor-pointer"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all"
                     >
                       <ExternalLink className="h-4 w-4" />
                       View Repository
                     </button>
-
                     <button
                       onClick={() =>
                         window.open(
@@ -1023,8 +832,7 @@ const ExplorePage = () => {
                           "_blank"
                         )
                       }
-                      className="px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors font-medium"
-                      title="View beginner issues"
+                      className="px-4 py-2 bg-[#222831] text-[#00ADB5] rounded-lg hover:bg-[#222831]/80 transition-colors font-medium"
                     >
                       Issues
                     </button>

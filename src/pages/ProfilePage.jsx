@@ -47,10 +47,8 @@ const ProfilePage = () => {
           .eq("user_id", user.id)
           .order("created_at", { ascending: false }),
       ]);
-
       if (bookmarksResult.error) throw bookmarksResult.error;
       if (contributionsResult.error) throw contributionsResult.error;
-
       setBookmarks(bookmarksResult.data || []);
       setManualContributions(contributionsResult.data || []);
     } catch (error) {
@@ -61,160 +59,106 @@ const ProfilePage = () => {
   };
 
   const handleAddContribution = async (formData) => {
-    try {
-      const { data, error } = await supabase
-        .from("manual_contributions")
-        .insert({
-          user_id: user.id,
-          ...formData,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setManualContributions((prev) => [data, ...prev]);
-    } catch (error) {
-      console.error("Error adding contribution:", error);
-      throw error;
-    }
+    const { data, error } = await supabase
+      .from("manual_contributions")
+      .insert({ user_id: user.id, ...formData })
+      .select()
+      .single();
+    if (error) throw error;
+    setManualContributions((prev) => [data, ...prev]);
   };
 
   const handleEditContribution = async (formData) => {
-    try {
-      const { data, error } = await supabase
-        .from("manual_contributions")
-        .update(formData)
-        .eq("id", editingContribution.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setManualContributions((prev) =>
-        prev.map((contrib) =>
-          contrib.id === editingContribution.id ? data : contrib
-        )
-      );
-      setEditingContribution(null);
-    } catch (error) {
-      console.error("Error updating contribution:", error);
-      throw error;
-    }
+    const { data, error } = await supabase
+      .from("manual_contributions")
+      .update(formData)
+      .eq("id", editingContribution.id)
+      .select()
+      .single();
+    if (error) throw error;
+    setManualContributions((prev) =>
+      prev.map((c) => (c.id === editingContribution.id ? data : c))
+    );
+    setEditingContribution(null);
   };
 
   const handleDeleteContribution = async (contributionId) => {
     if (!confirm("Are you sure you want to delete this contribution?")) return;
-
-    try {
-      const { error } = await supabase
-        .from("manual_contributions")
-        .delete()
-        .eq("id", contributionId);
-
-      if (error) throw error;
-
-      setManualContributions((prev) =>
-        prev.filter((contrib) => contrib.id !== contributionId)
-      );
-    } catch (error) {
-      console.error("Error deleting contribution:", error);
-      alert("Failed to delete contribution. Please try again.");
+    const { error } = await supabase
+      .from("manual_contributions")
+      .delete()
+      .eq("id", contributionId);
+    if (error) {
+      console.error("Error deleting:", error);
+      return;
     }
-  };
-
-  const openEditModal = (contribution) => {
-    setEditingContribution(contribution);
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setEditingContribution(null);
-  };
-
-  const handleModalSubmit = async (formData) => {
-    if (editingContribution) {
-      await handleEditContribution(formData);
-    } else {
-      await handleAddContribution(formData);
-    }
+    setManualContributions((prev) =>
+      prev.filter((c) => c.id !== contributionId)
+    );
   };
 
   const getStatusConfig = (status) => {
     const configs = {
-      planned: { icon: AlertCircle, color: "text-gray-600", bg: "bg-gray-100" },
+      planned: {
+        icon: AlertCircle,
+        color: "text-[#EEEEEE]/60",
+        bg: "bg-[#393E46]",
+      },
       in_progress: {
         icon: Plus,
-        color: "text-orange-600",
-        bg: "bg-orange-100",
+        color: "text-[#00ADB5]",
+        bg: "bg-[#00ADB5]/20",
       },
       completed: {
         icon: CheckCircle,
-        color: "text-green-600",
-        bg: "bg-green-100",
+        color: "text-emerald-400",
+        bg: "bg-emerald-500/20",
       },
     };
     return configs[status] || configs.planned;
   };
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
-  };
-
+  const getStats = () => ({
+    total: bookmarks.length,
+    done: bookmarks.filter((b) => b.status === "done").length,
+    workingOn: bookmarks.filter((b) => b.status === "working_on").length,
+    applied: bookmarks.filter((b) => b.status === "applied").length,
+  });
   const getCombinedStats = () => {
-    const bookmarkStats = getStats();
-    const manualStats = {
+    const bs = getStats();
+    const ms = {
       planned: manualContributions.filter((c) => c.status === "planned").length,
       in_progress: manualContributions.filter((c) => c.status === "in_progress")
         .length,
       completed: manualContributions.filter((c) => c.status === "completed")
         .length,
     };
-
     return {
-      total: bookmarkStats.total + manualContributions.length,
-      done: bookmarkStats.done + manualStats.completed,
-      workingOn: bookmarkStats.workingOn + manualStats.in_progress,
-      applied: bookmarkStats.applied + manualStats.planned,
+      total: bs.total + manualContributions.length,
+      done: bs.done + ms.completed,
+      workingOn: bs.workingOn + ms.in_progress,
+      applied: bs.applied + ms.planned,
     };
   };
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
-  };
-
-  const getStats = () => {
-    const total = bookmarks.length;
-    const done = bookmarks.filter((b) => b.status === "done").length;
-    const workingOn = bookmarks.filter((b) => b.status === "working_on").length;
-    const applied = bookmarks.filter((b) => b.status === "applied").length;
-
-    return { total, done, workingOn, applied };
-  };
-
-  const getJoinDate = () => {
-    if (!user?.created_at) return "Unknown";
-    const date = new Date(user.created_at);
-    return date.toLocaleDateString("en-US", {
-      month: "long",
-      year: "numeric",
-    });
-  };
-
+  const getJoinDate = () =>
+    user?.created_at
+      ? new Date(user.created_at).toLocaleDateString("en-US", {
+          month: "long",
+          year: "numeric",
+        })
+      : "Unknown";
   const getLanguageStats = () => {
     const languages = {};
-    bookmarks.forEach((bookmark) => {
-      const lang = bookmark.language || "unknown";
+    bookmarks.forEach((b) => {
+      const lang = b.language || "unknown";
       languages[lang] = (languages[lang] || 0) + 1;
     });
-
     return Object.entries(languages)
       .sort(([, a], [, b]) => b - a)
       .slice(0, 5);
@@ -224,67 +168,68 @@ const ProfilePage = () => {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-          <span className="ml-3 text-gray-600">Loading profile...</span>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ADB5]"></div>
+          <span className="ml-3 text-[#EEEEEE]/60">Loading profile...</span>
         </div>
       </div>
     );
   }
 
   const stats = getStats();
-  const languageStats = getLanguageStats();
-
   const combinedStats = getCombinedStats();
+  const languageStats = getLanguageStats();
 
   return (
     <>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Profile</h1>
-          <p className="text-gray-600">
+          <h1 className="text-3xl font-bold text-[#EEEEEE] mb-2">Profile</h1>
+          <p className="text-[#EEEEEE]/60">
             Manage your account and view your contribution statistics
           </p>
         </div>
 
         <div className="grid lg:grid-cols-4 gap-8">
+          {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46]">
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-gradient-to-r from-red-600 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <User className="h-10 w-10 text-white" />
+                <div className="w-20 h-20 bg-[#00ADB5]/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#00ADB5]/30">
+                  <User className="h-10 w-10 text-[#00ADB5]" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-1">
+                <h2 className="text-xl font-semibold text-[#EEEEEE] mb-1">
                   {user?.user_metadata?.full_name ||
                     user?.email?.split("@")[0] ||
                     "User"}
                 </h2>
-                <p className="text-gray-600 text-sm">Open Source Contributor</p>
+                <p className="text-[#EEEEEE]/60 text-sm">
+                  Open Source Contributor
+                </p>
               </div>
-
               <div className="space-y-4">
-                <div className="flex items-center gap-3 text-gray-600">
+                <div className="flex items-center gap-3 text-[#EEEEEE]/60">
                   <Mail className="h-5 w-5" />
-                  <span className="text-sm">{user?.email}</span>
+                  <span className="text-sm truncate">{user?.email}</span>
                 </div>
-
                 {user?.user_metadata?.provider === "github" && (
-                  <div className="flex items-center gap-3 text-gray-600">
+                  <div className="flex items-center gap-3 text-[#EEEEEE]/60">
                     <Github className="h-5 w-5" />
                     <span className="text-sm">
                       {user?.user_metadata?.user_name || "GitHub User"}
                     </span>
                   </div>
                 )}
-
-                <div className="flex items-center gap-3 text-gray-600">
+                <div className="flex items-center gap-3 text-[#EEEEEE]/60">
                   <Calendar className="h-5 w-5" />
                   <span className="text-sm">Joined {getJoinDate()}</span>
                 </div>
               </div>
-
               <button
-                onClick={handleSignOut}
-                className="w-full mt-6 flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium"
+                onClick={async () => {
+                  await signOut();
+                  navigate("/");
+                }}
+                className="w-full mt-6 flex items-center justify-center gap-2 px-4 py-3 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors font-medium"
               >
                 <LogOut className="h-5 w-5" />
                 Sign Out
@@ -292,57 +237,54 @@ const ProfilePage = () => {
             </div>
           </div>
 
+          {/* Main Content */}
           <div className="lg:col-span-3 space-y-8">
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                <Award className="h-5 w-5 text-red-600" />
-                Overall Contribution Statistics
+            {/* Stats */}
+            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46]">
+              <h3 className="text-lg font-semibold text-[#EEEEEE] mb-6 flex items-center gap-2">
+                <Award className="h-5 w-5 text-[#00ADB5]" />
+                Overall Statistics
               </h3>
-
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-red-50 rounded-xl">
-                  <div className="text-2xl font-bold text-red-600 mb-1">
+                <div className="text-center p-4 bg-[#00ADB5]/10 rounded-xl border border-[#00ADB5]/20">
+                  <div className="text-2xl font-bold text-[#00ADB5] mb-1">
                     {combinedStats.total}
                   </div>
-                  <div className="text-sm text-red-700 font-medium">
-                    Total Contributions
+                  <div className="text-sm text-[#00ADB5]/70 font-medium">
+                    Total
                   </div>
                 </div>
-
-                <div className="text-center p-4 bg-green-50 rounded-xl">
-                  <div className="text-2xl font-bold text-green-600 mb-1">
+                <div className="text-center p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                  <div className="text-2xl font-bold text-emerald-400 mb-1">
                     {combinedStats.done}
                   </div>
-                  <div className="text-sm text-green-700 font-medium">
+                  <div className="text-sm text-emerald-400/70 font-medium">
                     Completed
                   </div>
                 </div>
-
-                <div className="text-center p-4 bg-yellow-50 rounded-xl">
-                  <div className="text-2xl font-bold text-yellow-600 mb-1">
+                <div className="text-center p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                  <div className="text-2xl font-bold text-amber-400 mb-1">
                     {combinedStats.workingOn}
                   </div>
-                  <div className="text-sm text-yellow-700 font-medium">
+                  <div className="text-sm text-amber-400/70 font-medium">
                     In Progress
                   </div>
                 </div>
-
-                <div className="text-center p-4 bg-orange-50 rounded-xl">
-                  <div className="text-2xl font-bold text-orange-600 mb-1">
+                <div className="text-center p-4 bg-[#393E46] rounded-xl border border-[#EEEEEE]/10">
+                  <div className="text-2xl font-bold text-[#EEEEEE]/70 mb-1">
                     {combinedStats.applied}
                   </div>
-                  <div className="text-sm text-orange-700 font-medium">
-                    Planned/Applied
+                  <div className="text-sm text-[#EEEEEE]/50 font-medium">
+                    Planned
                   </div>
                 </div>
               </div>
-
-              <div className="mt-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-xl">
+              <div className="mt-6 p-4 bg-[#222831] rounded-xl">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-[#EEEEEE]/70">
                     Completion Rate
                   </span>
-                  <span className="text-sm font-bold text-red-600">
+                  <span className="text-sm font-bold text-[#00ADB5]">
                     {combinedStats.total > 0
                       ? Math.round(
                           (combinedStats.done / combinedStats.total) * 100
@@ -351,9 +293,9 @@ const ProfilePage = () => {
                     %
                   </span>
                 </div>
-                <div className="w-full bg-white/60 rounded-full h-2">
+                <div className="w-full bg-[#393E46] rounded-full h-2">
                   <div
-                    className="bg-gradient-to-r from-red-600 to-orange-600 rounded-full h-2 transition-all duration-500"
+                    className="bg-[#00ADB5] rounded-full h-2 transition-all duration-500"
                     style={{
                       width: `${
                         combinedStats.total > 0
@@ -366,44 +308,40 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            {/* Manual Contributions */}
+            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46]">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Target className="h-5 w-5 text-orange-600" />
+                <h3 className="text-lg font-semibold text-[#EEEEEE] flex items-center gap-2">
+                  <Target className="h-5 w-5 text-[#00ADB5]" />
                   Manual Contributions
                 </h3>
                 <button
                   onClick={() => setShowModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-600 to-green-600 text-white rounded-lg font-medium hover:from-orange-700 hover:to-green-700 transition-all duration-200 transform hover:scale-105"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all transform hover:scale-105"
                 >
                   <Plus className="h-4 w-4" />
-                  Add Contribution
+                  Add
                 </button>
               </div>
-
               {manualContributions.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-[#EEEEEE]/50">
                   <Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
                   <p className="text-sm">No manual contributions yet.</p>
-                  <p className="text-xs mt-1">
-                    Add contributions made outside this platform.
-                  </p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {manualContributions.map((contribution) => {
                     const statusConfig = getStatusConfig(contribution.status);
                     const StatusIcon = statusConfig.icon;
-
                     return (
                       <div
                         key={contribution.id}
-                        className="p-4 border border-gray-200 rounded-xl hover:shadow-md transition-all duration-200"
+                        className="p-4 border border-[#393E46] rounded-xl hover:border-[#00ADB5]/50 transition-all"
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="font-medium text-red-600">
+                              <span className="font-medium text-[#00ADB5]">
                                 {contribution.repository_name}
                               </span>
                               <div
@@ -414,31 +352,31 @@ const ProfilePage = () => {
                               </div>
                             </div>
                             {contribution.description && (
-                              <p className="text-sm text-gray-600 mb-2">
+                              <p className="text-sm text-[#EEEEEE]/60 mb-2">
                                 {contribution.description}
                               </p>
                             )}
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-[#EEEEEE]/40">
                               Added {formatDate(contribution.created_at)}
                             </p>
                           </div>
-
                           <div className="flex items-center gap-2 ml-4">
                             {contribution.contribution_link && (
                               <a
                                 href={contribution.contribution_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                                title="View contribution"
+                                className="p-2 bg-[#00ADB5]/20 text-[#00ADB5] rounded-lg hover:bg-[#00ADB5]/30 transition-colors"
                               >
                                 <ExternalLink className="h-4 w-4" />
                               </a>
                             )}
                             <button
-                              onClick={() => openEditModal(contribution)}
-                              className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
-                              title="Edit contribution"
+                              onClick={() => {
+                                setEditingContribution(contribution);
+                                setShowModal(true);
+                              }}
+                              className="p-2 bg-[#222831] text-[#EEEEEE]/60 rounded-lg hover:bg-[#222831]/80 transition-colors"
                             >
                               <Edit className="h-4 w-4" />
                             </button>
@@ -446,8 +384,7 @@ const ProfilePage = () => {
                               onClick={() =>
                                 handleDeleteContribution(contribution.id)
                               }
-                              className="p-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors"
-                              title="Delete contribution"
+                              className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -460,13 +397,13 @@ const ProfilePage = () => {
               )}
             </div>
 
+            {/* Languages */}
             {languageStats.length > 0 && (
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-                <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-orange-600" />
+              <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46]">
+                <h3 className="text-lg font-semibold text-[#EEEEEE] mb-6 flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-[#00ADB5]" />
                   Top Languages
                 </h3>
-
                 <div className="space-y-3">
                   {languageStats.map(([language, count], index) => (
                     <div
@@ -477,38 +414,34 @@ const ProfilePage = () => {
                         <div
                           className={`w-3 h-3 rounded-full ${
                             index === 0
-                              ? "bg-red-500"
+                              ? "bg-[#00ADB5]"
                               : index === 1
-                              ? "bg-orange-500"
+                              ? "bg-emerald-400"
                               : index === 2
-                              ? "bg-green-500"
-                              : index === 3
-                              ? "bg-yellow-500"
-                              : "bg-gray-500"
+                              ? "bg-amber-400"
+                              : "bg-[#EEEEEE]/40"
                           }`}
                         ></div>
-                        <span className="font-medium text-gray-900 capitalize">
+                        <span className="font-medium text-[#EEEEEE] capitalize">
                           {language}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-20 bg-gray-200 rounded-full h-2">
+                        <div className="w-20 bg-[#222831] rounded-full h-2">
                           <div
                             className={`h-2 rounded-full ${
                               index === 0
-                                ? "bg-red-500"
+                                ? "bg-[#00ADB5]"
                                 : index === 1
-                                ? "bg-orange-500"
+                                ? "bg-emerald-400"
                                 : index === 2
-                                ? "bg-green-500"
-                                : index === 3
-                                ? "bg-yellow-500"
-                                : "bg-gray-500"
+                                ? "bg-amber-400"
+                                : "bg-[#EEEEEE]/40"
                             }`}
                             style={{ width: `${(count / stats.total) * 100}%` }}
                           ></div>
                         </div>
-                        <span className="text-sm font-medium text-gray-600 w-8 text-right">
+                        <span className="text-sm font-medium text-[#EEEEEE]/60 w-8 text-right">
                           {count}
                         </span>
                       </div>
@@ -518,45 +451,43 @@ const ProfilePage = () => {
               </div>
             )}
 
-            <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
-                <Target className="h-5 w-5 text-green-600" />
+            {/* Quick Actions */}
+            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46]">
+              <h3 className="text-lg font-semibold text-[#EEEEEE] mb-6 flex items-center gap-2">
+                <Target className="h-5 w-5 text-emerald-400" />
                 Quick Actions
               </h3>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <button
                   onClick={() => navigate("/explore")}
-                  className="p-4 text-left bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+                  className="p-4 text-left bg-[#00ADB5]/10 hover:bg-[#00ADB5]/20 rounded-xl transition-colors border border-[#00ADB5]/20"
                 >
-                  <h4 className="font-medium text-red-900 mb-1">
+                  <h4 className="font-medium text-[#00ADB5] mb-1">
                     Explore Issues
                   </h4>
-                  <p className="text-sm text-red-700">
+                  <p className="text-sm text-[#00ADB5]/70">
                     Find new issues to contribute to
                   </p>
                 </button>
-
                 <button
                   onClick={() => navigate("/bookmarks")}
-                  className="p-4 text-left bg-orange-50 hover:bg-orange-100 rounded-xl transition-colors"
+                  className="p-4 text-left bg-amber-500/10 hover:bg-amber-500/20 rounded-xl transition-colors border border-amber-500/20"
                 >
-                  <h4 className="font-medium text-orange-900 mb-1">
+                  <h4 className="font-medium text-amber-400 mb-1">
                     View Bookmarks
                   </h4>
-                  <p className="text-sm text-orange-700">
+                  <p className="text-sm text-amber-400/70">
                     Manage your saved issues
                   </p>
                 </button>
-
                 <button
                   onClick={() => navigate("/status")}
-                  className="p-4 text-left bg-green-50 hover:bg-green-100 rounded-xl transition-colors"
+                  className="p-4 text-left bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl transition-colors border border-emerald-500/20"
                 >
-                  <h4 className="font-medium text-green-900 mb-1">
+                  <h4 className="font-medium text-emerald-400 mb-1">
                     Track Progress
                   </h4>
-                  <p className="text-sm text-green-700">
+                  <p className="text-sm text-emerald-400/70">
                     Monitor your contributions
                   </p>
                 </button>
@@ -568,8 +499,13 @@ const ProfilePage = () => {
 
       <ManualContributionModal
         isOpen={showModal}
-        onClose={closeModal}
-        onSubmit={handleModalSubmit}
+        onClose={() => {
+          setShowModal(false);
+          setEditingContribution(null);
+        }}
+        onSubmit={
+          editingContribution ? handleEditContribution : handleAddContribution
+        }
         editingContribution={editingContribution}
       />
     </>

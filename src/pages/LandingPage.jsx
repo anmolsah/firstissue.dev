@@ -12,6 +12,7 @@ import {
   Star,
   GitPullRequest,
   Target,
+  Sparkles,
 } from "lucide-react";
 
 const LandingPage = () => {
@@ -30,36 +31,30 @@ const LandingPage = () => {
 
   const fetchStats = async () => {
     try {
-      // Fetch total bookmarks
       const { count: totalBookmarks } = await supabase
         .from("bookmarks")
         .select("*", { count: "exact", head: true });
 
-      // Fetch total manual contributions
       const { count: totalManualContributions } = await supabase
         .from("manual_contributions")
         .select("*", { count: "exact", head: true });
 
-      // Fetch unique users (active contributors)
       const [bookmarkUsersResult, manualUsersResult] = await Promise.all([
         supabase.from("bookmarks").select("user_id"),
         supabase.from("manual_contributions").select("user_id"),
       ]);
 
-      // Combine unique users from both tables
       const allUsers = new Set([
         ...(bookmarkUsersResult.data?.map((u) => u.user_id) || []),
         ...(manualUsersResult.data?.map((u) => u.user_id) || []),
       ]);
       const activeUsers = allUsers.size;
 
-      // Fetch completed contributions from bookmarks
       const { count: completedBookmarks } = await supabase
         .from("bookmarks")
         .select("*", { count: "exact", head: true })
         .eq("status", "done");
 
-      // Fetch completed manual contributions
       const { count: completedManualContributions } = await supabase
         .from("manual_contributions")
         .select("*", { count: "exact", head: true })
@@ -68,23 +63,17 @@ const LandingPage = () => {
       const totalCompletedContributions =
         (completedBookmarks || 0) + (completedManualContributions || 0);
 
-      // Fetch unique languages
       const [bookmarkLanguagesResult, manualReposResult] = await Promise.all([
         supabase.from("bookmarks").select("language"),
         supabase.from("manual_contributions").select("repository_name"),
       ]);
 
-      // Extract languages from bookmarks
       const bookmarkLanguages = new Set(
         bookmarkLanguagesResult.data?.map((l) => l.language) || []
       );
-
-      // Extract unique repositories from manual contributions
       const manualRepos = new Set(
         manualReposResult.data?.map((r) => r.repository_name) || []
       );
-
-      // Combine for total coverage (languages + unique repos)
       const totalCoverage = bookmarkLanguages.size + manualRepos.size;
 
       setStats({
@@ -95,7 +84,6 @@ const LandingPage = () => {
       });
     } catch (error) {
       console.error("Error fetching stats:", error);
-      // Keep default values if error occurs
     } finally {
       setLoading(false);
     }
@@ -124,7 +112,7 @@ const LandingPage = () => {
       icon: Target,
       title: "Manual Tracker",
       description:
-        "Add and track contributions made outside the platform to get a complete view",
+        "Add and track contributions made outside the platform for a complete view",
     },
     {
       icon: Users,
@@ -161,22 +149,27 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen">
-      <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-medium mb-8">
-            <Github className="h-4 w-4 mr-2" />
+      {/* Hero Section */}
+      <section className="pt-20 pb-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Background gradient effects */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#00ADB5]/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#00ADB5]/10 rounded-full blur-3xl"></div>
+
+        <div className="max-w-4xl mx-auto text-center relative z-10">
+          <div className="inline-flex items-center px-4 py-2 bg-[#00ADB5]/20 text-[#00ADB5] rounded-full text-sm font-medium mb-8 border border-[#00ADB5]/30">
+            <Sparkles className="h-4 w-4 mr-2" />
             Your Gateway to Open Source Contributions
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-red-600 via-orange-600 to-green-600 bg-clip-text text-transparent mb-8 leading-tight">
-            Find Your First
+          <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+            <span className="text-[#00ADB5]">Find Your First</span>
             <br />
-            <span className="text-gray-900">Open Source</span>
+            <span className="text-[#EEEEEE]">Open Source</span>
             <br />
-            Contribution
+            <span className="text-[#EEEEEE]">Contribution</span>
           </h1>
 
-          <p className="text-xl md:text-2xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-xl md:text-2xl text-[#EEEEEE]/70 mb-12 max-w-3xl mx-auto leading-relaxed">
             Discover beginner-friendly GitHub issues, track your progress, and
             start your open source journey with confidence.
           </p>
@@ -184,47 +177,59 @@ const LandingPage = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               to={user ? "/explore" : "/signup"}
-              className="group px-8 py-4 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-xl font-semibold text-lg hover:from-red-700 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center"
+              className="group px-8 py-4 bg-[#00ADB5] text-[#222831] rounded-xl font-semibold text-lg hover:bg-[#00d4de] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#00ADB5]/25 flex items-center"
             >
               {user ? "Explore Issues" : "Get Started"}
+              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <Link
+              to="/getting-started"
+              className="px-8 py-4 border border-[#393E46] text-[#EEEEEE] rounded-xl font-semibold text-lg hover:border-[#00ADB5] hover:text-[#00ADB5] transition-all duration-300 flex items-center"
+            >
+              <Github className="mr-2 h-5 w-5" />
+              Learn to Contribute
             </Link>
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-white/50 backdrop-blur-sm">
+      {/* Stats Section */}
+      <section className="py-20 bg-[#393E46]/30 backdrop-blur-sm border-y border-[#393E46]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl font-bold text-[#EEEEEE] mb-4">
               Join Our Growing Community
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-[#EEEEEE]/60">
               Real-time statistics from our platform
             </p>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {dynamicStats.map((stat, index) => (
               <div key={index} className="text-center group">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-red-500 to-orange-600 rounded-2xl mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <stat.icon className="h-8 w-8 text-white" />
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-[#00ADB5]/20 rounded-2xl mb-4 group-hover:scale-110 group-hover:bg-[#00ADB5]/30 transition-all duration-300 border border-[#00ADB5]/30">
+                  <stat.icon className="h-8 w-8 text-[#00ADB5]" />
                 </div>
-                <div className="text-3xl font-bold text-gray-900 mb-2">
+                <div className="text-3xl font-bold text-[#EEEEEE] mb-2">
                   {stat.value}
                 </div>
-                <div className="text-gray-600 font-medium">{stat.label}</div>
+                <div className="text-[#EEEEEE]/60 font-medium">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Features Section */}
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-4xl font-bold text-[#EEEEEE] mb-4">
               Everything You Need to Start Contributing
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-[#EEEEEE]/60 max-w-2xl mx-auto">
               Our platform provides all the tools and guidance you need to make
               your first open source contribution.
             </p>
@@ -234,15 +239,15 @@ const LandingPage = () => {
             {features.map((feature, index) => (
               <div
                 key={index}
-                className="group p-6 bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+                className="group p-6 bg-[#393E46]/50 backdrop-blur-sm rounded-2xl border border-[#393E46] hover:border-[#00ADB5]/50 hover:shadow-xl hover:shadow-[#00ADB5]/10 transition-all duration-300 hover:-translate-y-2"
               >
-                <div className="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-red-500 to-orange-600 rounded-xl mb-6 group-hover:scale-110 transition-transform duration-300">
-                  <feature.icon className="h-6 w-6 text-white" />
+                <div className="inline-flex items-center justify-center w-12 h-12 bg-[#00ADB5]/20 rounded-xl mb-6 group-hover:scale-110 group-hover:bg-[#00ADB5]/30 transition-all duration-300">
+                  <feature.icon className="h-6 w-6 text-[#00ADB5]" />
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-[#EEEEEE] mb-3">
                   {feature.title}
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
+                <p className="text-[#EEEEEE]/60 leading-relaxed text-sm">
                   {feature.description}
                 </p>
               </div>
@@ -251,22 +256,28 @@ const LandingPage = () => {
         </div>
       </section>
 
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-red-600 via-orange-600 to-green-600">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
-            Ready to Start Your Open Source Journey?
-          </h2>
-          <p className="text-xl text-red-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of developers who have made their first contributions
-            with Open Source Buddy.
-          </p>
-          <Link
-            to={user ? "/explore" : "/signup"}
-            className="inline-flex items-center px-8 py-4 bg-white text-red-600 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105 shadow-lg"
-          >
-            {user ? "Start Exploring" : "Join Now - It's Free"}
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
+      {/* CTA Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-gradient-to-r from-[#00ADB5]/20 to-[#393E46]/50 rounded-3xl p-12 text-center border border-[#00ADB5]/30 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#00ADB5]/10 rounded-full blur-3xl"></div>
+            <div className="relative z-10">
+              <h2 className="text-4xl font-bold text-[#EEEEEE] mb-6">
+                Ready to Start Your Open Source Journey?
+              </h2>
+              <p className="text-xl text-[#EEEEEE]/70 mb-8 max-w-2xl mx-auto">
+                Join thousands of developers who have made their first
+                contributions with FirstIssue.dev.
+              </p>
+              <Link
+                to={user ? "/explore" : "/signup"}
+                className="inline-flex items-center px-8 py-4 bg-[#00ADB5] text-[#222831] rounded-xl font-semibold text-lg hover:bg-[#00d4de] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#00ADB5]/25"
+              >
+                {user ? "Start Exploring" : "Join Now - It's Free"}
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
     </div>

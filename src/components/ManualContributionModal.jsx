@@ -21,36 +21,32 @@ const ManualContributionModal = ({
       value: "planned",
       label: "Planned",
       icon: AlertCircle,
-      color: "text-gray-600",
+      color: "text-[#EEEEEE]/60",
     },
     {
       value: "in_progress",
       label: "In Progress",
       icon: Plus,
-      color: "text-orange-600",
+      color: "text-[#00ADB5]",
     },
     {
       value: "completed",
       label: "Completed",
       icon: CheckCircle,
-      color: "text-green-600",
+      color: "text-emerald-400",
     },
   ];
 
   const validateForm = () => {
     const newErrors = {};
-
     if (!formData.repository_name.trim()) {
       newErrors.repository_name = "Repository name is required";
     } else if (!formData.repository_name.includes("/")) {
-      newErrors.repository_name =
-        "Please use format: owner/repository (e.g., facebook/react)";
+      newErrors.repository_name = "Please use format: owner/repository";
     }
-
     if (formData.contribution_link && !isValidUrl(formData.contribution_link)) {
       newErrors.contribution_link = "Please enter a valid URL";
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -66,9 +62,7 @@ const ManualContributionModal = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) return;
-
     setLoading(true);
     try {
       await onSubmit(formData);
@@ -93,33 +87,30 @@ const ManualContributionModal = ({
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
+    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-[#393E46] rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto border border-[#EEEEEE]/10">
+        <div className="flex items-center justify-between p-6 border-b border-[#EEEEEE]/10">
+          <h2 className="text-xl font-semibold text-[#EEEEEE]">
             {editingContribution
               ? "Edit Manual Contribution"
               : "Add Manual Contribution"}
           </h2>
           <button
             onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-[#222831] rounded-lg transition-colors"
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5 text-[#EEEEEE]/60" />
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
               Repository Name *
             </label>
             <input
@@ -127,22 +118,20 @@ const ManualContributionModal = ({
               value={formData.repository_name}
               onChange={(e) => handleChange("repository_name", e.target.value)}
               placeholder="e.g., facebook/react"
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-                errors.repository_name ? "border-red-300" : "border-gray-300"
+              className={`w-full px-3 py-2 bg-[#222831] border rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40 ${
+                errors.repository_name
+                  ? "border-red-400"
+                  : "border-[#EEEEEE]/20"
               }`}
             />
             {errors.repository_name && (
-              <p className="text-red-600 text-sm mt-1">
+              <p className="text-red-400 text-sm mt-1">
                 {errors.repository_name}
               </p>
             )}
-            <p className="text-gray-500 text-xs mt-1">
-              Format: owner/repository (e.g., microsoft/vscode)
-            </p>
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
               Contribution Link (Optional)
             </label>
             <div className="relative">
@@ -153,43 +142,38 @@ const ManualContributionModal = ({
                   handleChange("contribution_link", e.target.value)
                 }
                 placeholder="https://github.com/owner/repo/pull/123"
-                className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 pr-10 bg-[#222831] border rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40 ${
                   errors.contribution_link
-                    ? "border-red-300"
-                    : "border-gray-300"
+                    ? "border-red-400"
+                    : "border-[#EEEEEE]/20"
                 }`}
               />
-              <ExternalLink className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <ExternalLink className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-[#EEEEEE]/40" />
             </div>
             {errors.contribution_link && (
-              <p className="text-red-600 text-sm mt-1">
+              <p className="text-red-400 text-sm mt-1">
                 {errors.contribution_link}
               </p>
             )}
-            <p className="text-gray-500 text-xs mt-1">
-              Link to your PR, issue, or contribution
-            </p>
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
               Description (Optional)
             </label>
             <textarea
               value={formData.description}
               onChange={(e) => handleChange("description", e.target.value)}
-              placeholder="Brief summary of your contribution..."
+              placeholder="Brief summary..."
               rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+              className="w-full px-3 py-2 bg-[#222831] border border-[#EEEEEE]/20 rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40 resize-none"
               maxLength={200}
             />
-            <p className="text-gray-500 text-xs mt-1">
-              {formData.description.length}/200 characters
+            <p className="text-[#EEEEEE]/50 text-xs mt-1">
+              {formData.description.length}/200
             </p>
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
               Status *
             </label>
             <div className="grid grid-cols-1 gap-2">
@@ -198,8 +182,8 @@ const ManualContributionModal = ({
                   key={value}
                   className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all ${
                     formData.status === value
-                      ? "border-red-500 bg-red-50"
-                      : "border-gray-200 hover:border-gray-300"
+                      ? "border-[#00ADB5] bg-[#00ADB5]/10"
+                      : "border-[#EEEEEE]/20 hover:border-[#EEEEEE]/40"
                   }`}
                 >
                   <input
@@ -211,30 +195,25 @@ const ManualContributionModal = ({
                     className="sr-only"
                   />
                   <Icon className={`h-5 w-5 mr-3 ${color}`} />
-                  <span className="font-medium text-gray-900">{label}</span>
+                  <span className="font-medium text-[#EEEEEE]">{label}</span>
                 </label>
               ))}
             </div>
           </div>
-
           <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={handleClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex-1 px-4 py-2 border border-[#EEEEEE]/20 text-[#EEEEEE] rounded-lg hover:bg-[#222831] transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-lg font-medium hover:from-red-700 hover:to-orange-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-4 py-2 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all disabled:opacity-50"
             >
-              {loading
-                ? "Saving..."
-                : editingContribution
-                ? "Update"
-                : "Add Contribution"}
+              {loading ? "Saving..." : editingContribution ? "Update" : "Add"}
             </button>
           </div>
         </form>

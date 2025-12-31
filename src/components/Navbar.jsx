@@ -2,7 +2,6 @@ import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import {
-  Code2,
   Menu,
   X,
   User,
@@ -10,6 +9,7 @@ import {
   BarChart3,
   Search,
   Heart,
+  Rocket,
 } from "lucide-react";
 import logo from "../assets/logo01.png";
 
@@ -30,23 +30,28 @@ const Navbar = () => {
   const navLinks = user
     ? [
         { to: "/explore", icon: Search, label: "Explore" },
+        { to: "/getting-started", icon: Rocket, label: "Guide" },
         { to: "/bookmarks", icon: Bookmark, label: "Bookmarks" },
         { to: "/status", icon: BarChart3, label: "Status" },
         { to: "/profile", icon: User, label: "Profile" },
-        { to: "/support", icon: Heart, label: "Support Me" },
+        { to: "/support", icon: Heart, label: "Support" },
       ]
-    : [{ to: "/support", icon: Heart, label: "Support Me" }];
+    : [
+        { to: "/getting-started", icon: Rocket, label: "Guide" },
+        { to: "/support", icon: Heart, label: "Support" },
+      ];
 
   return (
-    <nav className="bg-white/80 backdrop-blur-md border-b border-white/20 sticky top-0 z-50">
+    <nav className="bg-[#222831]/95 backdrop-blur-md border-b border-[#393E46] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link
             to="/"
-            className="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors"
+            className="flex items-center space-x-2 text-[#00ADB5] hover:text-[#00d4de] transition-colors"
           >
-            <img className="w-8 h-8" src={logo} alt="" />
-            <span className="text-xl font-bold">FirstIssue.dev</span>
+            <span className="text-xl font-bold text-[#EEEEEE]">
+              FirstIssue.dev
+            </span>
           </Link>
 
           <div className="hidden md:flex items-center space-x-1">
@@ -56,17 +61,13 @@ const Navbar = () => {
                 to={to}
                 className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                   isActive(to)
-                    ? "bg-green-100 text-green-700"
+                    ? "bg-[#00ADB5] text-[#222831]"
                     : to === "/support"
-                    ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                    : "text-gray-600 hover:text-red-600 hover:bg-red-50"
+                    ? "text-[#00ADB5] hover:text-[#00d4de] hover:bg-[#393E46]"
+                    : "text-[#EEEEEE]/80 hover:text-[#00ADB5] hover:bg-[#393E46]"
                 }`}
               >
-                <Icon
-                  className={`h-4 w-4 ${
-                    to === "/support" ? "text-orange-600" : ""
-                  }`}
-                />
+                <Icon className="h-4 w-4" />
                 <span>{label}</span>
               </Link>
             ))}
@@ -74,7 +75,7 @@ const Navbar = () => {
             {user ? (
               <button
                 onClick={handleSignOut}
-                className="ml-4 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-orange-600 rounded-lg hover:from-red-700 hover:to-orange-700 transition-all duration-200 transform hover:scale-105"
+                className="ml-4 px-4 py-2 text-sm font-medium text-[#222831] bg-[#00ADB5] rounded-lg hover:bg-[#00d4de] transition-all duration-200 transform hover:scale-105"
               >
                 Sign Out
               </button>
@@ -82,13 +83,13 @@ const Navbar = () => {
               <div className="flex items-center space-x-2 ml-4">
                 <Link
                   to="/login"
-                  className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-[#EEEEEE] hover:text-[#00ADB5] transition-colors"
                 >
                   Login
                 </Link>
                 <Link
                   to="/signup"
-                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-orange-600 rounded-lg hover:from-red-700 hover:to-orange-700 transition-all duration-200 transform hover:scale-105"
+                  className="px-4 py-2 text-sm font-medium text-[#222831] bg-[#00ADB5] rounded-lg hover:bg-[#00d4de] transition-all duration-200 transform hover:scale-105"
                 >
                   Sign Up
                 </Link>
@@ -100,7 +101,7 @@ const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg text-gray-600 hover:text-red-600 hover:bg-red-50 transition-colors"
+              className="p-2 rounded-lg text-[#EEEEEE] hover:text-[#00ADB5] hover:bg-[#393E46] transition-colors"
             >
               {isOpen ? (
                 <X className="h-6 w-6" />
@@ -122,17 +123,13 @@ const Navbar = () => {
                   onClick={() => setIsOpen(false)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive(to)
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-[#00ADB5] text-[#222831]"
                       : to === "/support"
-                      ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50"
-                      : "text-gray-600 hover:text-red-600 hover:bg-red-50"
+                      ? "text-[#00ADB5] hover:text-[#00d4de] hover:bg-[#393E46]"
+                      : "text-[#EEEEEE]/80 hover:text-[#00ADB5] hover:bg-[#393E46]"
                   }`}
                 >
-                  <Icon
-                    className={`h-4 w-4 ${
-                      to === "/support" ? "text-orange-600" : ""
-                    }`}
-                  />
+                  <Icon className="h-4 w-4" />
                   <span>{label}</span>
                 </Link>
               ))}
@@ -140,23 +137,23 @@ const Navbar = () => {
               {user ? (
                 <button
                   onClick={handleSignOut}
-                  className="w-full text-left px-3 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                  className="w-full text-left px-3 py-2 text-sm font-medium text-[#00ADB5] hover:text-[#00d4de] hover:bg-[#393E46] rounded-lg transition-colors"
                 >
                   Sign Out
                 </button>
               ) : (
-                <div className="pt-2 border-t border-gray-200">
+                <div className="pt-2 border-t border-[#393E46]">
                   <Link
                     to="/login"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="block px-3 py-2 text-sm font-medium text-[#EEEEEE]/80 hover:text-[#00ADB5] hover:bg-[#393E46] rounded-lg transition-colors"
                   >
                     Login
                   </Link>
                   <Link
                     to="/signup"
                     onClick={() => setIsOpen(false)}
-                    className="block px-3 py-2 text-sm font-medium text-white bg-gradient-to-r from-red-600 to-orange-600 rounded-lg hover:from-red-700 hover:to-orange-700 transition-all duration-200 mt-1"
+                    className="block px-3 py-2 text-sm font-medium text-[#222831] bg-[#00ADB5] rounded-lg hover:bg-[#00d4de] transition-all duration-200 mt-1"
                   >
                     Sign Up
                   </Link>

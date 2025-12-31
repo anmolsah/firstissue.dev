@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import {
-  Mail,
-  Lock,
-  Github,
-  UserPlus,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react";
+import { Mail, Lock, Github, AlertCircle, CheckCircle } from "lucide-react";
 import logo from "../assets/logo01.png";
 
 const SignupPage = () => {
@@ -24,9 +17,7 @@ const SignupPage = () => {
   const [success, setSuccess] = useState(false);
 
   React.useEffect(() => {
-    if (user) {
-      navigate("/");
-    }
+    if (user) navigate("/");
   }, [user, navigate]);
 
   const handleSubmit = async (e) => {
@@ -40,7 +31,6 @@ const SignupPage = () => {
       setLoading(false);
       return;
     }
-
     if (formData.password.length < 6) {
       setError("Password must be at least 6 characters long");
       setLoading(false);
@@ -48,93 +38,78 @@ const SignupPage = () => {
     }
 
     const { error } = await signUp(formData.email, formData.password);
-
-    if (error) {
-      setError(error.message);
-    } else {
+    if (error) setError(error.message);
+    else {
       setSuccess(true);
-      // Auto-navigate after successful signup
-      setTimeout(() => {
-        navigate("/");
-      }, 2000);
+      setTimeout(() => navigate("/"), 2000);
     }
-
     setLoading(false);
   };
 
   const handleGitHubSignIn = async () => {
     setLoading(true);
     setError("");
-
     const { error } = await signInWithGitHub();
-
-    if (error) {
-      setError(error.message);
-    }
-
+    if (error) setError(error.message);
     setLoading(false);
   };
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
-        <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-white/20 p-8 shadow-xl">
+        <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl border border-[#393E46] p-8 shadow-xl">
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-2">
-              <img src={logo} className="h-16 w-16 text-white" />
+              {/* <img src={logo} className="h-16 w-16" alt="Logo" /> */}
             </div>
-
             <div className="flex items-center justify-center gap-2">
-              <p className="text-3xl font-bold text-gray-600 m-0 p-0">Join</p>
-              <p className="text-3xl font-bold text-red-600 hover:text-red-700 transition-colors m-0 p-0">
+              <p className="text-3xl font-bold text-[#EEEEEE]/60 m-0 p-0">
+                Join
+              </p>
+              <p className="text-3xl font-bold text-[#00ADB5] m-0 p-0">
                 FirstIssue.dev
               </p>
             </div>
-
-            <p className="text-gray-600">
+            <p className="text-[#EEEEEE]/60 mt-2">
               Start your open source contribution journey today
             </p>
           </div>
 
           {success && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0" />
-              <span className="text-green-700 text-sm">
+            <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0" />
+              <span className="text-emerald-400 text-sm">
                 Account created successfully! Redirecting...
               </span>
             </div>
           )}
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-              <span className="text-red-700 text-sm">{error}</span>
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2">
+              <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
+              <span className="text-red-400 text-sm">{error}</span>
             </div>
           )}
 
           <button
             onClick={handleGitHubSignIn}
             disabled={loading || success}
-            className="w-full mb-6 flex items-center justify-center gap-3 px-4 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full mb-6 flex items-center justify-center gap-3 px-4 py-3 bg-[#222831] text-[#EEEEEE] rounded-lg font-medium hover:bg-[#222831]/80 border border-[#393E46] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Github className="h-5 w-5" />
             Continue with GitHub
           </button>
 
-          {/* Divider */}
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t border-[#393E46]"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">
+              <span className="px-2 bg-[#393E46]/50 text-[#EEEEEE]/50">
                 Or sign up with email
               </span>
             </div>
@@ -144,12 +119,12 @@ const SignupPage = () => {
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#EEEEEE] mb-2"
               >
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#EEEEEE]/40" />
                 <input
                   id="email"
                   name="email"
@@ -157,7 +132,7 @@ const SignupPage = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40"
                   placeholder="Enter your email"
                 />
               </div>
@@ -166,12 +141,12 @@ const SignupPage = () => {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#EEEEEE] mb-2"
               >
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#EEEEEE]/40" />
                 <input
                   id="password"
                   name="password"
@@ -179,11 +154,11 @@ const SignupPage = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40"
                   placeholder="Create a password"
                 />
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-[#EEEEEE]/50 mt-1">
                 Must be at least 6 characters long
               </p>
             </div>
@@ -191,12 +166,12 @@ const SignupPage = () => {
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 mb-2"
+                className="block text-sm font-medium text-[#EEEEEE] mb-2"
               >
                 Confirm Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#EEEEEE]/40" />
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -204,7 +179,7 @@ const SignupPage = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-3 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40"
                   placeholder="Confirm your password"
                 />
               </div>
@@ -213,18 +188,18 @@ const SignupPage = () => {
             <button
               type="submit"
               disabled={loading || success}
-              className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-orange-600 text-white rounded-lg font-medium hover:from-red-700 hover:to-orange-700 transition-all duration-200 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full px-4 py-3 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
           <div className="mt-8 text-center">
-            <p className="text-gray-600">
+            <p className="text-[#EEEEEE]/60">
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="text-red-600 hover:text-red-700 font-medium"
+                className="text-[#00ADB5] hover:text-[#00d4de] font-medium"
               >
                 Sign in
               </Link>
