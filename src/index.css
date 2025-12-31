@@ -1,6 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
 
+/* Custom xs breakpoint for extra small screens */
+@custom-media --xs (min-width: 480px);
+
+@theme {
+  --breakpoint-xs: 480px;
+}
+
 :root {
   --color-dark: #222831;
   --color-dark-secondary: #393e46;
@@ -128,4 +135,43 @@ textarea:focus {
 ::selection {
   background: var(--color-accent);
   color: var(--color-dark);
+}
+
+/* Responsive utilities */
+@media (max-width: 479px) {
+  .hide-xs {
+    display: none !important;
+  }
+}
+
+@media (min-width: 480px) {
+  .show-xs {
+    display: block !important;
+  }
+}
+
+/* Touch-friendly tap targets */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Prevent text overflow */
+.truncate-responsive {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+/* Safe area padding for mobile devices */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
 }

@@ -242,16 +242,14 @@ const ExplorePage = () => {
           return newSet;
         });
       } else {
-        const { error } = await supabase
-          .from("bookmarks")
-          .insert({
-            user_id: user.id,
-            title: issue.title,
-            issue_url: issue.html_url,
-            repo_name: issue.repository_url.split("/").slice(-2).join("/"),
-            language: filters.language || "unknown",
-            status: "saved",
-          });
+        const { error } = await supabase.from("bookmarks").insert({
+          user_id: user.id,
+          title: issue.title,
+          issue_url: issue.html_url,
+          repo_name: issue.repository_url.split("/").slice(-2).join("/"),
+          language: filters.language || "unknown",
+          status: "saved",
+        });
         if (error) throw error;
         setBookmarkedIssues((prev) => new Set([...prev, issue.html_url]));
       }
@@ -310,25 +308,25 @@ const ExplorePage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
+      <div className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-[#EEEEEE] mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[#EEEEEE] mb-2">
               Explore Open Source Issues
             </h1>
-            <p className="text-[#EEEEEE]/60">
+            <p className="text-sm sm:text-base text-[#EEEEEE]/60">
               Discover high-quality, beginner-friendly issues from active
               repositories
             </p>
           </div>
-          <div className="text-right">
+          <div className="flex items-center justify-between sm:justify-end sm:flex-col sm:text-right gap-2">
             <div className="text-sm text-[#EEEEEE]/50">
               {totalCount > 0 && `${totalCount.toLocaleString()} issues found`}
             </div>
             <button
               onClick={resetAndFetch}
               disabled={loading}
-              className="mt-1 flex items-center gap-2 px-3 py-1 text-sm text-[#00ADB5] hover:text-[#00d4de] disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-2 sm:py-1 text-sm text-[#00ADB5] hover:text-[#00d4de] disabled:opacity-50 bg-[#393E46]/50 sm:bg-transparent rounded-lg sm:rounded-none"
             >
               <RefreshCw
                 className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
@@ -354,20 +352,20 @@ const ExplorePage = () => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl p-2 mb-8 border border-[#393E46]">
-        <div className="flex gap-2">
+      <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl p-1.5 sm:p-2 mb-6 sm:mb-8 border border-[#393E46]">
+        <div className="flex gap-1 sm:gap-2">
           <button
             onClick={() => setSelectedTab("github")}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
               selectedTab === "github"
                 ? "bg-[#00ADB5] text-[#222831] shadow-lg"
                 : "text-[#EEEEEE]/60 hover:text-[#00ADB5] hover:bg-[#222831]"
             }`}
           >
-            <Search className="h-5 w-5" />
-            GitHub Issues
+            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden xs:inline">GitHub</span> Issues
             <span
-              className={`px-2 py-1 text-xs rounded-full ${
+              className={`hidden sm:inline px-2 py-1 text-xs rounded-full ${
                 selectedTab === "github"
                   ? "bg-[#222831]/30 text-[#222831]"
                   : "bg-[#222831] text-[#EEEEEE]/60"
@@ -378,16 +376,16 @@ const ExplorePage = () => {
           </button>
           <button
             onClick={() => setSelectedTab("trusted")}
-            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-medium transition-all duration-200 ${
+            className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
               selectedTab === "trusted"
                 ? "bg-[#00ADB5] text-[#222831] shadow-lg"
                 : "text-[#EEEEEE]/60 hover:text-[#00ADB5] hover:bg-[#222831]"
             }`}
           >
-            <Award className="h-5 w-5" />
-            Trusted Repos
+            <Award className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden xs:inline">Trusted</span> Repos
             <span
-              className={`px-2 py-1 text-xs rounded-full ${
+              className={`hidden sm:inline px-2 py-1 text-xs rounded-full ${
                 selectedTab === "trusted"
                   ? "bg-[#222831]/30 text-[#222831]"
                   : "bg-[#222831] text-[#EEEEEE]/60"
@@ -401,8 +399,8 @@ const ExplorePage = () => {
 
       {/* Advanced Filters */}
       {selectedTab === "github" && (
-        <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 mb-8 border border-[#393E46]">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-[#393E46]">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
@@ -443,12 +441,12 @@ const ExplorePage = () => {
                 <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
                   Issue Labels
                 </label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5 sm:gap-2">
                   {labelOptions.map(({ value, label, color }) => (
                     <button
                       key={value}
                       onClick={() => toggleLabel(value)}
-                      className={`px-3 py-1 text-xs font-medium rounded-full transition-all ${
+                      className={`px-2 sm:px-3 py-1 text-xs font-medium rounded-full transition-all ${
                         filters.labels.includes(value)
                           ? `bg-${color}-500/30 text-${color}-400 ring-2 ring-${color}-500/50`
                           : "bg-[#222831] text-[#EEEEEE]/60 hover:bg-[#222831]/80"
@@ -582,28 +580,30 @@ const ExplorePage = () => {
                   return (
                     <div
                       key={issue.id}
-                      className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46] hover:border-[#00ADB5]/50 transition-all duration-300 hover:-translate-y-1"
+                      className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#393E46] hover:border-[#00ADB5]/50 transition-all duration-300 hover:-translate-y-1"
                     >
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4">
+                        <div className="flex items-center gap-3 min-w-0">
                           <img
                             src={issue.user.avatar_url}
                             alt={repoInfo.owner}
-                            className="h-8 w-8 rounded-full"
+                            className="h-8 w-8 rounded-full flex-shrink-0"
                           />
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-[#00ADB5]">
+                          <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="text-sm font-medium text-[#00ADB5] truncate">
                                 {repoInfo.fullName}
                               </span>
                               {isVerified && (
-                                <div className="flex items-center gap-1 px-2 py-1 bg-[#00ADB5]/20 text-[#00ADB5] rounded-full text-xs font-medium">
+                                <div className="flex items-center gap-1 px-2 py-0.5 bg-[#00ADB5]/20 text-[#00ADB5] rounded-full text-xs font-medium flex-shrink-0">
                                   <Shield className="h-3 w-3" />
-                                  Verified
+                                  <span className="hidden xs:inline">
+                                    Verified
+                                  </span>
                                 </div>
                               )}
                             </div>
-                            <div className="flex items-center gap-3 text-xs text-[#EEEEEE]/50 mt-1">
+                            <div className="flex items-center gap-2 sm:gap-3 text-xs text-[#EEEEEE]/50 mt-1">
                               <span className="flex items-center gap-1">
                                 <Star className="h-3 w-3" />
                                 {formatNumber(issue.score || 0)}
@@ -612,17 +612,17 @@ const ExplorePage = () => {
                                 <GitFork className="h-3 w-3" />
                                 {formatNumber(Math.floor(Math.random() * 1000))}
                               </span>
-                              <span className="flex items-center gap-1">
+                              <span className="hidden xs:flex items-center gap-1">
                                 <Users className="h-3 w-3" />
                                 {formatNumber(Math.floor(Math.random() * 100))}
                               </span>
                             </div>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 self-end sm:self-auto">
                           <button
                             onClick={() => handleBookmark(issue)}
-                            className={`p-2 rounded-lg transition-all duration-200 ${
+                            className={`p-2.5 sm:p-2 rounded-lg transition-all duration-200 ${
                               user && bookmarkedIssues.has(issue.html_url)
                                 ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
                                 : "bg-[#222831] text-[#EEEEEE]/60 hover:bg-[#00ADB5]/20 hover:text-[#00ADB5]"
@@ -643,7 +643,7 @@ const ExplorePage = () => {
                           </button>
                           <button
                             onClick={() => handleGitHubView(issue.html_url)}
-                            className="p-2 bg-[#00ADB5]/20 text-[#00ADB5] rounded-lg hover:bg-[#00ADB5]/30 transition-colors"
+                            className="p-2.5 sm:p-2 bg-[#00ADB5]/20 text-[#00ADB5] rounded-lg hover:bg-[#00ADB5]/30 transition-colors"
                             title={user ? "View on GitHub" : "Sign in to view"}
                           >
                             <ExternalLink className="h-5 w-5" />
@@ -651,11 +651,11 @@ const ExplorePage = () => {
                         </div>
                       </div>
                       <div className="mb-4">
-                        <div className="flex items-center gap-2 mb-3">
-                          {issue.labels.slice(0, 4).map((label) => (
+                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-3">
+                          {issue.labels.slice(0, 3).map((label) => (
                             <span
                               key={label.id}
-                              className="px-2 py-1 text-xs font-medium rounded-full"
+                              className="px-2 py-0.5 sm:py-1 text-xs font-medium rounded-full truncate max-w-[120px] sm:max-w-none"
                               style={{
                                 backgroundColor: `#${label.color}20`,
                                 color: `#${label.color}`,
@@ -664,26 +664,29 @@ const ExplorePage = () => {
                               {label.name}
                             </span>
                           ))}
-                          {issue.labels.length > 4 && (
-                            <span className="px-2 py-1 text-xs font-medium bg-[#222831] text-[#EEEEEE]/60 rounded-full">
-                              +{issue.labels.length - 4} more
+                          {issue.labels.length > 3 && (
+                            <span className="px-2 py-0.5 sm:py-1 text-xs font-medium bg-[#222831] text-[#EEEEEE]/60 rounded-full">
+                              +{issue.labels.length - 3}
                             </span>
                           )}
                         </div>
-                        <h3 className="text-lg font-semibold text-[#EEEEEE] mb-2 line-clamp-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-[#EEEEEE] mb-2 line-clamp-2">
                           {issue.title}
                         </h3>
-                        <p className="text-[#EEEEEE]/60 text-sm line-clamp-3 mb-4">
+                        <p className="text-[#EEEEEE]/60 text-sm line-clamp-2 sm:line-clamp-3 mb-4">
                           {issue.body
                             ? issue.body.substring(0, 300) + "..."
                             : "No description available"}
                         </p>
                       </div>
-                      <div className="flex items-center justify-between text-sm text-[#EEEEEE]/50">
-                        <div className="flex items-center gap-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-[#EEEEEE]/50">
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                           <span className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />
-                            Updated {formatDate(issue.updated_at)}
+                            <span className="hidden xs:inline">
+                              Updated
+                            </span>{" "}
+                            {formatDate(issue.updated_at)}
                           </span>
                           <span className="flex items-center gap-1">
                             💬 {issue.comments}
@@ -698,7 +701,9 @@ const ExplorePage = () => {
                             alt={issue.user.login}
                             className="h-5 w-5 rounded-full"
                           />
-                          <span>{issue.user.login}</span>
+                          <span className="truncate max-w-[100px] sm:max-w-none">
+                            {issue.user.login}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -731,19 +736,19 @@ const ExplorePage = () => {
         )
       ) : (
         <div>
-          <div className="mb-6 p-6 bg-gradient-to-r from-[#00ADB5]/20 to-[#393E46]/50 rounded-2xl border border-[#00ADB5]/30">
-            <div className="flex items-center gap-3 mb-3">
-              <Award className="h-8 w-8 text-[#00ADB5]" />
+          <div className="mb-6 p-4 sm:p-6 bg-gradient-to-r from-[#00ADB5]/20 to-[#393E46]/50 rounded-xl sm:rounded-2xl border border-[#00ADB5]/30">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
+              <Award className="h-8 w-8 text-[#00ADB5] flex-shrink-0" />
               <div>
-                <h2 className="text-2xl font-bold text-[#EEEEEE]">
+                <h2 className="text-xl sm:text-2xl font-bold text-[#EEEEEE]">
                   Trusted Repositories
                 </h2>
-                <p className="text-[#EEEEEE]/60">
+                <p className="text-sm sm:text-base text-[#EEEEEE]/60">
                   Hand-picked, beginner-friendly open source projects
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-6 text-sm text-[#EEEEEE]/60">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-[#EEEEEE]/60">
               <div className="flex items-center gap-1">
                 <CheckCircle className="h-4 w-4 text-[#00ADB5]" />
                 Verified Quality
@@ -766,20 +771,20 @@ const ExplorePage = () => {
               </span>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
               {trustedRepos.map((repo) => (
                 <div
                   key={repo.id}
-                  className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46] hover:border-[#00ADB5]/50 transition-all duration-300 hover:-translate-y-1"
+                  className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#393E46] hover:border-[#00ADB5]/50 transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-lg font-semibold text-[#EEEEEE]">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <span className="text-base sm:text-lg font-semibold text-[#EEEEEE] truncate">
                           {repo.title}
                         </span>
                         <div
-                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          className={`px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0 ${
                             repo.difficulty === "beginner"
                               ? "bg-emerald-500/20 text-emerald-400"
                               : repo.difficulty === "intermediate"
@@ -790,7 +795,7 @@ const ExplorePage = () => {
                           {repo.difficulty}
                         </div>
                       </div>
-                      <div className="text-sm text-[#00ADB5] font-medium mb-2">
+                      <div className="text-sm text-[#00ADB5] font-medium mb-2 truncate">
                         {repo.name}
                       </div>
                       <p className="text-[#EEEEEE]/60 text-sm line-clamp-2 mb-3">
@@ -798,7 +803,7 @@ const ExplorePage = () => {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 mb-4 text-sm text-[#EEEEEE]/50">
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-4 text-sm text-[#EEEEEE]/50">
                     <span className="flex items-center gap-1">
                       <Star className="h-4 w-4" />
                       {formatNumber(repo.stars)}
@@ -807,20 +812,20 @@ const ExplorePage = () => {
                       {repo.language}
                     </span>
                   </div>
-                  <div className="flex flex-wrap gap-2 mb-4">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
                     {repo.tags.slice(0, 3).map((tag, index) => (
                       <span
                         key={index}
-                        className="px-2 py-1 text-xs font-medium bg-[#00ADB5]/20 text-[#00ADB5] rounded-full"
+                        className="px-2 py-0.5 sm:py-1 text-xs font-medium bg-[#00ADB5]/20 text-[#00ADB5] rounded-full"
                       >
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2">
                     <button
                       onClick={() => handleGitHubView(repo.github_url)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all text-sm sm:text-base"
                     >
                       <ExternalLink className="h-4 w-4" />
                       View Repository
@@ -832,7 +837,7 @@ const ExplorePage = () => {
                           "_blank"
                         )
                       }
-                      className="px-4 py-2 bg-[#222831] text-[#00ADB5] rounded-lg hover:bg-[#222831]/80 transition-colors font-medium"
+                      className="px-4 py-2.5 sm:py-2 bg-[#222831] text-[#00ADB5] rounded-lg hover:bg-[#222831]/80 transition-colors font-medium text-sm sm:text-base"
                     >
                       Issues
                     </button>

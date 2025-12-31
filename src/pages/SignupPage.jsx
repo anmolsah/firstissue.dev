@@ -59,22 +59,22 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-md w-full">
-        <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl border border-[#393E46] p-8 shadow-xl">
-          <div className="text-center mb-8">
+        <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-[#393E46] p-6 sm:p-8 shadow-xl">
+          <div className="text-center mb-6 sm:mb-8">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-2">
               {/* <img src={logo} className="h-16 w-16" alt="Logo" /> */}
             </div>
-            <div className="flex items-center justify-center gap-2">
-              <p className="text-3xl font-bold text-[#EEEEEE]/60 m-0 p-0">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
+              <p className="text-2xl sm:text-3xl font-bold text-[#EEEEEE]/60 m-0 p-0">
                 Join
               </p>
-              <p className="text-3xl font-bold text-[#00ADB5] m-0 p-0">
+              <p className="text-2xl sm:text-3xl font-bold text-[#00ADB5] m-0 p-0">
                 FirstIssue.dev
               </p>
             </div>
-            <p className="text-[#EEEEEE]/60 mt-2">
+            <p className="text-sm sm:text-base text-[#EEEEEE]/60 mt-2">
               Start your open source contribution journey today
             </p>
           </div>

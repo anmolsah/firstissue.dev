@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { Mail, Lock, Github, AlertCircle } from "lucide-react";
-import logo from "../assets/logo01.png";
+import logo from "../assets/logo001.png";
 
 const LoginPage = () => {
   const { signIn, signInWithGitHub, user } = useAuth();
@@ -38,18 +38,17 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
       <div className="max-w-md w-full">
-        <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl border border-[#393E46] p-8 shadow-xl">
-          <div className="text-center mb-8">
+        <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-[#393E46] p-6 sm:p-8 shadow-xl">
+          <div className="text-center mb-6 sm:mb-8">
             <div className="w-16 h-16 flex items-center justify-center mx-auto mb-2">
               {/* <img src={logo} className="h-16 w-16" alt="Logo" /> */}
-              
             </div>
-            <h2 className="text-3xl font-bold text-[#EEEEEE] mb-2">
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#EEEEEE] mb-2">
               Welcome Back
             </h2>
-            <p className="text-[#EEEEEE]/60">
+            <p className="text-sm sm:text-base text-[#EEEEEE]/60">
               Sign in to continue your open source journey
             </p>
           </div>

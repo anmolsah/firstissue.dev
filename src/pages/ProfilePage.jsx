@@ -189,15 +189,15 @@ const ProfilePage = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46]">
+            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#393E46]">
               <div className="text-center mb-6">
-                <div className="w-20 h-20 bg-[#00ADB5]/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#00ADB5]/30">
-                  <User className="h-10 w-10 text-[#00ADB5]" />
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#00ADB5]/20 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#00ADB5]/30">
+                  <User className="h-8 w-8 sm:h-10 sm:w-10 text-[#00ADB5]" />
                 </div>
-                <h2 className="text-xl font-semibold text-[#EEEEEE] mb-1">
+                <h2 className="text-lg sm:text-xl font-semibold text-[#EEEEEE] mb-1">
                   {user?.user_metadata?.full_name ||
                     user?.email?.split("@")[0] ||
                     "User"}
@@ -206,21 +206,21 @@ const ProfilePage = () => {
                   Open Source Contributor
                 </p>
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div className="flex items-center gap-3 text-[#EEEEEE]/60">
-                  <Mail className="h-5 w-5" />
+                  <Mail className="h-5 w-5 flex-shrink-0" />
                   <span className="text-sm truncate">{user?.email}</span>
                 </div>
                 {user?.user_metadata?.provider === "github" && (
                   <div className="flex items-center gap-3 text-[#EEEEEE]/60">
-                    <Github className="h-5 w-5" />
-                    <span className="text-sm">
+                    <Github className="h-5 w-5 flex-shrink-0" />
+                    <span className="text-sm truncate">
                       {user?.user_metadata?.user_name || "GitHub User"}
                     </span>
                   </div>
                 )}
                 <div className="flex items-center gap-3 text-[#EEEEEE]/60">
-                  <Calendar className="h-5 w-5" />
+                  <Calendar className="h-5 w-5 flex-shrink-0" />
                   <span className="text-sm">Joined {getJoinDate()}</span>
                 </div>
               </div>
@@ -238,43 +238,43 @@ const ProfilePage = () => {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-3 space-y-8">
+          <div className="lg:col-span-3 space-y-6 lg:space-y-8">
             {/* Stats */}
-            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46]">
-              <h3 className="text-lg font-semibold text-[#EEEEEE] mb-6 flex items-center gap-2">
+            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#393E46]">
+              <h3 className="text-base sm:text-lg font-semibold text-[#EEEEEE] mb-4 sm:mb-6 flex items-center gap-2">
                 <Award className="h-5 w-5 text-[#00ADB5]" />
                 Overall Statistics
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-[#00ADB5]/10 rounded-xl border border-[#00ADB5]/20">
-                  <div className="text-2xl font-bold text-[#00ADB5] mb-1">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <div className="text-center p-3 sm:p-4 bg-[#00ADB5]/10 rounded-xl border border-[#00ADB5]/20">
+                  <div className="text-xl sm:text-2xl font-bold text-[#00ADB5] mb-1">
                     {combinedStats.total}
                   </div>
-                  <div className="text-sm text-[#00ADB5]/70 font-medium">
+                  <div className="text-xs sm:text-sm text-[#00ADB5]/70 font-medium">
                     Total
                   </div>
                 </div>
-                <div className="text-center p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                  <div className="text-2xl font-bold text-emerald-400 mb-1">
+                <div className="text-center p-3 sm:p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                  <div className="text-xl sm:text-2xl font-bold text-emerald-400 mb-1">
                     {combinedStats.done}
                   </div>
-                  <div className="text-sm text-emerald-400/70 font-medium">
+                  <div className="text-xs sm:text-sm text-emerald-400/70 font-medium">
                     Completed
                   </div>
                 </div>
-                <div className="text-center p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
-                  <div className="text-2xl font-bold text-amber-400 mb-1">
+                <div className="text-center p-3 sm:p-4 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                  <div className="text-xl sm:text-2xl font-bold text-amber-400 mb-1">
                     {combinedStats.workingOn}
                   </div>
-                  <div className="text-sm text-amber-400/70 font-medium">
+                  <div className="text-xs sm:text-sm text-amber-400/70 font-medium">
                     In Progress
                   </div>
                 </div>
-                <div className="text-center p-4 bg-[#393E46] rounded-xl border border-[#EEEEEE]/10">
-                  <div className="text-2xl font-bold text-[#EEEEEE]/70 mb-1">
+                <div className="text-center p-3 sm:p-4 bg-[#393E46] rounded-xl border border-[#EEEEEE]/10">
+                  <div className="text-xl sm:text-2xl font-bold text-[#EEEEEE]/70 mb-1">
                     {combinedStats.applied}
                   </div>
-                  <div className="text-sm text-[#EEEEEE]/50 font-medium">
+                  <div className="text-xs sm:text-sm text-[#EEEEEE]/50 font-medium">
                     Planned
                   </div>
                 </div>
@@ -309,18 +309,18 @@ const ProfilePage = () => {
             </div>
 
             {/* Manual Contributions */}
-            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46]">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-[#EEEEEE] flex items-center gap-2">
+            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#393E46]">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <h3 className="text-base sm:text-lg font-semibold text-[#EEEEEE] flex items-center gap-2">
                   <Target className="h-5 w-5 text-[#00ADB5]" />
-                  Manual Contributions
+                  <span className="hidden xs:inline">Manual</span> Contributions
                 </h3>
                 <button
                   onClick={() => setShowModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all transform hover:scale-105"
+                  className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all transform hover:scale-105 text-sm"
                 >
                   <Plus className="h-4 w-4" />
-                  Add
+                  <span className="hidden xs:inline">Add</span>
                 </button>
               </div>
               {manualContributions.length === 0 ? (
@@ -329,30 +329,30 @@ const ProfilePage = () => {
                   <p className="text-sm">No manual contributions yet.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {manualContributions.map((contribution) => {
                     const statusConfig = getStatusConfig(contribution.status);
                     const StatusIcon = statusConfig.icon;
                     return (
                       <div
                         key={contribution.id}
-                        className="p-4 border border-[#393E46] rounded-xl hover:border-[#00ADB5]/50 transition-all"
+                        className="p-3 sm:p-4 border border-[#393E46] rounded-xl hover:border-[#00ADB5]/50 transition-all"
                       >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span className="font-medium text-[#00ADB5]">
+                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 mb-2">
+                              <span className="font-medium text-[#00ADB5] truncate">
                                 {contribution.repository_name}
                               </span>
                               <div
-                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.color}`}
+                                className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium flex-shrink-0 ${statusConfig.bg} ${statusConfig.color}`}
                               >
                                 <StatusIcon className="h-3 w-3" />
                                 {contribution.status.replace("_", " ")}
                               </div>
                             </div>
                             {contribution.description && (
-                              <p className="text-sm text-[#EEEEEE]/60 mb-2">
+                              <p className="text-sm text-[#EEEEEE]/60 mb-2 line-clamp-2">
                                 {contribution.description}
                               </p>
                             )}
@@ -360,13 +360,13 @@ const ProfilePage = () => {
                               Added {formatDate(contribution.created_at)}
                             </p>
                           </div>
-                          <div className="flex items-center gap-2 ml-4">
+                          <div className="flex items-center gap-2 self-end sm:self-start">
                             {contribution.contribution_link && (
                               <a
                                 href={contribution.contribution_link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-2 bg-[#00ADB5]/20 text-[#00ADB5] rounded-lg hover:bg-[#00ADB5]/30 transition-colors"
+                                className="p-2.5 sm:p-2 bg-[#00ADB5]/20 text-[#00ADB5] rounded-lg hover:bg-[#00ADB5]/30 transition-colors"
                               >
                                 <ExternalLink className="h-4 w-4" />
                               </a>
@@ -376,7 +376,7 @@ const ProfilePage = () => {
                                 setEditingContribution(contribution);
                                 setShowModal(true);
                               }}
-                              className="p-2 bg-[#222831] text-[#EEEEEE]/60 rounded-lg hover:bg-[#222831]/80 transition-colors"
+                              className="p-2.5 sm:p-2 bg-[#222831] text-[#EEEEEE]/60 rounded-lg hover:bg-[#222831]/80 transition-colors"
                             >
                               <Edit className="h-4 w-4" />
                             </button>
@@ -384,7 +384,7 @@ const ProfilePage = () => {
                               onClick={() =>
                                 handleDeleteContribution(contribution.id)
                               }
-                              className="p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+                              className="p-2.5 sm:p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
                             >
                               <Trash2 className="h-4 w-4" />
                             </button>
@@ -399,8 +399,8 @@ const ProfilePage = () => {
 
             {/* Languages */}
             {languageStats.length > 0 && (
-              <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46]">
-                <h3 className="text-lg font-semibold text-[#EEEEEE] mb-6 flex items-center gap-2">
+              <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#393E46]">
+                <h3 className="text-base sm:text-lg font-semibold text-[#EEEEEE] mb-4 sm:mb-6 flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-[#00ADB5]" />
                   Top Languages
                 </h3>
@@ -452,42 +452,42 @@ const ProfilePage = () => {
             )}
 
             {/* Quick Actions */}
-            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-2xl p-6 border border-[#393E46]">
-              <h3 className="text-lg font-semibold text-[#EEEEEE] mb-6 flex items-center gap-2">
+            <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#393E46]">
+              <h3 className="text-base sm:text-lg font-semibold text-[#EEEEEE] mb-4 sm:mb-6 flex items-center gap-2">
                 <Target className="h-5 w-5 text-emerald-400" />
                 Quick Actions
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                 <button
                   onClick={() => navigate("/explore")}
-                  className="p-4 text-left bg-[#00ADB5]/10 hover:bg-[#00ADB5]/20 rounded-xl transition-colors border border-[#00ADB5]/20"
+                  className="p-3 sm:p-4 text-left bg-[#00ADB5]/10 hover:bg-[#00ADB5]/20 rounded-xl transition-colors border border-[#00ADB5]/20"
                 >
-                  <h4 className="font-medium text-[#00ADB5] mb-1">
+                  <h4 className="font-medium text-[#00ADB5] mb-1 text-sm sm:text-base">
                     Explore Issues
                   </h4>
-                  <p className="text-sm text-[#00ADB5]/70">
+                  <p className="text-xs sm:text-sm text-[#00ADB5]/70">
                     Find new issues to contribute to
                   </p>
                 </button>
                 <button
                   onClick={() => navigate("/bookmarks")}
-                  className="p-4 text-left bg-amber-500/10 hover:bg-amber-500/20 rounded-xl transition-colors border border-amber-500/20"
+                  className="p-3 sm:p-4 text-left bg-amber-500/10 hover:bg-amber-500/20 rounded-xl transition-colors border border-amber-500/20"
                 >
-                  <h4 className="font-medium text-amber-400 mb-1">
+                  <h4 className="font-medium text-amber-400 mb-1 text-sm sm:text-base">
                     View Bookmarks
                   </h4>
-                  <p className="text-sm text-amber-400/70">
+                  <p className="text-xs sm:text-sm text-amber-400/70">
                     Manage your saved issues
                   </p>
                 </button>
                 <button
                   onClick={() => navigate("/status")}
-                  className="p-4 text-left bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl transition-colors border border-emerald-500/20"
+                  className="p-3 sm:p-4 text-left bg-emerald-500/10 hover:bg-emerald-500/20 rounded-xl transition-colors border border-emerald-500/20"
                 >
-                  <h4 className="font-medium text-emerald-400 mb-1">
+                  <h4 className="font-medium text-emerald-400 mb-1 text-sm sm:text-base">
                     Track Progress
                   </h4>
-                  <p className="text-sm text-emerald-400/70">
+                  <p className="text-xs sm:text-sm text-emerald-400/70">
                     Monitor your contributions
                   </p>
                 </button>
