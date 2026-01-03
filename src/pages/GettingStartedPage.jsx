@@ -283,56 +283,60 @@ const GettingStartedPage = () => {
               ></div>
             </div>
 
-            {/* Steps */}
-            <div className="space-y-6 md:space-y-16">
-              {journeySteps.map((step, index) => (
+          {/* Steps */}
+          <div className="space-y-6 md:space-y-16">
+            {journeySteps.map((step, index) => (
+              <div
+                key={index}
+                className={`relative flex items-start md:items-center gap-4 md:gap-6 cursor-pointer transition-all duration-300 ${
+                  index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+                }`}
+                onClick={() => setActiveStep(index)}
+              >
+                {/* Icon Circle - Mobile: left aligned, Desktop: positioned with content */}
                 <div
-                  key={index}
-                  className={`relative flex items-start md:items-center gap-4 md:gap-6 cursor-pointer transition-all duration-300 ${
-                    index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
+                  className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center z-10 transition-all duration-300 flex-shrink-0 absolute left-1/2 transform -translate-x-1/2 md:relative md:left-auto md:transform-none ${
+                    index % 2 === 0
+                      ? "md:order-first md:mr-6" // Left side for even steps
+                      : "md:order-last md:ml-6"  // Right side for odd steps
+                  } ${
+                    activeStep >= index
+                      ? "bg-[#00ADB5] text-[#222831] scale-110"
+                      : "bg-[#393E46] text-[#EEEEEE]/60"
                   }`}
-                  onClick={() => setActiveStep(index)}
                 >
-                  {/* Icon Circle - Mobile: left aligned, Desktop: center */}
-                  <div
-                    className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center z-10 transition-all duration-300 flex-shrink-0 md:absolute md:left-1/2 md:transform md:-translate-x-1/2 ${
-                      activeStep >= index
-                        ? "bg-[#00ADB5] text-[#222831] scale-110"
-                        : "bg-[#393E46] text-[#EEEEEE]/60"
-                    }`}
-                  >
-                    {activeStep > index ? (
-                      <CheckCircle className="h-6 w-6 md:h-8 md:w-8" />
-                    ) : (
-                      <step.icon className="h-6 w-6 md:h-8 md:w-8" />
-                    )}
-                  </div>
+                  {activeStep > index ? (
+                    <CheckCircle className="h-6 w-6 md:h-8 md:w-8" />
+                  ) : (
+                    <step.icon className="h-6 w-6 md:h-8 md:w-8" />
+                  )}
+                </div>
 
-                  {/* Content Card */}
+                {/* Content Card */}
+                <div
+                  className={`flex-1 md:w-[calc(50%-4rem)] ${
+                    index % 2 === 0
+                      ? "md:text-right md:pr-20 md:ml-auto"
+                      : "md:text-left md:pl-20"
+                  }`}
+                >
                   <div
-                    className={`flex-1 md:w-[calc(50%-4rem)] ${
-                      index % 2 === 0
-                        ? "md:text-right md:pr-20"
-                        : "md:text-left md:pl-20 md:ml-auto"
+                    className={`p-4 sm:p-6 rounded-xl sm:rounded-2xl border transition-all duration-300 ${
+                      activeStep === index
+                        ? "bg-[#00ADB5]/20 border-[#00ADB5] md:scale-105"
+                        : "bg-[#393E46]/50 border-[#393E46] hover:border-[#00ADB5]/50"
                     }`}
                   >
-                    <div
-                      className={`p-4 sm:p-6 rounded-xl sm:rounded-2xl border transition-all duration-300 ${
-                        activeStep === index
-                          ? "bg-[#00ADB5]/20 border-[#00ADB5] md:scale-105"
-                          : "bg-[#393E46]/50 border-[#393E46] hover:border-[#00ADB5]/50"
-                      }`}
-                    >
-                      <h3 className="text-lg sm:text-xl font-bold text-[#EEEEEE] mb-2">
-                        {step.title}
-                      </h3>
-                      <p className="text-sm sm:text-base text-[#EEEEEE]/70">
-                        {step.description}
-                      </p>
-                    </div>
+                    <h3 className="text-lg sm:text-xl font-bold text-[#EEEEEE] mb-2">
+                      {step.title}
+                    </h3>
+                    <p className="text-sm sm:text-base text-[#EEEEEE]/70">
+                      {step.description}
+                    </p>
                   </div>
                 </div>
-              ))}
+              </div>
+            ))}
             </div>
           </div>
 
