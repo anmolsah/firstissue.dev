@@ -387,7 +387,7 @@ const GettingStartedPage = () => {
                     </div>
                   </div>
                 </div>
-              ))}
+            ))}
             </div>
           </div>
 
