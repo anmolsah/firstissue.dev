@@ -162,7 +162,7 @@ const LandingPage = () => {
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 sm:mb-8 leading-tight">
-            <span className="text-[#00ADB5]">Find Your First</span>
+            <span className="text-[#00ADB5]">Start Your First</span>
             <br />
             <span className="text-[#EEEEEE]">Open Source</span>
             <br />
