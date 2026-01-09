@@ -284,51 +284,106 @@ const GettingStartedPage = () => {
             </div>
 
             {/* Steps */}
-            <div className="space-y-6 md:space-y-16">
+            <div className="space-y-6 md:space-y-8">
               {journeySteps.map((step, index) => (
                 <div
                   key={index}
-                  className={`relative flex items-start md:items-center gap-4 md:gap-6 cursor-pointer transition-all duration-300 ${
-                    index % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"
-                  }`}
+                  className="cursor-pointer transition-all duration-300"
                   onClick={() => setActiveStep(index)}
                 >
-                  {/* Icon Circle - Mobile: left aligned, Desktop: center */}
-                  <div
-                    className={`w-12 h-12 md:w-16 md:h-16 rounded-full flex items-center justify-center z-10 transition-all duration-300 flex-shrink-0 md:absolute md:left-1/2 md:transform md:-translate-x-1/2 ${
-                      activeStep >= index
-                        ? "bg-[#00ADB5] text-[#222831] scale-110"
-                        : "bg-[#393E46] text-[#EEEEEE]/60"
-                    }`}
-                  >
-                    {activeStep > index ? (
-                      <CheckCircle className="h-6 w-6 md:h-8 md:w-8" />
-                    ) : (
-                      <step.icon className="h-6 w-6 md:h-8 md:w-8" />
-                    )}
-                  </div>
-
-                  {/* Content Card */}
-                  <div
-                    className={`flex-1 md:w-[calc(50%-4rem)] ${
-                      index % 2 === 0
-                        ? "md:text-right md:pr-20"
-                        : "md:text-left md:pl-20 md:ml-auto"
-                    }`}
-                  >
+                  {/* Mobile Layout */}
+                  <div className="flex items-start gap-4 md:hidden">
+                    {/* Icon Circle */}
                     <div
-                      className={`p-4 sm:p-6 rounded-xl sm:rounded-2xl border transition-all duration-300 ${
-                        activeStep === index
-                          ? "bg-[#00ADB5]/20 border-[#00ADB5] md:scale-105"
-                          : "bg-[#393E46]/50 border-[#393E46] hover:border-[#00ADB5]/50"
+                      className={`w-12 h-12 rounded-full flex items-center justify-center z-10 transition-all duration-300 flex-shrink-0 ${
+                        activeStep >= index
+                          ? "bg-[#00ADB5] text-[#222831] scale-110"
+                          : "bg-[#393E46] text-[#EEEEEE]/60"
                       }`}
                     >
-                      <h3 className="text-lg sm:text-xl font-bold text-[#EEEEEE] mb-2">
-                        {step.title}
-                      </h3>
-                      <p className="text-sm sm:text-base text-[#EEEEEE]/70">
-                        {step.description}
-                      </p>
+                      {activeStep > index ? (
+                        <CheckCircle className="h-6 w-6" />
+                      ) : (
+                        <step.icon className="h-6 w-6" />
+                      )}
+                    </div>
+
+                    {/* Content Card */}
+                    <div className="flex-1">
+                      <div
+                        className={`p-4 rounded-xl border transition-all duration-300 ${
+                          activeStep === index
+                            ? "bg-[#00ADB5]/20 border-[#00ADB5]"
+                            : "bg-[#393E46]/50 border-[#393E46] hover:border-[#00ADB5]/50"
+                        }`}
+                      >
+                        <h3 className="text-lg font-bold text-[#EEEEEE] mb-2">
+                          {step.title}
+                        </h3>
+                        <p className="text-sm text-[#EEEEEE]/70">
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop Layout - Grid with 3 columns */}
+                  <div className="hidden md:grid md:grid-cols-[1fr_5rem_1fr] md:items-center md:gap-4">
+                    {/* Left Column */}
+                    <div className={index % 2 === 0 ? "text-right" : ""}>
+                      {index % 2 === 0 && (
+                        <div
+                          className={`p-6 rounded-2xl border transition-all duration-300 ${
+                            activeStep === index
+                              ? "bg-[#00ADB5]/20 border-[#00ADB5] scale-105"
+                              : "bg-[#393E46]/50 border-[#393E46] hover:border-[#00ADB5]/50"
+                          }`}
+                        >
+                          <h3 className="text-xl font-bold text-[#EEEEEE] mb-2">
+                            {step.title}
+                          </h3>
+                          <p className="text-base text-[#EEEEEE]/70">
+                            {step.description}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Center Column - Icon */}
+                    <div className="flex justify-center">
+                      <div
+                        className={`w-16 h-16 rounded-full flex items-center justify-center z-10 transition-all duration-300 ${
+                          activeStep >= index
+                            ? "bg-[#00ADB5] text-[#222831] scale-110"
+                            : "bg-[#393E46] text-[#EEEEEE]/60"
+                        }`}
+                      >
+                        {activeStep > index ? (
+                          <CheckCircle className="h-8 w-8" />
+                        ) : (
+                          <step.icon className="h-8 w-8" />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Right Column */}
+                    <div className={index % 2 !== 0 ? "text-left" : ""}>
+                      {index % 2 !== 0 && (
+                        <div
+                          className={`p-6 rounded-2xl border transition-all duration-300 ${
+                            activeStep === index
+                              ? "bg-[#00ADB5]/20 border-[#00ADB5] scale-105"
+                              : "bg-[#393E46]/50 border-[#393E46] hover:border-[#00ADB5]/50"
+                          }`}
+                        >
+                          <h3 className="text-xl font-bold text-[#EEEEEE] mb-2">
+                            {step.title}
+                          </h3>
+                          <p className="text-base text-[#EEEEEE]/70">
+                            {step.description}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
