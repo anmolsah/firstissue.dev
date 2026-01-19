@@ -1,45 +1,41 @@
 import React from "react";
-import { Github, Linkedin } from "lucide-react";
-import logo from "../assets/logo01.png";
 import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="w-full bg-[#222831] border-t border-[#393E46] py-6">
-      <div className="max-w-5xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="flex flex-col md:flex-row items-center gap-2 text-sm text-[#EEEEEE]/60">
-          <span>© {new Date().getFullYear()}</span>
+    <footer className="w-full bg-[#0B0C10] border-t border-white/5 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+        <div className="flex items-center gap-2">
           <Link
             to="/"
-            className="flex items-center space-x-2 text-[#00ADB5] hover:text-[#00d4de] transition-colors"
+            className="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors"
           >
-            {/* <img className="w-6 h-6" src={logo} alt="FirstIssue.dev logo" /> */}
-            <span className="text-base font-semibold text-[#EEEEEE]">
-              FirstIssue.dev
-            </span>
+            <span className="text-lg font-bold">FirstIssue.dev</span>
           </Link>
-          <span>
-            — Made with <span className="text-[#00ADB5]">❤️</span> by Anmol
-          </span>
         </div>
 
-        <div className="flex gap-5">
+        <div className="flex items-center gap-8 text-sm text-gray-500">
+          <Link to="/privacy" className="hover:text-white transition-colors">
+            Privacy
+          </Link>
+          <Link to="/terms" className="hover:text-white transition-colors">
+            Terms
+          </Link>
+          <Link to="/status" className="hover:text-white transition-colors">
+            Status
+          </Link>
           <a
-            href="https://github.com/anmolsah"
+            href="https://twitter.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[#EEEEEE]/60 hover:text-[#00ADB5] transition-colors"
+            className="hover:text-white transition-colors"
           >
-            <Github className="w-5 h-5" />
+            Twitter
           </a>
-          <a
-            href="https://www.linkedin.com/in/anmol-sah-551083238/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#EEEEEE]/60 hover:text-[#00ADB5] transition-colors"
-          >
-            <Linkedin className="w-5 h-5" />
-          </a>
+        </div>
+        
+        <div className="text-sm text-gray-600">
+          © {new Date().getFullYear()} FirstIssue.dev. All rights reserved.
         </div>
       </div>
     </footer>

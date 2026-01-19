@@ -1,282 +1,250 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { supabase } from "../lib/supabase";
 import {
   ArrowRight,
   Github,
   Search,
-  Bookmark,
-  BarChart3,
+  Zap,
+  Shield,
   Users,
+  Code2,
+  Database,
+  Layout,
   Star,
-  GitPullRequest,
-  Target,
-  Sparkles,
 } from "lucide-react";
 
 const LandingPage = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
-    totalBookmarks: 0,
-    activeUsers: 0,
-    completedContributions: 0,
-    popularLanguages: 0,
-  });
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
-
-  const fetchStats = async () => {
-    try {
-      const { count: totalBookmarks } = await supabase
-        .from("bookmarks")
-        .select("*", { count: "exact", head: true });
-
-      const { count: totalManualContributions } = await supabase
-        .from("manual_contributions")
-        .select("*", { count: "exact", head: true });
-
-      const [bookmarkUsersResult, manualUsersResult] = await Promise.all([
-        supabase.from("bookmarks").select("user_id"),
-        supabase.from("manual_contributions").select("user_id"),
-      ]);
-
-      const allUsers = new Set([
-        ...(bookmarkUsersResult.data?.map((u) => u.user_id) || []),
-        ...(manualUsersResult.data?.map((u) => u.user_id) || []),
-      ]);
-      const activeUsers = allUsers.size;
-
-      const { count: completedBookmarks } = await supabase
-        .from("bookmarks")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "done");
-
-      const { count: completedManualContributions } = await supabase
-        .from("manual_contributions")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "completed");
-
-      const totalCompletedContributions =
-        (completedBookmarks || 0) + (completedManualContributions || 0);
-
-      const [bookmarkLanguagesResult, manualReposResult] = await Promise.all([
-        supabase.from("bookmarks").select("language"),
-        supabase.from("manual_contributions").select("repository_name"),
-      ]);
-
-      const bookmarkLanguages = new Set(
-        bookmarkLanguagesResult.data?.map((l) => l.language) || []
-      );
-      const manualRepos = new Set(
-        manualReposResult.data?.map((r) => r.repository_name) || []
-      );
-      const totalCoverage = bookmarkLanguages.size + manualRepos.size;
-
-      setStats({
-        totalBookmarks: (totalBookmarks || 0) + (totalManualContributions || 0),
-        activeUsers: activeUsers || 0,
-        completedContributions: totalCompletedContributions,
-        popularLanguages: totalCoverage,
-      });
-    } catch (error) {
-      console.error("Error fetching stats:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const features = [
-    {
-      icon: Search,
-      title: "Discover Issues",
-      description:
-        "Find beginner-friendly GitHub issues filtered by language, labels, and keywords",
-    },
-    {
-      icon: Bookmark,
-      title: "Bookmark & Track",
-      description:
-        "Save interesting issues and track your progress from start to completion",
-    },
-    {
-      icon: BarChart3,
-      title: "Progress Dashboard",
-      description:
-        "Visualize your open source contribution journey with detailed analytics",
-    },
-    {
-      icon: Target,
-      title: "Manual Tracker",
-      description:
-        "Add and track contributions made outside the platform for a complete view",
-    },
-    {
-      icon: Users,
-      title: "Community Focus",
-      description:
-        "Connect with beginner-friendly projects and welcoming maintainers",
-    },
-  ];
-
-  const dynamicStats = [
-    {
-      icon: Bookmark,
-      value: loading ? "..." : `${stats.totalBookmarks.toLocaleString()}+`,
-      label: "Issues Bookmarked",
-    },
-    {
-      icon: Users,
-      value: loading ? "..." : `${stats.activeUsers.toLocaleString()}+`,
-      label: "Active Contributors",
-    },
-    {
-      icon: GitPullRequest,
-      value: loading
-        ? "..."
-        : `${stats.completedContributions.toLocaleString()}+`,
-      label: "Contributions Made",
-    },
-    {
-      icon: Star,
-      value: loading ? "..." : `${stats.popularLanguages.toLocaleString()}+`,
-      label: "Languages Covered",
-    },
-  ];
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="pt-12 sm:pt-20 pb-20 sm:pb-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-        {/* Background gradient effects */}
-        <div className="absolute top-0 left-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-[#00ADB5]/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-64 sm:w-96 h-64 sm:h-96 bg-[#00ADB5]/10 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-[#0B0C10] text-[#EEEEEE] overflow-hidden">
+      {/* Background Gradients */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px]" />
+        <div className="absolute top-[20%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[30%] bg-indigo-600/10 rounded-full blur-[80px]" />
+      </div>
 
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center px-3 sm:px-4 py-2 bg-[#00ADB5]/20 text-[#00ADB5] rounded-full text-xs sm:text-sm font-medium mb-6 sm:mb-8 border border-[#00ADB5]/30">
-            <Sparkles className="h-4 w-4 mr-2" />
-            Your Gateway to Open Source Contributions
+      {/* Hero Section */}
+      <section className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          {/* New Feature Pill */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wide uppercase mb-8 animate-fade-in hover:bg-blue-500/20 transition-colors cursor-default">
+            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+            NOW ROLLING BETA V2.0
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 sm:mb-8 leading-tight">
-            <span className="text-[#00ADB5]">Start Your Open Source</span>
+          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black mb-8 leading-tight tracking-tight">
+            Ship your <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">first contribution</span>
             <br />
-            <span className="text-[#EEEEEE]">Journey Today</span>
+            <span className="text-white">today.</span>
           </h1>
 
-          <p className="text-lg sm:text-xl md:text-2xl text-[#EEEEEE]/70 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
-            Discover beginner-friendly GitHub issues, track your progress, and
-            start your open source journey with confidence.
+          <p className="text-lg sm:text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+            The premium platform for developers to find, track, and conquer
+            open-source issues at world-class companies.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
             <Link
               to={user ? "/explore" : "/signup"}
-              className="w-full sm:w-auto group px-6 sm:px-8 py-3 sm:py-4 bg-[#00ADB5] text-[#222831] rounded-xl font-semibold text-base sm:text-lg hover:bg-[#00d4de] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#00ADB5]/25 flex items-center justify-center"
+              className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-semibold text-lg hover:shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] transition-all duration-300 transform hover:-translate-y-1"
             >
-              {user ? "Explore Issues" : "Get Started"}
-              <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              Join the movement
+              <ArrowRight className="inline-block ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             <Link
-              to="/getting-started"
-              className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border border-[#393E46] text-[#EEEEEE] rounded-xl font-semibold text-base sm:text-lg hover:border-[#00ADB5] hover:text-[#00ADB5] transition-all duration-300 flex items-center justify-center"
+              to="/explore"
+              className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full font-semibold text-lg hover:bg-white/10 transition-all duration-300"
             >
-              <Github className="mr-2 h-5 w-5" />
-              Learn to Contribute
+              Explore issues
             </Link>
           </div>
-        </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="py-12 sm:py-20 bg-[#393E46]/30 backdrop-blur-sm border-y border-[#393E46]">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8 sm:mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#EEEEEE] mb-3 sm:mb-4">
-              Join Our Growing Community
-            </h2>
-            <p className="text-base sm:text-lg text-[#EEEEEE]/60">
-              Real-time statistics from our platform
+          {/* Trusted By */}
+          <div className="mb-24">
+            <p className="text-xs font-bold text-gray-500 tracking-widest uppercase mb-8">
+              TRUSTED BY CONTRIBUTORS AT
             </p>
+            <div className="flex flex-wrap justify-center gap-8 sm:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
+              {/* Using text/icons placeholders for logos as per plan */}
+              <div className="flex items-center gap-2 text-xl font-bold font-mono hover:text-[#00ADB5] transition-colors"><Github className="w-6 h-6" /> GitHub</div>
+              <div className="flex items-center gap-2 text-xl font-bold font-sans hover:text-[#00ADB5] transition-colors"><Zap className="w-6 h-6" /> Vercel</div>
+              <div className="flex items-center gap-2 text-xl font-bold hover:text-[#00ADB5] transition-colors"><Database className="w-6 h-6" /> Supabase</div>
+              <div className="flex items-center gap-2 text-xl font-bold hover:text-[#00ADB5] transition-colors"><Layout className="w-6 h-6" /> Linear</div>
+              <div className="flex items-center gap-2 text-xl font-bold font-serif hover:text-[#00ADB5] transition-colors"><Code2 className="w-6 h-6" /> Prisma</div>
+            </div>
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
-            {dynamicStats.map((stat, index) => (
-              <div key={index} className="text-center group">
-                <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-[#00ADB5]/20 rounded-xl sm:rounded-2xl mb-3 sm:mb-4 group-hover:scale-110 group-hover:bg-[#00ADB5]/30 transition-all duration-300 border border-[#00ADB5]/30">
-                  <stat.icon className="h-6 w-6 sm:h-8 sm:w-8 text-[#00ADB5]" />
+        </div>
+
+        {/* Dashboard Preview */}
+        <div className="max-w-6xl mx-auto relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
+          <div className="relative bg-[#1a1b26] rounded-xl border border-white/10 p-2 sm:p-4 shadow-2xl overflow-hidden">
+            {/* Window Controls */}
+            <div className="flex items-center gap-2 mb-4 px-2">
+              <div className="w-3 h-3 rounded-full bg-red-500/50" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+              <div className="w-3 h-3 rounded-full bg-green-500/50" />
+              <div className="ml-auto px-3 py-1 bg-white/5 rounded-full text-[10px] text-gray-400 font-mono">
+                dashboard.firstissue.dev
+              </div>
+            </div>
+
+            {/* Mock Interface */}
+            <div className="grid grid-cols-12 gap-4 h-[400px] sm:h-[600px] bg-[#0B0C10] rounded-lg p-4 overflow-hidden">
+              {/* Sidebar */}
+              <div className="hidden sm:block col-span-2 space-y-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-8 w-full bg-white/5 rounded-md animate-pulse" />
+                ))}
+              </div>
+
+              {/* Main Content */}
+              <div className="col-span-12 sm:col-span-10 grid grid-rows-2 gap-4">
+                {/* Top Statistics */}
+                <div className="grid grid-cols-3 gap-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
+                      <div className="w-8 h-8 rounded-lg bg-blue-500/20 mb-3" />
+                      <div className="w-16 h-2 bg-white/20 rounded mb-2" />
+                      <div className="w-24 h-4 bg-white/10 rounded" />
+                    </div>
+                  ))}
                 </div>
-                <div className="text-xl sm:text-3xl font-bold text-[#EEEEEE] mb-1 sm:mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-xs sm:text-base text-[#EEEEEE]/60 font-medium">
-                  {stat.label}
+
+                {/* Big Chart/Table Area */}
+                <div className="bg-white/5 rounded-xl border border-white/5 p-4 flex items-center justify-center">
+                   <div className="text-white/20">
+                      <Search className="w-12 h-12" />
+                   </div>
                 </div>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-10 sm:mb-16">
-            <h2 className="text-2xl sm:text-4xl font-bold text-[#EEEEEE] mb-3 sm:mb-4">
-              Everything You Need to Start Contributing
-            </h2>
-            <p className="text-base sm:text-xl text-[#EEEEEE]/60 max-w-2xl mx-auto px-4">
-              Our platform provides all the tools and guidance you need to make
-              your first open source contribution.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
-            {features.map((feature, index) => (
-              <div
-                key={index}
-                className="group p-4 sm:p-6 bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-[#393E46] hover:border-[#00ADB5]/50 hover:shadow-xl hover:shadow-[#00ADB5]/10 transition-all duration-300 hover:-translate-y-2"
-              >
-                <div className="inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-[#00ADB5]/20 rounded-xl mb-4 sm:mb-6 group-hover:scale-110 group-hover:bg-[#00ADB5]/30 transition-all duration-300">
-                  <feature.icon className="h-5 w-5 sm:h-6 sm:w-6 text-[#00ADB5]" />
+      {/* Bento Grid Features */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            {/* Feature 1: AI Match - Large */}
+            <div className="lg:col-span-2 bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-blue-500/30 transition-all group overflow-hidden relative">
+               <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:opacity-40 transition-opacity">
+                  <Zap className="w-32 h-32 text-blue-500" />
+               </div>
+              <div className="relative z-10 cursor-default">
+                <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-6">
+                  <Zap className="w-6 h-6" />
                 </div>
-                <h3 className="text-base sm:text-lg font-semibold text-[#EEEEEE] mb-2 sm:mb-3">
-                  {feature.title}
-                </h3>
-                <p className="text-sm text-[#EEEEEE]/60 leading-relaxed">
-                  {feature.description}
+                <h3 className="text-2xl font-bold text-white mb-4">AI-Driven Smart Matching</h3>
+                <p className="text-gray-400 max-w-md">
+                  We analyze your GitHub history to recommend issues that perfectly match your tech stack and experience level.
                 </p>
               </div>
-            ))}
+            </div>
+
+            {/* Feature 2: Proof of Work */}
+            <div className="bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-purple-500/30 transition-all group relative overflow-hidden">
+                <div className="absolute bottom-0 right-0 p-8 opacity-10 group-hover:opacity-30 transition-opacity">
+                  <Shield className="w-24 h-24 text-purple-500" />
+               </div>
+              <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 mb-6">
+                <Shield className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-4">Proof of Work</h3>
+              <p className="text-gray-400 text-sm">
+                Build a verifiable on-chain resume of your contributions. No more resume padding.
+              </p>
+              <div className="mt-6 flex items-center gap-2">
+                 <div className="flex -space-x-2">
+                    {[1,2,3].map(i => <div key={i} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[#15161E]" />)}
+                 </div>
+                 <span className="text-xs text-gray-500">+1.2k achievers</span>
+              </div>
+            </div>
+
+            {/* Feature 3: Real-time Collab */}
+            <div className="bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-pink-500/30 transition-all group">
+              <div className="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 mb-6">
+                <Users className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-4">Real-time Collab</h3>
+              <p className="text-gray-400 text-sm">
+                Live code sessions with maintainers and teammates built directly into the platform.
+              </p>
+            </div>
+
+            {/* Feature 4: Curated Top Tier - Large */}
+            <div className="lg:col-span-2 bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-green-500/30 transition-all group">
+              <div className="flex flex-col md:flex-row gap-8 items-start">
+                  <div className="flex-1">
+                    <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center text-green-400 mb-6">
+                        <Star className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">Curated Top Tier</h3>
+                    <p className="text-gray-400">
+                        Only high-quality issues from verified companies. No "good-first-issue" spam, just real impact.
+                    </p>
+                  </div>
+                  
+                  {/* Mock Cards */}
+                  <div className="flex-1 space-y-3 w-full">
+                      <div className="bg-[#0B0C10] p-4 rounded-xl border border-white/5 flex items-center gap-4">
+                          <div className="w-2 h-2 rounded-full bg-cyan-400" />
+                          <div className="flex-1">
+                              <div className="h-2 w-32 bg-white/20 rounded mb-1" />
+                              <div className="h-1.5 w-16 bg-white/10 rounded" />
+                          </div>
+                           <div className="px-2 py-1 rounded bg-blue-500/20 text-[10px] text-blue-400">Buy Now?</div>
+                      </div>
+                      <div className="bg-[#0B0C10] p-4 rounded-xl border border-white/5 flex items-center gap-4 opacity-50">
+                          <div className="w-2 h-2 rounded-full bg-purple-400" />
+                           <div className="flex-1">
+                              <div className="h-2 w-24 bg-white/20 rounded mb-1" />
+                              <div className="h-1.5 w-20 bg-white/10 rounded" />
+                          </div>
+                          <div className="px-2 py-1 rounded bg-purple-500/20 text-[10px] text-purple-400">Urgent</div>
+                      </div>
+                  </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-gradient-to-r from-[#00ADB5]/20 to-[#393E46]/50 rounded-2xl sm:rounded-3xl p-6 sm:p-12 text-center border border-[#00ADB5]/30 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-[#00ADB5]/10 rounded-full blur-3xl"></div>
-            <div className="relative z-10">
-              <h2 className="text-2xl sm:text-4xl font-bold text-[#EEEEEE] mb-4 sm:mb-6">
-                Ready to Start Your Open Source Journey?
-              </h2>
-              <p className="text-base sm:text-xl text-[#EEEEEE]/70 mb-6 sm:mb-8 max-w-2xl mx-auto">
-                Join thousands of developers who have made their first
-                contributions with FirstIssue.dev.
-              </p>
-              <Link
-                to={user ? "/explore" : "/signup"}
-                className="inline-flex items-center px-6 sm:px-8 py-3 sm:py-4 bg-[#00ADB5] text-[#222831] rounded-xl font-semibold text-base sm:text-lg hover:bg-[#00d4de] transition-all duration-300 transform hover:scale-105 shadow-lg shadow-[#00ADB5]/25"
-              >
-                {user ? "Start Exploring" : "Join Now - It's Free"}
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </div>
-          </div>
-        </div>
+      <section className="py-24 px-4 sm:px-6 lg:px-8">
+         <div className="max-w-6xl mx-auto">
+             <div className="bg-gradient-to-b from-[#1a1b26] to-[#0B0C10] rounded-3xl p-12 sm:p-20 text-center border border-white/10 relative overflow-hidden">
+                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-blue-500/5 blur-3xl pointer-events-none" />
+                 
+                 <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6 relative z-10">
+                     Ready to build the future?
+                 </h2>
+                 <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto relative z-10">
+                     Join thousands of world-class developers making an impact on the projects that power the world.
+                 </p>
+                 
+                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-10">
+                    <Link
+                    to="/signup"
+                    className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-500 transition-colors shadow-lg hover:shadow-blue-500/25"
+                    >
+                    Get Started Now
+                    </Link>
+                    {/* <a
+                    href="#"
+                    className="w-full sm:w-auto px-8 py-4 bg-transparent border border-white/20 text-white rounded-xl font-semibold hover:bg-white/5 transition-colors"
+                    >
+                    Talk to Sales
+                    </a> */}
+                 </div>
+             </div>
+         </div>
       </section>
     </div>
   );

@@ -1,15 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import {
+  Search,
+  Compass,
+  Bookmark,
+  User,
+  Settings,
+  Plus,
+  Bell,
+  Command,
   ExternalLink,
   Trash2,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  PlayCircle,
+  Filter,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 const BookmarksPage = () => {
@@ -17,7 +24,10 @@ const BookmarksPage = () => {
   const navigate = useNavigate();
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [updatingStatus, setUpdatingStatus] = useState(null);
+  const [activeNav, setActiveNav] = useState("bookmarks");
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
   const [deleteDialog, setDeleteDialog] = useState({
     isOpen: false,
     bookmarkId: null,
@@ -25,36 +35,7 @@ const BookmarksPage = () => {
     loading: false,
   });
 
-  const statusOptions = [
-    {
-      value: "saved",
-      label: "Saved",
-      icon: Clock,
-      color: "text-[#EEEEEE]/60",
-      bg: "bg-[#393E46]",
-    },
-    {
-      value: "applied",
-      label: "Applied",
-      icon: AlertCircle,
-      color: "text-[#00ADB5]",
-      bg: "bg-[#00ADB5]/20",
-    },
-    {
-      value: "working_on",
-      label: "Working On",
-      icon: PlayCircle,
-      color: "text-amber-400",
-      bg: "bg-amber-500/20",
-    },
-    {
-      value: "done",
-      label: "Done",
-      icon: CheckCircle,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/20",
-    },
-  ];
+  const itemsPerPage = 4;
 
   useEffect(() => {
     if (!user) {
@@ -80,24 +61,6 @@ const BookmarksPage = () => {
     }
   };
 
-  const updateStatus = async (bookmarkId, newStatus) => {
-    setUpdatingStatus(bookmarkId);
-    try {
-      const { error } = await supabase
-        .from("bookmarks")
-        .update({ status: newStatus })
-        .eq("id", bookmarkId);
-      if (error) throw error;
-      setBookmarks((prev) =>
-        prev.map((b) => (b.id === bookmarkId ? { ...b, status: newStatus } : b))
-      );
-    } catch (error) {
-      console.error("Error updating status:", error);
-    } finally {
-      setUpdatingStatus(null);
-    }
-  };
-
   const deleteBookmark = async (bookmarkId) => {
     setDeleteDialog((prev) => ({ ...prev, loading: true }));
     try {
@@ -120,158 +83,255 @@ const BookmarksPage = () => {
     }
   };
 
-  const getStatusConfig = (status) =>
-    statusOptions.find((o) => o.value === status) || statusOptions[0];
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+  const formatTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffDays = Math.ceil(Math.abs(now - date) / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return "Today";
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 7) return `Saved ${diffDays} days ago`;
+    if (diffDays < 30) return `Saved ${Math.ceil(diffDays / 7)} week${diffDays >= 14 ? 's' : ''} ago`;
+    return `Saved ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+  };
+
+  // Filter and paginate
+  const filteredBookmarks = bookmarks.filter((b) => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      return b.title?.toLowerCase().includes(q) || b.repo_name?.toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  const totalPages = Math.ceil(filteredBookmarks.length / itemsPerPage);
+  const paginatedBookmarks = filteredBookmarks.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const getLabelBadge = (bookmark) => {
+    // Mock logic - in real app, check actual labels
+    const labels = [
+      { match: "urgent", text: "URGENT", color: "bg-orange-500/20 text-orange-400 border-orange-500/30" },
+      { match: "good first issue", text: "GOOD FIRST ISSUE", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
+      { match: "feature", text: "FEATURE", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
+    ];
+    // Simple random assignment for demo
+    const idx = bookmark.id?.charCodeAt(0) % labels.length || 0;
+    return labels[idx];
+  };
 
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex justify-center items-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ADB5]"></div>
-          <span className="ml-3 text-[#EEEEEE]/60">Loading bookmarks...</span>
-        </div>
+      <div className="flex bg-[#0B0C10] min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <span className="ml-3 text-gray-400">Loading bookmarks...</span>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-      <div className="mb-6 sm:mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-[#EEEEEE] mb-2">
-          My Bookmarks
-        </h1>
-        <p className="text-sm sm:text-base text-[#EEEEEE]/60">
-          Track your saved issues and manage your contribution progress
-        </p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-        {statusOptions.map(({ value, label, icon: Icon, color, bg }) => {
-          const count = bookmarks.filter((b) => b.status === value).length;
-          return (
-            <div
-              key={value}
-              className={`p-3 sm:p-4 rounded-xl ${bg} border border-[#393E46]`}
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className={`text-xs sm:text-sm font-medium ${color}`}>
-                    {label}
-                  </p>
-                  <p className="text-xl sm:text-2xl font-bold text-[#EEEEEE]">
-                    {count}
-                  </p>
-                </div>
-                <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${color}`} />
-              </div>
+    <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
+      {/* Left Sidebar */}
+      <aside className="w-56 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20">
+        <div className="p-6">
+          <div className="flex items-center gap-3 text-white mb-10">
+            <div className="bg-blue-600 p-2 rounded-lg">
+              <Command className="w-5 h-5" />
             </div>
-          );
-        })}
-      </div>
+            <span className="font-bold text-lg tracking-tight">FirstIssue.dev</span>
+          </div>
 
-      {/* Bookmarks List */}
-      {bookmarks.length === 0 ? (
-        <div className="text-center py-8 sm:py-12 bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-[#393E46]">
-          <Clock className="h-10 w-10 sm:h-12 sm:w-12 text-[#EEEEEE]/40 mx-auto mb-4" />
-          <h3 className="text-base sm:text-lg font-medium text-[#EEEEEE] mb-2">
-            No bookmarks yet
-          </h3>
-          <p className="text-sm text-[#EEEEEE]/60 mb-6 px-4">
-            Start by exploring issues and bookmarking the ones you're interested
-            in.
-          </p>
+          <nav className="space-y-1">
+            <NavItem icon={Compass} label="Explore" active={activeNav === 'explore'} onClick={() => navigate('/explore')} />
+            <NavItem icon={Bookmark} label="Bookmarks" active={activeNav === 'bookmarks'} onClick={() => setActiveNav('bookmarks')} />
+            <NavItem icon={User} label="Profile" active={activeNav === 'profile'} onClick={() => navigate('/profile')} />
+            <NavItem icon={Settings} label="Settings" active={activeNav === 'settings'} onClick={() => setActiveNav('settings')} />
+          </nav>
+        </div>
+
+        {/* New Issue Button */}
+        <div className="mt-auto p-4">
           <button
-            onClick={() => navigate("/explore")}
-            className="px-5 sm:px-6 py-2.5 sm:py-3 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all"
+            onClick={() => navigate('/explore')}
+            className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors"
           >
-            Explore Issues
+            <Plus className="w-5 h-5" />
+            New Issue
           </button>
         </div>
-      ) : (
-        <div className="space-y-3 sm:space-y-4">
-          {bookmarks.map((bookmark) => {
-            const statusConfig = getStatusConfig(bookmark.status);
-            const StatusIcon = statusConfig.icon;
-            return (
-              <div
-                key={bookmark.id}
-                className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#393E46] hover:border-[#00ADB5]/50 transition-all duration-300"
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 lg:ml-56 min-w-0">
+        {/* Top Header */}
+        <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
+          <div className="flex flex-1 items-center max-w-xl relative">
+            <Search className="absolute left-3 w-4 h-4 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search your bookmarks..."
+              className="w-full bg-[#15161E] border border-white/5 rounded-lg py-2 pl-10 pr-4 text-sm text-gray-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+            />
+          </div>
+
+          <div className="flex items-center gap-4 ml-4">
+            <button className="text-gray-400 hover:text-white transition-colors relative">
+              <Bell className="w-5 h-5" />
+              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-[#0B0C10]" />
+            </button>
+            <div className="flex items-center gap-3 pl-4 border-l border-white/5">
+              <span className="text-sm text-gray-400">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'alex_dev'}</span>
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[1px]">
+                <img src={user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user?.email || 'User'}`} alt="Avatar" className="w-full h-full rounded-full bg-[#0B0C10]" />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Body */}
+        <div className="p-6 sm:p-8">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-3xl font-bold text-white">Your Bookmarks</h1>
+                <span className="px-3 py-1 bg-blue-600/20 text-blue-400 text-sm font-medium rounded-full">
+                  {bookmarks.length} SAVED
+                </span>
+              </div>
+              <p className="text-gray-400">Managing your saved open-source opportunities</p>
+            </div>
+            <button className="flex items-center gap-2 px-4 py-2 bg-[#15161E] border border-white/10 text-gray-300 rounded-lg hover:text-white hover:border-white/20 transition-colors">
+              <Filter className="w-4 h-4" />
+              Sort by Date
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex items-center gap-6 border-b border-white/5 mb-6">
+            <TabButton label="All Items" active={activeTab === 'all'} onClick={() => setActiveTab('all')} />
+            <TabButton label="Issues" active={activeTab === 'issues'} onClick={() => setActiveTab('issues')} />
+            <TabButton label="Repositories" active={activeTab === 'repositories'} onClick={() => setActiveTab('repositories')} />
+          </div>
+
+          {/* Bookmarks List */}
+          {filteredBookmarks.length === 0 ? (
+            <div className="text-center py-16 bg-[#15161E] rounded-xl border border-white/5">
+              <Bookmark className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-white mb-2">No bookmarks found</h3>
+              <p className="text-gray-500 mb-6">
+                {searchQuery ? "Try a different search term" : "Start by exploring issues and bookmarking the ones you like"}
+              </p>
+              <button
+                onClick={() => navigate("/explore")}
+                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors"
               >
-                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-0 mb-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-2 mb-2">
-                      <span className="text-sm font-medium text-[#00ADB5] truncate">
-                        {bookmark.repo_name}
-                      </span>
-                      <span className="px-2 py-0.5 text-xs font-medium bg-[#222831] text-[#EEEEEE]/70 rounded-full">
-                        {bookmark.language}
+                Explore Issues
+              </button>
+            </div>
+          ) : (
+            <div className="bg-[#15161E] rounded-xl border border-white/5 overflow-hidden">
+              {paginatedBookmarks.map((bookmark, index) => {
+                const badge = getLabelBadge(bookmark);
+                return (
+                  <div
+                    key={bookmark.id}
+                    className={`flex items-center gap-4 p-5 hover:bg-white/[0.02] transition-colors ${
+                      index !== paginatedBookmarks.length - 1 ? 'border-b border-white/5' : ''
+                    }`}
+                  >
+                    {/* Icon */}
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-bold text-white">
+                        {bookmark.repo_name?.split('/')[0]?.substring(0, 2).toUpperCase() || 'GH'}
                       </span>
                     </div>
-                    <h3 className="text-base sm:text-lg font-semibold text-[#EEEEEE] mb-2 line-clamp-2">
-                      {bookmark.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-[#EEEEEE]/50 mb-4">
-                      Bookmarked on {formatDate(bookmark.created_at)}
-                    </p>
+
+                    {/* Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="text-white font-medium truncate">{bookmark.title}</h4>
+                        {badge && (
+                          <span className={`px-2 py-0.5 text-[10px] font-bold rounded border ${badge.color}`}>
+                            {badge.text}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        <span className="text-gray-400">{bookmark.repo_name}</span>
+                        {bookmark.language && (
+                          <span> • {bookmark.language}</span>
+                        )}
+                      </p>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-gray-500 hidden sm:block">
+                        {formatTimeAgo(bookmark.created_at)}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <a
+                          href={bookmark.issue_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-gray-500 hover:text-blue-400 transition-colors"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                        <button
+                          onClick={() =>
+                            setDeleteDialog({
+                              isOpen: true,
+                              bookmarkId: bookmark.id,
+                              bookmarkTitle: bookmark.title,
+                              loading: false,
+                            })
+                          }
+                          className="p-2 text-gray-500 hover:text-red-400 transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 self-end sm:self-start sm:ml-4">
-                    <a
-                      href={bookmark.issue_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2.5 sm:p-2 bg-[#00ADB5]/20 text-[#00ADB5] rounded-lg hover:bg-[#00ADB5]/30 transition-colors"
-                      title="View on GitHub"
-                    >
-                      <ExternalLink className="h-5 w-5" />
-                    </a>
-                    <button
-                      onClick={() =>
-                        setDeleteDialog({
-                          isOpen: true,
-                          bookmarkId: bookmark.id,
-                          bookmarkTitle: bookmark.title,
-                          loading: false,
-                        })
-                      }
-                      className="p-2.5 sm:p-2 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
-                      title="Remove bookmark"
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <StatusIcon className={`h-5 w-5 ${statusConfig.color}`} />
-                    <span className="text-sm font-medium text-[#EEEEEE]/70">
-                      Status:
-                    </span>
-                  </div>
-                  <select
-                    value={bookmark.status}
-                    onChange={(e) => updateStatus(bookmark.id, e.target.value)}
-                    disabled={updatingStatus === bookmark.id}
-                    className="w-full sm:w-auto px-3 py-2 sm:py-1 text-sm bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] focus:ring-2 focus:ring-[#00ADB5] disabled:opacity-50"
-                  >
-                    {statusOptions.map(({ value, label }) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {filteredBookmarks.length > 0 && (
+            <div className="flex items-center justify-between mt-6">
+              <p className="text-sm text-gray-500">
+                Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredBookmarks.length)} - {Math.min(currentPage * itemsPerPage, filteredBookmarks.length)} of {filteredBookmarks.length} bookmarks
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 bg-[#15161E] border border-white/10 text-gray-400 rounded-lg hover:text-white hover:border-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage >= totalPages}
+                  className="px-4 py-2 bg-[#15161E] border border-white/10 text-gray-400 rounded-lg hover:text-white hover:border-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
               </div>
-            );
-          })}
+            </div>
+          )}
         </div>
-      )}
+      </main>
 
       <DeleteConfirmationDialog
         isOpen={deleteDialog.isOpen}
@@ -294,5 +354,34 @@ const BookmarksPage = () => {
     </div>
   );
 };
+
+/* --- Sub Components --- */
+
+const NavItem = ({ icon: Icon, label, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+      active
+        ? "bg-blue-600/10 text-blue-400"
+        : "text-gray-400 hover:text-white hover:bg-white/5"
+    }`}
+  >
+    <Icon className={`w-5 h-5 ${active ? "text-blue-400" : "text-gray-500"}`} />
+    {label}
+  </button>
+);
+
+const TabButton = ({ label, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`pb-3 text-sm font-medium transition-all border-b-2 ${
+      active
+        ? "border-blue-500 text-blue-400"
+        : "border-transparent text-gray-500 hover:text-gray-300"
+    }`}
+  >
+    {label}
+  </button>
+);
 
 export default BookmarksPage;

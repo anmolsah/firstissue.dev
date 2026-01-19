@@ -1,30 +1,42 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
-  ExternalLink,
-  Star,
-  GitFork,
-  Calendar,
+  LayoutDashboard,
+  Compass,
+  GitPullRequest,
   Bookmark,
   BookmarkCheck,
-  Users,
-  Clock,
-  Building,
-  Shield,
+  Bell,
+  Star,
   ChevronDown,
+  Command,
   Loader2,
-  RefreshCw,
-  Award,
-  Zap,
-  CheckCircle,
+  ExternalLink,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
+const formatTimeAgo = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffHours = Math.abs(now - date) / 36e5;
+  if (diffHours < 24) return `${Math.ceil(diffHours)}h ago`;
+  const diffDays = Math.ceil(diffHours / 24);
+  return `${diffDays}d ago`;
+};
+
 const ExplorePage = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Auth Protection
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login');
+    }
+  }, [user, authLoading, navigate]);
+
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -32,94 +44,50 @@ const ExplorePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
-  const [trustedRepos, setTrustedRepos] = useState([]);
-  const [loadingTrusted, setLoadingTrusted] = useState(true);
-  const [selectedTab, setSelectedTab] = useState("github");
+  const [selectedTab, setSelectedTab] = useState("all");
+  
+  // Sidebar State
+  const [activeSidebarItem, setActiveSidebarItem] = useState("explore");
+
+  // Filters State
   const [filters, setFilters] = useState({
     language: "",
     labels: ["good first issue"],
     keywords: "",
     sort: "updated",
     minStars: "10",
-    recentActivity: "month",
-    excludeArchived: true,
-    verifiedOnly: false,
   });
 
   const languages = [
-    "javascript",
-    "typescript",
-    "python",
-    "java",
-    "react",
-    "vue",
-    "angular",
-    "node.js",
-    "go",
-    "rust",
-    "php",
-    "ruby",
-    "swift",
-    "kotlin",
-    "dart",
-    "c++",
-    "c#",
-    "html",
-    "css",
-    "scss",
-    "tailwindcss",
-    "nextjs",
-    "express",
+    { name: "TypeScript", color: "blue" },
+    { name: "JavaScript", color: "yellow" },
+    { name: "Python", color: "blue" },
+    { name: "Go", color: "cyan" },
+    { name: "Rust", color: "orange" },
+    { name: "Java", color: "red" },
+    { name: "C++", color: "blue" },
+    { name: "C#", color: "purple" },
+    { name: "PHP", color: "indigo" },
+    { name: "Swift", color: "orange" },
+    { name: "Ruby", color: "red" },
+    { name: "Kotlin", color: "purple" },
+    { name: "Dart", color: "blue" },
   ];
+
   const labelOptions = [
-    { value: "good first issue", label: "Good First Issue", color: "emerald" },
-    { value: "help wanted", label: "Help Wanted", color: "blue" },
-    { value: "beginner friendly", label: "Beginner Friendly", color: "purple" },
-    { value: "hacktoberfest", label: "Hacktoberfest", color: "orange" },
-    { value: "documentation", label: "Documentation", color: "yellow" },
-    { value: "bug", label: "Bug Fix", color: "red" },
-  ];
-  const sortOptions = [
-    { value: "updated", label: "Recently Updated" },
-    { value: "created", label: "Recently Created" },
-    { value: "comments", label: "Most Discussed" },
-  ];
-  const minStarsOptions = [
-    { value: "0", label: "Any Stars" },
-    { value: "10", label: "10+ Stars" },
-    { value: "50", label: "50+ Stars" },
-    { value: "100", label: "100+ Stars" },
-    { value: "500", label: "500+ Stars" },
-  ];
-  const activityOptions = [
-    { value: "week", label: "Past Week" },
-    { value: "month", label: "Past Month" },
-    { value: "3months", label: "Past 3 Months" },
-    { value: "any", label: "Any Time" },
+    { id: "good first issue", label: "Good First Issue", color: "emerald" },
+    { id: "help wanted", label: "Help Wanted", color: "blue" },
+    { id: "beginner friendly", label: "Beginner Friendly", color: "purple" },
+    { id: "hacktoberfest", label: "Hacktoberfest", color: "orange" },
+    { id: "documentation", label: "Documentation", color: "yellow" },
+    { id: "bug", label: "Bug Fix", color: "red" },
   ];
 
+  /* --- Fetch Logic --- */
   useEffect(() => {
-    if (selectedTab === "github") resetAndFetch();
-    else fetchTrustedRepos();
+    resetAndFetch();
     if (user) fetchBookmarkedIssues();
-  }, [filters, user, selectedTab]);
-
-  const fetchTrustedRepos = async () => {
-    setLoadingTrusted(true);
-    try {
-      const { data, error } = await supabase
-        .from("trusted_repos")
-        .select("*")
-        .eq("is_active", true)
-        .order("stars", { ascending: false });
-      if (error) throw error;
-      setTrustedRepos(data || []);
-    } catch (error) {
-      console.error("Error fetching trusted repos:", error);
-    } finally {
-      setLoadingTrusted(false);
-    }
-  };
+  }, [filters, selectedTab, user]);
 
   const resetAndFetch = () => {
     setCurrentPage(1);
@@ -132,11 +100,11 @@ const ExplorePage = () => {
     if (page === 1) setLoading(true);
     else setLoadingMore(true);
     try {
-      const query = buildAdvancedGitHubQuery();
+      const query = buildQuery();
       const response = await fetch(
         `https://api.github.com/search/issues?q=${encodeURIComponent(
           query
-        )}&sort=${filters.sort}&per_page=20&page=${page}`,
+        )}&sort=${filters.sort}&per_page=12&page=${page}`,
         {
           headers: {
             Accept: "application/vnd.github.v3+json",
@@ -147,15 +115,16 @@ const ExplorePage = () => {
           },
         }
       );
+
       if (response.ok) {
         const data = await response.json();
-        const filteredIssues = await filterHighQualityIssues(data.items || []);
+        const filteredIssues = data.items || [];
+        
         if (reset) setIssues(filteredIssues);
         else setIssues((prev) => [...prev, ...filteredIssues]);
+        
         setTotalCount(data.total_count);
-        setHasMore(
-          filteredIssues.length === 20 && page * 20 < data.total_count
-        );
+        setHasMore(filteredIssues.length === 12 && page * 12 < data.total_count);
         setCurrentPage(page);
       }
     } catch (error) {
@@ -166,40 +135,24 @@ const ExplorePage = () => {
     }
   };
 
-  const buildAdvancedGitHubQuery = () => {
-    let query = "state:open type:issue";
-    if (filters.labels.length > 0)
-      filters.labels.forEach((label) => {
-        query += ` label:"${label}"`;
-      });
+  const buildQuery = () => {
+    let query = "state:open type:issue is:public -label:duplicate -label:invalid -label:wontfix";
+    
+    if (filters.labels.length > 0) {
+      filters.labels.forEach(label => query += ` label:"${label}"`);
+    }
     if (filters.language) query += ` language:${filters.language}`;
     if (filters.keywords) query += ` ${filters.keywords}`;
-    if (filters.minStars && filters.minStars !== "0")
-      query += ` stars:>=${filters.minStars}`;
-    if (filters.recentActivity !== "any") {
-      const dateMap = { week: "7", month: "30", "3months": "90" };
-      const days = dateMap[filters.recentActivity];
-      if (days) {
-        const date = new Date();
-        date.setDate(date.getDate() - parseInt(days));
-        query += ` updated:>=${date.toISOString().split("T")[0]}`;
-      }
-    }
-    if (filters.excludeArchived) query += ` archived:false`;
-    query += ` is:public -label:duplicate -label:invalid -label:wontfix`;
+    if (filters.minStars && filters.minStars !== "0") query += ` stars:>=${filters.minStars}`;
+
     return query;
   };
 
-  const filterHighQualityIssues = async (rawIssues) =>
-    rawIssues.filter((issue) => {
-      const repoUrl = issue.repository_url;
-      const repoName = repoUrl.split("/").slice(-2).join("/");
-      const spammyPatterns = [/test-repo/i, /hello-world/i];
-      const isSpammy = spammyPatterns.some((pattern) => pattern.test(repoName));
-      const hasContent = issue.title && issue.title.length > 10;
-      return !isSpammy && hasContent;
-    });
+  const loadMore = () => {
+    if (!loadingMore && hasMore) fetchIssues(currentPage + 1, false);
+  };
 
+  /* --- Bookmark Logic (from previous code) --- */
   const fetchBookmarkedIssues = async () => {
     if (!user) return;
     try {
@@ -212,14 +165,6 @@ const ExplorePage = () => {
     } catch (error) {
       console.error("Error fetching bookmarks:", error);
     }
-  };
-
-  const handleGitHubView = (url) => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const handleBookmark = async (issue) => {
@@ -258,598 +203,367 @@ const ExplorePage = () => {
     }
   };
 
-  const loadMore = () => {
-    if (!loadingMore && hasMore) fetchIssues(currentPage + 1, false);
-  };
-  const toggleLabel = (labelValue) => {
-    setFilters((prev) => ({
-      ...prev,
-      labels: prev.labels.includes(labelValue)
-        ? prev.labels.filter((l) => l !== labelValue)
-        : [...prev.labels, labelValue],
-    }));
-  };
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffDays = Math.ceil(Math.abs(now - date) / (1000 * 60 * 60 * 24));
-    if (diffDays === 1) return "yesterday";
-    if (diffDays < 7) return `${diffDays} days ago`;
-    if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`;
-    return `${Math.ceil(diffDays / 30)} months ago`;
-  };
-  const formatNumber = (num) => {
-    if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-    if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-    return num.toString();
-  };
-  const getRepoInfo = (issue) => {
-    const [owner, repo] = issue.repository_url.split("/").slice(-2);
-    return { owner, repo, fullName: `${owner}/${repo}` };
-  };
-  const isVerifiedOrg = (owner) =>
-    [
-      "microsoft",
-      "google",
-      "facebook",
-      "apple",
-      "amazon",
-      "netflix",
-      "uber",
-      "github",
-      "vercel",
-      "supabase",
-      "nodejs",
-      "reactjs",
-      "vuejs",
-      "tailwindlabs",
-    ].includes(owner.toLowerCase());
-
+  /* --- Render --- */
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#EEEEEE] mb-2">
-              Explore Open Source Issues
-            </h1>
-            <p className="text-sm sm:text-base text-[#EEEEEE]/60">
-              Discover high-quality, beginner-friendly issues from active
-              repositories
-            </p>
-          </div>
-          <div className="flex items-center justify-between sm:justify-end sm:flex-col sm:text-right gap-2">
-            <div className="text-sm text-[#EEEEEE]/50">
-              {totalCount > 0 && `${totalCount.toLocaleString()} issues found`}
+    <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
+      
+      {/* Sidebar - Fixed Width with Scrolling */}
+      <aside className="w-64 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto">
+        <div className="p-6">
+          <div className="flex items-center gap-3 text-white mb-10">
+            <div className="bg-blue-600 p-2 rounded-lg">
+               <Command className="w-5 h-5" />
             </div>
-            <button
-              onClick={resetAndFetch}
-              disabled={loading}
-              className="flex items-center gap-2 px-3 py-2 sm:py-1 text-sm text-[#00ADB5] hover:text-[#00d4de] disabled:opacity-50 bg-[#393E46]/50 sm:bg-transparent rounded-lg sm:rounded-none"
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-              />
-              Refresh
-            </button>
+            <span className="font-bold text-lg tracking-tight">FirstIssue.dev</span>
           </div>
+
+          <nav className="space-y-1">
+            <NavItem 
+              icon={LayoutDashboard} 
+              label="Dashboard" 
+              active={activeSidebarItem === 'dashboard'} 
+              onClick={() => setActiveSidebarItem('dashboard')} 
+            />
+            <NavItem 
+              icon={Compass} 
+              label="Explore Issues" 
+              active={activeSidebarItem === 'explore'} 
+              onClick={() => setActiveSidebarItem('explore')} 
+            />
+             <NavItem 
+              icon={GitPullRequest} 
+              label="Contributions" 
+              active={activeSidebarItem === 'contributions'} 
+              onClick={() => setActiveSidebarItem('contributions')} 
+            />
+             <NavItem 
+              icon={Bookmark} 
+              label="Saved" 
+              active={activeSidebarItem === 'saved'} 
+              onClick={() => setActiveSidebarItem('saved')} 
+            />
+          </nav>
         </div>
-        {!user && (
-          <div className="p-4 bg-[#00ADB5]/10 border border-[#00ADB5]/30 rounded-lg">
-            <p className="text-[#00ADB5] text-sm">
-              <strong>Note:</strong> Please{" "}
+
+        <div className="px-6 py-4 mt-4">
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Languages</p>
+          <div className="flex flex-wrap gap-2">
+            {languages.map(lang => (
               <button
-                onClick={() => navigate("/login")}
-                className="text-[#00ADB5] hover:text-[#00d4de] underline font-medium"
+                key={lang.name}
+                onClick={() => setFilters(prev => ({...prev, language: prev.language === lang.name.toLowerCase() ? "" : lang.name.toLowerCase()}))}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                  filters.language === lang.name.toLowerCase() 
+                  ? "bg-white/10 border-white/20 text-white" 
+                  : "bg-transparent border-white/5 text-gray-400 hover:border-white/10 hover:text-gray-300"
+                }`}
               >
-                sign in
-              </button>{" "}
-              to bookmark issues and view them on GitHub.
-            </p>
-          </div>
-        )}
-      </div>
-
-      {/* Tab Navigation */}
-      <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl p-1.5 sm:p-2 mb-6 sm:mb-8 border border-[#393E46]">
-        <div className="flex gap-1 sm:gap-2">
-          <button
-            onClick={() => setSelectedTab("github")}
-            className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
-              selectedTab === "github"
-                ? "bg-[#00ADB5] text-[#222831] shadow-lg"
-                : "text-[#EEEEEE]/60 hover:text-[#00ADB5] hover:bg-[#222831]"
-            }`}
-          >
-            <Search className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden xs:inline">GitHub</span> Issues
-            <span
-              className={`hidden sm:inline px-2 py-1 text-xs rounded-full ${
-                selectedTab === "github"
-                  ? "bg-[#222831]/30 text-[#222831]"
-                  : "bg-[#222831] text-[#EEEEEE]/60"
-              }`}
-            >
-              {totalCount > 0 ? totalCount.toLocaleString() : "Live"}
-            </span>
-          </button>
-          <button
-            onClick={() => setSelectedTab("trusted")}
-            className={`flex-1 sm:flex-none flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 px-3 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-all duration-200 text-sm sm:text-base ${
-              selectedTab === "trusted"
-                ? "bg-[#00ADB5] text-[#222831] shadow-lg"
-                : "text-[#EEEEEE]/60 hover:text-[#00ADB5] hover:bg-[#222831]"
-            }`}
-          >
-            <Award className="h-4 w-4 sm:h-5 sm:w-5" />
-            <span className="hidden xs:inline">Trusted</span> Repos
-            <span
-              className={`hidden sm:inline px-2 py-1 text-xs rounded-full ${
-                selectedTab === "trusted"
-                  ? "bg-[#222831]/30 text-[#222831]"
-                  : "bg-[#222831] text-[#EEEEEE]/60"
-              }`}
-            >
-              Curated
-            </span>
-          </button>
-        </div>
-      </div>
-
-      {/* Advanced Filters */}
-      {selectedTab === "github" && (
-        <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 border border-[#393E46]">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
-                  Programming Language
-                </label>
-                <select
-                  value={filters.language}
-                  onChange={(e) =>
-                    setFilters({ ...filters, language: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] focus:ring-2 focus:ring-[#00ADB5]"
-                >
-                  <option value="">All Languages</option>
-                  {languages.map((lang) => (
-                    <option key={lang} value={lang}>
-                      {lang}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
-                  Keywords
-                </label>
-                <input
-                  type="text"
-                  value={filters.keywords}
-                  onChange={(e) =>
-                    setFilters({ ...filters, keywords: e.target.value })
-                  }
-                  placeholder="Search in title and description..."
-                  className="w-full px-3 py-2 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40 focus:ring-2 focus:ring-[#00ADB5]"
-                />
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
-                  Issue Labels
-                </label>
-                <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                  {labelOptions.map(({ value, label, color }) => (
-                    <button
-                      key={value}
-                      onClick={() => toggleLabel(value)}
-                      className={`px-2 sm:px-3 py-1 text-xs font-medium rounded-full transition-all ${
-                        filters.labels.includes(value)
-                          ? `bg-${color}-500/30 text-${color}-400 ring-2 ring-${color}-500/50`
-                          : "bg-[#222831] text-[#EEEEEE]/60 hover:bg-[#222831]/80"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
-                    Sort By
-                  </label>
-                  <select
-                    value={filters.sort}
-                    onChange={(e) =>
-                      setFilters({ ...filters, sort: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] text-sm focus:ring-2 focus:ring-[#00ADB5]"
-                  >
-                    {sortOptions.map(({ value, label }) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
-                    Min Stars
-                  </label>
-                  <select
-                    value={filters.minStars}
-                    onChange={(e) =>
-                      setFilters({ ...filters, minStars: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] text-sm focus:ring-2 focus:ring-[#00ADB5]"
-                  >
-                    {minStarsOptions.map(({ value, label }) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-[#EEEEEE] mb-2">
-                  Recent Activity
-                </label>
-                <select
-                  value={filters.recentActivity}
-                  onChange={(e) =>
-                    setFilters({ ...filters, recentActivity: e.target.value })
-                  }
-                  className="w-full px-3 py-2 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] focus:ring-2 focus:ring-[#00ADB5]"
-                >
-                  {activityOptions.map(({ value, label }) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-3">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={filters.excludeArchived}
-                    onChange={(e) =>
-                      setFilters({
-                        ...filters,
-                        excludeArchived: e.target.checked,
-                      })
-                    }
-                    className="rounded border-[#393E46] text-[#00ADB5] focus:ring-[#00ADB5] bg-[#222831]"
-                  />
-                  <span className="ml-2 text-sm text-[#EEEEEE]/70">
-                    Exclude archived repos
-                  </span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={filters.verifiedOnly}
-                    onChange={(e) =>
-                      setFilters({ ...filters, verifiedOnly: e.target.checked })
-                    }
-                    className="rounded border-[#393E46] text-[#00ADB5] focus:ring-[#00ADB5] bg-[#222831]"
-                  />
-                  <span className="ml-2 text-sm text-[#EEEEEE]/70">
-                    Verified orgs only
-                  </span>
-                </label>
-              </div>
-            </div>
+                <div className={`w-1.5 h-1.5 rounded-full bg-${lang.color}-500`} />
+                {lang.name}
+              </button>
+            ))}
           </div>
         </div>
-      )}
 
-      {/* Issues List */}
-      {selectedTab === "github" ? (
-        loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ADB5]"></div>
-            <span className="ml-3 text-[#EEEEEE]/60">
-              Finding quality issues...
-            </span>
+        <div className="px-6 py-4">
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Labels</p>
+          <div className="space-y-2">
+             {labelOptions.map(opt => (
+               <label key={opt.id} className="flex items-center gap-3 text-sm text-gray-400 cursor-pointer hover:text-gray-300">
+                  <div className={`w-4 h-4 rounded-full border border-gray-600 flex items-center justify-center ${filters.labels.includes(opt.id) ? "border-blue-500" : ""}`}>
+                      {filters.labels.includes(opt.id) && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    className="hidden" 
+                    checked={filters.labels.includes(opt.id)}
+                    onChange={() => {
+                        setFilters(prev => ({
+                          ...prev, 
+                          labels: prev.labels.includes(opt.id) 
+                            ? prev.labels.filter(l => l !== opt.id) 
+                            : [...prev.labels, opt.id]
+                        }))
+                    }}
+                  />
+                  {opt.label}
+               </label>
+             ))}
           </div>
-        ) : (
-          <div className="space-y-6">
-            {issues.length === 0 ? (
-              <div className="text-center py-12 bg-[#393E46]/50 backdrop-blur-sm rounded-2xl border border-[#393E46]">
-                <Search className="h-12 w-12 text-[#EEEEEE]/40 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-[#EEEEEE] mb-2">
-                  No issues found
-                </h3>
-                <p className="text-[#EEEEEE]/60">
-                  Try adjusting your filters to find more issues.
-                </p>
+        </div>
+        
+        {/* Project Stars Slider Mockup */}
+         <div className="px-6 py-4 mt-auto mb-6">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Project Stars</p>
+            <input type="range" min="0" max="10000" className="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer" />
+            <div className="flex justify-between text-[10px] text-gray-500 mt-2">
+               <span>0</span>
+               <span>100k+</span>
+            </div>
+         </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="flex-1 lg:ml-64 min-w-0">
+        {/* Top Header */}
+        <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
+          <div className="flex flex-1 items-center max-w-xl relative">
+             <Search className="absolute left-3 w-4 h-4 text-gray-500" />
+             <input 
+               type="text" 
+               placeholder="Search repositories, issues or topics..." 
+               className="w-full bg-[#15161E] border border-white/5 rounded-lg py-2 pl-10 pr-12 text-sm text-gray-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
+               value={filters.keywords}
+               onChange={(e) => setFilters(prev => ({...prev, keywords: e.target.value}))}
+             />
+             <div className="absolute right-3 flex items-center gap-1 border border-white/10 rounded px-1.5 py-0.5">
+                <Command className="w-3 h-3 text-gray-500" />
+                <span className="text-[10px] text-gray-500">K</span>
+             </div>
+          </div>
+          
+          <div className="flex items-center gap-4 ml-4">
+            <button className="text-gray-400 hover:text-white transition-colors relative">
+               <Bell className="w-5 h-5" />
+               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-[#0B0C10]" />
+            </button>
+            <div className="flex items-center gap-3 pl-4 border-l border-white/5">
+               <div className="text-right hidden sm:block">
+                  <p className="text-sm font-medium text-white">{user ? (user.user_metadata?.full_name || "User") : "Guest"}</p>
+                  <p className="text-xs text-gray-500">Lvl 4 Contributor</p>
+               </div>
+               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[1px]">
+                  <img src={user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user?.email || 'Guest'}`} alt="Avatar" className="w-full h-full rounded-full bg-[#0B0C10]" />
+               </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Content Body */}
+        <div className="p-6 sm:p-8">
+           <div className="mb-8">
+              <h1 className="text-3xl font-bold text-white mb-2">Explore Issues</h1>
+              <p className="text-gray-400">Curated open-source opportunities tailored to your skills.</p>
+           </div>
+           
+           {/* Filters Bar Row */}
+           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div className="bg-[#15161E] p-1 rounded-lg inline-flex border border-white/5">
+                 <TabButton label="All Issues" active={selectedTab === 'all'} onClick={() => setSelectedTab('all')} />
+                 <TabButton label="Trending" active={selectedTab === 'trending'} onClick={() => setSelectedTab('trending')} />
               </div>
-            ) : (
-              <>
-                {issues.map((issue) => {
-                  const repoInfo = getRepoInfo(issue);
-                  const isVerified = isVerifiedOrg(repoInfo.owner);
-                  return (
-                    <div
-                      key={issue.id}
-                      className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#393E46] hover:border-[#00ADB5]/50 transition-all duration-300 hover:-translate-y-1"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-4">
-                        <div className="flex items-center gap-3 min-w-0">
-                          <img
-                            src={issue.user.avatar_url}
-                            alt={repoInfo.owner}
-                            className="h-8 w-8 rounded-full flex-shrink-0"
-                          />
-                          <div className="min-w-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-sm font-medium text-[#00ADB5] truncate">
-                                {repoInfo.fullName}
-                              </span>
-                              {isVerified && (
-                                <div className="flex items-center gap-1 px-2 py-0.5 bg-[#00ADB5]/20 text-[#00ADB5] rounded-full text-xs font-medium flex-shrink-0">
-                                  <Shield className="h-3 w-3" />
-                                  <span className="hidden xs:inline">
-                                    Verified
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-2 sm:gap-3 text-xs text-[#EEEEEE]/50 mt-1">
-                              <span className="flex items-center gap-1">
-                                <Star className="h-3 w-3" />
-                                {formatNumber(issue.score || 0)}
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <GitFork className="h-3 w-3" />
-                                {formatNumber(Math.floor(Math.random() * 1000))}
-                              </span>
-                              <span className="hidden xs:flex items-center gap-1">
-                                <Users className="h-3 w-3" />
-                                {formatNumber(Math.floor(Math.random() * 100))}
-                              </span>
-                            </div>
-                          </div>
+              
+              <div className="flex items-center gap-2">
+                 <button 
+                  onClick={() => setFilters(prev => ({...prev, sort: prev.sort === 'updated' ? 'created' : 'updated'}))}
+                  className="flex items-center gap-2 px-3 py-2 bg-[#15161E] border border-white/5 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/10 transition-colors"
+                 > 
+                   {filters.sort === 'updated' ? 'Recently Updated' : 'Recently Created'} <ChevronDown className="w-4 h-4" />
+                 </button>
+              </div>
+           </div>
+
+           {/* Issues Grid */}
+           {loading && issues.length === 0 ? (
+             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {[1,2,3,4,5,6].map(i => <IssueSkeleton key={i} />)}
+             </div>
+           ) : (
+             <>
+               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                 {issues.map(issue => (
+                   <IssueCard 
+                     key={issue.id} 
+                     issue={issue} 
+                     isBookmarked={bookmarkedIssues.has(issue.html_url)}
+                     onToggleBookmark={() => handleBookmark(issue)}
+                   />
+                 ))}
+               </div>
+               
+               {issues.length === 0 && !loading && (
+                    <div className="text-center py-20">
+                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
+                            <Search className="w-8 h-8 text-gray-500" />
                         </div>
-                        <div className="flex items-center gap-2 self-end sm:self-auto">
-                          <button
-                            onClick={() => handleBookmark(issue)}
-                            className={`p-2.5 sm:p-2 rounded-lg transition-all duration-200 ${
-                              user && bookmarkedIssues.has(issue.html_url)
-                                ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30"
-                                : "bg-[#222831] text-[#EEEEEE]/60 hover:bg-[#00ADB5]/20 hover:text-[#00ADB5]"
-                            }`}
-                            title={
-                              user
-                                ? bookmarkedIssues.has(issue.html_url)
-                                  ? "Remove bookmark"
-                                  : "Bookmark issue"
-                                : "Sign in to bookmark"
-                            }
-                          >
-                            {user && bookmarkedIssues.has(issue.html_url) ? (
-                              <BookmarkCheck className="h-5 w-5" />
-                            ) : (
-                              <Bookmark className="h-5 w-5" />
-                            )}
-                          </button>
-                          <button
-                            onClick={() => handleGitHubView(issue.html_url)}
-                            className="p-2.5 sm:p-2 bg-[#00ADB5]/20 text-[#00ADB5] rounded-lg hover:bg-[#00ADB5]/30 transition-colors"
-                            title={user ? "View on GitHub" : "Sign in to view"}
-                          >
-                            <ExternalLink className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="mb-4">
-                        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-3">
-                          {issue.labels.slice(0, 3).map((label) => (
-                            <span
-                              key={label.id}
-                              className="px-2 py-0.5 sm:py-1 text-xs font-medium rounded-full truncate max-w-[120px] sm:max-w-none"
-                              style={{
-                                backgroundColor: `#${label.color}20`,
-                                color: `#${label.color}`,
-                              }}
-                            >
-                              {label.name}
-                            </span>
-                          ))}
-                          {issue.labels.length > 3 && (
-                            <span className="px-2 py-0.5 sm:py-1 text-xs font-medium bg-[#222831] text-[#EEEEEE]/60 rounded-full">
-                              +{issue.labels.length - 3}
-                            </span>
-                          )}
-                        </div>
-                        <h3 className="text-base sm:text-lg font-semibold text-[#EEEEEE] mb-2 line-clamp-2">
-                          {issue.title}
-                        </h3>
-                        <p className="text-[#EEEEEE]/60 text-sm line-clamp-2 sm:line-clamp-3 mb-4">
-                          {issue.body
-                            ? issue.body.substring(0, 300) + "..."
-                            : "No description available"}
-                        </p>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm text-[#EEEEEE]/50">
-                        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            <span className="hidden xs:inline">
-                              Updated
-                            </span>{" "}
-                            {formatDate(issue.updated_at)}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            💬 {issue.comments}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            👍 {issue.reactions?.["+1"] || 0}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <img
-                            src={issue.user.avatar_url}
-                            alt={issue.user.login}
-                            className="h-5 w-5 rounded-full"
-                          />
-                          <span className="truncate max-w-[100px] sm:max-w-none">
-                            {issue.user.login}
-                          </span>
-                        </div>
-                      </div>
+                        <h3 className="text-xl font-medium text-white mb-2">No issues found</h3>
+                        <p className="text-gray-500">Try adjusting your filters to find more results.</p>
+                        <button onClick={resetAndFetch} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors">Clear Filters</button>
                     </div>
-                  );
-                })}
-                {hasMore && (
-                  <div className="text-center py-8">
-                    <button
-                      onClick={loadMore}
-                      disabled={loadingMore}
-                      className="px-6 py-3 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all duration-200 disabled:opacity-50 flex items-center gap-2 mx-auto"
-                    >
-                      {loadingMore ? (
-                        <>
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          Loading more...
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-5 w-5" />
-                          Load More Issues
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        )
-      ) : (
-        <div>
-          <div className="mb-6 p-4 sm:p-6 bg-gradient-to-r from-[#00ADB5]/20 to-[#393E46]/50 rounded-xl sm:rounded-2xl border border-[#00ADB5]/30">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-3">
-              <Award className="h-8 w-8 text-[#00ADB5] flex-shrink-0" />
-              <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-[#EEEEEE]">
-                  Trusted Repositories
-                </h2>
-                <p className="text-sm sm:text-base text-[#EEEEEE]/60">
-                  Hand-picked, beginner-friendly open source projects
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-3 sm:gap-6 text-xs sm:text-sm text-[#EEEEEE]/60">
-              <div className="flex items-center gap-1">
-                <CheckCircle className="h-4 w-4 text-[#00ADB5]" />
-                Verified Quality
-              </div>
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4 text-[#00ADB5]" />
-                Active Community
-              </div>
-              <div className="flex items-center gap-1">
-                <Zap className="h-4 w-4 text-[#00ADB5]" />
-                Beginner Friendly
-              </div>
-            </div>
-          </div>
-          {loadingTrusted ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00ADB5]"></div>
-              <span className="ml-3 text-[#EEEEEE]/60">
-                Loading trusted repositories...
-              </span>
-            </div>
-          ) : (
-            <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-              {trustedRepos.map((repo) => (
-                <div
-                  key={repo.id}
-                  className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#393E46] hover:border-[#00ADB5]/50 transition-all duration-300 hover:-translate-y-1"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <span className="text-base sm:text-lg font-semibold text-[#EEEEEE] truncate">
-                          {repo.title}
-                        </span>
-                        <div
-                          className={`px-2 py-0.5 text-xs font-medium rounded-full flex-shrink-0 ${
-                            repo.difficulty === "beginner"
-                              ? "bg-emerald-500/20 text-emerald-400"
-                              : repo.difficulty === "intermediate"
-                              ? "bg-amber-500/20 text-amber-400"
-                              : "bg-red-500/20 text-red-400"
-                          }`}
-                        >
-                          {repo.difficulty}
-                        </div>
-                      </div>
-                      <div className="text-sm text-[#00ADB5] font-medium mb-2 truncate">
-                        {repo.name}
-                      </div>
-                      <p className="text-[#EEEEEE]/60 text-sm line-clamp-2 mb-3">
-                        {repo.description}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-4 text-sm text-[#EEEEEE]/50">
-                    <span className="flex items-center gap-1">
-                      <Star className="h-4 w-4" />
-                      {formatNumber(repo.stars)}
-                    </span>
-                    <span className="px-2 py-1 bg-[#222831] text-[#EEEEEE]/70 rounded-full text-xs font-medium">
-                      {repo.language}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-4">
-                    {repo.tags.slice(0, 3).map((tag, index) => (
-                      <span
-                        key={index}
-                        className="px-2 py-0.5 sm:py-1 text-xs font-medium bg-[#00ADB5]/20 text-[#00ADB5] rounded-full"
+               )}
+
+               {hasMore && issues.length > 0 && (
+                   <div className="flex justify-center mt-12 pb-12">
+                      <button 
+                        onClick={loadMore} 
+                        disabled={loadingMore}
+                        className="flex items-center gap-2 px-6 py-3 bg-[#15161E] border border-white/10 text-white rounded-full hover:bg-white/5 transition-all disabled:opacity-50"
                       >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex flex-col xs:flex-row items-stretch xs:items-center gap-2">
-                    <button
-                      onClick={() => handleGitHubView(repo.github_url)}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 sm:py-2 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all text-sm sm:text-base"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      View Repository
-                    </button>
-                    <button
-                      onClick={() =>
-                        window.open(
-                          `${repo.github_url}/issues?q=is:open+label:"good first issue"`,
-                          "_blank"
-                        )
-                      }
-                      className="px-4 py-2.5 sm:py-2 bg-[#222831] text-[#00ADB5] rounded-lg hover:bg-[#222831]/80 transition-colors font-medium text-sm sm:text-base"
-                    >
-                      Issues
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                         {loadingMore ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
+                         {loadingMore ? "Loading..." : "Load More Issues"}
+                      </button>
+                   </div>
+               )}
+             </>
+           )}
+           
+           <div className="fixed bottom-6 right-6 flex gap-2">
+              <div className="bg-[#15161E] border border-white/10 rounded-full px-4 py-2 text-xs font-mono text-gray-500 flex items-center gap-2">
+                  <span className="font-bold text-gray-400">QUICK MENU</span>
+                  <kbd className="bg-white/10 px-1.5 rounded text-gray-300">⌘</kbd>
+                  <kbd className="bg-white/10 px-1.5 rounded text-gray-300">K</kbd>
+              </div>
+              <button onClick={() => navigate('/submit')} className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-6 py-2 font-medium shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
+                  <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">+</div>
+                  Submit Issue
+              </button>
+           </div>
         </div>
-      )}
+      </main>
     </div>
   );
 };
+
+/* --- Sub Components --- */
+
+const NavItem = ({ icon: Icon, label, active, onClick }) => (
+  <button 
+    onClick={onClick}
+    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+      active 
+      ? "bg-blue-600/10 text-blue-500" 
+      : "text-gray-400 hover:text-white hover:bg-white/5"
+    }`}
+  >
+    <Icon className={`w-5 h-5 ${active ? "text-blue-500" : "text-gray-500 group-hover:text-white"}`} />
+    {label}
+  </button>
+);
+
+const TabButton = ({ label, active, onClick }) => (
+    <button 
+        onClick={onClick}
+        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+            active 
+            ? "bg-[#222831] text-white shadow-sm" 
+            : "text-gray-400 hover:text-gray-200"
+        }`}
+    >
+        {label}
+    </button>
+);
+
+const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
+    const repoName = issue.repository_url.split('/').slice(-2).join('/');
+    const timeAgo = formatTimeAgo(issue.created_at);
+    
+    return (
+        <div className="bg-[#15161E] border border-white/5 rounded-xl p-6 hover:border-gray-500/30 transition-all duration-300 group flex flex-col h-full relative">
+            <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded bg-[#222831] flex items-center justify-center border border-white/5">
+                         <img src={issue.user.avatar_url} alt="Repo" className="w-6 h-6 rounded-sm opacity-80" />
+                    </div>
+                    <div>
+                        <a href={issue.html_url} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-blue-400 font-mono transition-colors">
+                            {repoName}
+                        </a>
+                        <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-0.5">
+                            <Star className="w-3 h-3 text-gray-600" />
+                            <span>{issue.score ? Math.floor(issue.score) : '—'}</span>
+                        </div>
+                    </div>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                   <div className="text-[10px] text-gray-500">{timeAgo}</div>
+                   <button 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onToggleBookmark();
+                      }}
+                      className={`p-1.5 rounded-full transition-all ${isBookmarked ? 'bg-amber-500/20 text-amber-400' : 'bg-transparent text-gray-600 hover:text-gray-300 hover:bg-white/5'}`}
+                   >
+                      {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+                   </button>
+                </div>
+            </div>
+
+            <h3 className="text-lg font-bold text-gray-100 mb-3 leading-snug group-hover:text-blue-400 transition-colors line-clamp-2">
+               <a href={issue.html_url} target="_blank" rel="noopener noreferrer">
+                {issue.title}
+               </a>
+            </h3>
+
+            <p className="text-sm text-gray-500 mb-6 line-clamp-3 flex-1">
+                {issue.body ? issue.body.substring(0, 150) + "..." : "No description provided."}
+            </p>
+
+            <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+                <div className="flex flex-wrap gap-2">
+                    {issue.labels.slice(0, 2).map((label) => (
+                      <Badge key={label.id} label={label.name.toUpperCase()} color={label.color} />
+                    ))}
+                </div>
+                <a 
+                  href={issue.html_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-blue-400 transition-colors"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+            </div>
+        </div>
+    );
+};
+
+const Badge = ({ label, color }) => {
+    return (
+        <span 
+          className="text-[10px] font-bold px-2 py-1 rounded border"
+          style={{
+            backgroundColor: color ? `#${color}20` : 'rgba(107, 114, 128, 0.1)',
+            color: color ? `#${color}` : '#9ca3af',
+            borderColor: color ? `#${color}30` : 'rgba(107, 114, 128, 0.2)',
+          }}
+        >
+            {label.length > 15 ? label.substring(0, 15) + '...' : label}
+        </span>
+    );
+};
+
+const IssueSkeleton = () => (
+    <div className="bg-[#15161E] border border-white/5 rounded-xl p-6 h-[300px] animate-pulse">
+        <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded bg-white/5" />
+            <div className="space-y-2">
+                <div className="w-24 h-3 bg-white/5 rounded" />
+                <div className="w-12 h-2 bg-white/5 rounded" />
+            </div>
+        </div>
+        <div className="w-full h-6 bg-white/5 rounded mb-4" />
+        <div className="w-2/3 h-6 bg-white/5 rounded mb-8" />
+        <div className="space-y-2">
+            <div className="w-full h-3 bg-white/5 rounded" />
+            <div className="w-full h-3 bg-white/5 rounded" />
+            <div className="w-3/4 h-3 bg-white/5 rounded" />
+        </div>
+    </div>
+);
+
+// Helper for 'RefreshCw' used in Load More
+const RefreshCw = ({ className }) => (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" height="24" viewBox="0 0 24 24" 
+      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" 
+      className={className}
+    >
+        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+        <path d="M21 3v5h-5" />
+        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+        <path d="M3 21v-5h5" />
+    </svg>
+);
 
 export default ExplorePage;
