@@ -7,15 +7,11 @@ import {
   Bookmark,
   Star,
   CheckCircle,
-  LayoutDashboard,
   Compass,
   FileText,
-  Settings,
-  Share2,
   Plus,
   GitMerge,
   MessageSquare,
-  UserPlus,
   Command,
   Bell,
   Github,
@@ -25,6 +21,8 @@ import {
   Calendar,
   Loader2,
   LogOut,
+  TrendingUp,
+  BookOpen,
 } from "lucide-react";
 
 const ProfilePage = () => {
@@ -359,10 +357,10 @@ const ProfilePage = () => {
 
           {/* Navigation */}
           <nav className="space-y-1">
-            <NavItem icon={LayoutDashboard} label="Dashboard" active={activeNav === 'dashboard'} onClick={() => setActiveNav('dashboard')} />
             <NavItem icon={Compass} label="Explore" active={activeNav === 'explore'} onClick={() => navigate('/explore')} />
-            <NavItem icon={FileText} label="My Issues" active={activeNav === 'issues'} onClick={() => navigate('/bookmarks')} />
-            <NavItem icon={Settings} label="Settings" active={activeNav === 'settings'} onClick={() => setActiveNav('settings')} />
+            <NavItem icon={FileText} label="Saved" active={activeNav === 'saved'} onClick={() => navigate('/bookmarks')} />
+            <NavItem icon={TrendingUp} label="Status" active={activeNav === 'status'} onClick={() => navigate('/status')} />
+            <NavItem icon={BookOpen} label="Docs" active={activeNav === 'docs'} onClick={() => navigate('/getting-started')} />
           </nav>
         </div>
       </aside>

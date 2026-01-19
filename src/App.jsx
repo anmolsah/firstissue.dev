@@ -10,6 +10,8 @@ import ProfilePage from "./pages/ProfilePage";
 import SupportPage from "./pages/SupportPage";
 import ExplorePage from "./pages/ExplorePage";
 import GettingStartedPage from "./pages/GettingStartedPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPage from "./pages/PrivacyPage";
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 
@@ -18,7 +20,7 @@ const AppLayout = ({ children }) => {
   const location = useLocation();
   
   // Pages with their own sidebar layout - hide global Navbar/Footer
-  const dashboardPages = ['/explore', '/profile', '/bookmarks', '/status'];
+  const dashboardPages = ['/explore', '/profile', '/bookmarks', '/status', '/getting-started', '/terms', '/privacy'];
   const hideGlobalLayout = dashboardPages.some(page => location.pathname.startsWith(page));
   
   // Also hide on login page
@@ -65,6 +67,8 @@ const App = () => {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/explore" element={<ExplorePage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
         </Routes>
       </AppLayout>
     </AuthProvider>

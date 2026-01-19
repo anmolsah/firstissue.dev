@@ -21,17 +21,6 @@ const Footer = () => {
           <Link to="/terms" className="hover:text-white transition-colors">
             Terms
           </Link>
-          <Link to="/status" className="hover:text-white transition-colors">
-            Status
-          </Link>
-          <a
-            href="https://twitter.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-white transition-colors"
-          >
-            Twitter
-          </a>
         </div>
         
         <div className="text-sm text-gray-600">

@@ -71,14 +71,14 @@ const Navbar = () => {
               </button>
             ) : (
               <>
-                <Link
+                {/* <Link
                   to="/login"
                   className="text-sm font-medium text-gray-400 hover:text-white transition-colors"
                 >
                   Login
-                </Link>
+                </Link> */}
                 <Link
-                  to="/signup"
+                  to="/login"
                   className="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full hover:from-blue-500 hover:to-indigo-500 transition-all duration-300 shadow-[0_0_20px_-5px_rgba(79,70,229,0.5)] border border-white/10"
                 >
                   Join the movement
