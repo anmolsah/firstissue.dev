@@ -231,7 +231,7 @@ const SupportPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <a
-              href="https://github.com/firstissue/firstissue.dev"
+              href="https://github.com/anmolsah/firstissue.dev"
               target="_blank"
               rel="noopener noreferrer"
               className="p-6 bg-[#12131a] border border-[#1e1f2e] rounded-xl hover:border-white/20 transition-all group"

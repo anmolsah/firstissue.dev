@@ -76,7 +76,7 @@ const LoginPage = () => {
 
       {/* Footer Links */}
       <div className="mt-12 flex items-center gap-8 text-xs text-gray-600 uppercase tracking-wider">
-        <a href="/docs" className="hover:text-gray-400 transition-colors">Docs</a>
+        <Link to="/docs" className="hover:text-gray-400 transition-colors">Docs</Link>
        
       </div>
     </div>

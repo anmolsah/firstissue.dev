@@ -122,7 +122,6 @@ Thanks to all our amazing contributors! See [CONTRIBUTORS.md](CONTRIBUTORS.md)
 ## Documentation
 
 - [Contributing Guide](CONTRIBUTING.md)
-- [Interview Questions](docs/interview.md) - Great for learning!
 - [Issues to Create](docs/ISSUES_TO_CREATE.md) - For maintainers
 
 ---
