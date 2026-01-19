@@ -13,6 +13,7 @@ import {
   Layout,
   Star,
 } from "lucide-react";
+import demoVideo from "../assets/video01.gif";
 
 const LandingPage = () => {
   const { user } = useAuth();
@@ -48,7 +49,7 @@ const LandingPage = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
             <Link
-              to={user ? "/explore" : "/signup"}
+              to={user ? "/explore" : "/login"}
               className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-semibold text-lg hover:shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] transition-all duration-300 transform hover:-translate-y-1"
             >
               Join the movement
@@ -92,35 +93,13 @@ const LandingPage = () => {
               </div>
             </div>
 
-            {/* Mock Interface */}
-            <div className="grid grid-cols-12 gap-4 h-[400px] sm:h-[600px] bg-[#0B0C10] rounded-lg p-4 overflow-hidden">
-              {/* Sidebar */}
-              <div className="hidden sm:block col-span-2 space-y-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="h-8 w-full bg-white/5 rounded-md animate-pulse" />
-                ))}
-              </div>
-
-              {/* Main Content */}
-              <div className="col-span-12 sm:col-span-10 grid grid-rows-2 gap-4">
-                {/* Top Statistics */}
-                <div className="grid grid-cols-3 gap-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="bg-white/5 rounded-xl p-4 border border-white/5">
-                      <div className="w-8 h-8 rounded-lg bg-blue-500/20 mb-3" />
-                      <div className="w-16 h-2 bg-white/20 rounded mb-2" />
-                      <div className="w-24 h-4 bg-white/10 rounded" />
-                    </div>
-                  ))}
-                </div>
-
-                {/* Big Chart/Table Area */}
-                <div className="bg-white/5 rounded-xl border border-white/5 p-4 flex items-center justify-center">
-                   <div className="text-white/20">
-                      <Search className="w-12 h-12" />
-                   </div>
-                </div>
-              </div>
+            {/* Video/GIF Demo */}
+            <div className="rounded-lg overflow-hidden bg-[#0B0C10]">
+              <img 
+                src={demoVideo} 
+                alt="FirstIssue.dev Dashboard Demo" 
+                className="w-full h-auto object-cover"
+              />
             </div>
           </div>
         </div>
