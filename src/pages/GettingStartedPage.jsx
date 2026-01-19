@@ -264,10 +264,6 @@ const GettingStartedPage = () => {
               inquiries.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-              <button className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors flex items-center gap-2">
-                <MessageSquare className="w-5 h-5" />
-                Open Live Chat
-              </button>
               <button className="px-6 py-3 bg-[#1e1f2e] text-white rounded-xl font-medium hover:bg-[#2a2b4e] transition-colors flex items-center gap-2">
                 <Mail className="w-5 h-5" />
                 Submit a Ticket
@@ -295,7 +291,7 @@ const GettingStartedPage = () => {
               </div>
               <p className="text-sm text-gray-500">
                 Current response time:{" "}
-                <span className="text-emerald-400">&lt; 15 mins</span>
+                <span className="text-emerald-400">&lt; 2 Days</span>
               </p>
             </div>
           </div>
