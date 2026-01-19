@@ -12,19 +12,33 @@ import ExplorePage from "./pages/ExplorePage";
 import GettingStartedPage from "./pages/GettingStartedPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
+import DocsPage from "./pages/DocsPage";
+import DocsSectionPage from "./pages/DocsSectionPage";
+import DocsArticlePage from "./pages/DocsArticlePage";
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 
 // Layout wrapper that conditionally shows Navbar/Footer
 const AppLayout = ({ children }) => {
   const location = useLocation();
-  
+
   // Pages with their own sidebar layout - hide global Navbar/Footer
-  const dashboardPages = ['/explore', '/profile', '/bookmarks', '/status', '/getting-started', '/terms', '/privacy'];
-  const hideGlobalLayout = dashboardPages.some(page => location.pathname.startsWith(page));
-  
+  const dashboardPages = [
+    "/explore",
+    "/profile",
+    "/bookmarks",
+    "/status",
+    "/getting-started",
+    "/terms",
+    "/privacy",
+    "/docs",
+  ];
+  const hideGlobalLayout = dashboardPages.some((page) =>
+    location.pathname.startsWith(page),
+  );
+
   // Also hide on login page
-  const isLoginPage = location.pathname === '/login';
+  const isLoginPage = location.pathname === "/login";
 
   return (
     <div className="min-h-screen flex flex-col bg-[#222831]">
@@ -46,9 +60,7 @@ const AppLayout = ({ children }) => {
           },
         }}
       />
-      <div className="flex-1">
-        {children}
-      </div>
+      <div className="flex-1">{children}</div>
       {!hideGlobalLayout && !isLoginPage && <Footer />}
     </div>
   );
@@ -69,6 +81,9 @@ const App = () => {
           <Route path="/explore" element={<ExplorePage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/docs" element={<DocsPage />} />
+          <Route path="/docs/:section" element={<DocsSectionPage />} />
+          <Route path="/docs/:section/:article" element={<DocsArticlePage />} />
         </Routes>
       </AppLayout>
     </AuthProvider>

@@ -139,9 +139,17 @@ const LandingPage = () => {
                 Build a verifiable on-chain resume of your contributions. No more resume padding.
               </p>
               <div className="mt-6 flex items-center gap-2">
-                 <div className="flex -space-x-2">
-                    {[1,2,3].map(i => <div key={i} className="w-8 h-8 rounded-full bg-gray-700 border-2 border-[#15161E]" />)}
-                 </div>
+                 <div className="flex items-center">
+                <img className="w-7.5 rounded-full border-3 border-white"
+                    src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=50"
+                    alt="userImage1" />
+                <img className="w-7.5 rounded-full border-3 border-white -translate-x-2"
+                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=50"
+                    alt="userImage2" />
+                <img className="w-7.5 rounded-full border-3 border-white -translate-x-4"
+                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=50&h=50&auto=format&fit=crop"
+                    alt="userImage3" />
+            </div>
                  <span className="text-xs text-gray-500">+1.2k achievers</span>
               </div>
             </div>
