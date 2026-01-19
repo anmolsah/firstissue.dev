@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import Navbar from "./components/Navbar";
@@ -13,42 +13,60 @@ import GettingStartedPage from "./pages/GettingStartedPage";
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 
+// Layout wrapper that conditionally shows Navbar/Footer
+const AppLayout = ({ children }) => {
+  const location = useLocation();
+  
+  // Pages with their own sidebar layout - hide global Navbar/Footer
+  const dashboardPages = ['/explore', '/profile', '/bookmarks', '/status'];
+  const hideGlobalLayout = dashboardPages.some(page => location.pathname.startsWith(page));
+  
+  // Also hide on login page
+  const isLoginPage = location.pathname === '/login';
+
+  return (
+    <div className="min-h-screen flex flex-col bg-[#222831]">
+      {!hideGlobalLayout && !isLoginPage && <Navbar />}
+      <Toaster
+        position="top-right"
+        reverseOrder={false}
+        toastOptions={{
+          style: {
+            background: "#393E46",
+            color: "#EEEEEE",
+            border: "1px solid rgba(238, 238, 238, 0.1)",
+          },
+          success: {
+            iconTheme: {
+              primary: "#00ADB5",
+              secondary: "#222831",
+            },
+          },
+        }}
+      />
+      <div className="flex-1">
+        {children}
+      </div>
+      {!hideGlobalLayout && !isLoginPage && <Footer />}
+    </div>
+  );
+};
+
 const App = () => {
   return (
     <AuthProvider>
-      <div className="min-h-screen flex flex-col bg-[#222831]">
-        <Navbar />
-        <Toaster
-          position="top-right"
-          reverseOrder={false}
-          toastOptions={{
-            style: {
-              background: "#393E46",
-              color: "#EEEEEE",
-              border: "1px solid rgba(238, 238, 238, 0.1)",
-            },
-            success: {
-              iconTheme: {
-                primary: "#00ADB5",
-                secondary: "#222831",
-              },
-            },
-          }}
-        />
-        <div className="flex-1">
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/getting-started" element={<GettingStartedPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/bookmarks" element={<BookmarksPage />} />
-            <Route path="/status" element={<StatusPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/support" element={<SupportPage />} />
-            <Route path="/explore" element={<ExplorePage />} />
-          </Routes>
-        </div>
-        <Footer />
-      </div>
+      <AppLayout>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/getting-started" element={<GettingStartedPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/bookmarks" element={<BookmarksPage />} />
+          <Route path="/status" element={<StatusPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/explore" element={<ExplorePage />} />
+        </Routes>
+      </AppLayout>
     </AuthProvider>
   );
 };

@@ -17,6 +17,7 @@ import {
   Bell,
   Plus,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 
 const StatusPage = () => {
@@ -27,6 +28,7 @@ const StatusPage = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeNav, setActiveNav] = useState("status");
+  const [updatingStatus, setUpdatingStatus] = useState(null);
 
   const statusOptions = [
     { value: "all", label: "All Status", icon: null, color: "text-white", bg: "bg-blue-600" },
@@ -57,6 +59,27 @@ const StatusPage = () => {
       console.error("Error fetching bookmarks:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Update status in database
+  const updateStatus = async (bookmarkId, newStatus) => {
+    setUpdatingStatus(bookmarkId);
+    try {
+      const { error } = await supabase
+        .from("bookmarks")
+        .update({ status: newStatus })
+        .eq("id", bookmarkId);
+      if (error) throw error;
+      
+      // Update local state
+      setBookmarks((prev) =>
+        prev.map((b) => (b.id === bookmarkId ? { ...b, status: newStatus } : b))
+      );
+    } catch (error) {
+      console.error("Error updating status:", error);
+    } finally {
+      setUpdatingStatus(null);
     }
   };
 
@@ -193,7 +216,9 @@ const StatusPage = () => {
               return (
                 <div
                   key={value}
-                  className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center gap-4 cursor-pointer hover:border-white/10 transition-colors"
+                  className={`bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center gap-4 cursor-pointer hover:border-white/10 transition-colors ${
+                    selectedStatus === value ? 'ring-2 ring-blue-500' : ''
+                  }`}
                   onClick={() => setSelectedStatus(selectedStatus === value ? "all" : value)}
                 >
                   <div className={`w-10 h-10 rounded-lg ${
@@ -263,35 +288,56 @@ const StatusPage = () => {
                 return (
                   <div
                     key={bookmark.id}
-                    className="bg-[#15161E] rounded-xl p-5 border border-white/5 hover:border-white/10 transition-colors flex items-center gap-4"
+                    className="bg-[#15161E] rounded-xl p-5 border border-white/5 hover:border-white/10 transition-colors"
                   >
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-2 mb-2">
-                        <span className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
-                          {bookmark.repo_name}
-                        </span>
-                        <span className="px-2 py-0.5 text-[10px] font-medium bg-[#222831] text-gray-400 rounded border border-white/5">
-                          {bookmark.language || "UNKNOWN"}
-                        </span>
-                        <div className={`flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded ${statusConfig.bg} ${statusConfig.color}`}>
-                          <StatusIcon className="w-3 h-3" />
-                          {statusConfig.label}
+                    <div className="flex items-start gap-4">
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                          <span className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
+                            {bookmark.repo_name}
+                          </span>
+                          <span className="px-2 py-0.5 text-[10px] font-medium bg-[#222831] text-gray-400 rounded border border-white/5">
+                            {bookmark.language || "UNKNOWN"}
+                          </span>
+                          <div className={`flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded ${statusConfig.bg} ${statusConfig.color}`}>
+                            <StatusIcon className="w-3 h-3" />
+                            {statusConfig.label}
+                          </div>
                         </div>
+                        <h3 className="text-white font-medium mb-1 line-clamp-1">{bookmark.title}</h3>
+                        <p className="text-xs text-gray-500">Bookmarked on {formatDate(bookmark.created_at)}</p>
                       </div>
-                      <h3 className="text-white font-medium mb-1 line-clamp-1">{bookmark.title}</h3>
-                      <p className="text-xs text-gray-500">Bookmarked on {formatDate(bookmark.created_at)}</p>
-                    </div>
 
-                    {/* External Link */}
-                    <a
-                      href={bookmark.issue_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/5"
-                    >
-                      <ExternalLink className="w-5 h-5" />
-                    </a>
+                      {/* Status Dropdown */}
+                      <div className="flex items-center gap-2">
+                        <div className="relative">
+                          <select
+                            value={bookmark.status || "saved"}
+                            onChange={(e) => updateStatus(bookmark.id, e.target.value)}
+                            disabled={updatingStatus === bookmark.id}
+                            className="appearance-none bg-[#222831] border border-white/10 rounded-lg px-3 py-2 pr-8 text-sm text-gray-300 focus:outline-none focus:border-blue-500 cursor-pointer disabled:opacity-50"
+                          >
+                            {statusOptions.slice(1).map(({ value, label }) => (
+                              <option key={value} value={value}>
+                                {label}
+                              </option>
+                            ))}
+                          </select>
+                          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                        </div>
+
+                        {/* External Link */}
+                        <a
+                          href={bookmark.issue_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+                        >
+                          <ExternalLink className="w-5 h-5" />
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
