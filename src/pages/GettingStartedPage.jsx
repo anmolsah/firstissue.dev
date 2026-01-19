@@ -254,46 +254,10 @@ const GettingStartedPage = () => {
       {/* Support CTA */}
       <section className="py-16 px-6">
         <div className="max-w-4xl mx-auto">
-          <div className="bg-[#12131a] border border-[#1e1f2e] rounded-2xl p-8 text-center">
-            <h2 className="text-2xl font-bold text-white mb-3">
-              Can't find what you're looking for?
-            </h2>
-            <p className="text-gray-500 mb-8 max-w-xl mx-auto">
-              Our developer support team is available 24/5 to help you with
-              complex technical issues, account problems, or maintainer
-              inquiries.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
-              <button className="px-6 py-3 bg-[#1e1f2e] text-white rounded-xl font-medium hover:bg-[#2a2b4e] transition-colors flex items-center gap-2">
-                <Mail className="w-5 h-5" />
-                Submit a Ticket
-              </button>
-            </div>
-            <div className="flex items-center justify-center gap-2">
-              <div className="flex -space-x-2">
-                <div className="flex items-center">
-                  <img
-                    className="w-7.5 rounded-full border-3 border-white"
-                    src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=50"
-                    alt="userImage1"
-                  />
-                  <img
-                    className="w-7.5 rounded-full border-3 border-white -translate-x-2"
-                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=50"
-                    alt="userImage2"
-                  />
-                  <img
-                    className="w-7.5 rounded-full border-3 border-white -translate-x-4"
-                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=50&h=50&auto=format&fit=crop"
-                    alt="userImage3"
-                  />
-                </div>
-              </div>
-              <p className="text-sm text-gray-500">
-                Current response time:{" "}
-                <span className="text-emerald-400">&lt; 2 Days</span>
-              </p>
-            </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+            <Link to="/" className="px-6 py-3 bg-[#1e1f2e] text-white rounded-xl font-medium hover:bg-[#2a2b4e] transition-colors flex items-center gap-2">
+              Back to Home
+            </Link>
           </div>
         </div>
       </section>
