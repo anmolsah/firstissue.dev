@@ -126,7 +126,7 @@ const PrivacyPage = () => {
             <section className="mb-12">
               <h2 className="text-2xl font-semibold text-white mb-4">10. Contact Us</h2>
               <p className="text-gray-400 leading-relaxed">
-                If you have any questions about this Privacy Policy, please contact us at privacy@firstissue.dev.
+                If you have any questions about this Privacy Policy, please contact us at annifind010@gmail.com.
               </p>
             </section>
           </div>
@@ -134,15 +134,7 @@ const PrivacyPage = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/5 py-6 px-6">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <p className="text-sm text-gray-600">© 2024 FirstIssue.dev. All rights reserved.</p>
-          <div className="flex items-center gap-6 text-sm text-gray-500">
-            <Link to="/privacy" className="text-white">Privacy Policy</Link>
-            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

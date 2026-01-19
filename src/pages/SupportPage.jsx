@@ -253,7 +253,7 @@ const SupportPage = () => {
             </a>
 
             <a
-              href="mailto:support@firstissue.dev?subject=Feedback"
+              href="mailto:annifind010@gmail.com.dev?subject=Feedback"
               className="p-6 bg-[#12131a] border border-[#1e1f2e] rounded-xl hover:border-white/20 transition-all group"
             >
               <Mail className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
@@ -273,7 +273,7 @@ const SupportPage = () => {
         </div>
       </section>
 
-      <Footer />
+      
     </div>
   );
 };
