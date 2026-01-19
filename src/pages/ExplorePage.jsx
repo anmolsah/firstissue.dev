@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Search,
-  LayoutDashboard,
   Compass,
-  GitPullRequest,
   Bookmark,
   BookmarkCheck,
   Bell,
@@ -14,6 +12,8 @@ import {
   Command,
   Loader2,
   ExternalLink,
+  TrendingUp,
+  User,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -210,37 +210,37 @@ const ExplorePage = () => {
       {/* Sidebar - Fixed Width with Scrolling */}
       <aside className="w-64 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto">
         <div className="p-6">
-          <div className="flex items-center gap-3 text-white mb-10">
+          <Link to="/" className="flex items-center gap-3 text-white mb-10 hover:opacity-80 transition-opacity">
             <div className="bg-blue-600 p-2 rounded-lg">
                <Command className="w-5 h-5" />
             </div>
             <span className="font-bold text-lg tracking-tight">FirstIssue.dev</span>
-          </div>
+          </Link>
 
           <nav className="space-y-1">
-            <NavItem 
-              icon={LayoutDashboard} 
-              label="Dashboard" 
-              active={activeSidebarItem === 'dashboard'} 
-              onClick={() => setActiveSidebarItem('dashboard')} 
-            />
             <NavItem 
               icon={Compass} 
               label="Explore Issues" 
               active={activeSidebarItem === 'explore'} 
               onClick={() => setActiveSidebarItem('explore')} 
             />
-             <NavItem 
-              icon={GitPullRequest} 
-              label="Contributions" 
-              active={activeSidebarItem === 'contributions'} 
-              onClick={() => setActiveSidebarItem('contributions')} 
-            />
-             <NavItem 
+            <NavItem 
               icon={Bookmark} 
               label="Saved" 
               active={activeSidebarItem === 'saved'} 
-              onClick={() => setActiveSidebarItem('saved')} 
+              onClick={() => navigate('/bookmarks')} 
+            />
+            <NavItem 
+              icon={TrendingUp} 
+              label="Status" 
+              active={activeSidebarItem === 'status'} 
+              onClick={() => navigate('/status')} 
+            />
+            <NavItem 
+              icon={User} 
+              label="Profile" 
+              active={activeSidebarItem === 'profile'} 
+              onClick={() => navigate('/profile')} 
             />
           </nav>
         </div>
