@@ -211,9 +211,9 @@ const ExplorePage = () => {
       <aside className="w-64 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto">
         <div className="p-6">
           <Link to="/" className="flex items-center gap-3 text-white mb-10 hover:opacity-80 transition-opacity">
-            <div className="bg-blue-600 p-2 rounded-lg">
+            {/* <div className="bg-blue-600 p-2 rounded-lg">
                <Command className="w-5 h-5" />
-            </div>
+            </div> */}
             <span className="font-bold text-lg tracking-tight">FirstIssue.dev</span>
           </Link>
 

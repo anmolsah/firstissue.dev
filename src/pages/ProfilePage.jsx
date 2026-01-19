@@ -370,9 +370,9 @@ const ProfilePage = () => {
         {/* Top Header */}
         <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-lg">
+            {/* <div className="bg-blue-600 p-2 rounded-lg">
               <Command className="w-4 h-4 text-white" />
-            </div>
+            </div> */}
             <span className="font-bold text-white">FirstIssue.dev</span>
           </div>
           <div className="flex items-center gap-4">

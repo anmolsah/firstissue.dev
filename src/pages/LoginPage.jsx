@@ -25,9 +25,9 @@ const LoginPage = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0f] px-4">
       {/* Logo and Branding */}
       <div className="text-center mb-8">
-        <div className="inline-flex items-center justify-center w-14 h-14 bg-[#1a1b2e] border border-[#2a2b4e] rounded-xl mb-6">
+        {/* <div className="inline-flex items-center justify-center w-14 h-14 bg-[#1a1b2e] border border-[#2a2b4e] rounded-xl mb-6">
           <Command className="w-7 h-7 text-blue-400" />
-        </div>
+        </div> */}
         <h1 className="text-4xl font-bold text-white mb-3">FirstIssue.dev</h1>
         <p className="text-gray-500">The premier portal for open-source excellence</p>
       </div>

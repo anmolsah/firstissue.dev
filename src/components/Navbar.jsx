@@ -20,9 +20,9 @@ const Navbar = () => {
 
   // New public nav links based on design
   const publicLinks = [
-    { to: "#features", label: "Features" },
     { to: "/explore", label: "Explore" },
     { to: "/getting-started", label: "Docs" },
+    { to: "/support", label: "Support" },
   ];
 
   // Keep existing auth links for logged in users
