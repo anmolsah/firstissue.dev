@@ -181,10 +181,6 @@ const BookmarksPage = () => {
           </div>
 
           <div className="flex items-center gap-4 ml-4">
-            <button className="text-gray-400 hover:text-white transition-colors relative">
-              <Bell className="w-5 h-5" />
-              <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-[#0B0C10]" />
-            </button>
             <div className="flex items-center gap-3 pl-4 border-l border-white/5">
               <span className="text-sm text-gray-400">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'alex_dev'}</span>
               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[1px]">
