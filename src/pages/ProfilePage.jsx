@@ -548,11 +548,11 @@ const ProfilePage = () => {
               </div>
             </div>
             <ContributionHeatmap data={contributionData} />
-            <div className="flex justify-between text-[10px] text-gray-600 mt-4">
+            {/* <div className="flex justify-between text-[10px] text-gray-600 mt-4">
               {["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"].map((m) => (
                 <span key={m}>{m}</span>
               ))}
-            </div>
+            </div> */}
           </div>
 
           {/* Two Column Layout */}
