@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -57,6 +57,21 @@ const ExplorePage = () => {
     sort: "updated",
     minStars: "10",
   });
+
+  // Sort dropdown state
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const sortDropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
+        setSortDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const languages = [
     { name: "TypeScript", color: "blue" },
@@ -206,14 +221,10 @@ const ExplorePage = () => {
   /* --- Render --- */
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
-      
-      {/* Sidebar - Fixed Width with Scrolling */}
+    
       <aside className="w-64 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto">
         <div className="p-6">
           <Link to="/" className="flex items-center gap-3 text-white mb-10 hover:opacity-80 transition-opacity">
-            {/* <div className="bg-blue-600 p-2 rounded-lg">
-               <Command className="w-5 h-5" />
-            </div> */}
             <span className="font-bold text-lg tracking-tight">FirstIssue.dev</span>
           </Link>
 
@@ -323,10 +334,6 @@ const ExplorePage = () => {
           </div>
           
           <div className="flex items-center gap-4 ml-4">
-            <button className="text-gray-400 hover:text-white transition-colors relative">
-               <Bell className="w-5 h-5" />
-               <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-[#0B0C10]" />
-            </button>
             <div className="flex items-center gap-3 pl-4 border-l border-white/5">
                <div className="text-right hidden sm:block">
                   <p className="text-sm font-medium text-white">{user ? (user.user_metadata?.full_name || "User") : "Guest"}</p>
@@ -353,14 +360,48 @@ const ExplorePage = () => {
                  <TabButton label="Trending" active={selectedTab === 'trending'} onClick={() => setSelectedTab('trending')} />
               </div>
               
-              <div className="flex items-center gap-2">
-                 <button 
-                  onClick={() => setFilters(prev => ({...prev, sort: prev.sort === 'updated' ? 'created' : 'updated'}))}
-                  className="flex items-center gap-2 px-3 py-2 bg-[#15161E] border border-white/5 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/10 transition-colors"
-                 > 
-                   {filters.sort === 'updated' ? 'Recently Updated' : 'Recently Created'} <ChevronDown className="w-4 h-4" />
-                 </button>
-              </div>
+               <div className="flex items-center gap-2">
+                  <div className="relative" ref={sortDropdownRef}>
+                    <button 
+                      onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+                      className="flex items-center gap-2 px-3 py-2 bg-[#15161E] border border-white/5 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/10 transition-colors"
+                    > 
+                      {filters.sort === 'updated' ? 'Recently Updated' : 'Recently Created'} 
+                      <ChevronDown className={`w-4 h-4 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {sortDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-[#15161E] border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden">
+                        <button
+                          onClick={() => {
+                            setFilters(prev => ({...prev, sort: 'updated'}));
+                            setSortDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                            filters.sort === 'updated' 
+                              ? 'bg-blue-600/20 text-blue-400' 
+                              : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                          }`}
+                        >
+                          Recently Updated
+                        </button>
+                        <button
+                          onClick={() => {
+                            setFilters(prev => ({...prev, sort: 'created'}));
+                            setSortDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                            filters.sort === 'created' 
+                              ? 'bg-blue-600/20 text-blue-400' 
+                              : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                          }`}
+                        >
+                          Recently Created
+                        </button>
+                      </div>
+                    )}
+                  </div>
+               </div>
            </div>
 
            {/* Issues Grid */}
@@ -407,17 +448,6 @@ const ExplorePage = () => {
              </>
            )}
            
-           <div className="fixed bottom-6 right-6 flex gap-2">
-              <div className="bg-[#15161E] border border-white/10 rounded-full px-4 py-2 text-xs font-mono text-gray-500 flex items-center gap-2">
-                  <span className="font-bold text-gray-400">QUICK MENU</span>
-                  <kbd className="bg-white/10 px-1.5 rounded text-gray-300">⌘</kbd>
-                  <kbd className="bg-white/10 px-1.5 rounded text-gray-300">K</kbd>
-              </div>
-              <button onClick={() => navigate('/submit')} className="bg-blue-600 hover:bg-blue-500 text-white rounded-full px-6 py-2 font-medium shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-[10px]">+</div>
-                  Submit Issue
-              </button>
-           </div>
         </div>
       </main>
     </div>

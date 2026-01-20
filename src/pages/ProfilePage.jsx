@@ -370,15 +370,13 @@ const ProfilePage = () => {
         {/* Top Header */}
         <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
-            {/* <div className="bg-blue-600 p-2 rounded-lg">
-              <Command className="w-4 h-4 text-white" />
-            </div> */}
-            <span className="font-bold text-white">FirstIssue.dev</span>
+            <Link to="/" className="flex items-center space-x-2 group">
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
+              FirstIssue.dev
+            </span>
+          </Link>
           </div>
           <div className="flex items-center gap-4">
-            <button className="text-gray-400 hover:text-white transition-colors relative">
-              <Bell className="w-5 h-5" />
-            </button>
             <div className="flex items-center gap-3 pl-4 border-l border-white/5">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium text-white">{githubProfile?.name || getGitHubUsername()}</p>
@@ -561,20 +559,6 @@ const ProfilePage = () => {
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <footer className="border-t border-white/5 px-6 py-4 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-600">
-          <div className="flex items-center gap-2">
-            <Command className="w-4 h-4" />
-            <span>v2.4.0-stable • system status: <span className="text-emerald-400">online</span></span>
-          </div>
-          <div className="flex items-center gap-6 mt-2 sm:mt-0">
-            <a href="#" className="hover:text-gray-400">DOCUMENTATION</a>
-            <a href="#" className="hover:text-gray-400">COMMUNITY</a>
-            <a href="#" className="hover:text-gray-400">API</a>
-            <a href="#" className="hover:text-gray-400">PRIVACY</a>
-          </div>
-        </footer>
       </main>
     </div>
   );
