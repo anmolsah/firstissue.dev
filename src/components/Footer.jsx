@@ -6,11 +6,10 @@ const Footer = () => {
     <footer className="w-full bg-[#0B0C10] border-t border-white/5 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row justify-between items-center gap-6">
         <div className="flex items-center gap-2">
-          <Link
-            to="/"
-            className="flex items-center space-x-2 text-white hover:text-blue-400 transition-colors"
-          >
-            <span className="text-lg font-bold">FirstIssue.dev</span>
+          <Link to="/" className="flex items-center space-x-2 group">
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
+              FirstIssue.dev
+            </span>
           </Link>
         </div>
 
