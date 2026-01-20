@@ -54,6 +54,7 @@ const ProfilePage = () => {
         fetchGitHubProfile(),
         fetchGitHubRepos(),
         fetchGitHubEvents(),
+        fetchContributions(),
       ]);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -130,9 +131,6 @@ const ProfilePage = () => {
           .slice(0, 6)
           .map(([name, count]) => ({ name, count }));
         setLanguageStats(sortedLangs);
-        
-        // Generate contribution data from repos (simplified)
-        generateContributionData(repos);
       }
     } catch (error) {
       console.error("Error fetching GitHub repos:", error);
@@ -171,38 +169,101 @@ const ProfilePage = () => {
     }
   };
 
-  const generateContributionData = (repos) => {
-    // Generate a mock heatmap based on repo update times
-    // In a real app, you'd use the GitHub GraphQL API for actual contribution data
+  const fetchContributions = async () => {
+    const username = getGitHubUsername();
+    if (!username) return;
+    
+    try {
+      // Use GitHub's contribution calendar via a proxy API
+      // This fetches the actual contribution data from GitHub
+      const response = await fetch(
+        `https://github-contributions-api.jogruber.de/v4/${username}?y=last`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.contributions && Array.isArray(data.contributions)) {
+          // Convert the API response to our heatmap format (52 weeks x 7 days)
+          const contributionMap = new Map();
+          data.contributions.forEach((day) => {
+            contributionMap.set(day.date, day.count);
+          });
+          
+          // Generate heatmap data for the last 52 weeks
+          const weeks = 52;
+          const days = 7;
+          const heatmapData = [];
+          const now = new Date();
+          
+          // Find the start of the current week (Sunday)
+          const startOfWeek = new Date(now);
+          startOfWeek.setDate(now.getDate() - now.getDay());
+          
+          for (let w = weeks - 1; w >= 0; w--) {
+            const week = [];
+            for (let d = 0; d < days; d++) {
+              const date = new Date(startOfWeek);
+              date.setDate(startOfWeek.getDate() - (w * 7) + d);
+              const dateStr = date.toISOString().split('T')[0];
+              const count = contributionMap.get(dateStr) || 0;
+              
+              // Convert count to level (0-4)
+              let level = 0;
+              if (count > 0) level = 1;
+              if (count >= 3) level = 2;
+              if (count >= 6) level = 3;
+              if (count >= 10) level = 4;
+              
+              week.push(level);
+            }
+            heatmapData.push(week);
+          }
+          
+          setContributionData(heatmapData);
+          return;
+        }
+      }
+      
+      // Fallback to repo-based estimation if API fails
+      console.warn("Contribution API unavailable, using fallback");
+      generateFallbackContributionData();
+    } catch (error) {
+      console.error("Error fetching contributions:", error);
+      generateFallbackContributionData();
+    }
+  };
+
+  const generateFallbackContributionData = () => {
+    // Fallback: Generate based on repo activity
     const weeks = 52;
     const days = 7;
     const data = [];
     
-    // Create activity map from repo push dates
     const activityMap = new Map();
-    repos.forEach((repo) => {
+    githubRepos.forEach((repo) => {
       if (repo.pushed_at) {
         const date = new Date(repo.pushed_at);
-        const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        const key = date.toISOString().split('T')[0];
         activityMap.set(key, (activityMap.get(key) || 0) + 1);
       }
     });
     
     const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    
     for (let w = weeks - 1; w >= 0; w--) {
       const week = [];
       for (let d = 0; d < days; d++) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - (w * 7 + (6 - d)));
-        const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+        const date = new Date(startOfWeek);
+        date.setDate(startOfWeek.getDate() - (w * 7) + d);
+        const key = date.toISOString().split('T')[0];
         const count = activityMap.get(key) || 0;
         let level = 0;
         if (count > 0) level = 1;
         if (count > 2) level = 2;
         if (count > 4) level = 3;
         if (count > 6) level = 4;
-        // Add some randomness for demo
-        if (Math.random() > 0.7) level = Math.min(level + 1, 4);
         week.push(level);
       }
       data.push(week);
