@@ -21,7 +21,7 @@
     />
     <meta
       name="keywords"
-      content="open source, GitHub, good first issue, first contribution, beginner friendly, hacktoberfest, learn to code, student developer, open source for beginners, contribution tracker, GitHub issues, programming, coding, developer tools, React, JavaScript, Python, TypeScript"
+      content="open source, GitHub, good first issue, first contribution, beginner friendly, hacktoberfest, learn to code, student developer, open source for beginners, contribution tracker, GitHub issues, programming, coding, developer tools, React, JavaScript, Python, TypeScript, trusted repositories, curated open source projects, verified beginner repos, hand-picked GitHub repos, explore open source, first time contributor, beginner developer projects, open source documentation, getting started guide, how to contribute to open source, open source tutorials, developer guides, contribution guide, pull request guide, git tutorial for beginners"
     />
     <meta name="author" content="Anmol Sah" />
     <meta
@@ -85,7 +85,7 @@
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "FirstIssue.dev",
-        "description": "Find beginner-friendly GitHub issues and track your open source contribution journey",
+        "description": "Find beginner-friendly GitHub issues, explore trusted repositories, and track your open source contribution journey",
         "url": "https://firstissue.dev",
         "applicationCategory": "DeveloperApplication",
         "operatingSystem": "Web",
@@ -102,7 +102,115 @@
           "@type": "AggregateRating",
           "ratingValue": "4.8",
           "ratingCount": "150"
+        },
+        "hasPart": {
+          "@type": "ItemList",
+          "name": "Trusted Repositories",
+          "description": "Hand-picked GitHub repositories perfect for first-time open source contributors",
+          "itemListOrder": "https://schema.org/ItemListOrderDescending",
+          "numberOfItems": "6"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://firstissue.dev/explore?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
         }
+      }
+    </script>
+
+    <!-- Trusted Repos Feature Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        "name": "Trusted Repositories - FirstIssue.dev",
+        "description": "Curated collection of beginner-friendly GitHub repositories verified for quality and maintainer responsiveness. Perfect for first-time open source contributors.",
+        "url": "https://firstissue.dev/explore",
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "FirstIssue.dev"
+        },
+        "about": {
+          "@type": "Thing",
+          "name": "Open Source Contribution"
+        },
+        "audience": {
+          "@type": "Audience",
+          "audienceType": "Beginner Developers, Students, First-time Contributors"
+        }
+      }
+    </script>
+
+    <!-- Documentation Section Structured Data -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "TechArticle",
+        "headline": "Getting Started with Open Source - FirstIssue.dev Documentation",
+        "description": "Comprehensive guide on how to make your first open source contribution. Learn Git basics, find beginner-friendly issues, and understand the contribution workflow.",
+        "url": "https://firstissue.dev/docs",
+        "author": {
+          "@type": "Person",
+          "name": "Anmol Sah"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "FirstIssue.dev",
+          "url": "https://firstissue.dev"
+        },
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://firstissue.dev/docs"
+        },
+        "articleSection": ["Getting Started", "Finding Issues", "Making Contributions", "Best Practices"],
+        "educationalLevel": "Beginner",
+        "learningResourceType": "Tutorial",
+        "audience": {
+          "@type": "Audience",
+          "audienceType": "Beginner Developers, Students, First-time Contributors"
+        },
+        "isPartOf": {
+          "@type": "WebSite",
+          "name": "FirstIssue.dev",
+          "url": "https://firstissue.dev"
+        }
+      }
+    </script>
+
+    <!-- FAQPage for Documentation -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "How do I find my first open source issue?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Use FirstIssue.dev to explore curated beginner-friendly issues labeled 'good first issue' or 'help wanted'. Filter by programming language and project popularity to find the perfect match for your skills."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What are trusted repositories?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Trusted repositories are hand-picked GitHub projects verified for quality, active maintenance, and welcoming communities. They are ideal for first-time contributors."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Do I need to be an expert to contribute to open source?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No! Open source welcomes contributors of all skill levels. Many issues are specifically labeled for beginners, and documentation contributions are always appreciated."
+            }
+          }
+        ]
       }
     </script>
 

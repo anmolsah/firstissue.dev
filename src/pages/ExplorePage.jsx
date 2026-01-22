@@ -14,6 +14,8 @@ import {
   ExternalLink,
   TrendingUp,
   User,
+  Shield,
+  GitFork,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -45,6 +47,10 @@ const ExplorePage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [selectedTab, setSelectedTab] = useState("all");
+  
+  // Trusted Repos State
+  const [trustedRepos, setTrustedRepos] = useState([]);
+  const [loadingTrustedRepos, setLoadingTrustedRepos] = useState(true);
   
   // Sidebar State
   const [activeSidebarItem, setActiveSidebarItem] = useState("explore");
@@ -103,6 +109,30 @@ const ExplorePage = () => {
     resetAndFetch();
     if (user) fetchBookmarkedIssues();
   }, [filters, selectedTab, user]);
+
+  // Fetch Trusted Repos from Supabase
+  useEffect(() => {
+    fetchTrustedRepos();
+  }, []);
+
+  const fetchTrustedRepos = async () => {
+    try {
+      setLoadingTrustedRepos(true);
+      const { data, error } = await supabase
+        .from("trusted_repos")
+        .select("*")
+        .eq("is_active", true)
+        .order("stars", { ascending: false })
+        .limit(6);
+      
+      if (error) throw error;
+      setTrustedRepos(data || []);
+    } catch (error) {
+      console.error("Error fetching trusted repos:", error);
+    } finally {
+      setLoadingTrustedRepos(false);
+    }
+  };
 
   const resetAndFetch = () => {
     setCurrentPage(1);
@@ -406,6 +436,33 @@ const ExplorePage = () => {
                </div>
            </div>
 
+           {/* Trusted Repos Section */}
+           <div className="mb-10">
+              <div className="flex items-center justify-between mb-6">
+                 <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center border border-emerald-500/20">
+                       <Shield className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                       <h2 className="text-xl font-bold text-white">Trusted Repositories</h2>
+                       <p className="text-sm text-gray-500">Hand-picked repos perfect for first contributions</p>
+                    </div>
+                 </div>
+              </div>
+              
+              {loadingTrustedRepos ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                   {[1,2,3].map(i => <TrustedRepoSkeleton key={i} />)}
+                </div>
+              ) : trustedRepos.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                   {trustedRepos.map(repo => (
+                     <TrustedRepoCard key={repo.id} repo={repo} />
+                   ))}
+                </div>
+              ) : null}
+           </div>
+
            {/* Issues Grid */}
            {loading && issues.length === 0 ? (
              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -563,6 +620,88 @@ const Badge = ({ label, color }) => {
         </span>
     );
 };
+
+const TrustedRepoCard = ({ repo }) => {
+    const difficultyColors = {
+      beginner: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+      intermediate: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
+      advanced: { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
+    };
+    
+    const colors = difficultyColors[repo.difficulty] || difficultyColors.beginner;
+    
+    return (
+        <a 
+          href={repo.github_url} 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="bg-[#15161E] border border-white/5 rounded-xl p-5 hover:border-emerald-500/30 hover:bg-[#151620] transition-all duration-300 group flex flex-col"
+        >
+            <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-white/10 group-hover:border-emerald-500/30 transition-colors">
+                       <Shield className="w-5 h-5 text-emerald-400" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors line-clamp-1">
+                            {repo.title}
+                        </h3>
+                        <p className="text-xs text-gray-500 font-mono">{repo.name}</p>
+                    </div>
+                </div>
+                <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded border ${colors.bg} ${colors.text} ${colors.border}`}>
+                    {repo.difficulty}
+                </span>
+            </div>
+            
+            <p className="text-sm text-gray-400 mb-4 line-clamp-2 flex-1">
+                {repo.description}
+            </p>
+            
+            <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <Star className="w-3.5 h-3.5 text-amber-400" />
+                        <span>{repo.stars?.toLocaleString() || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                        <div className="w-2 h-2 rounded-full bg-blue-400" />
+                        <span>{repo.language}</span>
+                    </div>
+                </div>
+                {repo.tags && repo.tags.length > 0 && (
+                    <div className="flex gap-1">
+                        {repo.tags.slice(0, 2).map((tag, idx) => (
+                            <span key={idx} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/5">
+                                {tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </a>
+    );
+};
+
+const TrustedRepoSkeleton = () => (
+    <div className="bg-[#15161E] border border-white/5 rounded-xl p-5 h-[180px] animate-pulse">
+        <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-white/5" />
+            <div className="space-y-2 flex-1">
+                <div className="w-3/4 h-4 bg-white/5 rounded" />
+                <div className="w-1/2 h-3 bg-white/5 rounded" />
+            </div>
+        </div>
+        <div className="space-y-2 mb-4">
+            <div className="w-full h-3 bg-white/5 rounded" />
+            <div className="w-2/3 h-3 bg-white/5 rounded" />
+        </div>
+        <div className="flex gap-4 pt-3 border-t border-white/5">
+            <div className="w-16 h-3 bg-white/5 rounded" />
+            <div className="w-16 h-3 bg-white/5 rounded" />
+        </div>
+    </div>
+);
 
 const IssueSkeleton = () => (
     <div className="bg-[#15161E] border border-white/5 rounded-xl p-6 h-[300px] animate-pulse">
