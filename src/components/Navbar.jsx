@@ -21,7 +21,7 @@ const Navbar = () => {
   // New public nav links based on design
   const publicLinks = [
     { to: "/explore", label: "Explore" },
-    { to: "/getting-started", label: "Docs" },
+    { to: "/docs", label: "Docs" },
     { to: "/support", label: "Support" },
   ];
 

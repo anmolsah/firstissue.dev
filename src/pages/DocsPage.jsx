@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link } from "react-router-dom";
 import {
   Search,
   BookOpen,
@@ -25,11 +25,12 @@ import {
   Clock,
 } from "lucide-react";
 import Footer from "../components/Footer";
+import ContactFormModal from "../components/ContactFormModal";
 
 const DocsPage = () => {
-  const { section } = useParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   const docSections = [
     {
@@ -384,23 +385,22 @@ const DocsPage = () => {
                 support ticket for personalized assistance.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link
-                  to="/support"
+                <button
+                  onClick={() => setIsContactModalOpen(true)}
                   className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors"
                 >
                   Get Support
-                </Link>
-                <a
-                  href="#"
-                  className="px-6 py-3 bg-[#1e1f2e] text-white rounded-xl font-medium hover:bg-[#2a2b4e] transition-colors"
-                >
-                  Join Discord
-                </a>
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <ContactFormModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+      />
 
       <Footer />
     </div>

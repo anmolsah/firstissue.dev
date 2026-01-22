@@ -325,7 +325,7 @@ const DocsArticlePage = () => {
                   <div className="text-sm text-gray-500">
                     Was this article helpful?
                   </div>
-                  <div className="flex items-center gap-4">
+                  {/* <div className="flex items-center gap-4">
                     <a
                       href="#"
                       className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
@@ -333,7 +333,7 @@ const DocsArticlePage = () => {
                       <ExternalLink className="w-4 h-4" />
                       Edit on GitHub
                     </a>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </article>
