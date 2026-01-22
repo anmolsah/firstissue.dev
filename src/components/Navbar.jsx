@@ -28,7 +28,7 @@ const Navbar = () => {
   // Keep existing auth links for logged in users
   const authLinks = [
     { to: "/explore", label: "Explore" },
-    { to: "/getting-started", label: "Guide" },
+    { to: "/getting-started", label: "Docs" },
     { to: "/bookmarks", label: "Bookmarks" },
     { to: "/status", label: "Status" },
     { to: "/profile", label: "Profile" },
