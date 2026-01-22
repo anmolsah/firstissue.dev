@@ -95,6 +95,43 @@ const DocsPage = () => {
       ],
     },
     {
+      id: "git-commands",
+      title: "Git Commands",
+      icon: GitBranch,
+      color: "text-cyan-400",
+      bgColor: "bg-cyan-500/10",
+      borderColor: "border-cyan-500/20",
+      description:
+        "Essential Git commands for version control and collaboration",
+      articles: [
+        {
+          id: "setup-configuration",
+          title: "Setup & Configuration",
+          readTime: "5 min",
+        },
+        {
+          id: "basic-snapshotting",
+          title: "Basic Snapshotting",
+          readTime: "8 min",
+        },
+        {
+          id: "branching-merging",
+          title: "Branching & Merging",
+          readTime: "10 min",
+        },
+        {
+          id: "remote-collaboration",
+          title: "Remote Collaboration",
+          readTime: "9 min",
+        },
+        {
+          id: "advanced-history",
+          title: "Advanced & History Management",
+          readTime: "12 min",
+        },
+      ],
+    },
+    {
       id: "troubleshooting",
       title: "Troubleshooting",
       icon: AlertTriangle,
@@ -266,7 +303,7 @@ const DocsPage = () => {
               </h1>
               <p className="text-xl text-gray-400 mb-8 max-w-3xl">
                 Everything you need to know about contributing to open source
-                projects, using our CLI tools, and building a thriving developer
+                projects and building a thriving developer
                 community.
               </p>
 

@@ -4,6 +4,7 @@ import {
     Terminal,
     AlertTriangle,
     Code,
+    GitBranch,
 } from "lucide-react";
 
 export const docContent = {
@@ -831,6 +832,412 @@ export const docContent = {
                     variant: "success",
                     title: "Pro Tip",
                     text: "Before asking, search existing issues and discussions. Your question might already be answered!"
+                }
+            ]
+        }
+    },
+
+    "git-commands": {
+        title: "Git Commands",
+        icon: GitBranch,
+        color: "text-cyan-400",
+
+        "setup-configuration": {
+            title: "Setup, Configuration & Repository Creation",
+            description: "Essential commands to set up Git, configure user information, and create or obtain repositories",
+            readTime: "5 min read",
+            updated: "1 day ago",
+            difficulty: "Beginner",
+            content: [
+                {
+                    type: "paragraph",
+                    text: "These commands are used to set up Git, configure user information, and create or obtain a working repository."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Configuration Commands"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git config --global user.name \"Name\" - Sets your username for all repositories on your system",
+                        "git config --global user.email \"email\" - Sets your email address for all repositories",
+                        "git config --list - Lists all your current configuration settings"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Set your identity\ngit config --global user.name \"John Doe\"\ngit config --global user.email \"john@example.com\"\n\n# View all configurations\ngit config --list"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Repository Creation"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git init - Initializes a new, empty Git repository in the current directory",
+                        "git clone <url> - Creates a local copy of a remote repository"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Initialize a new repository\ngit init\n\n# Clone an existing repository\ngit clone https://github.com/username/repository.git"
+                },
+                {
+                    type: "callout",
+                    variant: "info",
+                    title: "First Time Setup",
+                    text: "Always configure your username and email before making your first commit. This information is attached to every commit you make."
+                }
+            ]
+        },
+
+        "basic-snapshotting": {
+            title: "Basic Snapshotting (The Core Workflow)",
+            description: "Master the fundamental edit-stage-commit workflow for tracking file changes",
+            readTime: "8 min read",
+            updated: "1 day ago",
+            difficulty: "Beginner",
+            content: [
+                {
+                    type: "paragraph",
+                    text: "This is the fundamental edit-stage-commit workflow for tracking file changes in Git."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Checking Status and Differences"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git status - Shows the state of your working directory and staging area (tracked/untracked, modified files)",
+                        "git diff - Shows unstaged changes since the last commit",
+                        "git diff --staged - Shows changes that are staged for the next commit"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Check what files have changed\ngit status\n\n# See unstaged changes\ngit diff\n\n# See staged changes\ngit diff --staged"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Staging Files"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git add <file> - Stages a specific file for the next commit",
+                        "git add . or git add -A - Stages all new and changed files"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Stage a specific file\ngit add index.html\n\n# Stage all changes\ngit add .\ngit add -A"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Committing Changes"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git commit -m \"message\" - Records the staged snapshot to the project history with a message",
+                        "git commit --amend - Modifies the most recent commit (e.g., to change its message or add forgotten files)"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Commit with a message\ngit commit -m \"Add login feature\"\n\n# Amend the last commit\ngit commit --amend -m \"Add login feature with validation\""
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "File Operations"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git rm <file> - Removes a file from the working directory and stages the deletion",
+                        "git mv <old> <new> - Moves or renames a file and stages the operation",
+                        "git restore <file> - Discards unstaged changes in a file, restoring it to its last committed state"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Remove a file\ngit rm oldfile.txt\n\n# Rename a file\ngit mv oldname.txt newname.txt\n\n# Discard changes to a file\ngit restore index.html"
+                },
+                {
+                    type: "callout",
+                    variant: "warning",
+                    title: "Be Careful with git restore",
+                    text: "git restore permanently discards your unstaged changes. Make sure you really want to lose those changes before running this command!"
+                }
+            ]
+        },
+
+        "branching-merging": {
+            title: "Branching & Merging",
+            description: "Learn how to use branches to develop features in isolation and merge changes",
+            readTime: "10 min read",
+            updated: "2 days ago",
+            difficulty: "Intermediate",
+            content: [
+                {
+                    type: "paragraph",
+                    text: "Branches allow you to develop features in isolation. Merging integrates changes from one branch into another."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Branch Management"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git branch - Lists all local branches",
+                        "git branch <name> - Creates a new branch",
+                        "git branch -d <branch> - Deletes a specified branch (if it has been merged)"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# List all branches\ngit branch\n\n# Create a new branch\ngit branch feature-login\n\n# Delete a branch\ngit branch -d feature-login"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Switching Branches"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git switch <branch> or git checkout <branch> - Switches to the specified branch",
+                        "git switch -c <branch> or git checkout -b <branch> - Creates a new branch and switches to it"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Switch to an existing branch\ngit switch main\ngit checkout main\n\n# Create and switch to a new branch\ngit switch -c feature-dashboard\ngit checkout -b feature-dashboard"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Merging Branches"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git merge <branch> - Merges the specified branch's history into the current branch",
+                        "git log --oneline --graph - Shows the commit history as a compact graph, useful for visualizing branches"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Merge a feature branch into main\ngit switch main\ngit merge feature-login\n\n# View branch history\ngit log --oneline --graph"
+                },
+                {
+                    type: "callout",
+                    variant: "success",
+                    title: "Best Practice",
+                    text: "Always create a new branch for each feature or bug fix. This keeps your main branch clean and makes it easier to manage multiple changes simultaneously."
+                }
+            ]
+        },
+
+        "remote-collaboration": {
+            title: "Remote Collaboration",
+            description: "Commands for sharing code and synchronizing work with remote repositories",
+            readTime: "9 min read",
+            updated: "1 day ago",
+            difficulty: "Intermediate",
+            content: [
+                {
+                    type: "paragraph",
+                    text: "These commands let you share code and synchronize work with remote repositories (e.g., on GitHub or GitLab)."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Managing Remotes"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git remote add origin <url> - Adds a new remote repository connection, typically named origin"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Add a remote repository\ngit remote add origin https://github.com/username/repository.git\n\n# View all remotes\ngit remote -v"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Pushing Changes"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git push -u origin <branch> - Pushes a local branch to a remote repository and sets it as the upstream track",
+                        "git push - Pushes committed changes from the current branch to its upstream remote branch"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Push and set upstream for the first time\ngit push -u origin main\n\n# Push subsequent changes\ngit push"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Fetching and Pulling Changes"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git fetch - Downloads objects and refs (like new branches) from a remote but does not merge them",
+                        "git pull - Fetches from a remote and automatically merges the changes into your current branch (git fetch + git merge)",
+                        "git pull --rebase - Fetches and then rebases your local commits on top of the remote changes, creating a linear history"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Fetch changes without merging\ngit fetch origin\n\n# Fetch and merge changes\ngit pull\n\n# Fetch and rebase\ngit pull --rebase"
+                },
+                {
+                    type: "callout",
+                    variant: "info",
+                    title: "Fetch vs Pull",
+                    text: "git fetch is safer than git pull because it lets you review changes before merging them into your local branch. Use fetch when you want to see what's new without affecting your work."
+                }
+            ]
+        },
+
+        "advanced-history": {
+            title: "Advanced & History Management",
+            description: "Powerful tools for rewriting history, undoing changes, and managing work",
+            readTime: "12 min read",
+            updated: "3 days ago",
+            difficulty: "Advanced",
+            content: [
+                {
+                    type: "paragraph",
+                    text: "These are powerful tools for rewriting history, undoing changes, and saving work temporarily. Use with caution!"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Stashing Changes"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git stash - Temporarily shelves (stashes) all modified tracked files",
+                        "git stash pop - Reapplies the most recently stashed changes and removes them from the stash list"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Stash your current changes\ngit stash\n\n# Apply stashed changes\ngit stash pop\n\n# List all stashes\ngit stash list"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Rebasing"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git rebase <base> - Reapplies commits from your current branch onto the tip of another branch, often used to clean up history",
+                        "git rebase -i <base> - Starts an interactive rebase, allowing you to edit, squash, or reorder commits"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Rebase your branch onto main\ngit rebase main\n\n# Interactive rebase to clean up commits\ngit rebase -i HEAD~3"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Resetting and Reverting"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git reset --soft <commit> - Moves the branch pointer back to a commit, keeping your staged and working directory changes",
+                        "git reset --hard <commit> - Warning: Resets the branch pointer and discards all staged and working directory changes to match the specified commit. Use with extreme caution",
+                        "git revert <commit> - Creates a new commit that undoes the changes made in a specified previous commit. This is a safe way to undo public history"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Soft reset (keeps changes)\ngit reset --soft HEAD~1\n\n# Hard reset (DANGER: discards changes)\ngit reset --hard HEAD~1\n\n# Revert a commit (safe for public history)\ngit revert abc123"
+                },
+                {
+                    type: "callout",
+                    variant: "warning",
+                    title: "Danger Zone",
+                    text: "git reset --hard permanently deletes your changes. Never use it on commits that have been pushed to a shared repository. Use git revert instead for public history."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Advanced History Tools"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "git cherry-pick <commit> - Applies the changes from a specific commit onto your current branch",
+                        "git log -- <file> - Shows the commit history for a specific file",
+                        "git blame <file> - Shows what revision and author last modified each line of a file"
+                    ]
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "# Cherry-pick a specific commit\ngit cherry-pick abc123\n\n# View history of a file\ngit log -- index.html\n\n# See who changed each line\ngit blame index.html"
+                },
+                {
+                    type: "callout",
+                    variant: "info",
+                    title: "When to Use These Commands",
+                    text: "These advanced commands are powerful but can be dangerous. Use them when you need to clean up your local history before pushing, but avoid rewriting history that others depend on."
                 }
             ]
         }

@@ -109,7 +109,7 @@ Made with 💙 by [Anmol](https://github.com/anmolsah)
 
 ### Find an Issue
 
--  [First-timers only](https://github.com/anmolsah/firstissue.dev/labels/first-timers-only) - Perfect for your first contribution
+-  [First contribution](https://github.com/firstcontributions/first-contributions) - Perfect for your first contribution
 -  [Good first issue](https://github.com/anmolsah/firstissue.dev/labels/good%20first%20issue) - Beginner-friendly issues
 -  [Help wanted](https://github.com/anmolsah/firstissue.dev/labels/help%20wanted) - We need your help!
 
