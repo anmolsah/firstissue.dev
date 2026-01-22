@@ -123,7 +123,7 @@ const ExplorePage = () => {
         .select("*")
         .eq("is_active", true)
         .order("stars", { ascending: false })
-        .limit(6);
+        .limit(20);
       
       if (error) throw error;
       setTrustedRepos(data || []);
