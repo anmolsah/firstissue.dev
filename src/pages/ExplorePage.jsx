@@ -390,119 +390,133 @@ const ExplorePage = () => {
               <div className="bg-[#15161E] p-1 rounded-lg inline-flex border border-white/5">
                  <TabButton label="All Issues" active={selectedTab === 'all'} onClick={() => setSelectedTab('all')} />
                  <TabButton label="Trending" active={selectedTab === 'trending'} onClick={() => setSelectedTab('trending')} />
+                 <TabButton label="Trusted Repos" active={selectedTab === 'trusted'} onClick={() => setSelectedTab('trusted')} icon={Shield} />
               </div>
               
-               <div className="flex items-center gap-2">
-                  <div className="relative" ref={sortDropdownRef}>
-                    <button 
-                      onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-                      className="flex items-center gap-2 px-3 py-2 bg-[#15161E] border border-white/5 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/10 transition-colors"
-                    > 
-                      {filters.sort === 'updated' ? 'Recently Updated' : 'Recently Created'} 
-                      <ChevronDown className={`w-4 h-4 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    
-                    {sortDropdownOpen && (
-                      <div className="absolute right-0 mt-2 w-48 bg-[#15161E] border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden">
-                        <button
-                          onClick={() => {
-                            setFilters(prev => ({...prev, sort: 'updated'}));
-                            setSortDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                            filters.sort === 'updated' 
-                              ? 'bg-blue-600/20 text-blue-400' 
-                              : 'text-gray-300 hover:bg-white/5 hover:text-white'
-                          }`}
-                        >
-                          Recently Updated
-                        </button>
-                        <button
-                          onClick={() => {
-                            setFilters(prev => ({...prev, sort: 'created'}));
-                            setSortDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                            filters.sort === 'created' 
-                              ? 'bg-blue-600/20 text-blue-400' 
-                              : 'text-gray-300 hover:bg-white/5 hover:text-white'
-                          }`}
-                        >
-                          Recently Created
-                        </button>
-                      </div>
-                    )}
+               {selectedTab !== 'trusted' && (
+                <div className="flex items-center gap-2">
+                   <div className="relative" ref={sortDropdownRef}>
+                     <button 
+                       onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+                       className="flex items-center gap-2 px-3 py-2 bg-[#15161E] border border-white/5 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/10 transition-colors"
+                     > 
+                       {filters.sort === 'updated' ? 'Recently Updated' : 'Recently Created'} 
+                       <ChevronDown className={`w-4 h-4 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} />
+                     </button>
+                     
+                     {sortDropdownOpen && (
+                       <div className="absolute right-0 mt-2 w-48 bg-[#15161E] border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden">
+                         <button
+                           onClick={() => {
+                             setFilters(prev => ({...prev, sort: 'updated'}));
+                             setSortDropdownOpen(false);
+                           }}
+                           className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                             filters.sort === 'updated' 
+                               ? 'bg-blue-600/20 text-blue-400' 
+                               : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                           }`}
+                         >
+                           Recently Updated
+                         </button>
+                         <button
+                           onClick={() => {
+                             setFilters(prev => ({...prev, sort: 'created'}));
+                             setSortDropdownOpen(false);
+                           }}
+                           className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                             filters.sort === 'created' 
+                               ? 'bg-blue-600/20 text-blue-400' 
+                               : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                           }`}
+                         >
+                           Recently Created
+                         </button>
+                       </div>
+                     )}
+                   </div>
+                </div>
+               )}
+           </div>
+
+           {/* Tab Content */}
+           {selectedTab === 'trusted' ? (
+             /* Trusted Repos Tab Content */
+             <div>
+               <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center border border-emerald-500/20">
+                     <Shield className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                     <h2 className="text-xl font-bold text-white">Trusted Repositories</h2>
+                     <p className="text-sm text-gray-500">Hand-picked repos perfect for first contributions</p>
                   </div>
                </div>
-           </div>
-
-           {/* Trusted Repos Section */}
-           <div className="mb-10">
-              <div className="flex items-center justify-between mb-6">
-                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center border border-emerald-500/20">
-                       <Shield className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <div>
-                       <h2 className="text-xl font-bold text-white">Trusted Repositories</h2>
-                       <p className="text-sm text-gray-500">Hand-picked repos perfect for first contributions</p>
-                    </div>
+               
+               {loadingTrustedRepos ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {[1,2,3,4,5,6].map(i => <TrustedRepoSkeleton key={i} />)}
                  </div>
-              </div>
-              
-              {loadingTrustedRepos ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                   {[1,2,3].map(i => <TrustedRepoSkeleton key={i} />)}
-                </div>
-              ) : trustedRepos.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                   {trustedRepos.map(repo => (
-                     <TrustedRepoCard key={repo.id} repo={repo} />
-                   ))}
-                </div>
-              ) : null}
-           </div>
-
-           {/* Issues Grid */}
-           {loading && issues.length === 0 ? (
-             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {[1,2,3,4,5,6].map(i => <IssueSkeleton key={i} />)}
+               ) : trustedRepos.length > 0 ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {trustedRepos.map(repo => (
+                      <TrustedRepoCard key={repo.id} repo={repo} />
+                    ))}
+                 </div>
+               ) : (
+                 <div className="text-center py-20">
+                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/10 mb-4">
+                         <Shield className="w-8 h-8 text-emerald-400" />
+                     </div>
+                     <h3 className="text-xl font-medium text-white mb-2">No trusted repos yet</h3>
+                     <p className="text-gray-500">Curated repositories will appear here soon.</p>
+                 </div>
+               )}
              </div>
            ) : (
+             /* Issues Tab Content */
              <>
-               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                 {issues.map(issue => (
-                   <IssueCard 
-                     key={issue.id} 
-                     issue={issue} 
-                     isBookmarked={bookmarkedIssues.has(issue.html_url)}
-                     onToggleBookmark={() => handleBookmark(issue)}
-                   />
-                 ))}
-               </div>
-               
-               {issues.length === 0 && !loading && (
-                    <div className="text-center py-20">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
-                            <Search className="w-8 h-8 text-gray-500" />
-                        </div>
-                        <h3 className="text-xl font-medium text-white mb-2">No issues found</h3>
-                        <p className="text-gray-500">Try adjusting your filters to find more results.</p>
-                        <button onClick={resetAndFetch} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors">Clear Filters</button>
-                    </div>
-               )}
-
-               {hasMore && issues.length > 0 && (
-                   <div className="flex justify-center mt-12 pb-12">
-                      <button 
-                        onClick={loadMore} 
-                        disabled={loadingMore}
-                        className="flex items-center gap-2 px-6 py-3 bg-[#15161E] border border-white/10 text-white rounded-full hover:bg-white/5 transition-all disabled:opacity-50"
-                      >
-                         {loadingMore ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
-                         {loadingMore ? "Loading..." : "Load More Issues"}
-                      </button>
+               {loading && issues.length === 0 ? (
+                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {[1,2,3,4,5,6].map(i => <IssueSkeleton key={i} />)}
+                 </div>
+               ) : (
+                 <>
+                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                     {issues.map(issue => (
+                       <IssueCard 
+                         key={issue.id} 
+                         issue={issue} 
+                         isBookmarked={bookmarkedIssues.has(issue.html_url)}
+                         onToggleBookmark={() => handleBookmark(issue)}
+                       />
+                     ))}
                    </div>
+                   
+                   {issues.length === 0 && !loading && (
+                        <div className="text-center py-20">
+                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
+                                <Search className="w-8 h-8 text-gray-500" />
+                            </div>
+                            <h3 className="text-xl font-medium text-white mb-2">No issues found</h3>
+                            <p className="text-gray-500">Try adjusting your filters to find more results.</p>
+                            <button onClick={resetAndFetch} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors">Clear Filters</button>
+                        </div>
+                   )}
+
+                   {hasMore && issues.length > 0 && (
+                       <div className="flex justify-center mt-12 pb-12">
+                          <button 
+                            onClick={loadMore} 
+                            disabled={loadingMore}
+                            className="flex items-center gap-2 px-6 py-3 bg-[#15161E] border border-white/10 text-white rounded-full hover:bg-white/5 transition-all disabled:opacity-50"
+                          >
+                             {loadingMore ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
+                             {loadingMore ? "Loading..." : "Load More Issues"}
+                          </button>
+                       </div>
+                   )}
+                 </>
                )}
              </>
            )}
@@ -529,15 +543,16 @@ const NavItem = ({ icon: Icon, label, active, onClick }) => (
   </button>
 );
 
-const TabButton = ({ label, active, onClick }) => (
+const TabButton = ({ label, active, onClick, icon: Icon }) => (
     <button 
         onClick={onClick}
-        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
+        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
             active 
             ? "bg-[#222831] text-white shadow-sm" 
             : "text-gray-400 hover:text-gray-200"
         }`}
     >
+        {Icon && <Icon className={`w-3.5 h-3.5 ${active ? 'text-emerald-400' : 'text-gray-500'}`} />}
         {label}
     </button>
 );
