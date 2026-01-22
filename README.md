@@ -110,8 +110,8 @@ Made with 💙 by [Anmol](https://github.com/anmolsah)
 ### Find an Issue
 
 -  [First contribution](https://github.com/firstcontributions/first-contributions) - Perfect for your first contribution
--  [Good first issue](https://github.com/anmolsah/firstissue.dev/labels/good%20first%20issue) - Beginner-friendly issues
--  [Help wanted](https://github.com/anmolsah/firstissue.dev/labels/help%20wanted) - We need your help!
+-  [Good first issue](https://www.firstissue.dev/explore) - Beginner-friendly issues
+-  [Help wanted](https://www.firstissue.dev/explore) - We need your help!
 
 ### Contributors
 
