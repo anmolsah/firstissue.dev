@@ -129,6 +129,11 @@ const DocsPage = () => {
           title: "Advanced & History Management",
           readTime: "12 min",
         },
+        {
+          id: "reverting-features",
+          title: "Revert the Commit (Undo Feature Safely)",
+          readTime: "6 min",
+        },
       ],
     },
     {
@@ -303,8 +308,7 @@ const DocsPage = () => {
               </h1>
               <p className="text-xl text-gray-400 mb-8 max-w-3xl">
                 Everything you need to know about contributing to open source
-                projects and building a thriving developer
-                community.
+                projects and building a thriving developer community.
               </p>
 
               {/* Quick Stats */}

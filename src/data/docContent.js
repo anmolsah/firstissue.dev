@@ -1240,6 +1240,118 @@ export const docContent = {
                     text: "These advanced commands are powerful but can be dangerous. Use them when you need to clean up your local history before pushing, but avoid rewriting history that others depend on."
                 }
             ]
+        },
+
+        "reverting-features": {
+            title: "Revert the Commit (Undo Feature Safely)",
+            description: "Learn how to safely undo features in production without breaking Git history",
+            readTime: "6 min read",
+            updated: "1 day ago",
+            difficulty: "Intermediate",
+            content: [
+                {
+                    type: "paragraph",
+                    text: "This keeps Git history clean and is production-safe. When you need to undo a feature that's already been deployed, reverting is the safest approach."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Step 1: Find the commit where you added the feature"
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "git log --oneline"
+                },
+                {
+                    type: "paragraph",
+                    text: "You'll see something like:"
+                },
+                {
+                    type: "code",
+                    language: "text",
+                    code: "a1b2c3d Add image crop feature\nb4c5d6e Fix login bug\nc7d8e9f Update documentation"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Step 2: Revert that commit"
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "git revert a1b2c3d"
+                },
+                {
+                    type: "paragraph",
+                    text: "This will:"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "✅ Create a NEW commit",
+                        "✅ That undoes that feature",
+                        "✅ Safe for production",
+                        "✅ No history rewrite"
+                    ]
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Step 3: Push to production"
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "git push origin main"
+                },
+                {
+                    type: "callout",
+                    variant: "success",
+                    title: "Production Best Practice",
+                    text: "👉 This is what companies expect you to do. It maintains a complete history of all changes and is safe for collaborative environments."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "⚠️ NOT RECOMMENDED (Dangerous in production)"
+                },
+                {
+                    type: "heading",
+                    level: 3,
+                    text: "Reset & force push (Only for personal / not-live projects)"
+                },
+                {
+                    type: "paragraph",
+                    text: "❌ This rewrites Git history — can break others' work."
+                },
+                {
+                    type: "code",
+                    language: "bash",
+                    code: "git reset --hard a1b2c3d~1\ngit push origin main --force"
+                },
+                {
+                    type: "callout",
+                    variant: "warning",
+                    title: "Use ONLY if:",
+                    text: "• You are solo\n• Repo is not used by others\n• You 100% know what you're doing\n\nForce pushing rewrites history and can cause serious problems for team members who have already pulled the changes."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "When to Use Each Approach"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "🟢 Use git revert - For production code, shared branches, team projects",
+                        "🔴 Use git reset --hard - Only for local experiments, personal branches not yet shared",
+                        "💡 When in doubt - Always use git revert. It's safer and reversible"
+                    ]
+                }
+            ]
         }
     },
 
