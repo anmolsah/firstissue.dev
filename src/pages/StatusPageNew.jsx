@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { supabase } from "../lib/supabase";
 import { useGitHubSync } from "../hooks/useGitHubSync";
 import { getContributionStatus, getStatusConfig } from "../services/githubSync";
 import {
@@ -19,28 +18,39 @@ import {
   Bell,
   Plus,
   Loader2,
-  ChevronDown,
   RefreshCw,
   GitPullRequest,
   GitMerge,
   XCircle,
+  Github,
+  Calendar,
+  Activity,
 } from "lucide-react";
 
 const StatusPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [bookmarks, setBookmarks] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeNav, setActiveNav] = useState("status");
-  const [updatingStatus, setUpdatingStatus] = useState(null);
+
+  // GitHub sync hook
+  const {
+    contributions,
+    loading,
+    syncing,
+    lastSynced,
+    syncError,
+    sync,
+    getStats,
+    getSuccessRate,
+  } = useGitHubSync(user?.id, true);
 
   const statusOptions = [
     {
       value: "all",
-      label: "All Status",
-      icon: null,
+      label: "All",
+      icon: Activity,
       color: "text-white",
       bg: "bg-blue-600",
     },
@@ -59,123 +69,96 @@ const StatusPage = () => {
       bg: "bg-amber-500/20",
     },
     {
-      value: "working_on",
-      label: "Working On",
+      value: "in_progress",
+      label: "In Progress",
       icon: PlayCircle,
       color: "text-purple-400",
       bg: "bg-purple-500/20",
     },
     {
-      value: "done",
-      label: "Done",
-      icon: CheckCircle,
+      value: "merged",
+      label: "Merged",
+      icon: GitMerge,
       color: "text-emerald-400",
       bg: "bg-emerald-500/20",
+    },
+    {
+      value: "closed",
+      label: "Closed",
+      icon: XCircle,
+      color: "text-red-400",
+      bg: "bg-red-500/20",
     },
   ];
 
   useEffect(() => {
     if (!user) {
       navigate("/login");
-      return;
     }
-    fetchBookmarks();
   }, [user, navigate]);
 
-  const fetchBookmarks = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("bookmarks")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      setBookmarks(data || []);
-    } catch (error) {
-      console.error("Error fetching bookmarks:", error);
-    } finally {
-      setLoading(false);
+  const getFilteredContributions = () => {
+    let filtered = contributions;
+
+    // Filter by status
+    if (selectedStatus !== "all") {
+      filtered = filtered.filter((c) => {
+        const status = getContributionStatus(c);
+        return status === selectedStatus;
+      });
     }
-  };
 
-  // Update status in database
-  const updateStatus = async (bookmarkId, newStatus) => {
-    setUpdatingStatus(bookmarkId);
-    try {
-      const { error } = await supabase
-        .from("bookmarks")
-        .update({ status: newStatus })
-        .eq("id", bookmarkId);
-      if (error) throw error;
-
-      // Update local state
-      setBookmarks((prev) =>
-        prev.map((b) =>
-          b.id === bookmarkId ? { ...b, status: newStatus } : b,
-        ),
-      );
-    } catch (error) {
-      console.error("Error updating status:", error);
-    } finally {
-      setUpdatingStatus(null);
-    }
-  };
-
-  const getFilteredBookmarks = () => {
-    let filtered =
-      selectedStatus === "all"
-        ? bookmarks
-        : bookmarks.filter((b) => b.status === selectedStatus);
+    // Filter by search query
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (b) =>
-          b.title?.toLowerCase().includes(q) ||
-          b.repo_name?.toLowerCase().includes(q),
+        (c) =>
+          c.issue_title?.toLowerCase().includes(q) ||
+          c.github_repo_name?.toLowerCase().includes(q) ||
+          c.github_repo_owner?.toLowerCase().includes(q),
       );
     }
+
     return filtered;
   };
 
-  const getStatusStats = () => {
-    const stats = {};
-    statusOptions.slice(1).forEach((s) => {
-      stats[s.value] = bookmarks.filter((b) => b.status === s.value).length;
-    });
-    return stats;
-  };
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
 
-  const getProgressPercentage = () =>
-    bookmarks.length === 0
-      ? 0
-      : Math.round(
-          (bookmarks.filter((b) => b.status === "done").length /
-            bookmarks.length) *
-            100,
-        );
+    if (diffMins < 60) return `${diffMins} min${diffMins !== 1 ? "s" : ""} ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? "s" : ""} ago`;
 
-  const formatDate = (dateString) =>
-    new Date(dateString).toLocaleDateString("en-US", {
+    return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       year: "numeric",
     });
+  };
 
-  const getStatusConfig = (status) =>
-    statusOptions.find((o) => o.value === status) || statusOptions[1];
+  const handleSync = async () => {
+    await sync();
+  };
 
   if (loading) {
     return (
       <div className="flex bg-[#0B0C10] min-h-screen items-center justify-center">
         <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-        <span className="ml-3 text-gray-400">Loading status...</span>
+        <span className="ml-3 text-gray-400">Loading contributions...</span>
       </div>
     );
   }
 
-  const stats = getStatusStats();
-  const filteredBookmarks = getFilteredBookmarks();
-  const progressPercentage = getProgressPercentage();
+  const stats = getStats();
+  const successRate = getSuccessRate();
+  const filteredContributions = getFilteredContributions();
 
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
@@ -219,7 +202,6 @@ const StatusPage = () => {
           </nav>
         </div>
 
-        {/* New Issue Button */}
         <div className="mt-auto p-4">
           <button
             onClick={() => navigate("/explore")}
@@ -239,7 +221,7 @@ const StatusPage = () => {
             <Search className="absolute left-3 w-4 h-4 text-gray-500" />
             <input
               type="text"
-              placeholder="Search status..."
+              placeholder="Search contributions..."
               className="w-full bg-[#15161E] border border-white/5 rounded-lg py-2 pl-10 pr-4 text-sm text-gray-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -254,7 +236,7 @@ const StatusPage = () => {
               <span className="text-sm text-gray-400">
                 {user?.user_metadata?.user_name ||
                   user?.email?.split("@")[0] ||
-                  "alex_dev"}
+                  "User"}
               </span>
               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[1px]">
                 <img
@@ -272,6 +254,38 @@ const StatusPage = () => {
 
         {/* Content Body */}
         <div className="p-6 sm:p-8">
+          {/* Sync Status Bar */}
+          <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 mb-6 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Github className="w-5 h-5 text-gray-400" />
+              <div>
+                <p className="text-white font-medium">GitHub Contributions</p>
+                <p className="text-xs text-gray-500">
+                  {lastSynced
+                    ? `Last synced ${formatDate(lastSynced)}`
+                    : "Not synced yet"}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`}
+              />
+              {syncing ? "Syncing..." : "Sync Now"}
+            </button>
+          </div>
+
+          {syncError && (
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6 text-red-400">
+              <p className="font-medium">Sync Error</p>
+              <p className="text-sm">{syncError}</p>
+            </div>
+          )}
+
           {/* Progress Card */}
           <div className="bg-[#15161E] rounded-xl p-6 border border-white/5 mb-6">
             <div className="flex items-start justify-between mb-4">
@@ -280,37 +294,37 @@ const StatusPage = () => {
                   Your Progress
                 </h2>
                 <p className="text-gray-500">
-                  {stats.done || 0} out of {bookmarks.length} issues completed
+                  {stats.merged || 0} merged out of {stats.total} contributions
                 </p>
               </div>
               <div className="text-right">
                 <div className="text-4xl font-bold text-cyan-400">
-                  {progressPercentage}%
+                  {successRate}%
                 </div>
                 <div className="flex items-center justify-end text-gray-500 text-sm gap-1">
                   <TrendingUp className="w-4 h-4" />
-                  Complete
+                  Success Rate
                 </div>
               </div>
             </div>
             <div className="w-full bg-[#222831] rounded-full h-2">
               <div
                 className="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full h-2 transition-all duration-500"
-                style={{ width: `${progressPercentage}%` }}
+                style={{ width: `${successRate}%` }}
               />
             </div>
           </div>
 
           {/* Stats Row */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
             {statusOptions
               .slice(1)
-              .map(({ value, label, icon: Icon, color }) => {
+              .map(({ value, label, icon: Icon, color, bg }) => {
                 const count = stats[value] || 0;
                 return (
                   <div
                     key={value}
-                    className={`bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center gap-4 cursor-pointer hover:border-white/10 transition-colors ${
+                    className={`bg-[#15161E] rounded-xl p-4 border border-white/5 cursor-pointer hover:border-white/10 transition-colors ${
                       selectedStatus === value ? "ring-2 ring-blue-500" : ""
                     }`}
                     onClick={() =>
@@ -320,21 +334,11 @@ const StatusPage = () => {
                     }
                   >
                     <div
-                      className={`w-10 h-10 rounded-lg ${
-                        value === "saved"
-                          ? "bg-blue-500/20"
-                          : value === "applied"
-                            ? "bg-amber-500/20"
-                            : value === "working_on"
-                              ? "bg-purple-500/20"
-                              : "bg-emerald-500/20"
-                      } flex items-center justify-center`}
+                      className={`w-10 h-10 rounded-lg ${bg} flex items-center justify-center mb-3`}
                     >
                       <Icon className={`w-5 h-5 ${color}`} />
                     </div>
-                    <div className="flex-1">
-                      <p className="text-gray-500 text-sm">{label}</p>
-                    </div>
+                    <p className="text-gray-500 text-sm mb-1">{label}</p>
                     <span className="text-2xl font-bold text-white">
                       {count}
                     </span>
@@ -346,8 +350,7 @@ const StatusPage = () => {
           {/* Filter Tabs */}
           <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
             {statusOptions.map(({ value, label, icon: Icon, color }) => {
-              const count =
-                value === "all" ? bookmarks.length : stats[value] || 0;
+              const count = value === "all" ? stats.total : stats[value] || 0;
               const isActive = selectedStatus === value;
               return (
                 <button
@@ -371,19 +374,19 @@ const StatusPage = () => {
             })}
           </div>
 
-          {/* Issues List */}
-          {filteredBookmarks.length === 0 ? (
+          {/* Contributions List */}
+          {filteredContributions.length === 0 ? (
             <div className="text-center py-16 bg-[#15161E] rounded-xl border border-white/5">
-              <Clock className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+              <Github className="w-12 h-12 text-gray-600 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-white mb-2">
                 {selectedStatus === "all"
-                  ? "No bookmarks yet"
-                  : `No ${selectedStatus.replace("_", " ")} issues`}
+                  ? "No contributions yet"
+                  : `No ${selectedStatus.replace("_", " ")} contributions`}
               </h3>
               <p className="text-gray-500 mb-6">
                 {selectedStatus === "all"
-                  ? "Start by exploring issues and bookmarking the ones you're interested in."
-                  : `You don't have any issues with ${selectedStatus.replace("_", " ")} status yet.`}
+                  ? "Start contributing to open source projects and they'll appear here automatically."
+                  : `You don't have any ${selectedStatus.replace("_", " ")} contributions yet.`}
               </p>
               <button
                 onClick={() => navigate("/explore")}
@@ -394,71 +397,18 @@ const StatusPage = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredBookmarks.map((bookmark) => {
-                const statusConfig = getStatusConfig(bookmark.status);
-                const StatusIcon = statusConfig.icon || Clock;
+              {filteredContributions.map((contribution) => {
+                const status = getContributionStatus(contribution);
+                const statusConfig = getStatusConfig(status);
+
                 return (
-                  <div
-                    key={bookmark.id}
-                    className="bg-[#15161E] rounded-xl p-5 border border-white/5 hover:border-white/10 transition-colors"
-                  >
-                    <div className="flex items-start gap-4">
-                      {/* Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <span className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
-                            {bookmark.repo_name}
-                          </span>
-                          <span className="px-2 py-0.5 text-[10px] font-medium bg-[#222831] text-gray-400 rounded border border-white/5">
-                            {bookmark.language || "UNKNOWN"}
-                          </span>
-                          <div
-                            className={`flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded ${statusConfig.bg} ${statusConfig.color}`}
-                          >
-                            <StatusIcon className="w-3 h-3" />
-                            {statusConfig.label}
-                          </div>
-                        </div>
-                        <h3 className="text-white font-medium mb-1 line-clamp-1">
-                          {bookmark.title}
-                        </h3>
-                        <p className="text-xs text-gray-500">
-                          Bookmarked on {formatDate(bookmark.created_at)}
-                        </p>
-                      </div>
-
-                      {/* Status Dropdown */}
-                      <div className="flex items-center gap-2">
-                        <div className="relative">
-                          <select
-                            value={bookmark.status || "saved"}
-                            onChange={(e) =>
-                              updateStatus(bookmark.id, e.target.value)
-                            }
-                            disabled={updatingStatus === bookmark.id}
-                            className="appearance-none bg-[#222831] border border-white/10 rounded-lg px-3 py-2 pr-8 text-sm text-gray-300 focus:outline-none focus:border-blue-500 cursor-pointer disabled:opacity-50"
-                          >
-                            {statusOptions.slice(1).map(({ value, label }) => (
-                              <option key={value} value={value}>
-                                {label}
-                              </option>
-                            ))}
-                          </select>
-                          <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-                        </div>
-
-                        {/* External Link */}
-                        <a
-                          href={bookmark.issue_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/5"
-                        >
-                          <ExternalLink className="w-5 h-5" />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
+                  <ContributionCard
+                    key={contribution.id}
+                    contribution={contribution}
+                    status={status}
+                    statusConfig={statusConfig}
+                    formatDate={formatDate}
+                  />
                 );
               })}
             </div>
@@ -484,5 +434,98 @@ const NavItem = ({ icon: Icon, label, active, onClick }) => (
     {label}
   </button>
 );
+
+const ContributionCard = ({
+  contribution,
+  status,
+  statusConfig,
+  formatDate,
+}) => {
+  const StatusIcon =
+    statusConfig.icon === "📌"
+      ? Clock
+      : statusConfig.icon === "📝"
+        ? AlertCircle
+        : statusConfig.icon === "🔨"
+          ? PlayCircle
+          : statusConfig.icon === "✅"
+            ? GitMerge
+            : XCircle;
+
+  return (
+    <div className="bg-[#15161E] rounded-xl p-5 border border-white/5 hover:border-white/10 transition-colors">
+      <div className="flex items-start gap-4">
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <span className="text-sm font-bold text-cyan-400 uppercase tracking-wider">
+              {contribution.github_repo_owner}/{contribution.github_repo_name}
+            </span>
+            {contribution.language && (
+              <span className="px-2 py-0.5 text-[10px] font-medium bg-[#222831] text-gray-400 rounded border border-white/5">
+                {contribution.language}
+              </span>
+            )}
+            <div
+              className={`flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium rounded ${statusConfig.bg} ${statusConfig.color}`}
+            >
+              <StatusIcon className="w-3 h-3" />
+              {statusConfig.label}
+            </div>
+          </div>
+
+          <h3 className="text-white font-medium mb-2 line-clamp-2">
+            {contribution.issue_title}
+          </h3>
+
+          <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500">
+            {contribution.is_assigned && (
+              <div className="flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" />
+                Assigned {formatDate(contribution.assigned_at)}
+              </div>
+            )}
+            {contribution.pr_created_at && (
+              <div className="flex items-center gap-1">
+                <GitPullRequest className="w-3 h-3" />
+                PR opened {formatDate(contribution.pr_created_at)}
+              </div>
+            )}
+            {contribution.pr_merged_at && (
+              <div className="flex items-center gap-1 text-emerald-400">
+                <GitMerge className="w-3 h-3" />
+                Merged {formatDate(contribution.pr_merged_at)}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          {contribution.pr_url && (
+            <a
+              href={contribution.pr_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-gray-500 hover:text-emerald-400 transition-colors rounded-lg hover:bg-white/5"
+              title="View Pull Request"
+            >
+              <GitPullRequest className="w-5 h-5" />
+            </a>
+          )}
+          <a
+            href={contribution.issue_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+            title="View Issue"
+          >
+            <ExternalLink className="w-5 h-5" />
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export default StatusPage;
