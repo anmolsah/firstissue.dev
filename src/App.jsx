@@ -7,7 +7,7 @@ import Navbar from "./components/Navbar";
 import LandingPage from "./pages/LandingPage";
 import BookmarksPage from "./pages/BookmarksPage";
 import StatusPage from "./pages/StatusPageNew";
-import ProfilePage from "./pages/ProfilePage";
+import ProfilePage from "./pages/ProfilePageNew";
 import SupportPage from "./pages/SupportPage";
 import ExplorePage from "./pages/ExplorePage";
 import GettingStartedPage from "./pages/GettingStartedPage";

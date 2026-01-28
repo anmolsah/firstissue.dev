@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
+import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
+import { useGitHubSync } from "../hooks/useGitHubSync";
 import {
   User,
   Bookmark,
@@ -23,6 +25,8 @@ import {
   LogOut,
   TrendingUp,
   BookOpen,
+  GitPullRequest,
+  XCircle,
 } from "lucide-react";
 
 const ProfilePage = () => {
@@ -31,7 +35,7 @@ const ProfilePage = () => {
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeNav, setActiveNav] = useState("dashboard");
-  
+
   // GitHub Data
   const [githubProfile, setGithubProfile] = useState(null);
   const [githubRepos, setGithubRepos] = useState([]);
@@ -72,15 +76,17 @@ const ProfilePage = () => {
   };
 
   const getGitHubUsername = () => {
-    return user?.user_metadata?.user_name || 
-           user?.user_metadata?.preferred_username ||
-           user?.identities?.[0]?.identity_data?.user_name;
+    return (
+      user?.user_metadata?.user_name ||
+      user?.user_metadata?.preferred_username ||
+      user?.identities?.[0]?.identity_data?.user_name
+    );
   };
 
   const fetchGitHubProfile = async () => {
     const username = getGitHubUsername();
     if (!username) return;
-    
+
     try {
       const response = await fetch(`https://api.github.com/users/${username}`, {
         headers: {
@@ -102,7 +108,7 @@ const ProfilePage = () => {
   const fetchGitHubRepos = async () => {
     const username = getGitHubUsername();
     if (!username) return;
-    
+
     try {
       const response = await fetch(
         `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`,
@@ -113,12 +119,12 @@ const ProfilePage = () => {
               Authorization: `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
             }),
           },
-        }
+        },
       );
       if (response.ok) {
         const repos = await response.json();
         setGithubRepos(repos);
-        
+
         // Calculate language stats
         const languages = {};
         repos.forEach((repo) => {
@@ -140,7 +146,7 @@ const ProfilePage = () => {
   const fetchGitHubEvents = async () => {
     const username = getGitHubUsername();
     if (!username) return;
-    
+
     try {
       const response = await fetch(
         `https://api.github.com/users/${username}/events?per_page=10`,
@@ -151,7 +157,7 @@ const ProfilePage = () => {
               Authorization: `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
             }),
           },
-        }
+        },
       );
       if (response.ok) {
         const events = await response.json();
@@ -172,14 +178,14 @@ const ProfilePage = () => {
   const fetchContributions = async () => {
     const username = getGitHubUsername();
     if (!username) return;
-    
+
     try {
       // Use GitHub's contribution calendar via a proxy API
       // This fetches the actual contribution data from GitHub
       const response = await fetch(
-        `https://github-contributions-api.jogruber.de/v4/${username}?y=last`
+        `https://github-contributions-api.jogruber.de/v4/${username}?y=last`,
       );
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.contributions && Array.isArray(data.contributions)) {
@@ -188,42 +194,42 @@ const ProfilePage = () => {
           data.contributions.forEach((day) => {
             contributionMap.set(day.date, day.count);
           });
-          
+
           // Generate heatmap data for the last 52 weeks
           const weeks = 52;
           const days = 7;
           const heatmapData = [];
           const now = new Date();
-          
+
           // Find the start of the current week (Sunday)
           const startOfWeek = new Date(now);
           startOfWeek.setDate(now.getDate() - now.getDay());
-          
+
           for (let w = weeks - 1; w >= 0; w--) {
             const week = [];
             for (let d = 0; d < days; d++) {
               const date = new Date(startOfWeek);
-              date.setDate(startOfWeek.getDate() - (w * 7) + d);
-              const dateStr = date.toISOString().split('T')[0];
+              date.setDate(startOfWeek.getDate() - w * 7 + d);
+              const dateStr = date.toISOString().split("T")[0];
               const count = contributionMap.get(dateStr) || 0;
-              
+
               // Convert count to level (0-4)
               let level = 0;
               if (count > 0) level = 1;
               if (count >= 3) level = 2;
               if (count >= 6) level = 3;
               if (count >= 10) level = 4;
-              
+
               week.push(level);
             }
             heatmapData.push(week);
           }
-          
+
           setContributionData(heatmapData);
           return;
         }
       }
-      
+
       // Fallback to repo-based estimation if API fails
       console.warn("Contribution API unavailable, using fallback");
       generateFallbackContributionData();
@@ -238,26 +244,26 @@ const ProfilePage = () => {
     const weeks = 52;
     const days = 7;
     const data = [];
-    
+
     const activityMap = new Map();
     githubRepos.forEach((repo) => {
       if (repo.pushed_at) {
         const date = new Date(repo.pushed_at);
-        const key = date.toISOString().split('T')[0];
+        const key = date.toISOString().split("T")[0];
         activityMap.set(key, (activityMap.get(key) || 0) + 1);
       }
     });
-    
+
     const now = new Date();
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay());
-    
+
     for (let w = weeks - 1; w >= 0; w--) {
       const week = [];
       for (let d = 0; d < days; d++) {
         const date = new Date(startOfWeek);
-        date.setDate(startOfWeek.getDate() - (w * 7) + d);
-        const key = date.toISOString().split('T')[0];
+        date.setDate(startOfWeek.getDate() - w * 7 + d);
+        const key = date.toISOString().split("T")[0];
         const count = activityMap.get(key) || 0;
         let level = 0;
         if (count > 0) level = 1;
@@ -278,7 +284,7 @@ const ProfilePage = () => {
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
-    
+
     if (diffMins < 60) return `${diffMins} min ago`;
     if (diffHours < 24) return `${diffHours} hours ago`;
     if (diffDays === 1) return "yesterday";
@@ -291,11 +297,11 @@ const ProfilePage = () => {
       case "PushEvent":
         return `Pushed to ${event.repo}`;
       case "PullRequestEvent":
-        return `${event.payload?.action || 'Updated'} PR in ${event.repo}`;
+        return `${event.payload?.action || "Updated"} PR in ${event.repo}`;
       case "IssuesEvent":
-        return `${event.payload?.action || 'Updated'} issue in ${event.repo}`;
+        return `${event.payload?.action || "Updated"} issue in ${event.repo}`;
       case "CreateEvent":
-        return `Created ${event.payload?.ref_type || 'repository'} in ${event.repo}`;
+        return `Created ${event.payload?.ref_type || "repository"} in ${event.repo}`;
       case "WatchEvent":
         return `Starred ${event.repo}`;
       case "ForkEvent":
@@ -330,7 +336,10 @@ const ProfilePage = () => {
     publicRepos: githubProfile?.public_repos || 0,
     followers: githubProfile?.followers || 0,
     following: githubProfile?.following || 0,
-    totalStars: githubRepos.reduce((sum, repo) => sum + (repo.stargazers_count || 0), 0),
+    totalStars: githubRepos.reduce(
+      (sum, repo) => sum + (repo.stargazers_count || 0),
+      0,
+    ),
   };
 
   const handleSignOut = async () => {
@@ -356,18 +365,25 @@ const ProfilePage = () => {
           <div className="bg-[#15161E] rounded-xl p-5 border border-white/5 mb-6">
             <div className="w-16 h-16 rounded-lg overflow-hidden mb-4">
               <img
-                src={githubProfile?.avatar_url || user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user?.email}`}
+                src={
+                  githubProfile?.avatar_url ||
+                  user?.user_metadata?.avatar_url ||
+                  `https://ui-avatars.com/api/?name=${user?.email}`
+                }
                 alt="Avatar"
                 className="w-full h-full object-cover"
               />
             </div>
             <h2 className="text-lg font-bold text-white mb-1">
-              {githubProfile?.name || user?.user_metadata?.full_name || getGitHubUsername() || "User"}
+              {githubProfile?.name ||
+                user?.user_metadata?.full_name ||
+                getGitHubUsername() ||
+                "User"}
             </h2>
             <p className="text-sm text-gray-400 mb-4 leading-relaxed">
               {githubProfile?.bio || "Open source enthusiast"}
             </p>
-            
+
             {/* Tech Stack */}
             <div className="flex flex-wrap gap-2 mb-4">
               {languageStats.slice(0, 3).map((lang) => (
@@ -379,7 +395,7 @@ const ProfilePage = () => {
                 </span>
               ))}
             </div>
-            
+
             <button className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm">
               Edit Profile
             </button>
@@ -389,8 +405,12 @@ const ProfilePage = () => {
           <div className="space-y-3 mb-6">
             <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Issues Solved</p>
-                <p className="text-2xl font-bold text-white">{stats.issuesSolved}</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
+                  Issues Solved
+                </p>
+                <p className="text-2xl font-bold text-white">
+                  {stats.issuesSolved}
+                </p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
                 <CheckCircle className="w-5 h-5 text-blue-400" />
@@ -398,8 +418,12 @@ const ProfilePage = () => {
             </div>
             <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Bookmarks</p>
-                <p className="text-2xl font-bold text-white">{stats.bookmarksCount}</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
+                  Bookmarks
+                </p>
+                <p className="text-2xl font-bold text-white">
+                  {stats.bookmarksCount}
+                </p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
                 <Bookmark className="w-5 h-5 text-purple-400" />
@@ -407,8 +431,12 @@ const ProfilePage = () => {
             </div>
             <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Stars Earned</p>
-                <p className="text-2xl font-bold text-white">{stats.totalStars}</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
+                  Stars Earned
+                </p>
+                <p className="text-2xl font-bold text-white">
+                  {stats.totalStars}
+                </p>
               </div>
               <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
                 <Star className="w-5 h-5 text-amber-400" />
@@ -418,10 +446,30 @@ const ProfilePage = () => {
 
           {/* Navigation */}
           <nav className="space-y-1">
-            <NavItem icon={Compass} label="Explore" active={activeNav === 'explore'} onClick={() => navigate('/explore')} />
-            <NavItem icon={FileText} label="Saved" active={activeNav === 'saved'} onClick={() => navigate('/bookmarks')} />
-            <NavItem icon={TrendingUp} label="Status" active={activeNav === 'status'} onClick={() => navigate('/status')} />
-            <NavItem icon={BookOpen} label="Docs" active={activeNav === 'docs'} onClick={() => navigate('/getting-started')} />
+            <NavItem
+              icon={Compass}
+              label="Explore"
+              active={activeNav === "explore"}
+              onClick={() => navigate("/explore")}
+            />
+            <NavItem
+              icon={FileText}
+              label="Saved"
+              active={activeNav === "saved"}
+              onClick={() => navigate("/bookmarks")}
+            />
+            <NavItem
+              icon={TrendingUp}
+              label="Status"
+              active={activeNav === "status"}
+              onClick={() => navigate("/status")}
+            />
+            <NavItem
+              icon={BookOpen}
+              label="Docs"
+              active={activeNav === "docs"}
+              onClick={() => navigate("/getting-started")}
+            />
           </nav>
         </div>
       </aside>
@@ -432,19 +480,27 @@ const ProfilePage = () => {
         <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
             <Link to="/" className="flex items-center space-x-2 group">
-            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
-              FirstIssue.dev
-            </span>
-          </Link>
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
+                FirstIssue.dev
+              </span>
+            </Link>
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3 pl-4 border-l border-white/5">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-white">{githubProfile?.name || getGitHubUsername()}</p>
+                <p className="text-sm font-medium text-white">
+                  {githubProfile?.name || getGitHubUsername()}
+                </p>
                 <p className="text-xs text-gray-500">@{getGitHubUsername()}</p>
               </div>
               <div className="w-9 h-9 rounded-full overflow-hidden">
-                <img src={githubProfile?.avatar_url || user?.user_metadata?.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                <img
+                  src={
+                    githubProfile?.avatar_url || user?.user_metadata?.avatar_url
+                  }
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
             <button
@@ -462,10 +518,14 @@ const ProfilePage = () => {
           {/* Dashboard Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-1">Developer Dashboard</h1>
+              <h1 className="text-3xl font-bold text-white mb-1">
+                Developer Dashboard
+              </h1>
               <p className="text-gray-400">
-                Welcome back, {githubProfile?.name?.split(' ')[0] || getGitHubUsername()}. 
-                {githubProfile?.public_repos && ` You have ${githubProfile.public_repos} public repositories.`}
+                Welcome back,{" "}
+                {githubProfile?.name?.split(" ")[0] || getGitHubUsername()}.
+                {githubProfile?.public_repos &&
+                  ` You have ${githubProfile.public_repos} public repositories.`}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -479,7 +539,7 @@ const ProfilePage = () => {
                 View GitHub
               </a>
               <button
-                onClick={() => navigate('/explore')}
+                onClick={() => navigate("/explore")}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors"
               >
                 <Plus className="w-4 h-4" />
@@ -505,27 +565,48 @@ const ProfilePage = () => {
                   </div>
                 )}
                 {githubProfile.blog && (
-                  <a href={githubProfile.blog.startsWith('http') ? githubProfile.blog : `https://${githubProfile.blog}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-blue-400">
+                  <a
+                    href={
+                      githubProfile.blog.startsWith("http")
+                        ? githubProfile.blog
+                        : `https://${githubProfile.blog}`
+                    }
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 hover:text-blue-400"
+                  >
                     <LinkIcon className="w-4 h-4" />
                     {githubProfile.blog}
                   </a>
                 )}
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  Joined {new Date(githubProfile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+                  Joined{" "}
+                  {new Date(githubProfile.created_at).toLocaleDateString(
+                    "en-US",
+                    { month: "long", year: "numeric" },
+                  )}
                 </div>
               </div>
               <div className="flex gap-6 mt-4 pt-4 border-t border-white/5">
                 <div>
-                  <span className="text-xl font-bold text-white">{stats.publicRepos}</span>
-                  <span className="text-sm text-gray-500 ml-2">Repositories</span>
+                  <span className="text-xl font-bold text-white">
+                    {stats.publicRepos}
+                  </span>
+                  <span className="text-sm text-gray-500 ml-2">
+                    Repositories
+                  </span>
                 </div>
                 <div>
-                  <span className="text-xl font-bold text-white">{stats.followers}</span>
+                  <span className="text-xl font-bold text-white">
+                    {stats.followers}
+                  </span>
                   <span className="text-sm text-gray-500 ml-2">Followers</span>
                 </div>
                 <div>
-                  <span className="text-xl font-bold text-white">{stats.following}</span>
+                  <span className="text-xl font-bold text-white">
+                    {stats.following}
+                  </span>
                   <span className="text-sm text-gray-500 ml-2">Following</span>
                 </div>
               </div>
@@ -535,7 +616,9 @@ const ProfilePage = () => {
           {/* Contribution Heatmap */}
           <div className="bg-[#15161E] rounded-xl p-6 border border-white/5 mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">Contribution Activity</h3>
+              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
+                Contribution Activity
+              </h3>
               <div className="flex items-center gap-2 text-[10px] text-gray-500">
                 <span>Less</span>
                 <div className="flex gap-0.5">
@@ -559,48 +642,75 @@ const ProfilePage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Top Languages */}
             <div className="bg-[#15161E] rounded-xl p-6 border border-white/5">
-              <h3 className="text-lg font-semibold text-white mb-6">Top Languages</h3>
+              <h3 className="text-lg font-semibold text-white mb-6">
+                Top Languages
+              </h3>
               <div className="space-y-4">
                 {languageStats.map((lang, index) => (
-                  <div key={lang.name} className="flex items-center justify-between">
+                  <div
+                    key={lang.name}
+                    className="flex items-center justify-between"
+                  >
                     <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${
-                        index === 0 ? 'bg-blue-500' :
-                        index === 1 ? 'bg-emerald-500' :
-                        index === 2 ? 'bg-amber-500' :
-                        index === 3 ? 'bg-purple-500' :
-                        index === 4 ? 'bg-red-500' :
-                        'bg-gray-500'
-                      }`} />
-                      <span className="text-white font-medium">{lang.name}</span>
+                      <div
+                        className={`w-3 h-3 rounded-full ${
+                          index === 0
+                            ? "bg-blue-500"
+                            : index === 1
+                              ? "bg-emerald-500"
+                              : index === 2
+                                ? "bg-amber-500"
+                                : index === 3
+                                  ? "bg-purple-500"
+                                  : index === 4
+                                    ? "bg-red-500"
+                                    : "bg-gray-500"
+                        }`}
+                      />
+                      <span className="text-white font-medium">
+                        {lang.name}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="w-24 h-2 bg-[#222831] rounded-full overflow-hidden">
                         <div
                           className={`h-full ${
-                            index === 0 ? 'bg-blue-500' :
-                            index === 1 ? 'bg-emerald-500' :
-                            index === 2 ? 'bg-amber-500' :
-                            index === 3 ? 'bg-purple-500' :
-                            index === 4 ? 'bg-red-500' :
-                            'bg-gray-500'
+                            index === 0
+                              ? "bg-blue-500"
+                              : index === 1
+                                ? "bg-emerald-500"
+                                : index === 2
+                                  ? "bg-amber-500"
+                                  : index === 3
+                                    ? "bg-purple-500"
+                                    : index === 4
+                                      ? "bg-red-500"
+                                      : "bg-gray-500"
                           }`}
-                          style={{ width: `${(lang.count / languageStats[0].count) * 100}%` }}
+                          style={{
+                            width: `${(lang.count / languageStats[0].count) * 100}%`,
+                          }}
                         />
                       </div>
-                      <span className="text-sm text-gray-500 w-8 text-right">{lang.count}</span>
+                      <span className="text-sm text-gray-500 w-8 text-right">
+                        {lang.count}
+                      </span>
                     </div>
                   </div>
                 ))}
                 {languageStats.length === 0 && (
-                  <p className="text-gray-500 text-center py-4">No repositories found</p>
+                  <p className="text-gray-500 text-center py-4">
+                    No repositories found
+                  </p>
                 )}
               </div>
             </div>
 
             {/* Recent Activity */}
             <div className="bg-[#15161E] rounded-xl p-6 border border-white/5">
-              <h3 className="text-lg font-semibold text-white mb-6">Recent Activity</h3>
+              <h3 className="text-lg font-semibold text-white mb-6">
+                Recent Activity
+              </h3>
               <div className="space-y-4">
                 {recentActivity.map((activity) => (
                   <div key={activity.id} className="flex items-start gap-4">
@@ -608,13 +718,19 @@ const ProfilePage = () => {
                       {getEventIcon(activity.type)}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm truncate">{getEventDescription(activity)}</p>
-                      <p className="text-[10px] text-gray-600 uppercase tracking-wider">{activity.time}</p>
+                      <p className="text-white text-sm truncate">
+                        {getEventDescription(activity)}
+                      </p>
+                      <p className="text-[10px] text-gray-600 uppercase tracking-wider">
+                        {activity.time}
+                      </p>
                     </div>
                   </div>
                 ))}
                 {recentActivity.length === 0 && (
-                  <p className="text-gray-500 text-center py-4">No recent activity</p>
+                  <p className="text-gray-500 text-center py-4">
+                    No recent activity
+                  </p>
                 )}
               </div>
             </div>
@@ -644,12 +760,18 @@ const NavItem = ({ icon: Icon, label, active, onClick }) => (
 const ContributionHeatmap = ({ data }) => {
   const getLevelColor = (level) => {
     switch (level) {
-      case 0: return "bg-[#1a1b26]";
-      case 1: return "bg-blue-900/40";
-      case 2: return "bg-blue-700/60";
-      case 3: return "bg-blue-500/80";
-      case 4: return "bg-blue-400";
-      default: return "bg-[#1a1b26]";
+      case 0:
+        return "bg-[#1a1b26]";
+      case 1:
+        return "bg-blue-900/40";
+      case 2:
+        return "bg-blue-700/60";
+      case 3:
+        return "bg-blue-500/80";
+      case 4:
+        return "bg-blue-400";
+      default:
+        return "bg-[#1a1b26]";
     }
   };
 
