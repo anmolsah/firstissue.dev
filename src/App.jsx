@@ -1,11 +1,12 @@
 import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
+import { DataProvider } from "./contexts/DataContext";
 import LoginPage from "./pages/LoginPage";
 import Navbar from "./components/Navbar";
 import LandingPage from "./pages/LandingPage";
 import BookmarksPage from "./pages/BookmarksPage";
-import StatusPage from "./pages/StatusPage";
+import StatusPage from "./pages/StatusPageNew";
 import ProfilePage from "./pages/ProfilePage";
 import SupportPage from "./pages/SupportPage";
 import ExplorePage from "./pages/ExplorePage";
@@ -15,6 +16,7 @@ import PrivacyPage from "./pages/PrivacyPage";
 import DocsPage from "./pages/DocsPage";
 import DocsSectionPage from "./pages/DocsSectionPage";
 import DocsArticlePage from "./pages/DocsArticlePage";
+import TestGitHubPage from "./pages/TestGitHubPage";
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 
@@ -69,23 +71,29 @@ const AppLayout = ({ children }) => {
 const App = () => {
   return (
     <AuthProvider>
-      <AppLayout>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/getting-started" element={<GettingStartedPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/bookmarks" element={<BookmarksPage />} />
-          <Route path="/status" element={<StatusPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/support" element={<SupportPage />} />
-          <Route path="/explore" element={<ExplorePage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/docs" element={<DocsPage />} />
-          <Route path="/docs/:section" element={<DocsSectionPage />} />
-          <Route path="/docs/:section/:article" element={<DocsArticlePage />} />
-        </Routes>
-      </AppLayout>
+      <DataProvider>
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/getting-started" element={<GettingStartedPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/bookmarks" element={<BookmarksPage />} />
+            <Route path="/status" element={<StatusPage />} />
+            <Route path="/test-github" element={<TestGitHubPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/support" element={<SupportPage />} />
+            <Route path="/explore" element={<ExplorePage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/docs" element={<DocsPage />} />
+            <Route path="/docs/:section" element={<DocsSectionPage />} />
+            <Route
+              path="/docs/:section/:article"
+              element={<DocsArticlePage />}
+            />
+          </Routes>
+        </AppLayout>
+      </DataProvider>
     </AuthProvider>
   );
 };

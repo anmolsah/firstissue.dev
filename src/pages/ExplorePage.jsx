@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
+import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
 import {
   Search,
   Compass,
@@ -35,7 +36,7 @@ const ExplorePage = () => {
   // Auth Protection
   useEffect(() => {
     if (!authLoading && !user) {
-      navigate('/login');
+      navigate("/login");
     }
   }, [user, authLoading, navigate]);
 
@@ -47,11 +48,11 @@ const ExplorePage = () => {
   const [hasMore, setHasMore] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [selectedTab, setSelectedTab] = useState("all");
-  
+
   // Trusted Repos State
   const [trustedRepos, setTrustedRepos] = useState([]);
   const [loadingTrustedRepos, setLoadingTrustedRepos] = useState(true);
-  
+
   // Sidebar State
   const [activeSidebarItem, setActiveSidebarItem] = useState("explore");
 
@@ -71,12 +72,15 @@ const ExplorePage = () => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
+      if (
+        sortDropdownRef.current &&
+        !sortDropdownRef.current.contains(event.target)
+      ) {
         setSortDropdownOpen(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const languages = [
@@ -124,7 +128,7 @@ const ExplorePage = () => {
         .eq("is_active", true)
         .order("stars", { ascending: false })
         .limit(20);
-      
+
       if (error) throw error;
       setTrustedRepos(data || []);
     } catch (error) {
@@ -148,7 +152,7 @@ const ExplorePage = () => {
       const query = buildQuery();
       const response = await fetch(
         `https://api.github.com/search/issues?q=${encodeURIComponent(
-          query
+          query,
         )}&sort=${filters.sort}&per_page=12&page=${page}`,
         {
           headers: {
@@ -158,18 +162,20 @@ const ExplorePage = () => {
               Authorization: `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
             }),
           },
-        }
+        },
       );
 
       if (response.ok) {
         const data = await response.json();
         const filteredIssues = data.items || [];
-        
+
         if (reset) setIssues(filteredIssues);
         else setIssues((prev) => [...prev, ...filteredIssues]);
-        
+
         setTotalCount(data.total_count);
-        setHasMore(filteredIssues.length === 12 && page * 12 < data.total_count);
+        setHasMore(
+          filteredIssues.length === 12 && page * 12 < data.total_count,
+        );
         setCurrentPage(page);
       }
     } catch (error) {
@@ -181,14 +187,16 @@ const ExplorePage = () => {
   };
 
   const buildQuery = () => {
-    let query = "state:open type:issue is:public -label:duplicate -label:invalid -label:wontfix";
-    
+    let query =
+      "state:open type:issue is:public -label:duplicate -label:invalid -label:wontfix";
+
     if (filters.labels.length > 0) {
-      filters.labels.forEach(label => query += ` label:"${label}"`);
+      filters.labels.forEach((label) => (query += ` label:"${label}"`));
     }
     if (filters.language) query += ` language:${filters.language}`;
     if (filters.keywords) query += ` ${filters.keywords}`;
-    if (filters.minStars && filters.minStars !== "0") query += ` stars:>=${filters.minStars}`;
+    if (filters.minStars && filters.minStars !== "0")
+      query += ` stars:>=${filters.minStars}`;
 
     return query;
   };
@@ -251,7 +259,6 @@ const ExplorePage = () => {
   /* --- Render --- */
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
-    
       <aside className="w-64 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto">
         <div className="p-6">
           <Link to="/" className="flex items-center space-x-2 group">
@@ -261,47 +268,59 @@ const ExplorePage = () => {
           </Link>
 
           <nav className="space-y-1">
-            <NavItem 
-              icon={Compass} 
-              label="Explore Issues" 
-              active={activeSidebarItem === 'explore'} 
-              onClick={() => setActiveSidebarItem('explore')} 
+            <NavItem
+              icon={Compass}
+              label="Explore Issues"
+              active={activeSidebarItem === "explore"}
+              onClick={() => setActiveSidebarItem("explore")}
             />
-            <NavItem 
-              icon={Bookmark} 
-              label="Saved" 
-              active={activeSidebarItem === 'saved'} 
-              onClick={() => navigate('/bookmarks')} 
+            <NavItem
+              icon={Bookmark}
+              label="Saved"
+              active={activeSidebarItem === "saved"}
+              onClick={() => navigate("/bookmarks")}
             />
-            <NavItem 
-              icon={TrendingUp} 
-              label="Status" 
-              active={activeSidebarItem === 'status'} 
-              onClick={() => navigate('/status')} 
+            <NavItem
+              icon={TrendingUp}
+              label="Status"
+              active={activeSidebarItem === "status"}
+              onClick={() => navigate("/status")}
             />
-            <NavItem 
-              icon={User} 
-              label="Profile" 
-              active={activeSidebarItem === 'profile'} 
-              onClick={() => navigate('/profile')} 
+            <NavItem
+              icon={User}
+              label="Profile"
+              active={activeSidebarItem === "profile"}
+              onClick={() => navigate("/profile")}
             />
           </nav>
         </div>
 
         <div className="px-6 py-4 mt-4">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Languages</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
+            Languages
+          </p>
           <div className="flex flex-wrap gap-2">
-            {languages.map(lang => (
+            {languages.map((lang) => (
               <button
                 key={lang.name}
-                onClick={() => setFilters(prev => ({...prev, language: prev.language === lang.name.toLowerCase() ? "" : lang.name.toLowerCase()}))}
+                onClick={() =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    language:
+                      prev.language === lang.name.toLowerCase()
+                        ? ""
+                        : lang.name.toLowerCase(),
+                  }))
+                }
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-                  filters.language === lang.name.toLowerCase() 
-                  ? "bg-white/10 border-white/20 text-white" 
-                  : "bg-transparent border-white/5 text-gray-400 hover:border-white/10 hover:text-gray-300"
+                  filters.language === lang.name.toLowerCase()
+                    ? "bg-white/10 border-white/20 text-white"
+                    : "bg-transparent border-white/5 text-gray-400 hover:border-white/10 hover:text-gray-300"
                 }`}
               >
-                <div className={`w-1.5 h-1.5 rounded-full bg-${lang.color}-500`} />
+                <div
+                  className={`w-1.5 h-1.5 rounded-full bg-${lang.color}-500`}
+                />
                 {lang.name}
               </button>
             ))}
@@ -309,41 +328,57 @@ const ExplorePage = () => {
         </div>
 
         <div className="px-6 py-4">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Labels</p>
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
+            Labels
+          </p>
           <div className="space-y-2">
-             {labelOptions.map(opt => (
-               <label key={opt.id} className="flex items-center gap-3 text-sm text-gray-400 cursor-pointer hover:text-gray-300">
-                  <div className={`w-4 h-4 rounded-full border border-gray-600 flex items-center justify-center ${filters.labels.includes(opt.id) ? "border-blue-500" : ""}`}>
-                      {filters.labels.includes(opt.id) && <div className="w-2 h-2 rounded-full bg-blue-500" />}
-                  </div>
-                  <input 
-                    type="checkbox" 
-                    className="hidden" 
-                    checked={filters.labels.includes(opt.id)}
-                    onChange={() => {
-                        setFilters(prev => ({
-                          ...prev, 
-                          labels: prev.labels.includes(opt.id) 
-                            ? prev.labels.filter(l => l !== opt.id) 
-                            : [...prev.labels, opt.id]
-                        }))
-                    }}
-                  />
-                  {opt.label}
-               </label>
-             ))}
+            {labelOptions.map((opt) => (
+              <label
+                key={opt.id}
+                className="flex items-center gap-3 text-sm text-gray-400 cursor-pointer hover:text-gray-300"
+              >
+                <div
+                  className={`w-4 h-4 rounded-full border border-gray-600 flex items-center justify-center ${filters.labels.includes(opt.id) ? "border-blue-500" : ""}`}
+                >
+                  {filters.labels.includes(opt.id) && (
+                    <div className="w-2 h-2 rounded-full bg-blue-500" />
+                  )}
+                </div>
+                <input
+                  type="checkbox"
+                  className="hidden"
+                  checked={filters.labels.includes(opt.id)}
+                  onChange={() => {
+                    setFilters((prev) => ({
+                      ...prev,
+                      labels: prev.labels.includes(opt.id)
+                        ? prev.labels.filter((l) => l !== opt.id)
+                        : [...prev.labels, opt.id],
+                    }));
+                  }}
+                />
+                {opt.label}
+              </label>
+            ))}
           </div>
         </div>
-        
+
         {/* Project Stars Slider Mockup */}
-         <div className="px-6 py-4 mt-auto mb-6">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Project Stars</p>
-            <input type="range" min="0" max="10000" className="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer" />
-            <div className="flex justify-between text-[10px] text-gray-500 mt-2">
-               <span>0</span>
-               <span>100k+</span>
-            </div>
-         </div>
+        <div className="px-6 py-4 mt-auto mb-6">
+          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
+            Project Stars
+          </p>
+          <input
+            type="range"
+            min="0"
+            max="10000"
+            className="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer"
+          />
+          <div className="flex justify-between text-[10px] text-gray-500 mt-2">
+            <span>0</span>
+            <span>100k+</span>
+          </div>
+        </div>
       </aside>
 
       {/* Main Content Area */}
@@ -351,176 +386,232 @@ const ExplorePage = () => {
         {/* Top Header */}
         <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
           <div className="flex flex-1 items-center max-w-xl relative">
-             <Search className="absolute left-3 w-4 h-4 text-gray-500" />
-             <input 
-               type="text" 
-               placeholder="Search repositories, issues or topics..." 
-               className="w-full bg-[#15161E] border border-white/5 rounded-lg py-2 pl-10 pr-12 text-sm text-gray-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
-               value={filters.keywords}
-               onChange={(e) => setFilters(prev => ({...prev, keywords: e.target.value}))}
-             />
-             <div className="absolute right-3 flex items-center gap-1 border border-white/10 rounded px-1.5 py-0.5">
-                <Command className="w-3 h-3 text-gray-500" />
-                <span className="text-[10px] text-gray-500">K</span>
-             </div>
+            <Search className="absolute left-3 w-4 h-4 text-gray-500" />
+            <input
+              type="text"
+              placeholder="Search repositories, issues or topics..."
+              className="w-full bg-[#15161E] border border-white/5 rounded-lg py-2 pl-10 pr-12 text-sm text-gray-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
+              value={filters.keywords}
+              onChange={(e) =>
+                setFilters((prev) => ({ ...prev, keywords: e.target.value }))
+              }
+            />
+            <div className="absolute right-3 flex items-center gap-1 border border-white/10 rounded px-1.5 py-0.5">
+              <Command className="w-3 h-3 text-gray-500" />
+              <span className="text-[10px] text-gray-500">K</span>
+            </div>
           </div>
-          
+
           <div className="flex items-center gap-4 ml-4">
             <div className="flex items-center gap-3 pl-4 border-l border-white/5">
-               <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-white">{user ? (user.user_metadata?.full_name || "User") : "Guest"}</p>
-                  <p className="text-xs text-gray-500">Lvl 4 Contributor</p>
-               </div>
-               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[1px]">
-                  <img src={user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user?.email || 'Guest'}`} alt="Avatar" className="w-full h-full rounded-full bg-[#0B0C10]" />
-               </div>
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-medium text-white">
+                  {user ? user.user_metadata?.full_name || "User" : "Guest"}
+                </p>
+                <p className="text-xs text-gray-500">Lvl 4 Contributor</p>
+              </div>
+              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[1px]">
+                <img
+                  src={
+                    user?.user_metadata?.avatar_url ||
+                    `https://ui-avatars.com/api/?name=${user?.email || "Guest"}`
+                  }
+                  alt="Avatar"
+                  className="w-full h-full rounded-full bg-[#0B0C10]"
+                />
+              </div>
             </div>
           </div>
         </header>
 
         {/* Content Body */}
         <div className="p-6 sm:p-8">
-           <div className="mb-8">
-              <h1 className="text-3xl font-bold text-white mb-2">Explore Issues</h1>
-              <p className="text-gray-400">Curated open-source opportunities tailored to your skills.</p>
-           </div>
-           
-           {/* Filters Bar Row */}
-           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-              <div className="bg-[#15161E] p-1 rounded-lg inline-flex border border-white/5">
-                 <TabButton label="All Issues" active={selectedTab === 'all'} onClick={() => setSelectedTab('all')} />
-                 <TabButton label="Trending" active={selectedTab === 'trending'} onClick={() => setSelectedTab('trending')} />
-                 <TabButton label="Trusted Repos" active={selectedTab === 'trusted'} onClick={() => setSelectedTab('trusted')} icon={Shield} />
-              </div>
-              
-               {selectedTab !== 'trusted' && (
-                <div className="flex items-center gap-2">
-                   <div className="relative" ref={sortDropdownRef}>
-                     <button 
-                       onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-                       className="flex items-center gap-2 px-3 py-2 bg-[#15161E] border border-white/5 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/10 transition-colors"
-                     > 
-                       {filters.sort === 'updated' ? 'Recently Updated' : 'Recently Created'} 
-                       <ChevronDown className={`w-4 h-4 transition-transform ${sortDropdownOpen ? 'rotate-180' : ''}`} />
-                     </button>
-                     
-                     {sortDropdownOpen && (
-                       <div className="absolute right-0 mt-2 w-48 bg-[#15161E] border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden">
-                         <button
-                           onClick={() => {
-                             setFilters(prev => ({...prev, sort: 'updated'}));
-                             setSortDropdownOpen(false);
-                           }}
-                           className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                             filters.sort === 'updated' 
-                               ? 'bg-blue-600/20 text-blue-400' 
-                               : 'text-gray-300 hover:bg-white/5 hover:text-white'
-                           }`}
-                         >
-                           Recently Updated
-                         </button>
-                         <button
-                           onClick={() => {
-                             setFilters(prev => ({...prev, sort: 'created'}));
-                             setSortDropdownOpen(false);
-                           }}
-                           className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                             filters.sort === 'created' 
-                               ? 'bg-blue-600/20 text-blue-400' 
-                               : 'text-gray-300 hover:bg-white/5 hover:text-white'
-                           }`}
-                         >
-                           Recently Created
-                         </button>
-                       </div>
-                     )}
-                   </div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Explore Issues
+            </h1>
+            <p className="text-gray-400">
+              Curated open-source opportunities tailored to your skills.
+            </p>
+          </div>
+
+          {/* Filters Bar Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div className="bg-[#15161E] p-1 rounded-lg inline-flex border border-white/5">
+              <TabButton
+                label="All Issues"
+                active={selectedTab === "all"}
+                onClick={() => setSelectedTab("all")}
+              />
+              <TabButton
+                label="Trending"
+                active={selectedTab === "trending"}
+                onClick={() => setSelectedTab("trending")}
+              />
+              <TabButton
+                label="Trusted Repos"
+                active={selectedTab === "trusted"}
+                onClick={() => setSelectedTab("trusted")}
+                icon={Shield}
+              />
+            </div>
+
+            {selectedTab !== "trusted" && (
+              <div className="flex items-center gap-2">
+                <div className="relative" ref={sortDropdownRef}>
+                  <button
+                    onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+                    className="flex items-center gap-2 px-3 py-2 bg-[#15161E] border border-white/5 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/10 transition-colors"
+                  >
+                    {filters.sort === "updated"
+                      ? "Recently Updated"
+                      : "Recently Created"}
+                    <ChevronDown
+                      className={`w-4 h-4 transition-transform ${sortDropdownOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {sortDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-[#15161E] border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden">
+                      <button
+                        onClick={() => {
+                          setFilters((prev) => ({ ...prev, sort: "updated" }));
+                          setSortDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                          filters.sort === "updated"
+                            ? "bg-blue-600/20 text-blue-400"
+                            : "text-gray-300 hover:bg-white/5 hover:text-white"
+                        }`}
+                      >
+                        Recently Updated
+                      </button>
+                      <button
+                        onClick={() => {
+                          setFilters((prev) => ({ ...prev, sort: "created" }));
+                          setSortDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                          filters.sort === "created"
+                            ? "bg-blue-600/20 text-blue-400"
+                            : "text-gray-300 hover:bg-white/5 hover:text-white"
+                        }`}
+                      >
+                        Recently Created
+                      </button>
+                    </div>
+                  )}
                 </div>
-               )}
-           </div>
+              </div>
+            )}
+          </div>
 
-           {/* Tab Content */}
-           {selectedTab === 'trusted' ? (
-             /* Trusted Repos Tab Content */
-             <div>
-               <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center border border-emerald-500/20">
-                     <Shield className="w-5 h-5 text-emerald-400" />
+          {/* Tab Content */}
+          {selectedTab === "trusted" ? (
+            /* Trusted Repos Tab Content */
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center border border-emerald-500/20">
+                  <Shield className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">
+                    Trusted Repositories
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Hand-picked repos perfect for first contributions
+                  </p>
+                </div>
+              </div>
+
+              {loadingTrustedRepos ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <TrustedRepoSkeleton key={i} />
+                  ))}
+                </div>
+              ) : trustedRepos.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {trustedRepos.map((repo) => (
+                    <TrustedRepoCard key={repo.id} repo={repo} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/10 mb-4">
+                    <Shield className="w-8 h-8 text-emerald-400" />
                   </div>
-                  <div>
-                     <h2 className="text-xl font-bold text-white">Trusted Repositories</h2>
-                     <p className="text-sm text-gray-500">Hand-picked repos perfect for first contributions</p>
-                  </div>
-               </div>
-               
-               {loadingTrustedRepos ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {[1,2,3,4,5,6].map(i => <TrustedRepoSkeleton key={i} />)}
-                 </div>
-               ) : trustedRepos.length > 0 ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                    {trustedRepos.map(repo => (
-                      <TrustedRepoCard key={repo.id} repo={repo} />
+                  <h3 className="text-xl font-medium text-white mb-2">
+                    No trusted repos yet
+                  </h3>
+                  <p className="text-gray-500">
+                    Curated repositories will appear here soon.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : (
+            /* Issues Tab Content */
+            <>
+              {loading && issues.length === 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <IssueSkeleton key={i} />
+                  ))}
+                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                    {issues.map((issue) => (
+                      <IssueCard
+                        key={issue.id}
+                        issue={issue}
+                        isBookmarked={bookmarkedIssues.has(issue.html_url)}
+                        onToggleBookmark={() => handleBookmark(issue)}
+                      />
                     ))}
-                 </div>
-               ) : (
-                 <div className="text-center py-20">
-                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-500/10 mb-4">
-                         <Shield className="w-8 h-8 text-emerald-400" />
-                     </div>
-                     <h3 className="text-xl font-medium text-white mb-2">No trusted repos yet</h3>
-                     <p className="text-gray-500">Curated repositories will appear here soon.</p>
-                 </div>
-               )}
-             </div>
-           ) : (
-             /* Issues Tab Content */
-             <>
-               {loading && issues.length === 0 ? (
-                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                    {[1,2,3,4,5,6].map(i => <IssueSkeleton key={i} />)}
-                 </div>
-               ) : (
-                 <>
-                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                     {issues.map(issue => (
-                       <IssueCard 
-                         key={issue.id} 
-                         issue={issue} 
-                         isBookmarked={bookmarkedIssues.has(issue.html_url)}
-                         onToggleBookmark={() => handleBookmark(issue)}
-                       />
-                     ))}
-                   </div>
-                   
-                   {issues.length === 0 && !loading && (
-                        <div className="text-center py-20">
-                            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
-                                <Search className="w-8 h-8 text-gray-500" />
-                            </div>
-                            <h3 className="text-xl font-medium text-white mb-2">No issues found</h3>
-                            <p className="text-gray-500">Try adjusting your filters to find more results.</p>
-                            <button onClick={resetAndFetch} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors">Clear Filters</button>
-                        </div>
-                   )}
+                  </div>
 
-                   {hasMore && issues.length > 0 && (
-                       <div className="flex justify-center mt-12 pb-12">
-                          <button 
-                            onClick={loadMore} 
-                            disabled={loadingMore}
-                            className="flex items-center gap-2 px-6 py-3 bg-[#15161E] border border-white/10 text-white rounded-full hover:bg-white/5 transition-all disabled:opacity-50"
-                          >
-                             {loadingMore ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
-                             {loadingMore ? "Loading..." : "Load More Issues"}
-                          </button>
-                       </div>
-                   )}
-                 </>
-               )}
-             </>
-           )}
-           
+                  {issues.length === 0 && !loading && (
+                    <div className="text-center py-20">
+                      <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 mb-4">
+                        <Search className="w-8 h-8 text-gray-500" />
+                      </div>
+                      <h3 className="text-xl font-medium text-white mb-2">
+                        No issues found
+                      </h3>
+                      <p className="text-gray-500">
+                        Try adjusting your filters to find more results.
+                      </p>
+                      <button
+                        onClick={resetAndFetch}
+                        className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
+                      >
+                        Clear Filters
+                      </button>
+                    </div>
+                  )}
+
+                  {hasMore && issues.length > 0 && (
+                    <div className="flex justify-center mt-12 pb-12">
+                      <button
+                        onClick={loadMore}
+                        disabled={loadingMore}
+                        className="flex items-center gap-2 px-6 py-3 bg-[#15161E] border border-white/10 text-white rounded-full hover:bg-white/5 transition-all disabled:opacity-50"
+                      >
+                        {loadingMore ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-5 h-5" />
+                        )}
+                        {loadingMore ? "Loading..." : "Load More Issues"}
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </>
+          )}
         </div>
       </main>
     </div>
@@ -530,226 +621,274 @@ const ExplorePage = () => {
 /* --- Sub Components --- */
 
 const NavItem = ({ icon: Icon, label, active, onClick }) => (
-  <button 
+  <button
     onClick={onClick}
     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-      active 
-      ? "bg-blue-600/10 text-blue-500" 
-      : "text-gray-400 hover:text-white hover:bg-white/5"
+      active
+        ? "bg-blue-600/10 text-blue-500"
+        : "text-gray-400 hover:text-white hover:bg-white/5"
     }`}
   >
-    <Icon className={`w-5 h-5 ${active ? "text-blue-500" : "text-gray-500 group-hover:text-white"}`} />
+    <Icon
+      className={`w-5 h-5 ${active ? "text-blue-500" : "text-gray-500 group-hover:text-white"}`}
+    />
     {label}
   </button>
 );
 
 const TabButton = ({ label, active, onClick, icon: Icon }) => (
-    <button 
-        onClick={onClick}
-        className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
-            active 
-            ? "bg-[#222831] text-white shadow-sm" 
-            : "text-gray-400 hover:text-gray-200"
-        }`}
-    >
-        {Icon && <Icon className={`w-3.5 h-3.5 ${active ? 'text-emerald-400' : 'text-gray-500'}`} />}
-        {label}
-    </button>
+  <button
+    onClick={onClick}
+    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
+      active
+        ? "bg-[#222831] text-white shadow-sm"
+        : "text-gray-400 hover:text-gray-200"
+    }`}
+  >
+    {Icon && (
+      <Icon
+        className={`w-3.5 h-3.5 ${active ? "text-emerald-400" : "text-gray-500"}`}
+      />
+    )}
+    {label}
+  </button>
 );
 
 const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
-    const repoName = issue.repository_url.split('/').slice(-2).join('/');
-    const timeAgo = formatTimeAgo(issue.created_at);
-    
-    return (
-        <div className="bg-[#15161E] border border-white/5 rounded-xl p-6 hover:border-gray-500/30 transition-all duration-300 group flex flex-col h-full relative">
-            <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded bg-[#222831] flex items-center justify-center border border-white/5">
-                         <img src={issue.user.avatar_url} alt="Repo" className="w-6 h-6 rounded-sm opacity-80" />
-                    </div>
-                    <div>
-                        <a href={issue.html_url} target="_blank" rel="noopener noreferrer" className="text-sm text-gray-400 hover:text-blue-400 font-mono transition-colors">
-                            {repoName}
-                        </a>
-                        <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-0.5">
-                            <Star className="w-3 h-3 text-gray-600" />
-                            <span>{issue.score ? Math.floor(issue.score) : '—'}</span>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex flex-col items-end gap-2">
-                   <div className="text-[10px] text-gray-500">{timeAgo}</div>
-                   <button 
-                      onClick={(e) => {
-                        e.preventDefault();
-                        onToggleBookmark();
-                      }}
-                      className={`p-1.5 rounded-full transition-all ${isBookmarked ? 'bg-amber-500/20 text-amber-400' : 'bg-transparent text-gray-600 hover:text-gray-300 hover:bg-white/5'}`}
-                   >
-                      {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-                   </button>
-                </div>
+  const repoName = issue.repository_url.split("/").slice(-2).join("/");
+  const timeAgo = formatTimeAgo(issue.created_at);
+
+  return (
+    <div className="bg-[#15161E] border border-white/5 rounded-xl p-6 hover:border-gray-500/30 transition-all duration-300 group flex flex-col h-full relative">
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded bg-[#222831] flex items-center justify-center border border-white/5">
+            <img
+              src={issue.user.avatar_url}
+              alt="Repo"
+              className="w-6 h-6 rounded-sm opacity-80"
+            />
+          </div>
+          <div>
+            <a
+              href={issue.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-gray-400 hover:text-blue-400 font-mono transition-colors"
+            >
+              {repoName}
+            </a>
+            <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-0.5">
+              <Star className="w-3 h-3 text-gray-600" />
+              <span>{issue.score ? Math.floor(issue.score) : "—"}</span>
             </div>
-
-            <h3 className="text-lg font-bold text-gray-100 mb-3 leading-snug group-hover:text-blue-400 transition-colors line-clamp-2">
-               <a href={issue.html_url} target="_blank" rel="noopener noreferrer">
-                {issue.title}
-               </a>
-            </h3>
-
-            <p className="text-sm text-gray-500 mb-6 line-clamp-3 flex-1">
-                {issue.body ? issue.body.substring(0, 150) + "..." : "No description provided."}
-            </p>
-
-            <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
-                <div className="flex flex-wrap gap-2">
-                    {issue.labels.slice(0, 2).map((label) => (
-                      <Badge key={label.id} label={label.name.toUpperCase()} color={label.color} />
-                    ))}
-                </div>
-                <a 
-                  href={issue.html_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="text-gray-500 hover:text-blue-400 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                </a>
-            </div>
+          </div>
         </div>
-    );
+        <div className="flex flex-col items-end gap-2">
+          <div className="text-[10px] text-gray-500">{timeAgo}</div>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleBookmark();
+            }}
+            className={`p-1.5 rounded-full transition-all ${isBookmarked ? "bg-amber-500/20 text-amber-400" : "bg-transparent text-gray-600 hover:text-gray-300 hover:bg-white/5"}`}
+          >
+            {isBookmarked ? (
+              <BookmarkCheck className="w-4 h-4" />
+            ) : (
+              <Bookmark className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      <h3 className="text-lg font-bold text-gray-100 mb-3 leading-snug group-hover:text-blue-400 transition-colors line-clamp-2">
+        <a href={issue.html_url} target="_blank" rel="noopener noreferrer">
+          {issue.title}
+        </a>
+      </h3>
+
+      <p className="text-sm text-gray-500 mb-6 line-clamp-3 flex-1">
+        {issue.body
+          ? issue.body.substring(0, 150) + "..."
+          : "No description provided."}
+      </p>
+
+      <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
+        <div className="flex flex-wrap gap-2">
+          {issue.labels.slice(0, 2).map((label) => (
+            <Badge
+              key={label.id}
+              label={label.name.toUpperCase()}
+              color={label.color}
+            />
+          ))}
+        </div>
+        <a
+          href={issue.html_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-gray-500 hover:text-blue-400 transition-colors"
+        >
+          <ExternalLink className="w-4 h-4" />
+        </a>
+      </div>
+    </div>
+  );
 };
 
 const Badge = ({ label, color }) => {
-    return (
-        <span 
-          className="text-[10px] font-bold px-2 py-1 rounded border"
-          style={{
-            backgroundColor: color ? `#${color}20` : 'rgba(107, 114, 128, 0.1)',
-            color: color ? `#${color}` : '#9ca3af',
-            borderColor: color ? `#${color}30` : 'rgba(107, 114, 128, 0.2)',
-          }}
-        >
-            {label.length > 15 ? label.substring(0, 15) + '...' : label}
-        </span>
-    );
+  return (
+    <span
+      className="text-[10px] font-bold px-2 py-1 rounded border"
+      style={{
+        backgroundColor: color ? `#${color}20` : "rgba(107, 114, 128, 0.1)",
+        color: color ? `#${color}` : "#9ca3af",
+        borderColor: color ? `#${color}30` : "rgba(107, 114, 128, 0.2)",
+      }}
+    >
+      {label.length > 15 ? label.substring(0, 15) + "..." : label}
+    </span>
+  );
 };
 
 const TrustedRepoCard = ({ repo }) => {
-    const difficultyColors = {
-      beginner: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-      intermediate: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-      advanced: { bg: 'bg-red-500/10', text: 'text-red-400', border: 'border-red-500/20' },
-    };
-    
-    const colors = difficultyColors[repo.difficulty] || difficultyColors.beginner;
-    
-    return (
-        <a 
-          href={repo.github_url} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="bg-[#15161E] border border-white/5 rounded-xl p-5 hover:border-emerald-500/30 hover:bg-[#151620] transition-all duration-300 group flex flex-col"
+  const difficultyColors = {
+    beginner: {
+      bg: "bg-emerald-500/10",
+      text: "text-emerald-400",
+      border: "border-emerald-500/20",
+    },
+    intermediate: {
+      bg: "bg-amber-500/10",
+      text: "text-amber-400",
+      border: "border-amber-500/20",
+    },
+    advanced: {
+      bg: "bg-red-500/10",
+      text: "text-red-400",
+      border: "border-red-500/20",
+    },
+  };
+
+  const colors = difficultyColors[repo.difficulty] || difficultyColors.beginner;
+
+  return (
+    <a
+      href={repo.github_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="bg-[#15161E] border border-white/5 rounded-xl p-5 hover:border-emerald-500/30 hover:bg-[#151620] transition-all duration-300 group flex flex-col"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-white/10 group-hover:border-emerald-500/30 transition-colors">
+            <Shield className="w-5 h-5 text-emerald-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors line-clamp-1">
+              {repo.title}
+            </h3>
+            <p className="text-xs text-gray-500 font-mono">{repo.name}</p>
+          </div>
+        </div>
+        <span
+          className={`text-[10px] font-bold uppercase px-2 py-1 rounded border ${colors.bg} ${colors.text} ${colors.border}`}
         >
-            <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-white/10 group-hover:border-emerald-500/30 transition-colors">
-                       <Shield className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <div>
-                        <h3 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors line-clamp-1">
-                            {repo.title}
-                        </h3>
-                        <p className="text-xs text-gray-500 font-mono">{repo.name}</p>
-                    </div>
-                </div>
-                <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded border ${colors.bg} ${colors.text} ${colors.border}`}>
-                    {repo.difficulty}
-                </span>
-            </div>
-            
-            <p className="text-sm text-gray-400 mb-4 line-clamp-2 flex-1">
-                {repo.description}
-            </p>
-            
-            <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                        <Star className="w-3.5 h-3.5 text-amber-400" />
-                        <span>{repo.stars?.toLocaleString() || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                        <div className="w-2 h-2 rounded-full bg-blue-400" />
-                        <span>{repo.language}</span>
-                    </div>
-                </div>
-                {repo.tags && repo.tags.length > 0 && (
-                    <div className="flex gap-1">
-                        {repo.tags.slice(0, 2).map((tag, idx) => (
-                            <span key={idx} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/5">
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
-                )}
-            </div>
-        </a>
-    );
+          {repo.difficulty}
+        </span>
+      </div>
+
+      <p className="text-sm text-gray-400 mb-4 line-clamp-2 flex-1">
+        {repo.description}
+      </p>
+
+      <div className="flex items-center justify-between pt-3 border-t border-white/5">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <Star className="w-3.5 h-3.5 text-amber-400" />
+            <span>{repo.stars?.toLocaleString() || 0}</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <div className="w-2 h-2 rounded-full bg-blue-400" />
+            <span>{repo.language}</span>
+          </div>
+        </div>
+        {repo.tags && repo.tags.length > 0 && (
+          <div className="flex gap-1">
+            {repo.tags.slice(0, 2).map((tag, idx) => (
+              <span
+                key={idx}
+                className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/5"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </a>
+  );
 };
 
 const TrustedRepoSkeleton = () => (
-    <div className="bg-[#15161E] border border-white/5 rounded-xl p-5 h-[180px] animate-pulse">
-        <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-white/5" />
-            <div className="space-y-2 flex-1">
-                <div className="w-3/4 h-4 bg-white/5 rounded" />
-                <div className="w-1/2 h-3 bg-white/5 rounded" />
-            </div>
-        </div>
-        <div className="space-y-2 mb-4">
-            <div className="w-full h-3 bg-white/5 rounded" />
-            <div className="w-2/3 h-3 bg-white/5 rounded" />
-        </div>
-        <div className="flex gap-4 pt-3 border-t border-white/5">
-            <div className="w-16 h-3 bg-white/5 rounded" />
-            <div className="w-16 h-3 bg-white/5 rounded" />
-        </div>
+  <div className="bg-[#15161E] border border-white/5 rounded-xl p-5 h-[180px] animate-pulse">
+    <div className="flex items-center gap-3 mb-4">
+      <div className="w-10 h-10 rounded-lg bg-white/5" />
+      <div className="space-y-2 flex-1">
+        <div className="w-3/4 h-4 bg-white/5 rounded" />
+        <div className="w-1/2 h-3 bg-white/5 rounded" />
+      </div>
     </div>
+    <div className="space-y-2 mb-4">
+      <div className="w-full h-3 bg-white/5 rounded" />
+      <div className="w-2/3 h-3 bg-white/5 rounded" />
+    </div>
+    <div className="flex gap-4 pt-3 border-t border-white/5">
+      <div className="w-16 h-3 bg-white/5 rounded" />
+      <div className="w-16 h-3 bg-white/5 rounded" />
+    </div>
+  </div>
 );
 
 const IssueSkeleton = () => (
-    <div className="bg-[#15161E] border border-white/5 rounded-xl p-6 h-[300px] animate-pulse">
-        <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded bg-white/5" />
-            <div className="space-y-2">
-                <div className="w-24 h-3 bg-white/5 rounded" />
-                <div className="w-12 h-2 bg-white/5 rounded" />
-            </div>
-        </div>
-        <div className="w-full h-6 bg-white/5 rounded mb-4" />
-        <div className="w-2/3 h-6 bg-white/5 rounded mb-8" />
-        <div className="space-y-2">
-            <div className="w-full h-3 bg-white/5 rounded" />
-            <div className="w-full h-3 bg-white/5 rounded" />
-            <div className="w-3/4 h-3 bg-white/5 rounded" />
-        </div>
+  <div className="bg-[#15161E] border border-white/5 rounded-xl p-6 h-[300px] animate-pulse">
+    <div className="flex items-center gap-3 mb-6">
+      <div className="w-10 h-10 rounded bg-white/5" />
+      <div className="space-y-2">
+        <div className="w-24 h-3 bg-white/5 rounded" />
+        <div className="w-12 h-2 bg-white/5 rounded" />
+      </div>
     </div>
+    <div className="w-full h-6 bg-white/5 rounded mb-4" />
+    <div className="w-2/3 h-6 bg-white/5 rounded mb-8" />
+    <div className="space-y-2">
+      <div className="w-full h-3 bg-white/5 rounded" />
+      <div className="w-full h-3 bg-white/5 rounded" />
+      <div className="w-3/4 h-3 bg-white/5 rounded" />
+    </div>
+  </div>
 );
 
 // Helper for 'RefreshCw' used in Load More
 const RefreshCw = ({ className }) => (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" height="24" viewBox="0 0 24 24" 
-      fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" 
-      className={className}
-    >
-        <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-        <path d="M21 3v5h-5" />
-        <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-        <path d="M3 21v-5h5" />
-    </svg>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={className}
+  >
+    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+    <path d="M21 3v5h-5" />
+    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+    <path d="M3 21v-5h5" />
+  </svg>
 );
 
 export default ExplorePage;

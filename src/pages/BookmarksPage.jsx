@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
+import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import {
   Search,
@@ -23,7 +24,7 @@ const BookmarksPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [bookmarks, setBookmarks] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [activeNav, setActiveNav] = useState("bookmarks");
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,7 +47,20 @@ const BookmarksPage = () => {
   }, [user, navigate]);
 
   const fetchBookmarks = async () => {
+    if (!user?.id) return;
+
+    const cacheKey = CACHE_KEYS.BOOKMARKS(user.id);
+
+    // Try to get from cache first
+    const cached = getCache(cacheKey);
+    if (cached) {
+      setBookmarks(cached);
+      setLoading(false);
+      return;
+    }
+
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from("bookmarks")
         .select("*")
@@ -54,6 +68,9 @@ const BookmarksPage = () => {
         .order("created_at", { ascending: false });
       if (error) throw error;
       setBookmarks(data || []);
+
+      // Cache the data for 5 minutes
+      setCache(cacheKey, data || [], 5 * 60 * 1000);
     } catch (error) {
       console.error("Error fetching bookmarks:", error);
     } finally {
@@ -69,15 +86,23 @@ const BookmarksPage = () => {
         .delete()
         .eq("id", bookmarkId);
       if (error) throw error;
-      setBookmarks((prev) => prev.filter((b) => b.id !== bookmarkId));
+
+      // Update local state
+      const updatedBookmarks = bookmarks.filter((b) => b.id !== bookmarkId);
+      setBookmarks(updatedBookmarks);
+
+      // Update cache
+      const cacheKey = CACHE_KEYS.BOOKMARKS(user.id);
+      setCache(cacheKey, updatedBookmarks, 5 * 60 * 1000);
+
       setDeleteDialog({
         isOpen: false,
         bookmarkId: null,
         bookmarkTitle: "",
         loading: false,
       });
-    } catch (error) {
-      console.error("Error deleting bookmark:", error);
+    } catch (err) {
+      console.error("Error deleting bookmark:", err);
     } finally {
       setDeleteDialog((prev) => ({ ...prev, loading: false }));
     }
@@ -90,7 +115,8 @@ const BookmarksPage = () => {
     if (diffDays === 0) return "Today";
     if (diffDays === 1) return "Yesterday";
     if (diffDays < 7) return `Saved ${diffDays} days ago`;
-    if (diffDays < 30) return `Saved ${Math.ceil(diffDays / 7)} week${diffDays >= 14 ? 's' : ''} ago`;
+    if (diffDays < 30)
+      return `Saved ${Math.ceil(diffDays / 7)} week${diffDays >= 14 ? "s" : ""} ago`;
     return `Saved ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
   };
 
@@ -98,7 +124,10 @@ const BookmarksPage = () => {
   const filteredBookmarks = bookmarks.filter((b) => {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      return b.title?.toLowerCase().includes(q) || b.repo_name?.toLowerCase().includes(q);
+      return (
+        b.title?.toLowerCase().includes(q) ||
+        b.repo_name?.toLowerCase().includes(q)
+      );
     }
     return true;
   });
@@ -106,15 +135,27 @@ const BookmarksPage = () => {
   const totalPages = Math.ceil(filteredBookmarks.length / itemsPerPage);
   const paginatedBookmarks = filteredBookmarks.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
 
   const getLabelBadge = (bookmark) => {
     // Mock logic - in real app, check actual labels
     const labels = [
-      { match: "urgent", text: "URGENT", color: "bg-orange-500/20 text-orange-400 border-orange-500/30" },
-      { match: "good first issue", text: "GOOD FIRST ISSUE", color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" },
-      { match: "feature", text: "FEATURE", color: "bg-blue-500/20 text-blue-400 border-blue-500/30" },
+      {
+        match: "urgent",
+        text: "URGENT",
+        color: "bg-orange-500/20 text-orange-400 border-orange-500/30",
+      },
+      {
+        match: "good first issue",
+        text: "GOOD FIRST ISSUE",
+        color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
+      },
+      {
+        match: "feature",
+        text: "FEATURE",
+        color: "bg-blue-500/20 text-blue-400 border-blue-500/30",
+      },
     ];
     // Simple random assignment for demo
     const idx = bookmark.id?.charCodeAt(0) % labels.length || 0;
@@ -139,21 +180,43 @@ const BookmarksPage = () => {
             <div className="bg-blue-600 p-2 rounded-lg">
               <Command className="w-5 h-5" />
             </div>
-            <span className="font-bold text-lg tracking-tight">FirstIssue.dev</span>
+            <span className="font-bold text-lg tracking-tight">
+              FirstIssue.dev
+            </span>
           </div>
 
           <nav className="space-y-1">
-            <NavItem icon={Compass} label="Explore" active={activeNav === 'explore'} onClick={() => navigate('/explore')} />
-            <NavItem icon={Bookmark} label="Bookmarks" active={activeNav === 'bookmarks'} onClick={() => setActiveNav('bookmarks')} />
-            <NavItem icon={User} label="Profile" active={activeNav === 'profile'} onClick={() => navigate('/profile')} />
-            <NavItem icon={Settings} label="Settings" active={activeNav === 'settings'} onClick={() => setActiveNav('settings')} />
+            <NavItem
+              icon={Compass}
+              label="Explore"
+              active={activeNav === "explore"}
+              onClick={() => navigate("/explore")}
+            />
+            <NavItem
+              icon={Bookmark}
+              label="Bookmarks"
+              active={activeNav === "bookmarks"}
+              onClick={() => setActiveNav("bookmarks")}
+            />
+            <NavItem
+              icon={User}
+              label="Profile"
+              active={activeNav === "profile"}
+              onClick={() => navigate("/profile")}
+            />
+            <NavItem
+              icon={Settings}
+              label="Settings"
+              active={activeNav === "settings"}
+              onClick={() => setActiveNav("settings")}
+            />
           </nav>
         </div>
 
         {/* New Issue Button */}
         <div className="mt-auto p-4">
           <button
-            onClick={() => navigate('/explore')}
+            onClick={() => navigate("/explore")}
             className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors"
           >
             <Plus className="w-5 h-5" />
@@ -182,9 +245,20 @@ const BookmarksPage = () => {
 
           <div className="flex items-center gap-4 ml-4">
             <div className="flex items-center gap-3 pl-4 border-l border-white/5">
-              <span className="text-sm text-gray-400">{user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'alex_dev'}</span>
+              <span className="text-sm text-gray-400">
+                {user?.user_metadata?.full_name ||
+                  user?.email?.split("@")[0] ||
+                  "alex_dev"}
+              </span>
               <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[1px]">
-                <img src={user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${user?.email || 'User'}`} alt="Avatar" className="w-full h-full rounded-full bg-[#0B0C10]" />
+                <img
+                  src={
+                    user?.user_metadata?.avatar_url ||
+                    `https://ui-avatars.com/api/?name=${user?.email || "User"}`
+                  }
+                  alt="Avatar"
+                  className="w-full h-full rounded-full bg-[#0B0C10]"
+                />
               </div>
             </div>
           </div>
@@ -196,12 +270,16 @@ const BookmarksPage = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-3xl font-bold text-white">Your Bookmarks</h1>
+                <h1 className="text-3xl font-bold text-white">
+                  Your Bookmarks
+                </h1>
                 <span className="px-3 py-1 bg-blue-600/20 text-blue-400 text-sm font-medium rounded-full">
                   {bookmarks.length} SAVED
                 </span>
               </div>
-              <p className="text-gray-400">Managing your saved open-source opportunities</p>
+              <p className="text-gray-400">
+                Managing your saved open-source opportunities
+              </p>
             </div>
             <button className="flex items-center gap-2 px-4 py-2 bg-[#15161E] border border-white/10 text-gray-300 rounded-lg hover:text-white hover:border-white/20 transition-colors">
               <Filter className="w-4 h-4" />
@@ -211,18 +289,34 @@ const BookmarksPage = () => {
 
           {/* Tabs */}
           <div className="flex items-center gap-6 border-b border-white/5 mb-6">
-            <TabButton label="All Items" active={activeTab === 'all'} onClick={() => setActiveTab('all')} />
-            <TabButton label="Issues" active={activeTab === 'issues'} onClick={() => setActiveTab('issues')} />
-            <TabButton label="Repositories" active={activeTab === 'repositories'} onClick={() => setActiveTab('repositories')} />
+            <TabButton
+              label="All Items"
+              active={activeTab === "all"}
+              onClick={() => setActiveTab("all")}
+            />
+            <TabButton
+              label="Issues"
+              active={activeTab === "issues"}
+              onClick={() => setActiveTab("issues")}
+            />
+            <TabButton
+              label="Repositories"
+              active={activeTab === "repositories"}
+              onClick={() => setActiveTab("repositories")}
+            />
           </div>
 
           {/* Bookmarks List */}
           {filteredBookmarks.length === 0 ? (
             <div className="text-center py-16 bg-[#15161E] rounded-xl border border-white/5">
               <Bookmark className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-white mb-2">No bookmarks found</h3>
+              <h3 className="text-lg font-medium text-white mb-2">
+                No bookmarks found
+              </h3>
               <p className="text-gray-500 mb-6">
-                {searchQuery ? "Try a different search term" : "Start by exploring issues and bookmarking the ones you like"}
+                {searchQuery
+                  ? "Try a different search term"
+                  : "Start by exploring issues and bookmarking the ones you like"}
               </p>
               <button
                 onClick={() => navigate("/explore")}
@@ -239,28 +333,39 @@ const BookmarksPage = () => {
                   <div
                     key={bookmark.id}
                     className={`flex items-center gap-4 p-5 hover:bg-white/[0.02] transition-colors ${
-                      index !== paginatedBookmarks.length - 1 ? 'border-b border-white/5' : ''
+                      index !== paginatedBookmarks.length - 1
+                        ? "border-b border-white/5"
+                        : ""
                     }`}
                   >
                     {/* Icon */}
                     <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-700 to-gray-900 flex items-center justify-center flex-shrink-0">
                       <span className="text-xs font-bold text-white">
-                        {bookmark.repo_name?.split('/')[0]?.substring(0, 2).toUpperCase() || 'GH'}
+                        {bookmark.repo_name
+                          ?.split("/")[0]
+                          ?.substring(0, 2)
+                          .toUpperCase() || "GH"}
                       </span>
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className="text-white font-medium truncate">{bookmark.title}</h4>
+                        <h4 className="text-white font-medium truncate">
+                          {bookmark.title}
+                        </h4>
                         {badge && (
-                          <span className={`px-2 py-0.5 text-[10px] font-bold rounded border ${badge.color}`}>
+                          <span
+                            className={`px-2 py-0.5 text-[10px] font-bold rounded border ${badge.color}`}
+                          >
                             {badge.text}
                           </span>
                         )}
                       </div>
                       <p className="text-sm text-gray-500">
-                        <span className="text-gray-400">{bookmark.repo_name}</span>
+                        <span className="text-gray-400">
+                          {bookmark.repo_name}
+                        </span>
                         {bookmark.language && (
                           <span> • {bookmark.language}</span>
                         )}
@@ -306,7 +411,14 @@ const BookmarksPage = () => {
           {filteredBookmarks.length > 0 && (
             <div className="flex items-center justify-between mt-6">
               <p className="text-sm text-gray-500">
-                Showing {Math.min((currentPage - 1) * itemsPerPage + 1, filteredBookmarks.length)} - {Math.min(currentPage * itemsPerPage, filteredBookmarks.length)} of {filteredBookmarks.length} bookmarks
+                Showing{" "}
+                {Math.min(
+                  (currentPage - 1) * itemsPerPage + 1,
+                  filteredBookmarks.length,
+                )}{" "}
+                -{" "}
+                {Math.min(currentPage * itemsPerPage, filteredBookmarks.length)}{" "}
+                of {filteredBookmarks.length} bookmarks
               </p>
               <div className="flex items-center gap-2">
                 <button
@@ -317,7 +429,9 @@ const BookmarksPage = () => {
                   Previous
                 </button>
                 <button
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   disabled={currentPage >= totalPages}
                   className="px-4 py-2 bg-[#15161E] border border-white/10 text-gray-400 rounded-lg hover:text-white hover:border-white/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >

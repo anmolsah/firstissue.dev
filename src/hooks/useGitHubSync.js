@@ -1,23 +1,41 @@
 import { useState, useEffect, useCallback } from "react";
 import { syncGitHubContributions } from "../services/githubSync";
 import { supabase } from "../lib/supabase";
+import { getCache, setCache, CACHE_KEYS, getCacheAge } from "../utils/cache";
 
 /**
- * Custom hook for GitHub sync functionality
+ * Custom hook for GitHub sync functionality with caching
  */
 export const useGitHubSync = (userId, autoSync = true) => {
     const [syncing, setSyncing] = useState(false);
     const [lastSynced, setLastSynced] = useState(null);
     const [syncError, setSyncError] = useState(null);
     const [contributions, setContributions] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
 
     /**
-     * Fetch contributions from database
+     * Fetch contributions from database with caching
      */
     const fetchContributions = useCallback(async () => {
         if (!userId) return;
 
+        const cacheKey = CACHE_KEYS.CONTRIBUTIONS(userId);
+
+        // Try to get from cache first
+        const cached = getCache(cacheKey);
+        if (cached) {
+            setContributions(cached);
+            setLoading(false);
+
+            // Get last synced time from cache metadata
+            const cacheAge = getCacheAge(cacheKey);
+            if (cacheAge !== null) {
+                setLastSynced(new Date(Date.now() - cacheAge).toISOString());
+            }
+            return;
+        }
+
+        // If no cache, fetch from database
         try {
             setLoading(true);
             const { data, error } = await supabase
@@ -29,6 +47,9 @@ export const useGitHubSync = (userId, autoSync = true) => {
             if (error) throw error;
 
             setContributions(data || []);
+
+            // Cache the data for 5 minutes
+            setCache(cacheKey, data || [], 5 * 60 * 1000);
 
             // Get last synced time
             if (data && data.length > 0) {
@@ -61,6 +82,11 @@ export const useGitHubSync = (userId, autoSync = true) => {
 
             if (result.success) {
                 setLastSynced(result.lastSynced);
+
+                // Clear cache and fetch fresh data
+                const cacheKey = CACHE_KEYS.CONTRIBUTIONS(userId);
+                setCache(cacheKey, [], 0); // Invalidate cache
+
                 await fetchContributions(); // Refresh data
             } else {
                 setSyncError(result.error);
@@ -87,17 +113,34 @@ export const useGitHubSync = (userId, autoSync = true) => {
     }, [lastSynced]);
 
     /**
-     * Auto-sync on mount if needed
+     * Load data on mount
      */
     useEffect(() => {
-        if (userId && autoSync) {
+        if (userId) {
+            // Load from cache immediately (no loading state)
+            const cacheKey = CACHE_KEYS.CONTRIBUTIONS(userId);
+            const cached = getCache(cacheKey);
+
+            if (cached) {
+                setContributions(cached);
+                const cacheAge = getCacheAge(cacheKey);
+                if (cacheAge !== null) {
+                    setLastSynced(new Date(Date.now() - cacheAge).toISOString());
+                }
+            } else {
+                // Only show loading if no cache
+                setLoading(true);
+            }
+
+            // Fetch fresh data
             fetchContributions().then(() => {
-                if (shouldSync()) {
+                // Auto-sync if needed and enabled
+                if (autoSync && shouldSync()) {
                     sync();
                 }
             });
         }
-    }, [userId, autoSync]); // Only run on mount
+    }, [userId]); // Only run on mount or userId change
 
     /**
      * Get statistics
