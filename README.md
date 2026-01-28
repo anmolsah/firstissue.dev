@@ -1,135 +1,200 @@
 # FirstIssue.dev
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![Open Source](https://img.shields.io/badge/Open%20Source-Yes-blue)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
 
-**FirstIssue.dev** helps beginner developers find and track beginner-friendly GitHub issues — all in one clean, simple app.
+A platform designed to help developers discover beginner-friendly open source issues and track their contribution journey.
 
-Whether you're new to open source or looking for your next contribution, this platform helps you:
+## Overview
 
-Discover curated beginner issues  
-Bookmark and manage what you're working on  
-Track your contribution journey
-
----
+FirstIssue.dev simplifies the process of finding and managing open source contributions by providing a centralized platform to discover issues, track progress, and monitor contribution status across multiple repositories.
 
 ## Features
 
-- **Search beginner-friendly issues**  
-  Find issues labeled with `good first issue`, `help wanted`, and more from GitHub's public repositories.
+### Issue Discovery
 
-- **Bookmark issues** for later  
-  Save issues you're interested in and access them anytime from your dashboard.
+- Search and filter GitHub issues by programming language, repository, and labels
+- Focus on beginner-friendly labels such as `good first issue` and `help wanted`
+- Browse curated repositories known for welcoming first-time contributors
 
-- **Update contribution status**  
-  Mark issues as `applied`, `working on`, or `done` to track your progress.
+### Contribution Tracking
 
-- **Add manual contributions**  
-  Contributed outside FirstIssue.dev? No problem. Manually add repositories you've contributed to and manage their status.
+- Automatic synchronization with GitHub to track assigned issues and pull requests
+- Real-time status updates for contributions (Applied, In Progress, Merged, Closed)
+- Manual contribution entry for tracking work done outside the platform
 
-- **Track your contribution progress**  
-  Visualize your progress with personalized stats and history.
+### Personal Dashboard
 
-- **Secure login with Supabase**  
-  Keep your bookmarks and activity private and synced across devices.
+- Comprehensive statistics including merge rate and contribution breakdown
+- Visual contribution heatmap showing activity over time
+- Quick access to bookmarked issues and active contributions
 
-- **Clean and modern UI**  
-  Fully responsive design built with React and Tailwind CSS for a seamless experience across all devices.
+### Bookmark Management
 
----
+- Save interesting issues for later review
+- Organize bookmarks by status and priority
+- Sync bookmarks across devices
 
----
+## Technology Stack
 
-<!-- ## Preview
+- **Frontend**: React 19.1.0 with Vite 6.3.5
+- **Styling**: Tailwind CSS 4.1.10
+- **Authentication**: Supabase Auth with GitHub OAuth
+- **Database**: PostgreSQL via Supabase
+- **API Integration**: GitHub REST API v3
+- **Icons**: Lucide React 0.515.0
+- **Routing**: React Router DOM 7.6.2
+- **Notifications**: React Hot Toast 2.5.2
 
-Here’s a quick look at the FirstIssue.dev platform:
+## Prerequisites
 
-### Homepage
-![Homepage Screenshot](./public/firstissue01.png)
+- Node.js 18.x or higher
+- npm or yarn package manager
+- GitHub account for OAuth authentication
+- Supabase account (free tier supported)
 
-### Explore Page
-![Explore Screenshot](./public/firstissue04.png)
+## Installation
 
-### Trusted Repos
-![Trusted Repos Screenshot](./public/firstissue03.png)
-
-### Bookmarks
-![Bookmarks Screenshot](./public/firstissue05.png)
-
-### Profile
-![Profile Screenshot](./public/firstissue08.png) -->
----
-
-## Tech Stack
-
-- **React.js + Vite**
-- **Tailwind CSS**
-- **Supabase** (Auth + Database)
-- **GitHub REST API**
-- **Lucide React Icons**
-
----
-
-## Try It Locally
+### 1. Clone the Repository
 
 ```bash
-# Clone this repo
 git clone https://github.com/anmolsah/firstissue.dev.git
+cd firstissue.dev
+```
 
-## Go inside the folder
-## cd firstissue.dev
+### 2. Install Dependencies
 
-# Install dependencies
+```bash
 npm install
+```
 
-# Start the dev server
+### 3. Configure Environment Variables
+
+Create a `.env` file in the root directory:
+
+```bash
+cp .env.example .env
+```
+
+Add your Supabase credentials:
+
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 4. Set Up Supabase
+
+1. Create a new project in Supabase
+2. Enable GitHub OAuth provider in Authentication settings
+3. Run the database migration from `supabase/migrations/create_contributions_table.sql`
+4. Configure Row Level Security (RLS) policies for the contributions table
+
+### 5. Start Development Server
+
+```bash
 npm run dev
 ```
 
-Set your `.env` file with Supabase keys (see `.env.example`).
+The application will be available at `http://localhost:5173`
 
----
+## Available Scripts
 
-## Want to Contribute?
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run preview  # Preview production build
+npm run lint     # Run ESLint
+```
 
-We’d love your help!  
-Check out the [CONTRIBUTING.md](./docs/CONTRIBUTING.md) guide to get started.
+## Project Structure
 
----
+```
+firstissue.dev/
+├── public/              # Static assets
+├── src/
+│   ├── assets/          # Images and media files
+│   ├── components/      # Reusable React components
+│   ├── contexts/        # React Context providers
+│   ├── data/            # Static data and content
+│   ├── hooks/           # Custom React hooks
+│   ├── lib/             # External service configurations
+│   ├── pages/           # Page components
+│   ├── services/        # API and business logic
+│   ├── utils/           # Utility functions
+│   ├── App.jsx          # Main application component
+│   └── main.jsx         # Application entry point
+├── docs/                # Documentation
+├── supabase/            # Database migrations
+└── package.json
+```
 
-Made with 💙 by [Anmol](https://github.com/anmolsah)
+## Key Components
+
+### GitHub Synchronization
+
+The platform automatically syncs with GitHub to track:
+
+- Issues assigned to the authenticated user
+- Pull requests authored by the user
+- PR status (open, merged, closed)
+- Linked relationships between issues and PRs
+
+Synchronization occurs automatically every 5 minutes or can be triggered manually.
+
+### Status Detection
+
+Contributions are automatically categorized:
+
+- **Saved**: Bookmarked for future reference
+- **Applied**: Assigned to issue or commented
+- **In Progress**: Open or draft pull request submitted
+- **Merged**: Pull request successfully merged
+- **Closed**: Pull request closed without merge
+
+### Caching Strategy
+
+The application implements client-side caching to:
+
+- Reduce API calls to GitHub and Supabase
+- Improve page load performance
+- Provide offline-first experience for cached data
+
+## Contributing
+
+Contributions are welcome and appreciated. Please read the [Contributing Guide](docs/CONTRIBUTING.md) for details on the development process and how to submit pull requests.
 
 ### Quick Start for Contributors
 
-1. Fork this repository
-2. Clone your fork
-3. Set up the development environment
-4. Find an issue to work on
-5. Submit a pull request
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -m 'feat: add new feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Open a Pull Request
 
-### Find an Issue
-
--  [First contribution](https://github.com/firstcontributions/first-contributions) - Perfect for your first contribution
--  [Good first issue](https://www.firstissue.dev/explore) - Beginner-friendly issues
--  [Help wanted](https://www.firstissue.dev/explore) - We need your help!
-
-### Contributors
-
-Thanks to all our amazing contributors! See [CONTRIBUTORS.md](CONTRIBUTORS.md)
-
----
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed guidelines.
 
 ## Documentation
 
-- [Contributing Guide](CONTRIBUTING.md)
-- [Issues to Create](docs/ISSUES_TO_CREATE.md) - For maintainers
+- [Architecture Overview](docs/ARCHITECTURE.md)
+- [Contributing Guide](docs/CONTRIBUTING.md)
+- [Student Guide](docs/STUDENT_GUIDE.md)
 
----
+## Security
+
+- All authentication is handled through Supabase with GitHub OAuth
+- Row Level Security (RLS) policies ensure users can only access their own data
+- GitHub tokens are securely stored and never exposed to the client
+- API rate limiting is implemented to prevent abuse
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
----
+## Acknowledgments
 
-Made with 💙 by [Anmol](https://github.com/anmolsah)
+Built and maintained by [Anmol Sah](https://github.com/anmolsah)
+
+## Support
+
+For questions, issues, or feature requests, please open an issue on GitHub.
