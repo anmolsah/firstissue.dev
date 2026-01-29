@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
+import { getCache, setCache, clearCache, CACHE_KEYS } from "../utils/cache";
 import {
   Search,
   Compass,
@@ -153,7 +153,7 @@ const ExplorePage = () => {
       const response = await fetch(
         `https://api.github.com/search/issues?q=${encodeURIComponent(
           query,
-        )}&sort=${filters.sort}&per_page=12&page=${page}`,
+        )}&sort=${filters.sort}&order=desc&per_page=12&page=${page}`,
         {
           headers: {
             Accept: "application/vnd.github.v3+json",
@@ -251,6 +251,9 @@ const ExplorePage = () => {
         if (error) throw error;
         setBookmarkedIssues((prev) => new Set([...prev, issue.html_url]));
       }
+
+      // Clear the bookmarks cache so BookmarksPage shows fresh data
+      clearCache(CACHE_KEYS.BOOKMARKS(user.id));
     } catch (error) {
       console.error("Error managing bookmark:", error);
     }
@@ -267,7 +270,7 @@ const ExplorePage = () => {
             </span>
           </Link>
 
-          <nav className="space-y-1">
+          <nav className="space-y-1 cursor-pointer">
             <NavItem
               icon={Compass}
               label="Explore Issues"
@@ -277,7 +280,7 @@ const ExplorePage = () => {
             <NavItem
               icon={Bookmark}
               label="Saved"
-              active={activeSidebarItem === "saved"}
+              active={activeSidebarItem === "Bookmarks"}
               onClick={() => navigate("/bookmarks")}
             />
             <NavItem
