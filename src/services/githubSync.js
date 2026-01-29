@@ -143,131 +143,28 @@ export const findLinkedPR = async (owner, repo, issueNumber, username, token) =>
 };
 
 /**
- * Sync user's GitHub contributions
+ * Sync user's GitHub contributions using Edge Function
  */
 export const syncGitHubContributions = async (userId) => {
     try {
-        const token = await getGitHubToken();
+        const { data: { session } } = await supabase.auth.getSession();
 
-        if (!token) {
-            throw new Error("No GitHub token found. Please reconnect your GitHub account.");
+        if (!session) {
+            throw new Error("No active session. Please login.");
         }
 
-        const username = await getGitHubUsername(token);
+        // Call the edge function
+        const { data, error } = await supabase.functions.invoke('sync-github', {
+            headers: {
+                Authorization: `Bearer ${session.access_token}`,
+            },
+        });
 
-        // Fetch all data in parallel
-        const [assignedIssues, pullRequests] = await Promise.all([
-            fetchAssignedIssues(username, token),
-            fetchUserPullRequests(username, token),
-        ]);
-
-        console.log(`Found ${assignedIssues.length} assigned issues and ${pullRequests.length} PRs`);
-
-        const contributions = [];
-
-        // Process assigned issues
-        for (const issue of assignedIssues) {
-            const parsed = parseGitHubUrl(issue.html_url);
-            if (!parsed) continue;
-
-            // Check for linked PR
-            const linkedPR = await findLinkedPR(parsed.owner, parsed.repo, parsed.number, username, token);
-
-            const contribution = {
-                user_id: userId,
-                github_issue_number: parsed.number,
-                github_repo_owner: parsed.owner,
-                github_repo_name: parsed.repo,
-                issue_url: issue.html_url,
-                issue_title: issue.title,
-                issue_state: issue.state,
-                is_assigned: true,
-                assigned_at: issue.created_at,
-                language: issue.repository?.language || null,
-                labels: issue.labels?.map(l => l.name) || [],
-                last_synced_at: new Date().toISOString(),
-            };
-
-            // Add PR data if found
-            if (linkedPR) {
-                const prParsed = parseGitHubUrl(linkedPR.html_url);
-                const prDetails = await fetchPullRequestDetails(prParsed.owner, prParsed.repo, prParsed.number, token);
-
-                if (prDetails) {
-                    contribution.pr_url = linkedPR.html_url;
-                    contribution.pr_number = prParsed.number;
-                    contribution.pr_title = linkedPR.title;
-                    contribution.pr_status = prDetails.merged_at ? 'merged' : prDetails.state;
-                    contribution.pr_created_at = prDetails.created_at;
-                    contribution.pr_merged_at = prDetails.merged_at;
-                    contribution.pr_closed_at = prDetails.closed_at;
-                }
-            }
-
-            contributions.push(contribution);
+        if (error) {
+            throw error;
         }
 
-        // Process PRs that might not be linked to assigned issues
-        for (const pr of pullRequests) {
-            const parsed = parseGitHubUrl(pr.html_url);
-            if (!parsed) continue;
-
-            // Check if we already have this as an assigned issue
-            const exists = contributions.some(
-                c => c.github_repo_owner === parsed.owner &&
-                    c.github_repo_name === parsed.repo &&
-                    c.pr_number === parsed.number
-            );
-
-            if (!exists) {
-                const prDetails = await fetchPullRequestDetails(parsed.owner, parsed.repo, parsed.number, token);
-
-                const contribution = {
-                    user_id: userId,
-                    github_issue_number: pr.number, // PR number
-                    github_repo_owner: parsed.owner,
-                    github_repo_name: parsed.repo,
-                    issue_url: pr.html_url,
-                    issue_title: pr.title,
-                    issue_state: pr.state,
-                    pr_url: pr.html_url,
-                    pr_number: parsed.number,
-                    pr_title: pr.title,
-                    pr_status: prDetails?.merged_at ? 'merged' : pr.state,
-                    pr_created_at: pr.created_at,
-                    pr_merged_at: prDetails?.merged_at,
-                    pr_closed_at: pr.closed_at,
-                    language: pr.repository?.language || null,
-                    labels: pr.labels?.map(l => l.name) || [],
-                    last_synced_at: new Date().toISOString(),
-                };
-
-                contributions.push(contribution);
-            }
-        }
-
-        // Upsert contributions to database
-        if (contributions.length > 0) {
-            const { data, error } = await supabase
-                .from("contributions")
-                .upsert(contributions, {
-                    onConflict: "user_id,github_repo_owner,github_repo_name,github_issue_number",
-                    ignoreDuplicates: false,
-                });
-
-            if (error) {
-                console.error("Error upserting contributions:", error);
-                throw error;
-            }
-
-            console.log(`Successfully synced ${contributions.length} contributions`);
-        }
-
-        return {
-            success: true,
-            count: contributions.length,
-            lastSynced: new Date().toISOString(),
-        };
+        return data;
     } catch (error) {
         console.error("Error syncing GitHub contributions:", error);
         return {
