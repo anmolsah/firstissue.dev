@@ -280,9 +280,31 @@ const StatusPage = () => {
           </div>
 
           {syncError && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6 text-red-400">
-              <p className="font-medium">Sync Error</p>
-              <p className="text-sm">{syncError}</p>
+            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <p className="font-medium text-red-400 mb-1">Sync Error</p>
+                  <p className="text-sm text-red-300">{syncError}</p>
+                  {syncError.includes("token") && (
+                    <p className="text-xs text-red-400/70 mt-2">
+                      Your GitHub connection may have expired or lacks required
+                      permissions.
+                    </p>
+                  )}
+                </div>
+                {syncError.includes("token") && (
+                  <button
+                    onClick={() => {
+                      // Trigger GitHub reconnection
+                      window.location.href = `${window.location.origin}/login`;
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-500 transition-colors whitespace-nowrap"
+                  >
+                    <Github className="w-4 h-4" />
+                    Reconnect GitHub
+                  </button>
+                )}
+              </div>
             </div>
           )}
 

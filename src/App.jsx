@@ -4,6 +4,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
 import LoginPage from "./pages/LoginPage";
 import Navbar from "./components/Navbar";
+import GitHubReconnectBanner from "./components/GitHubReconnectBanner";
 import LandingPage from "./pages/LandingPage";
 import BookmarksPage from "./pages/BookmarksPage";
 import StatusPage from "./pages/StatusPageNew";
@@ -45,6 +46,7 @@ const AppLayout = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col bg-[#222831]">
       {!hideGlobalLayout && !isLoginPage && <Navbar />}
+      {!isLoginPage && <GitHubReconnectBanner />}
       <Toaster
         position="top-right"
         reverseOrder={false}

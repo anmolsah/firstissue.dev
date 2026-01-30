@@ -8,11 +8,56 @@ import { supabase } from "../lib/supabase";
 const GITHUB_API_BASE = "https://api.github.com";
 
 /**
- * Get GitHub access token from user session
+ * Get GitHub access token from user profile in database
  */
 const getGitHubToken = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.provider_token; // GitHub OAuth token
+    try {
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            throw new Error("No authenticated user found");
+        }
+
+        // Try to get token from session first (for immediate use after login)
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.provider_token) {
+            return session.provider_token;
+        }
+
+        // Fallback: Get token from database
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('github_token, github_token_expires_at')
+            .eq('id', user.id)
+            .single();
+
+        if (error) {
+            console.error("Error fetching profile:", error);
+            // Handle case where profile doesn't exist yet (existing users before migration)
+            if (error.code === 'PGRST116') {
+                throw new Error("Please reconnect your GitHub account to enable syncing. Click 'Reconnect GitHub' below.");
+            }
+            throw new Error("Failed to fetch GitHub token. Please reconnect your GitHub account.");
+        }
+
+        if (!profile?.github_token) {
+            throw new Error("Please reconnect your GitHub account to enable syncing. Click 'Reconnect GitHub' below.");
+        }
+
+        // Check if token is expired
+        if (profile.github_token_expires_at) {
+            const expiresAt = new Date(profile.github_token_expires_at);
+            if (expiresAt < new Date()) {
+                throw new Error("Your GitHub connection has expired. Please reconnect your GitHub account.");
+            }
+        }
+
+        return profile.github_token;
+    } catch (error) {
+        console.error("Error in getGitHubToken:", error);
+        throw error;
+    }
 };
 
 /**
