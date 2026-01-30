@@ -36,11 +36,12 @@ const ProfilePageNew = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [customProfile, setCustomProfile] = useState(null);
 
-  // Use GitHub sync hook for contributions
-  const { contributions, getStats, getSuccessRate } = useGitHubSync(
-    user?.id,
-    false,
-  );
+  // Use GitHub sync hook for contributions with auto-sync enabled
+  const { contributions, getStats, getSuccessRate, sync, syncing, lastSynced } =
+    useGitHubSync(
+      user?.id,
+      true, // Enable auto-sync for real-time updates
+    );
 
   // Cached data
   const [bookmarks, setBookmarks] = useState([]);
@@ -222,7 +223,7 @@ const ProfilePageNew = () => {
 
             <button
               onClick={() => setIsEditModalOpen(true)}
-              className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
+              className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm cursor-pointer"
             >
               Edit Profile
             </button>

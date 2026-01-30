@@ -48,8 +48,8 @@ export const useGitHubSync = (userId, autoSync = true) => {
 
             setContributions(data || []);
 
-            // Cache the data for 5 minutes
-            setCache(cacheKey, data || [], 5 * 60 * 1000);
+            // Cache the data for 1 minute (shorter for real-time updates)
+            setCache(cacheKey, data || [], 1 * 60 * 1000);
 
             // Get last synced time
             if (data && data.length > 0) {
@@ -103,13 +103,13 @@ export const useGitHubSync = (userId, autoSync = true) => {
     }, [userId, syncing, fetchContributions]);
 
     /**
-     * Check if sync is needed (> 5 minutes since last sync)
+     * Check if sync is needed (> 2 minutes since last sync)
      */
     const shouldSync = useCallback(() => {
         if (!lastSynced) return true;
 
-        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-        return new Date(lastSynced) < fiveMinutesAgo;
+        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+        return new Date(lastSynced) < twoMinutesAgo;
     }, [lastSynced]);
 
     /**
@@ -141,6 +141,26 @@ export const useGitHubSync = (userId, autoSync = true) => {
             });
         }
     }, [userId]); // Only run on mount or userId change
+
+    /**
+     * Set up periodic polling for real-time updates (every 2 minutes)
+     */
+    useEffect(() => {
+        if (!userId || !autoSync) return;
+
+        const pollInterval = setInterval(() => {
+            // Check if sync is needed
+            if (shouldSync()) {
+                console.log('Auto-syncing contributions...');
+                sync();
+            } else {
+                // Just refresh from database (no GitHub API call)
+                fetchContributions();
+            }
+        }, 2 * 60 * 1000); // Poll every 2 minutes
+
+        return () => clearInterval(pollInterval);
+    }, [userId, autoSync, shouldSync, sync, fetchContributions]);
 
     /**
      * Get statistics

@@ -81,10 +81,10 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-[#15161E] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <div className="bg-[#15161E] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+        {/* Header - Fixed */}
+        <div className="flex items-center justify-between p-6 border-b border-white/5 flex-shrink-0">
           <h2 className="text-xl font-bold text-white">Edit Profile</h2>
           <button
             onClick={onClose}
@@ -94,110 +94,112 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
           </button>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
-              {error}
+        {/* Form - Scrollable Content */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+          <div className="p-6 space-y-5 overflow-y-auto flex-1">
+            {error && (
+              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 text-sm flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                Profile updated successfully!
+              </div>
+            )}
+
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Your full name"
+                className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+              />
             </div>
-          )}
 
-          {success && (
-            <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-emerald-400 text-sm flex items-center gap-2">
-              <Check className="w-4 h-4" />
-              Profile updated successfully!
+            {/* Bio */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Bio
+              </label>
+              <textarea
+                name="bio"
+                value={formData.bio}
+                onChange={handleChange}
+                placeholder="Tell us about yourself"
+                rows={3}
+                maxLength={160}
+                className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.bio.length}/160 characters
+              </p>
             </div>
-          )}
 
-          {/* Name */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Full Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="Your full name"
-              className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
+            {/* Location */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Location
+              </label>
+              <input
+                type="text"
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
+                placeholder="City, Country"
+                className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+              />
+            </div>
+
+            {/* Company */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Company
+              </label>
+              <input
+                type="text"
+                name="company"
+                value={formData.company}
+                onChange={handleChange}
+                placeholder="Your company or organization"
+                className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+              />
+            </div>
+
+            {/* Website */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Website
+              </label>
+              <input
+                type="url"
+                name="website"
+                value={formData.website}
+                onChange={handleChange}
+                placeholder="https://yourwebsite.com"
+                className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
+              />
+            </div>
+
+            {/* Note */}
+            <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+              <p className="text-xs text-blue-300">
+                <strong>Note:</strong> This updates your FirstIssue.dev profile.
+                Your GitHub profile remains unchanged.
+              </p>
+            </div>
           </div>
 
-          {/* Bio */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Bio
-            </label>
-            <textarea
-              name="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              placeholder="Tell us about yourself"
-              rows={3}
-              maxLength={160}
-              className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all resize-none"
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              {formData.bio.length}/160 characters
-            </p>
-          </div>
-
-          {/* Location */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Location
-            </label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              placeholder="City, Country"
-              className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
-          </div>
-
-          {/* Company */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Company
-            </label>
-            <input
-              type="text"
-              name="company"
-              value={formData.company}
-              onChange={handleChange}
-              placeholder="Your company or organization"
-              className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
-          </div>
-
-          {/* Website */}
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              Website
-            </label>
-            <input
-              type="url"
-              name="website"
-              value={formData.website}
-              onChange={handleChange}
-              placeholder="https://yourwebsite.com"
-              className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all"
-            />
-          </div>
-
-          {/* Note */}
-          <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <p className="text-xs text-blue-300">
-              <strong>Note:</strong> This updates your FirstIssue.dev profile.
-              Your GitHub profile remains unchanged.
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
+          {/* Actions - Fixed at Bottom */}
+          <div className="flex gap-3 p-6 border-t border-white/5 flex-shrink-0 bg-[#15161E]">
             <button
               type="button"
               onClick={onClose}

@@ -185,7 +185,7 @@ const BookmarksPage = () => {
             </span>
           </div>
 
-          <nav className="space-y-1">
+          <nav className="space-y-1 cursor-pointer">
             <NavItem
               icon={Compass}
               label="Explore"
@@ -203,12 +203,6 @@ const BookmarksPage = () => {
               label="Profile"
               active={activeNav === "profile"}
               onClick={() => navigate("/profile")}
-            />
-            <NavItem
-              icon={Settings}
-              label="Settings"
-              active={activeNav === "settings"}
-              onClick={() => setActiveNav("settings")}
             />
           </nav>
         </div>
