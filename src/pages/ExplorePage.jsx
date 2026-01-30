@@ -62,7 +62,7 @@ const ExplorePage = () => {
     labels: ["good first issue"],
     keywords: "",
     sort: "updated",
-    minStars: "10",
+    minStars: "0",
   });
 
   // Sort dropdown state
@@ -153,7 +153,7 @@ const ExplorePage = () => {
       const response = await fetch(
         `https://api.github.com/search/issues?q=${encodeURIComponent(
           query,
-        )}&sort=${filters.sort}&order=desc&per_page=12&page=${page}`,
+        )}&sort=${filters.sort}&order=desc&per_page=30&page=${page}`,
         {
           headers: {
             Accept: "application/vnd.github.v3+json",
@@ -174,7 +174,7 @@ const ExplorePage = () => {
 
         setTotalCount(data.total_count);
         setHasMore(
-          filteredIssues.length === 12 && page * 12 < data.total_count,
+          filteredIssues.length === 30 && page * 30 < data.total_count,
         );
         setCurrentPage(page);
       }
@@ -195,7 +195,11 @@ const ExplorePage = () => {
     }
     if (filters.language) query += ` language:${filters.language}`;
     if (filters.keywords) query += ` ${filters.keywords}`;
-    if (filters.minStars && filters.minStars !== "0")
+    if (
+      filters.minStars &&
+      filters.minStars !== "0" &&
+      parseInt(filters.minStars) > 0
+    )
       query += ` stars:>=${filters.minStars}`;
 
     return query;
