@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
 import { useGitHubSync } from "../hooks/useGitHubSync";
+import EditProfileModal from "../components/EditProfileModal";
 import {
   Bookmark,
   Star,
@@ -32,6 +33,8 @@ const ProfilePageNew = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [activeNav, setActiveNav] = useState("dashboard");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [customProfile, setCustomProfile] = useState(null);
 
   // Use GitHub sync hook for contributions
   const { contributions, getStats, getSuccessRate } = useGitHubSync(
@@ -66,7 +69,11 @@ const ProfilePageNew = () => {
     // Fetch fresh data in background
     setLoading(true);
     try {
-      await Promise.all([fetchBookmarks(), fetchGitHubProfile()]);
+      await Promise.all([
+        fetchBookmarks(),
+        fetchGitHubProfile(),
+        fetchCustomProfile(),
+      ]);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
@@ -128,6 +135,29 @@ const ProfilePageNew = () => {
     }
   };
 
+  const fetchCustomProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("name, bio, location, company, website")
+        .eq("id", user.id)
+        .single();
+
+      if (!error && data) {
+        setCustomProfile(data);
+      }
+    } catch (error) {
+      console.error("Error fetching custom profile:", error);
+    }
+  };
+
+  const handleProfileSave = (updatedData) => {
+    setCustomProfile(updatedData);
+    // Clear cache to force refresh
+    const cacheKey = CACHE_KEYS.USER_PROFILE(user.id);
+    setCache(cacheKey, null, 0);
+  };
+
   // Calculate stats from contributions
   const contributionStats = getStats();
   const successRate = getSuccessRate();
@@ -178,16 +208,22 @@ const ProfilePageNew = () => {
               />
             </div>
             <h2 className="text-lg font-bold text-white mb-1">
-              {githubProfile?.name ||
+              {customProfile?.name ||
+                githubProfile?.name ||
                 user?.user_metadata?.full_name ||
                 getGitHubUsername() ||
                 "User"}
             </h2>
             <p className="text-sm text-gray-400 mb-4 leading-relaxed">
-              {githubProfile?.bio || "Open source enthusiast"}
+              {customProfile?.bio ||
+                githubProfile?.bio ||
+                "Open source enthusiast"}
             </p>
 
-            <button className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm">
+            <button
+              onClick={() => setIsEditModalOpen(true)}
+              className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
+            >
               Edit Profile
             </button>
           </div>
@@ -316,7 +352,10 @@ const ProfilePageNew = () => {
               </h1>
               <p className="text-gray-400">
                 Welcome back,{" "}
-                {githubProfile?.name?.split(" ")[0] || getGitHubUsername()}.
+                {customProfile?.name?.split(" ")[0] ||
+                  githubProfile?.name?.split(" ")[0] ||
+                  getGitHubUsername()}
+                .
                 {stats.totalContributions > 0 &&
                   ` You have ${stats.totalContributions} tracked contributions.`}
               </p>
@@ -342,67 +381,77 @@ const ProfilePageNew = () => {
           </div>
 
           {/* GitHub Info Card */}
-          {githubProfile && (
+          {(githubProfile || customProfile) && (
             <div className="bg-[#15161E] rounded-xl p-6 border border-white/5 mb-8">
               <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400">
-                {githubProfile.location && (
+                {(customProfile?.location || githubProfile?.location) && (
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4" />
-                    {githubProfile.location}
+                    {customProfile?.location || githubProfile?.location}
                   </div>
                 )}
-                {githubProfile.company && (
+                {(customProfile?.company || githubProfile?.company) && (
                   <div className="flex items-center gap-2">
                     <Building className="w-4 h-4" />
-                    {githubProfile.company}
+                    {customProfile?.company || githubProfile?.company}
                   </div>
                 )}
-                {githubProfile.blog && (
+                {(customProfile?.website || githubProfile?.blog) && (
                   <a
                     href={
-                      githubProfile.blog.startsWith("http")
-                        ? githubProfile.blog
-                        : `https://${githubProfile.blog}`
+                      (
+                        customProfile?.website || githubProfile?.blog
+                      ).startsWith("http")
+                        ? customProfile?.website || githubProfile?.blog
+                        : `https://${customProfile?.website || githubProfile?.blog}`
                     }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 hover:text-blue-400"
                   >
                     <LinkIcon className="w-4 h-4" />
-                    {githubProfile.blog}
+                    {customProfile?.website || githubProfile?.blog}
                   </a>
                 )}
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4" />
-                  Joined{" "}
-                  {new Date(githubProfile.created_at).toLocaleDateString(
-                    "en-US",
-                    { month: "long", year: "numeric" },
-                  )}
-                </div>
+                {githubProfile?.created_at && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Joined{" "}
+                    {new Date(githubProfile.created_at).toLocaleDateString(
+                      "en-US",
+                      { month: "long", year: "numeric" },
+                    )}
+                  </div>
+                )}
               </div>
-              <div className="flex gap-6 mt-4 pt-4 border-t border-white/5">
-                <div>
-                  <span className="text-xl font-bold text-white">
-                    {stats.publicRepos}
-                  </span>
-                  <span className="text-sm text-gray-500 ml-2">
-                    Repositories
-                  </span>
+              {githubProfile && (
+                <div className="flex gap-6 mt-4 pt-4 border-t border-white/5">
+                  <div>
+                    <span className="text-xl font-bold text-white">
+                      {stats.publicRepos}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      Repositories
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-xl font-bold text-white">
+                      {stats.followers}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      Followers
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-xl font-bold text-white">
+                      {stats.following}
+                    </span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      Following
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <span className="text-xl font-bold text-white">
-                    {stats.followers}
-                  </span>
-                  <span className="text-sm text-gray-500 ml-2">Followers</span>
-                </div>
-                <div>
-                  <span className="text-xl font-bold text-white">
-                    {stats.following}
-                  </span>
-                  <span className="text-sm text-gray-500 ml-2">Following</span>
-                </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -533,6 +582,15 @@ const ProfilePageNew = () => {
           </div>
         </div>
       </main>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        user={user}
+        githubProfile={githubProfile}
+        onSave={handleProfileSave}
+      />
     </div>
   );
 };

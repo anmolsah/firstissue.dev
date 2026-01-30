@@ -8,6 +8,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     github_token_expires_at TIMESTAMPTZ,
     github_username TEXT,
     github_avatar_url TEXT,
+    name TEXT,
+    bio TEXT,
+    location TEXT,
+    company TEXT,
+    website TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
