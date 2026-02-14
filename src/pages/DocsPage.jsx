@@ -220,26 +220,25 @@ const DocsPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] overflow-x-hidden">
       {/* Header */}
       <div className="border-b border-[#1e1f2e] bg-[#12131a]/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
-              <Link
-                to="/getting-started"
-                className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors min-w-0"
-              >
-                <Home className="w-5 h-5 flex-shrink-0" />
-                <span className="font-medium hidden sm:inline">Back to Getting Started</span>
-                <span className="font-medium sm:hidden truncate">Back</span>
-              </Link>
-              <ChevronRight className="w-4 h-4 text-gray-600 flex-shrink-0 hidden sm:block" />
-              <span className="text-gray-400 hidden sm:inline">Documentation</span>
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            {/* Left side - Back button */}
+            <Link
+              to="/getting-started"
+              className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors flex-shrink-0"
+            >
+              <Home className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-sm sm:text-base font-medium">Back</span>
+            </Link>
+            
+            {/* Mobile menu button */}
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors flex-shrink-0"
+              className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors flex-shrink-0 -mr-2"
+              aria-label="Toggle menu"
             >
               {sidebarOpen ? (
                 <X className="w-5 h-5" />
@@ -361,17 +360,17 @@ const DocsPage = () => {
                 {filteredSections.map((section) => (
                   <div
                     key={section.id}
-                    className={`p-6 bg-[#12131a] border ${section.borderColor} rounded-xl hover:border-white/20 transition-colors group`}
+                    className={`p-4 sm:p-6 bg-[#12131a] border ${section.borderColor} rounded-xl hover:border-white/20 transition-colors group`}
                   >
                     <div
-                      className={`w-12 h-12 ${section.bgColor} rounded-xl flex items-center justify-center mb-4`}
+                      className={`w-10 h-10 sm:w-12 sm:h-12 ${section.bgColor} rounded-xl flex items-center justify-center mb-3 sm:mb-4`}
                     >
-                      <section.icon className={`w-6 h-6 ${section.color}`} />
+                      <section.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${section.color}`} />
                     </div>
-                    <h3 className="text-white font-semibold mb-2 group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-base sm:text-lg text-white font-semibold mb-2 group-hover:text-blue-400 transition-colors">
                       {section.title}
                     </h3>
-                    <p className="text-sm text-gray-500 mb-4">
+                    <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">
                       {section.description}
                     </p>
                     <div className="space-y-2">
@@ -379,10 +378,10 @@ const DocsPage = () => {
                         <Link
                           key={article.id}
                           to={`/docs/${section.id}/${article.id}`}
-                          className="flex items-center justify-between text-sm text-gray-400 hover:text-white transition-colors"
+                          className="flex items-center justify-between text-xs sm:text-sm text-gray-400 hover:text-white transition-colors gap-2"
                         >
-                          <span>{article.title}</span>
-                          <span className="text-xs text-gray-600">
+                          <span className="truncate">{article.title}</span>
+                          <span className="text-xs text-gray-600 flex-shrink-0">
                             {article.readTime}
                           </span>
                         </Link>
@@ -390,12 +389,12 @@ const DocsPage = () => {
                       {section.articles.length > 3 && (
                         <Link
                           to={`/docs/${section.id}`}
-                          className="flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                          className="flex items-center gap-1 text-xs sm:text-sm text-blue-400 hover:text-blue-300 transition-colors"
                         >
                           <span>
                             View all {section.articles.length} articles
                           </span>
-                          <ArrowRight className="w-3 h-3" />
+                          <ArrowRight className="w-3 h-3 flex-shrink-0" />
                         </Link>
                       )}
                     </div>
@@ -414,39 +413,39 @@ const DocsPage = () => {
                   <Link
                     key={index}
                     to={`/docs/${article.section}/${article.article}`}
-                    className="flex items-center gap-4 p-4 bg-[#12131a] border border-[#1e1f2e] rounded-xl hover:border-white/20 transition-colors group"
+                    className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-[#12131a] border border-[#1e1f2e] rounded-xl hover:border-white/20 transition-colors group"
                   >
-                    <div className="w-10 h-10 bg-[#1e1f2e] rounded-lg flex items-center justify-center flex-shrink-0">
-                      <article.icon className="w-5 h-5 text-gray-400" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#1e1f2e] rounded-lg flex items-center justify-center flex-shrink-0">
+                      <article.icon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-white font-medium mb-1 group-hover:text-blue-400 transition-colors">
+                      <h4 className="text-sm sm:text-base text-white font-medium mb-1 group-hover:text-blue-400 transition-colors truncate">
                         {article.title}
                       </h4>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 truncate">
                         {article.readTime} • {article.updated}
                       </p>
                     </div>
-                    <ChevronRight className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 group-hover:text-white transition-colors flex-shrink-0" />
                   </Link>
                 ))}
               </div>
             </div>
 
             {/* Help Section */}
-            <div className="bg-[#12131a] border border-[#1e1f2e] rounded-xl p-8 text-center">
-              <HelpCircle className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">
+            <div className="bg-[#12131a] border border-[#1e1f2e] rounded-xl p-6 sm:p-8 text-center">
+              <HelpCircle className="w-10 h-10 sm:w-12 sm:h-12 text-blue-400 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-lg sm:text-xl font-bold text-white mb-2">
                 Can't find what you're looking for?
               </h3>
-              <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6 max-w-md mx-auto">
                 Our community is here to help. Join our Discord or submit a
                 support ticket for personalized assistance.
               </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
                 <button
                   onClick={() => setIsContactModalOpen(true)}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors"
+                  className="w-full sm:w-auto px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-500 transition-colors text-sm sm:text-base"
                 >
                   Get Support
                 </button>
