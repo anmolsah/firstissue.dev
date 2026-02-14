@@ -223,22 +223,23 @@ const DocsPage = () => {
     <div className="min-h-screen bg-[#0a0a0f]">
       {/* Header */}
       <div className="border-b border-[#1e1f2e] bg-[#12131a]/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
               <Link
                 to="/getting-started"
-                className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors"
+                className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors min-w-0"
               >
-                <Home className="w-5 h-5" />
-                <span className="font-medium">Back to Getting Started</span>
+                <Home className="w-5 h-5 flex-shrink-0" />
+                <span className="font-medium hidden sm:inline">Back to Getting Started</span>
+                <span className="font-medium sm:hidden truncate">Back</span>
               </Link>
-              <ChevronRight className="w-4 h-4 text-gray-600" />
-              <span className="text-gray-400">Documentation</span>
+              <ChevronRight className="w-4 h-4 text-gray-600 flex-shrink-0 hidden sm:block" />
+              <span className="text-gray-400 hidden sm:inline">Documentation</span>
             </div>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
+              className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors flex-shrink-0"
             >
               {sidebarOpen ? (
                 <X className="w-5 h-5" />
@@ -250,13 +251,29 @@ const DocsPage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Mobile Sidebar Overlay */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+
           {/* Sidebar */}
           <div
-            className={`lg:block ${sidebarOpen ? "block" : "hidden"} w-80 flex-shrink-0`}
+            className={`
+              fixed lg:static inset-y-0 left-0 z-50 lg:z-0
+              w-80 lg:w-80 flex-shrink-0
+              bg-[#0a0a0f] lg:bg-transparent
+              transform transition-transform duration-300 ease-in-out
+              ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+              overflow-y-auto lg:overflow-visible
+              border-r border-[#1e1f2e] lg:border-0
+            `}
           >
-            <div className="sticky top-24">
+            <div className="lg:sticky lg:top-24 p-6 lg:p-0">
               {/* Search */}
               <div className="relative mb-6">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -282,6 +299,7 @@ const DocsPage = () => {
                         <Link
                           key={article.id}
                           to={`/docs/${section.id}/${article.id}`}
+                          onClick={() => setSidebarOpen(false)}
                           className="block px-3 py-1.5 text-sm text-gray-400 hover:text-white hover:bg-[#1e1f2e] rounded-md transition-colors"
                         >
                           {article.title}
@@ -297,22 +315,22 @@ const DocsPage = () => {
           {/* Main Content */}
           <div className="flex-1 min-w-0">
             {/* Hero Section */}
-            <div className="mb-12">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-sm font-medium mb-6">
+            <div className="mb-8 sm:mb-12">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-emerald-400 text-sm font-medium mb-4 sm:mb-6">
                 <BookOpen className="w-4 h-4" />
                 DOCUMENTATION
               </div>
 
-              <h1 className="text-4xl font-bold text-white mb-4">
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
                 FirstIssue.dev Documentation
               </h1>
-              <p className="text-xl text-gray-400 mb-8 max-w-3xl">
+              <p className="text-lg sm:text-xl text-gray-400 mb-6 sm:mb-8 max-w-3xl">
                 Everything you need to know about contributing to open source
                 projects and building a thriving developer community.
               </p>
 
               {/* Quick Stats */}
-              <div className="flex items-center gap-6 text-sm text-gray-500">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm text-gray-500">
                 <div className="flex items-center gap-2">
                   <FileText className="w-4 h-4" />
                   <span>
@@ -335,11 +353,11 @@ const DocsPage = () => {
             </div>
 
             {/* Documentation Categories */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold text-white mb-6">
+            <div className="mb-8 sm:mb-12">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">
                 Browse by Category
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 {filteredSections.map((section) => (
                   <div
                     key={section.id}
@@ -387,8 +405,8 @@ const DocsPage = () => {
             </div>
 
             {/* Popular Articles */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold text-white mb-6">
+            <div className="mb-8 sm:mb-12">
+              <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">
                 Popular Articles
               </h2>
               <div className="space-y-3">
