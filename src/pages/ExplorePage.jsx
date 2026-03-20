@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { getCache, setCache, clearCache, CACHE_KEYS } from "../utils/cache";
+import AppSidebar from "../components/AppSidebar";
 import {
   Search,
   Compass,
@@ -266,43 +267,9 @@ const ExplorePage = () => {
   /* --- Render --- */
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
-      <aside className="w-64 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto">
-        <div className="p-6">
-          <Link to="/" className="flex items-center space-x-2 group">
-            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
-              FirstIssue.dev
-            </span>
-          </Link>
-
-          <nav className="space-y-1 cursor-pointer">
-            <NavItem
-              icon={Compass}
-              label="Explore Issues"
-              active={activeSidebarItem === "explore"}
-              onClick={() => setActiveSidebarItem("explore")}
-            />
-            <NavItem
-              icon={Bookmark}
-              label="Saved"
-              active={activeSidebarItem === "Bookmarks"}
-              onClick={() => navigate("/bookmarks")}
-            />
-            <NavItem
-              icon={TrendingUp}
-              label="Status"
-              active={activeSidebarItem === "status"}
-              onClick={() => navigate("/status")}
-            />
-            <NavItem
-              icon={User}
-              label="Profile"
-              active={activeSidebarItem === "profile"}
-              onClick={() => navigate("/profile")}
-            />
-          </nav>
-        </div>
-
-        <div className="px-6 py-4 mt-4">
+      <AppSidebar>
+        {/* Explore-specific filters */}
+        <div className="mt-4">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
             Languages
           </p>
@@ -334,7 +301,7 @@ const ExplorePage = () => {
           </div>
         </div>
 
-        <div className="px-6 py-4">
+        <div className="mt-6">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
             Labels
           </p>
@@ -370,8 +337,8 @@ const ExplorePage = () => {
           </div>
         </div>
 
-        {/* Project Stars Slider Mockup */}
-        <div className="px-6 py-4 mt-auto mb-6">
+        {/* Project Stars Slider */}
+        <div className="mt-6">
           <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
             Project Stars
           </p>
@@ -386,7 +353,7 @@ const ExplorePage = () => {
             <span>100k+</span>
           </div>
         </div>
-      </aside>
+      </AppSidebar>
 
       {/* Main Content Area */}
       <main className="flex-1 lg:ml-64 min-w-0">
@@ -626,22 +593,6 @@ const ExplorePage = () => {
 };
 
 /* --- Sub Components --- */
-
-const NavItem = ({ icon: Icon, label, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-      active
-        ? "bg-blue-600/10 text-blue-500"
-        : "text-gray-400 hover:text-white hover:bg-white/5"
-    }`}
-  >
-    <Icon
-      className={`w-5 h-5 ${active ? "text-blue-500" : "text-gray-500 group-hover:text-white"}`}
-    />
-    {label}
-  </button>
-);
 
 const TabButton = ({ label, active, onClick, icon: Icon }) => (
   <button
