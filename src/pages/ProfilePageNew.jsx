@@ -192,7 +192,7 @@ const ProfilePageNew = () => {
 
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
-      <AppSidebar>
+      
         {/* Profile Card */}
         <div className="bg-[#15161E] rounded-xl p-5 border border-white/5 mb-6">
           <div className="w-16 h-16 rounded-lg overflow-hidden mb-4">
@@ -271,7 +271,7 @@ const ProfilePageNew = () => {
             </div>
           </div>
         </div>
-      </AppSidebar>
+      
 
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 min-w-0">
@@ -653,6 +653,7 @@ const ContributionHeatmap = ({ contributions }) => {
     const weeks = 52;
     const days = 7;
     const heatmapData = [];
+    const monthLabels = [];
 
     // Create a map of dates to contribution counts
     const contributionMap = new Map();
@@ -669,8 +670,23 @@ const ContributionHeatmap = ({ contributions }) => {
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay()); // Start from Sunday
 
+    let lastMonth = -1;
+
     for (let w = weeks - 1; w >= 0; w--) {
       const week = [];
+      const weekDate = new Date(startOfWeek);
+      weekDate.setDate(startOfWeek.getDate() - w * 7);
+      
+      // Track month changes for labels
+      const currentMonth = weekDate.getMonth();
+      if (currentMonth !== lastMonth) {
+        monthLabels.push({
+          weekIndex: weeks - 1 - w,
+          month: weekDate.toLocaleDateString("en-US", { month: "short" }),
+        });
+        lastMonth = currentMonth;
+      }
+
       for (let d = 0; d < days; d++) {
         const date = new Date(startOfWeek);
         date.setDate(startOfWeek.getDate() - w * 7 + d);
@@ -684,29 +700,58 @@ const ContributionHeatmap = ({ contributions }) => {
         if (count >= 4) level = 3;
         if (count >= 6) level = 4;
 
-        week.push(level);
+        week.push({ level, count, date: dateStr });
       }
       heatmapData.push(week);
     }
 
-    return heatmapData;
+    return { heatmapData, monthLabels };
   };
 
-  const heatmapData = generateHeatmapData();
+  const { heatmapData, monthLabels } = generateHeatmapData();
 
   return (
-    <div className="flex gap-[3px] overflow-x-auto pb-2">
-      {heatmapData.map((week, weekIndex) => (
-        <div key={weekIndex} className="flex flex-col gap-[3px]">
-          {week.map((level, dayIndex) => (
-            <div
-              key={dayIndex}
-              className={`w-3 h-3 rounded-sm ${getLevelColor(level)} hover:ring-1 hover:ring-white/20 transition-all cursor-pointer`}
-              title={`${level} contributions`}
-            />
+    <div>
+      {/* Month labels */}
+      <div className="flex gap-[3px] mb-2 ml-6">
+        {monthLabels.map((label, index) => (
+          <div
+            key={index}
+            className="text-[10px] text-gray-500"
+            style={{
+              marginLeft: index === 0 ? `${label.weekIndex * 15}px` : "0",
+              minWidth: "30px",
+            }}
+          >
+            {label.month}
+          </div>
+        ))}
+      </div>
+
+      {/* Day labels and heatmap */}
+      <div className="flex gap-2">
+        {/* Day labels */}
+        <div className="flex flex-col gap-[3px] justify-around text-[10px] text-gray-500">
+          <div>Mon</div>
+          <div>Wed</div>
+          <div>Fri</div>
+        </div>
+
+        {/* Heatmap grid */}
+        <div className="flex gap-[3px] overflow-x-auto pb-2">
+          {heatmapData.map((week, weekIndex) => (
+            <div key={weekIndex} className="flex flex-col gap-[3px]">
+              {week.map((day, dayIndex) => (
+                <div
+                  key={dayIndex}
+                  className={`w-3 h-3 rounded-sm ${getLevelColor(day.level)} hover:ring-1 hover:ring-white/20 transition-all cursor-pointer`}
+                  title={`${day.count} contribution${day.count !== 1 ? "s" : ""} on ${day.date}`}
+                />
+              ))}
+            </div>
           ))}
         </div>
-      ))}
+      </div>
     </div>
   );
 };
