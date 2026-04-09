@@ -29,6 +29,7 @@ const BookmarksPage = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortOrder, setSortOrder] = useState("desc"); // 'desc' for newest first, 'asc' for oldest first
   const [deleteDialog, setDeleteDialog] = useState({
     isOpen: false,
     bookmarkId: null,
@@ -120,17 +121,23 @@ const BookmarksPage = () => {
     return `Saved ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
   };
 
-  // Filter and paginate
-  const filteredBookmarks = bookmarks.filter((b) => {
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      return (
-        b.title?.toLowerCase().includes(q) ||
-        b.repo_name?.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
+  // Filter and sort
+  const filteredBookmarks = bookmarks
+    .filter((b) => {
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        return (
+          b.title?.toLowerCase().includes(q) ||
+          b.repo_name?.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(a.created_at);
+      const dateB = new Date(b.created_at);
+      return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
+    });
 
   const totalPages = Math.ceil(filteredBookmarks.length / itemsPerPage);
   const paginatedBookmarks = filteredBookmarks.slice(
@@ -275,9 +282,12 @@ const BookmarksPage = () => {
                 Managing your saved open-source opportunities
               </p>
             </div>
-            <button className="flex items-center gap-2 px-4 py-2 bg-[#15161E] border border-white/10 text-gray-300 rounded-lg hover:text-white hover:border-white/20 transition-colors">
+            <button 
+              onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
+              className="flex items-center gap-2 px-4 py-2 bg-[#15161E] border border-white/10 text-gray-300 rounded-lg hover:text-white hover:border-white/20 transition-colors"
+            >
               <Filter className="w-4 h-4" />
-              Sort by Date
+              {sortOrder === "desc" ? "Newest First" : "Oldest First"}
             </button>
           </div>
 

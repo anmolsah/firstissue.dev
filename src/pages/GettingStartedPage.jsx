@@ -156,12 +156,12 @@ const GettingStartedPage = () => {
             <h2 className="text-xl font-bold text-white">
               Documentation Categories
             </h2>
-            <a
-              href="/docs"
+            <Link
+              to="/docs"
               className="text-sm text-blue-400 hover:text-blue-300 flex items-center gap-1"
             >
               View all docs <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
