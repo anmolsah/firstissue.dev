@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import AppSidebar from "../components/AppSidebar";
 import {
   Search,
   Compass,
@@ -25,8 +26,6 @@ const BookmarksPage = () => {
   const navigate = useNavigate();
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeNav, setActiveNav] = useState("bookmarks");
-  const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState("desc"); // 'desc' for newest first, 'asc' for oldest first
@@ -180,54 +179,10 @@ const BookmarksPage = () => {
 
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
-      {/* Left Sidebar */}
-      <aside className="w-56 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20">
-        <div className="p-6">
-          <div className="flex items-center gap-3 text-white mb-10">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <Command className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-lg tracking-tight">
-              FirstIssue.dev
-            </span>
-          </div>
-
-          <nav className="space-y-1 cursor-pointer">
-            <NavItem
-              icon={Compass}
-              label="Explore"
-              active={activeNav === "explore"}
-              onClick={() => navigate("/explore")}
-            />
-            <NavItem
-              icon={Bookmark}
-              label="Bookmarks"
-              active={activeNav === "bookmarks"}
-              onClick={() => setActiveNav("bookmarks")}
-            />
-            <NavItem
-              icon={User}
-              label="Profile"
-              active={activeNav === "profile"}
-              onClick={() => navigate("/profile")}
-            />
-          </nav>
-        </div>
-
-        {/* New Issue Button */}
-        <div className="mt-auto p-4">
-          <button
-            onClick={() => navigate("/explore")}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            New Issue
-          </button>
-        </div>
-      </aside>
+      <AppSidebar />
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-56 min-w-0">
+      <main className="flex-1 lg:ml-64 min-w-0">
         {/* Top Header */}
         <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
           <div className="flex flex-1 items-center max-w-xl relative">
@@ -470,20 +425,6 @@ const BookmarksPage = () => {
 };
 
 /* --- Sub Components --- */
-
-const NavItem = ({ icon: Icon, label, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-      active
-        ? "bg-blue-600/10 text-blue-400"
-        : "text-gray-400 hover:text-white hover:bg-white/5"
-    }`}
-  >
-    <Icon className={`w-5 h-5 ${active ? "text-blue-400" : "text-gray-500"}`} />
-    {label}
-  </button>
-);
 
 const TabButton = ({ label, active, onClick }) => (
   <button

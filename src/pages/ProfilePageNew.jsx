@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
 import { useGitHubSync } from "../hooks/useGitHubSync";
 import EditProfileModal from "../components/EditProfileModal";
+import AppSidebar from "../components/AppSidebar";
 import {
   Bookmark,
   Star,
@@ -32,12 +33,11 @@ const ProfilePageNew = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [activeNav, setActiveNav] = useState("dashboard");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [customProfile, setCustomProfile] = useState(null);
 
   // Use GitHub sync hook for contributions with auto-sync enabled
-  const { contributions, getStats, getSuccessRate, sync, syncing, lastSynced } =
+  const { contributions, getStats, getSuccessRate } =
     useGitHubSync(
       user?.id,
       true, // Enable auto-sync for real-time updates
@@ -192,117 +192,86 @@ const ProfilePageNew = () => {
 
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
-      {/* Left Sidebar */}
-      <aside className="w-64 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto">
-        <div className="p-6">
-          {/* Profile Card */}
-          <div className="bg-[#15161E] rounded-xl p-5 border border-white/5 mb-6">
-            <div className="w-16 h-16 rounded-lg overflow-hidden mb-4">
-              <img
-                src={
-                  githubProfile?.avatar_url ||
-                  user?.user_metadata?.avatar_url ||
-                  `https://ui-avatars.com/api/?name=${user?.email}`
-                }
-                alt="Avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <h2 className="text-lg font-bold text-white mb-1">
-              {customProfile?.name ||
-                githubProfile?.name ||
-                user?.user_metadata?.full_name ||
-                getGitHubUsername() ||
-                "User"}
-            </h2>
-            <p className="text-sm text-gray-400 mb-4 leading-relaxed">
-              {customProfile?.bio ||
-                githubProfile?.bio ||
-                "Open source enthusiast"}
-            </p>
-
-            <button
-              onClick={() => setIsEditModalOpen(true)}
-              className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm cursor-pointer"
-            >
-              Edit Profile
-            </button>
+      <AppSidebar>
+        {/* Profile Card */}
+        <div className="bg-[#15161E] rounded-xl p-5 border border-white/5 mb-6">
+          <div className="w-16 h-16 rounded-lg overflow-hidden mb-4">
+            <img
+              src={
+                githubProfile?.avatar_url ||
+                user?.user_metadata?.avatar_url ||
+                `https://ui-avatars.com/api/?name=${user?.email}`
+              }
+              alt="Avatar"
+              className="w-full h-full object-cover"
+            />
           </div>
+          <h2 className="text-lg font-bold text-white mb-1">
+            {customProfile?.name ||
+              githubProfile?.name ||
+              user?.user_metadata?.full_name ||
+              getGitHubUsername() ||
+              "User"}
+          </h2>
+          <p className="text-sm text-gray-400 mb-4 leading-relaxed">
+            {customProfile?.bio ||
+              githubProfile?.bio ||
+              "Open source enthusiast"}
+          </p>
 
-          {/* GitHub Stats Cards */}
-          <div className="space-y-3 mb-6">
-            <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
-                  Merged PRs
-                </p>
-                <p className="text-2xl font-bold text-emerald-400">
-                  {stats.merged}
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <GitMerge className="w-5 h-5 text-emerald-400" />
-              </div>
-            </div>
-
-            <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
-                  In Progress
-                </p>
-                <p className="text-2xl font-bold text-purple-400">
-                  {stats.inProgress}
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                <GitPullRequest className="w-5 h-5 text-purple-400" />
-              </div>
-            </div>
-
-            <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
-                  Bookmarks
-                </p>
-                <p className="text-2xl font-bold text-blue-400">
-                  {stats.bookmarksCount}
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <Bookmark className="w-5 h-5 text-blue-400" />
-              </div>
-            </div>
-          </div>
-
-          {/* Navigation */}
-          <nav className="space-y-1">
-            <NavItem
-              icon={Compass}
-              label="Explore"
-              active={activeNav === "explore"}
-              onClick={() => navigate("/explore")}
-            />
-            <NavItem
-              icon={FileText}
-              label="Bookmarks"
-              active={activeNav === "saved"}
-              onClick={() => navigate("/bookmarks")}
-            />
-            <NavItem
-              icon={TrendingUp}
-              label="Status"
-              active={activeNav === "status"}
-              onClick={() => navigate("/status")}
-            />
-            <NavItem
-              icon={BookOpen}
-              label="Docs"
-              active={activeNav === "docs"}
-              onClick={() => navigate("/getting-started")}
-            />
-          </nav>
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm cursor-pointer"
+          >
+            Edit Profile
+          </button>
         </div>
-      </aside>
+
+        {/* GitHub Stats Cards */}
+        <div className="space-y-3">
+          <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
+                Merged PRs
+              </p>
+              <p className="text-2xl font-bold text-emerald-400">
+                {stats.merged}
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+              <GitMerge className="w-5 h-5 text-emerald-400" />
+            </div>
+          </div>
+
+          <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
+                In Progress
+              </p>
+              <p className="text-2xl font-bold text-purple-400">
+                {stats.inProgress}
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+              <GitPullRequest className="w-5 h-5 text-purple-400" />
+            </div>
+          </div>
+
+          <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
+            <div>
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
+                Bookmarks
+              </p>
+              <p className="text-2xl font-bold text-blue-400">
+                {stats.bookmarksCount}
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+              <Bookmark className="w-5 h-5 text-blue-400" />
+            </div>
+          </div>
+        </div>
+      </AppSidebar>
 
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 min-w-0">
@@ -597,20 +566,6 @@ const ProfilePageNew = () => {
 };
 
 /* --- Sub Components --- */
-
-const NavItem = ({ icon: Icon, label, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-      active
-        ? "bg-blue-600/10 text-blue-400"
-        : "text-gray-400 hover:text-white hover:bg-white/5"
-    }`}
-  >
-    <Icon className={`w-5 h-5 ${active ? "text-blue-400" : "text-gray-500"}`} />
-    {label}
-  </button>
-);
 
 const StatCard = ({ icon: Icon, label, value, color, subtitle }) => {
   const colorClasses = {

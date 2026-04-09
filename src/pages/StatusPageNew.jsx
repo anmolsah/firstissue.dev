@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useGitHubSync } from "../hooks/useGitHubSync";
 import { getContributionStatus, getStatusConfig } from "../services/githubSync";
+import AppSidebar from "../components/AppSidebar";
 import {
   CheckCircle,
   Clock,
@@ -162,59 +163,10 @@ const StatusPage = () => {
 
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
-      {/* Left Sidebar */}
-      <aside className="w-56 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20">
-        <div className="p-6">
-          <div className="flex items-center gap-3 text-white mb-10">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <Command className="w-5 h-5" />
-            </div>
-            <span className="font-bold text-lg tracking-tight">
-              FirstIssue.dev
-            </span>
-          </div>
-
-          <nav className="space-y-1">
-            <NavItem
-              icon={Compass}
-              label="Explore"
-              active={activeNav === "explore"}
-              onClick={() => navigate("/explore")}
-            />
-            <NavItem
-              icon={Bookmark}
-              label="Bookmarks"
-              active={activeNav === "bookmarks"}
-              onClick={() => navigate("/bookmarks")}
-            />
-            <NavItem
-              icon={TrendingUp}
-              label="Status"
-              active={activeNav === "status"}
-              onClick={() => setActiveNav("status")}
-            />
-            <NavItem
-              icon={User}
-              label="Profile"
-              active={activeNav === "profile"}
-              onClick={() => navigate("/profile")}
-            />
-          </nav>
-        </div>
-
-        <div className="mt-auto p-4">
-          <button
-            onClick={() => navigate("/explore")}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors"
-          >
-            <Plus className="w-5 h-5" />
-            New Issue
-          </button>
-        </div>
-      </aside>
+      <AppSidebar />
 
       {/* Main Content */}
-      <main className="flex-1 lg:ml-56 min-w-0">
+      <main className="flex-1 lg:ml-64 min-w-0">
         {/* Top Header */}
         <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
           <div className="flex flex-1 items-center max-w-xl relative">
@@ -442,20 +394,6 @@ const StatusPage = () => {
 };
 
 /* --- Sub Components --- */
-
-const NavItem = ({ icon: Icon, label, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
-      active
-        ? "bg-blue-600/10 text-blue-400"
-        : "text-gray-400 hover:text-white hover:bg-white/5"
-    }`}
-  >
-    <Icon className={`w-5 h-5 ${active ? "text-blue-400" : "text-gray-500"}`} />
-    {label}
-  </button>
-);
 
 const ContributionCard = ({
   contribution,
