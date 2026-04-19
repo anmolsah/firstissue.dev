@@ -676,6 +676,8 @@ const QuickActionButton = ({ icon, label, description, onClick }) => (
 );
 
 const ContributionHeatmap = ({ contributions }) => {
+  const [hoveredDay, setHoveredDay] = useState(null);
+
   // GitHub Premium Green Colors
   const getLevelColor = (level) => {
     switch (level) {
@@ -699,6 +701,7 @@ const ContributionHeatmap = ({ contributions }) => {
     const weeks = 52;
     const days = 7;
     const heatmapData = [];
+    const monthLabels = [];
 
     // Create a map of dates to contribution counts
     const contributionMap = new Map();
@@ -715,8 +718,20 @@ const ContributionHeatmap = ({ contributions }) => {
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - now.getDay()); // Start from Sunday
 
+    let currentMonth = null;
+
     for (let w = weeks - 1; w >= 0; w--) {
       const week = [];
+      const weekDate = new Date(startOfWeek);
+      weekDate.setDate(startOfWeek.getDate() - w * 7);
+
+      // Track month changes for labels
+      const monthName = weekDate.toLocaleDateString("en-US", { month: "short" });
+      if (monthName !== currentMonth) {
+        monthLabels.push({ week: weeks - 1 - w, label: monthName });
+        currentMonth = monthName;
+      }
+
       for (let d = 0; d < days; d++) {
         const date = new Date(startOfWeek);
         date.setDate(startOfWeek.getDate() - w * 7 + d);
@@ -730,29 +745,88 @@ const ContributionHeatmap = ({ contributions }) => {
         if (count >= 4) level = 3;
         if (count >= 6) level = 4;
 
-        week.push(level);
+        week.push({ level, count, date: dateStr, dateObj: new Date(date) });
       }
       heatmapData.push(week);
     }
 
-    return heatmapData;
+    return { heatmapData, monthLabels };
   };
 
-  const heatmapData = generateHeatmapData();
+  const { heatmapData, monthLabels } = generateHeatmapData();
+
+  const formatTooltipDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-US", {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   return (
-    <div className="flex gap-[3px] overflow-x-auto pb-2">
-      {heatmapData.map((week, weekIndex) => (
-        <div key={weekIndex} className="flex flex-col gap-[3px]">
-          {week.map((level, dayIndex) => (
-            <div
-              key={dayIndex}
-              className={`w-3 h-3 rounded-sm ${getLevelColor(level)} hover:ring-1 hover:ring-white/20 transition-all cursor-pointer`}
-              title={`${level} contributions`}
-            />
+    <div className="relative">
+      {/* Month Labels */}
+      <div className="flex gap-[3px] mb-2 ml-8">
+        {monthLabels.map((month, idx) => (
+          <div
+            key={idx}
+            className="text-[10px] text-gray-500"
+            style={{ marginLeft: idx === 0 ? 0 : `${(month.week - (monthLabels[idx - 1]?.week || 0)) * 14}px` }}
+          >
+            {month.label}
+          </div>
+        ))}
+      </div>
+
+      {/* Day Labels */}
+      <div className="flex gap-2">
+        <div className="flex flex-col gap-[3px] text-[10px] text-gray-500 justify-around pr-1">
+          <div style={{ height: "12px" }}>Mon</div>
+          <div style={{ height: "12px" }}></div>
+          <div style={{ height: "12px" }}>Wed</div>
+          <div style={{ height: "12px" }}></div>
+          <div style={{ height: "12px" }}>Fri</div>
+          <div style={{ height: "12px" }}></div>
+          <div style={{ height: "12px" }}>Sun</div>
+        </div>
+
+        {/* Heatmap Grid */}
+        <div className="flex gap-[3px] overflow-x-auto pb-2">
+          {heatmapData.map((week, weekIndex) => (
+            <div key={weekIndex} className="flex flex-col gap-[3px]">
+              {week.map((day, dayIndex) => (
+                <div
+                  key={dayIndex}
+                  className={`w-3 h-3 rounded-sm ${getLevelColor(day.level)} hover:ring-2 hover:ring-white/40 transition-all cursor-pointer relative`}
+                  onMouseEnter={() => setHoveredDay({ ...day, weekIndex, dayIndex })}
+                  onMouseLeave={() => setHoveredDay(null)}
+                />
+              ))}
+            </div>
           ))}
         </div>
-      ))}
+      </div>
+
+      {/* Tooltip */}
+      {hoveredDay && (
+        <div
+          className="absolute z-50 bg-[#1c1d26] border border-white/20 rounded-lg px-3 py-2 text-xs text-white shadow-xl pointer-events-none"
+          style={{
+            left: `${hoveredDay.weekIndex * 14 + 40}px`,
+            top: `${hoveredDay.dayIndex * 14 + 30}px`,
+            transform: "translateX(-50%)",
+          }}
+        >
+          <div className="font-semibold">
+            {hoveredDay.count} {hoveredDay.count === 1 ? "contribution" : "contributions"}
+          </div>
+          <div className="text-gray-400 mt-0.5">
+            {formatTooltipDate(hoveredDay.date)}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
