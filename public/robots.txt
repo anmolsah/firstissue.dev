@@ -2,5 +2,19 @@
 
 User-agent: *
 Allow: /
+Allow: /explore
+Allow: /status
+Allow: /docs
+Allow: /getting-started
+Disallow: /api/
+Disallow: /admin/
 
+# Crawl-delay for all bots
+Crawl-delay: 1
+
+# Sitemap location
 Sitemap: https://firstissue.dev/sitemap.xml
+
+# Additional information
+# This site helps developers find and track open source contributions
+# Contact: support@firstissue.dev
