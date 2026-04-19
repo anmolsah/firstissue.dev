@@ -227,11 +227,11 @@ const DocsPage = () => {
           <div className="flex items-center justify-between gap-2">
             {/* Left side - Back button */}
             <Link
-              to="/getting-started"
+              to="/"
               className="flex items-center gap-2 text-white hover:text-blue-400 transition-colors flex-shrink-0"
             >
               <Home className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="text-sm sm:text-base font-medium">Back to Getting Started</span>
+              <span className="text-sm sm:text-base font-medium">Back to Home</span>
             </Link>
             
             {/* Mobile menu button */}

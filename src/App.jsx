@@ -11,7 +11,6 @@ import StatusPage from "./pages/StatusPageNew";
 import ProfilePage from "./pages/ProfilePageNew";
 import SupportPage from "./pages/SupportPage";
 import ExplorePage from "./pages/ExplorePage";
-import GettingStartedPage from "./pages/GettingStartedPage";
 import TermsPage from "./pages/TermsPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import DocsPage from "./pages/DocsPage";
@@ -31,10 +30,9 @@ const AppLayout = ({ children }) => {
     "/profile",
     "/bookmarks",
     "/status",
-    "/getting-started",
+    "/docs",
     "/terms",
     "/privacy",
-    "/docs",
   ];
   const hideGlobalLayout = dashboardPages.some((page) =>
     location.pathname.startsWith(page),
@@ -77,7 +75,7 @@ const App = () => {
         <AppLayout>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/getting-started" element={<GettingStartedPage />} />
+            <Route path="/getting-started" element={<DocsPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/bookmarks" element={<BookmarksPage />} />
             <Route path="/status" element={<StatusPage />} />

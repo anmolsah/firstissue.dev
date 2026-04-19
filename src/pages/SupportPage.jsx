@@ -81,7 +81,7 @@ const SupportPage = () => {
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm text-gray-400">
             <Link to="/explore" className="hover:text-white transition-colors">Explore</Link>
-            <Link to="/getting-started" className="hover:text-white transition-colors">Docs</Link>
+            <Link to="/docs" className="hover:text-white transition-colors">Docs</Link>
             <Link to="/support" className="text-white">Support</Link>
           </nav>
           <Link to="/login" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 transition-colors">

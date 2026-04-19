@@ -58,7 +58,7 @@ const AppSidebar = ({ children, className = "" }) => {
       id: "docs",
       icon: BookOpen,
       label: "Docs",
-      path: "/getting-started",
+      path: "/docs",
     },
   ];
 

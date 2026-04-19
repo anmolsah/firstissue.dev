@@ -96,7 +96,7 @@ const DocsArticlePage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm">
               <Link
-                to="/getting-started"
+                to="/docs"
                 className="text-gray-400 hover:text-white transition-colors"
               >
                 <Home className="w-4 h-4" />
