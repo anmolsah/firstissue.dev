@@ -175,3 +175,62 @@ textarea:focus {
     padding-right: max(1rem, env(safe-area-inset-right));
   }
 }
+
+/* Custom animations for user count section */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.3;
+  }
+}
+
+@keyframes float-medium {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-15px) translateX(-10px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes float-fast {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-25px) translateX(15px);
+    opacity: 0.7;
+  }
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 6s ease-in-out infinite;
+}
+
+.animate-float-medium {
+  animation: float-medium 4s ease-in-out infinite;
+}
+
+.animate-float-fast {
+  animation: float-fast 3s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}

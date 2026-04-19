@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import {
@@ -16,6 +16,51 @@ import {
 
 const LandingPage = () => {
   const { user } = useAuth();
+  const [userCount, setUserCount] = useState(0);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !isVisible) {
+            setIsVisible(true);
+            animateCount();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    const element = document.getElementById("user-count-section");
+    if (element) {
+      observer.observe(element);
+    }
+
+    return () => {
+      if (element) {
+        observer.unobserve(element);
+      }
+    };
+  }, [isVisible]);
+
+  const animateCount = () => {
+    const target = 150;
+    const duration = 2000;
+    const steps = 60;
+    const increment = target / steps;
+    let current = 0;
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= target) {
+        setUserCount(target);
+        clearInterval(timer);
+      } else {
+        setUserCount(Math.floor(current));
+      }
+    }, duration / steps);
+  };
 
   return (
     <div className="min-h-screen bg-[#0B0C10] text-[#EEEEEE] overflow-hidden">
@@ -236,6 +281,23 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* User Count Section */}
+      <section id="user-count-section" className="py-16 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+            <h3 className="text-6xl sm:text-7xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 mb-4">
+              {userCount}+
+            </h3>
+            <p className="text-2xl sm:text-3xl font-bold text-white mb-3">
+              Active Developers
+            </p>
+            <p className="text-lg text-gray-400 max-w-xl mx-auto">
+              Building their open source portfolio and making real impact
+            </p>
           </div>
         </div>
       </section>
