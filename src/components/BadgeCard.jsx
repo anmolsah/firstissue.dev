@@ -1,5 +1,4 @@
 import React from 'react';
-<<<<<<< HEAD
 import { Lock, Award, CheckCircle, Zap, Star, Trophy, Flame, Target, Crown, Sparkles, GitMerge } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 
@@ -22,13 +21,6 @@ const BADGE_ICONS = {
 const BadgeCard = ({ badge, earned = false, onClick }) => {
   const rarityInfo = getBadgeRarityInfo(badge.rarity);
   const BadgeIcon = BADGE_ICONS[badge.id] || Award;
-=======
-import { Lock, Award, CheckCircle } from 'lucide-react';
-import { getBadgeRarityInfo } from '../utils/badgeSystem';
-
-const BadgeCard = ({ badge, earned = false, onClick }) => {
-  const rarityInfo = getBadgeRarityInfo(badge.rarity);
->>>>>>> 0624f08f37a63f872bec951b3769297d3ceba375
 
   return (
     <div

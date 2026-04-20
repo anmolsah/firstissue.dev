@@ -4,11 +4,7 @@ import BadgeCard from './BadgeCard';
 import BadgeModal from './BadgeModal';
 import { BADGE_DEFINITIONS, checkEarnedBadges } from '../utils/badgeSystem';
 
-<<<<<<< HEAD
 const BadgesSection = ({ stats, contributions = [], username }) => {
-=======
-const BadgesSection = ({ stats, contributions = [] }) => {
->>>>>>> 0624f08f37a63f872bec951b3769297d3ceba375
   const [earnedBadges, setEarnedBadges] = useState([]);
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [showModal, setShowModal] = useState(false);

@@ -47,7 +47,7 @@ const ProfilePageNew = () => {
       true, // Enable auto-sync for real-time updates
     );
 
-  // Use badges hook
+  // Use badges hook for notifications
   const { newlyUnlockedBadge, dismissNotification } = useBadges(
     getStats(),
     contributions
@@ -489,7 +489,11 @@ const ProfilePageNew = () => {
 
           {/* Badges Section */}
           <div className="mb-8">
-            <BadgesSection stats={contributionStats} contributions={contributions} />
+            <BadgesSection 
+              stats={contributionStats} 
+              contributions={contributions}
+              username={getGitHubUsername()}
+            />
           </div>
 
           {/* Contribution Stats Grid */}
