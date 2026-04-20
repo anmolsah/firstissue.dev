@@ -6,6 +6,9 @@ import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
 import { useGitHubSync } from "../hooks/useGitHubSync";
 import EditProfileModal from "../components/EditProfileModal";
 import AppSidebar from "../components/AppSidebar";
+import BadgesSection from "../components/BadgesSection";
+import BadgeUnlockedNotification from "../components/BadgeUnlockedNotification";
+import { useBadges } from "../hooks/useBadges";
 import {
   Bookmark,
   Star,
@@ -43,6 +46,12 @@ const ProfilePageNew = () => {
       user?.id,
       true, // Enable auto-sync for real-time updates
     );
+
+  // Use badges hook
+  const { newlyUnlockedBadge, dismissNotification } = useBadges(
+    getStats(),
+    contributions
+  );
 
   // Cached data
   const [bookmarks, setBookmarks] = useState([]);
@@ -478,6 +487,11 @@ const ProfilePageNew = () => {
             <ContributionHeatmap contributions={contributions} />
           </div>
 
+          {/* Badges Section */}
+          <div className="mb-8">
+            <BadgesSection stats={contributionStats} contributions={contributions} />
+          </div>
+
           {/* Contribution Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <StatCard
@@ -593,6 +607,14 @@ const ProfilePageNew = () => {
         githubProfile={githubProfile}
         onSave={handleProfileSave}
       />
+
+      {/* Badge Unlocked Notification */}
+      {newlyUnlockedBadge && (
+        <BadgeUnlockedNotification
+          badge={newlyUnlockedBadge}
+          onClose={dismissNotification}
+        />
+      )}
     </div>
   );
 };
