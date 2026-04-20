@@ -138,10 +138,7 @@ const BadgesSection = ({ stats, contributions = [], username }) => {
         <BadgeModal
           badge={selectedBadge}
           earned={selectedBadge.earned}
-<<<<<<< HEAD
           username={username}
-=======
->>>>>>> 0624f08f37a63f872bec951b3769297d3ceba375
           onClose={() => setShowModal(false)}
         />
       )}

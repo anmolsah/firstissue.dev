@@ -27,7 +27,6 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
       onClick={onClick}
       className={`relative p-4 rounded-xl border transition-all cursor-pointer group ${
         earned
-<<<<<<< HEAD
           ? `${rarityInfo.bgColor} ${rarityInfo.borderColor} hover:scale-105 hover:shadow-lg`
           : 'bg-[#0B0C10] border-white/5 opacity-50 hover:opacity-70'
       }`}
@@ -61,31 +60,12 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
                 </>
               )}
             </>
-=======
-          ? `${rarityInfo.bgColor} ${rarityInfo.borderColor} hover:scale-105`
-          : 'bg-[#0B0C10] border-white/5 opacity-50 hover:opacity-70'
-      }`}
-    >
-      {/* Rarity Badge */}
-      <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-semibold ${rarityInfo.bgColor} ${rarityInfo.color} border ${rarityInfo.borderColor}`}>
-        {rarityInfo.label}
-      </div>
-
-      {/* Badge Icon */}
-      <div className="relative mb-3">
-        <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center ${
-          earned ? rarityInfo.bgColor : 'bg-white/5'
-        }`}>
-          {earned ? (
-            <Award className={`w-8 h-8 ${rarityInfo.color}`} />
->>>>>>> 0624f08f37a63f872bec951b3769297d3ceba375
           ) : (
             <Lock className="w-8 h-8 text-gray-600" />
           )}
         </div>
         
         {earned && (
-<<<<<<< HEAD
           <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#15161E] animate-bounce">
             <CheckCircle className="w-4 h-4 text-white" />
           </div>
@@ -104,17 +84,6 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
       {/* Badge Info */}
       <div className="text-center relative z-10">
         <h3 className={`font-semibold mb-1 transition-colors ${earned ? 'text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400' : 'text-gray-500'}`}>
-=======
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#15161E]">
-            <CheckCircle className="w-4 h-4 text-white" />
-          </div>
-        )}
-      </div>
-
-      {/* Badge Info */}
-      <div className="text-center">
-        <h3 className={`font-semibold mb-1 ${earned ? 'text-white' : 'text-gray-500'}`}>
->>>>>>> 0624f08f37a63f872bec951b3769297d3ceba375
           {badge.name}
         </h3>
         <p className={`text-xs ${earned ? 'text-gray-400' : 'text-gray-600'}`}>
@@ -123,24 +92,14 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
         
         {earned && badge.earnedAt && (
           <p className="text-[10px] text-gray-500 mt-2">
-<<<<<<< HEAD
             🎉 {new Date(badge.earnedAt).toLocaleDateString()}
-=======
-            Earned {new Date(badge.earnedAt).toLocaleDateString()}
->>>>>>> 0624f08f37a63f872bec951b3769297d3ceba375
           </p>
         )}
       </div>
 
-<<<<<<< HEAD
       {/* Shine Effect on Hover */}
       {earned && (
         <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none transform -translate-x-full group-hover:translate-x-full duration-1000" />
-=======
-      {/* Hover Effect */}
-      {earned && (
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-t from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
->>>>>>> 0624f08f37a63f872bec951b3769297d3ceba375
       )}
     </div>
   );
