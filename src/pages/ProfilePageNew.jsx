@@ -47,11 +47,7 @@ const ProfilePageNew = () => {
       true, // Enable auto-sync for real-time updates
     );
 
-<<<<<<< HEAD
-  // Use badges hook for notifications
-=======
   // Use badges hook
->>>>>>> 0624f08f37a63f872bec951b3769297d3ceba375
   const { newlyUnlockedBadge, dismissNotification } = useBadges(
     getStats(),
     contributions
