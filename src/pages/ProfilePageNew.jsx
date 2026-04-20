@@ -489,15 +489,7 @@ const ProfilePageNew = () => {
 
           {/* Badges Section */}
           <div className="mb-8">
-<<<<<<< HEAD
-            <BadgesSection 
-              stats={contributionStats} 
-              contributions={contributions}
-              username={getGitHubUsername()}
-            />
-=======
             <BadgesSection stats={contributionStats} contributions={contributions} />
->>>>>>> 0624f08f37a63f872bec951b3769297d3ceba375
           </div>
 
           {/* Contribution Stats Grid */}
