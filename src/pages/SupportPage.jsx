@@ -273,7 +273,7 @@ const SupportPage = () => {
         </div>
       </section>
 
-      
+   
     </div>
   );
 };

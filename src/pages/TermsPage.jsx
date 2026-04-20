@@ -9,12 +9,7 @@ const TermsPage = () => {
       {/* Header */}
       <header className="border-b border-white/5 bg-[#0a0a0f]/80 backdrop-blur-md sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <Command className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-white">FirstIssue.dev</span>
-          </Link>
+          
           <Link to="/" className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors text-sm">
             <ArrowLeft className="w-4 h-4" />
             Back to Home
