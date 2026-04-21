@@ -5,7 +5,6 @@ import { supabase } from "../lib/supabase";
 import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
 import { useGitHubSync } from "../hooks/useGitHubSync";
 import EditProfileModal from "../components/EditProfileModal";
-import AppSidebar from "../components/AppSidebar";
 import BadgesSection from "../components/BadgesSection";
 import BadgeUnlockedNotification from "../components/BadgeUnlockedNotification";
 import { useBadges } from "../hooks/useBadges";
@@ -30,6 +29,9 @@ import {
   XCircle,
   Clock,
   AlertCircle,
+  User,
+  Menu,
+  X,
 } from "lucide-react";
 
 const ProfilePageNew = () => {
@@ -39,6 +41,7 @@ const ProfilePageNew = () => {
   const [activeNav, setActiveNav] = useState("dashboard");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [customProfile, setCustomProfile] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Use GitHub sync hook for contributions with auto-sync enabled
   const { contributions, getStats, getSuccessRate, sync, syncing, lastSynced } =
@@ -191,6 +194,16 @@ const ProfilePageNew = () => {
     navigate("/");
   };
 
+  const displayName = customProfile?.name ||
+    githubProfile?.name ||
+    user?.user_metadata?.full_name ||
+    getGitHubUsername() ||
+    "User";
+
+  const displayBio = customProfile?.bio ||
+    githubProfile?.bio ||
+    "Open source enthusiast";
+
   if (loading && !githubProfile && bookmarks.length === 0) {
     return (
       <div className="flex bg-[#0B0C10] min-h-screen items-center justify-center">
@@ -202,7 +215,7 @@ const ProfilePageNew = () => {
 
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
-      {/* Left Sidebar */}
+      {/* ── Left Sidebar (Desktop only) ── */}
       <aside className="w-64 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto">
         <div className="p-6">
           {/* Profile Card */}
@@ -218,17 +231,11 @@ const ProfilePageNew = () => {
                 className="w-full h-full object-cover"
               />
             </div>
-            <h2 className="text-lg font-bold text-white mb-1">
-              {customProfile?.name ||
-                githubProfile?.name ||
-                user?.user_metadata?.full_name ||
-                getGitHubUsername() ||
-                "User"}
+            <h2 className="text-lg font-bold text-white mb-1 truncate">
+              {displayName}
             </h2>
-            <p className="text-sm text-gray-400 mb-4 leading-relaxed">
-              {customProfile?.bio ||
-                githubProfile?.bio ||
-                "Open source enthusiast"}
+            <p className="text-sm text-gray-400 mb-4 leading-relaxed line-clamp-2">
+              {displayBio}
             </p>
 
             <button
@@ -241,99 +248,50 @@ const ProfilePageNew = () => {
 
           {/* GitHub Stats Cards */}
           <div className="space-y-3 mb-6">
-            <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
-                  Merged PRs
-                </p>
-                <p className="text-2xl font-bold text-emerald-400">
-                  {stats.merged}
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center">
-                <GitMerge className="w-5 h-5 text-emerald-400" />
-              </div>
-            </div>
-
-            <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
-                  In Progress
-                </p>
-                <p className="text-2xl font-bold text-purple-400">
-                  {stats.inProgress}
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
-                <GitPullRequest className="w-5 h-5 text-purple-400" />
-              </div>
-            </div>
-
-            <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">
-                  Bookmarks
-                </p>
-                <p className="text-2xl font-bold text-blue-400">
-                  {stats.bookmarksCount}
-                </p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                <Bookmark className="w-5 h-5 text-blue-400" />
-              </div>
-            </div>
+            <SidebarStatCard label="Merged PRs" value={stats.merged} color="emerald" icon={GitMerge} />
+            <SidebarStatCard label="In Progress" value={stats.inProgress} color="purple" icon={GitPullRequest} />
+            <SidebarStatCard label="Bookmarks" value={stats.bookmarksCount} color="blue" icon={Bookmark} />
           </div>
 
           {/* Navigation */}
           <nav className="space-y-1">
-            <NavItem
-              icon={Compass}
-              label="Explore"
-              active={activeNav === "explore"}
-              onClick={() => navigate("/explore")}
-            />
-            <NavItem
-              icon={FileText}
-              label="Bookmarks"
-              active={activeNav === "saved"}
-              onClick={() => navigate("/bookmarks")}
-            />
-            <NavItem
-              icon={TrendingUp}
-              label="Status"
-              active={activeNav === "status"}
-              onClick={() => navigate("/status")}
-            />
-            <NavItem
-              icon={BookOpen}
-              label="Docs"
-              active={activeNav === "docs"}
-              onClick={() => navigate("/getting-started")}
-            />
+            <NavItem icon={Compass} label="Explore" active={activeNav === "explore"} onClick={() => navigate("/explore")} />
+            <NavItem icon={FileText} label="Bookmarks" active={activeNav === "saved"} onClick={() => navigate("/bookmarks")} />
+            <NavItem icon={TrendingUp} label="Status" active={activeNav === "status"} onClick={() => navigate("/status")} />
+            <NavItem icon={BookOpen} label="Docs" active={activeNav === "docs"} onClick={() => navigate("/getting-started")} />
           </nav>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 lg:ml-64 min-w-0">
+      {/* ── Main Content ── */}
+      <main className="flex-1 lg:ml-64 min-w-0 pb-20 lg:pb-0">
         {/* Top Header */}
-        <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
+        <header className="h-14 sm:h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
+            {/* Mobile hamburger */}
+            <button
+              className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
             <Link to="/" className="flex items-center space-x-2 group">
-              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
+              <span className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
                 FirstIssue.dev
               </span>
             </Link>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 pl-4 border-l border-white/5">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-white/5">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-white">
+                <p className="text-sm font-medium text-white truncate max-w-[120px]">
                   {githubProfile?.name || getGitHubUsername()}
                 </p>
                 <p className="text-xs text-gray-500">@{getGitHubUsername()}</p>
               </div>
-              <div className="w-9 h-9 rounded-full overflow-hidden">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden flex-shrink-0">
                 <img
                   src={
                     githubProfile?.avatar_url || user?.user_metadata?.avatar_url
@@ -353,15 +311,63 @@ const ProfilePageNew = () => {
           </div>
         </header>
 
+        {/* Mobile Slide-down Menu */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden bg-[#0B0C10] border-b border-white/5 px-4 py-4 space-y-2 animate-badge-modal-backdrop">
+            {/* Mobile Profile Summary */}
+            <div className="flex items-center gap-3 p-3 bg-[#15161E] rounded-xl border border-white/5 mb-3">
+              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+                <img
+                  src={githubProfile?.avatar_url || user?.user_metadata?.avatar_url}
+                  alt="Avatar"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-white truncate">{displayName}</p>
+                <p className="text-xs text-gray-500 truncate">{displayBio}</p>
+              </div>
+              <button
+                onClick={() => { setIsEditModalOpen(true); setMobileMenuOpen(false); }}
+                className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors flex-shrink-0"
+              >
+                Edit
+              </button>
+            </div>
+
+            {/* Mobile stat pills */}
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="bg-[#15161E] rounded-lg p-2.5 text-center border border-white/5">
+                <p className="text-lg font-bold text-emerald-400">{stats.merged}</p>
+                <p className="text-[10px] text-gray-500">Merged</p>
+              </div>
+              <div className="bg-[#15161E] rounded-lg p-2.5 text-center border border-white/5">
+                <p className="text-lg font-bold text-purple-400">{stats.inProgress}</p>
+                <p className="text-[10px] text-gray-500">In Progress</p>
+              </div>
+              <div className="bg-[#15161E] rounded-lg p-2.5 text-center border border-white/5">
+                <p className="text-lg font-bold text-blue-400">{stats.bookmarksCount}</p>
+                <p className="text-[10px] text-gray-500">Bookmarks</p>
+              </div>
+            </div>
+
+            {/* Nav links */}
+            <NavItem icon={Compass} label="Explore" onClick={() => { navigate("/explore"); setMobileMenuOpen(false); }} />
+            <NavItem icon={FileText} label="Bookmarks" onClick={() => { navigate("/bookmarks"); setMobileMenuOpen(false); }} />
+            <NavItem icon={TrendingUp} label="Status" onClick={() => { navigate("/status"); setMobileMenuOpen(false); }} />
+            <NavItem icon={BookOpen} label="Docs" onClick={() => { navigate("/getting-started"); setMobileMenuOpen(false); }} />
+          </div>
+        )}
+
         {/* Content Body */}
-        <div className="p-6 sm:p-8">
+        <div className="p-4 sm:p-6 lg:p-8">
           {/* Dashboard Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-white mb-1">
+              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
                 Developer Dashboard
               </h1>
-              <p className="text-gray-400">
+              <p className="text-sm sm:text-base text-gray-400">
                 Welcome back,{" "}
                 {customProfile?.name?.split(" ")[0] ||
                   githubProfile?.name?.split(" ")[0] ||
@@ -371,40 +377,40 @@ const ProfilePageNew = () => {
                   ` You have ${stats.totalContributions} tracked contributions.`}
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
               <a
                 href={githubProfile?.html_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-[#15161E] border border-white/10 text-gray-300 rounded-lg hover:text-white hover:border-white/20 transition-colors"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#15161E] border border-white/10 text-gray-300 rounded-lg hover:text-white hover:border-white/20 transition-colors text-sm"
               >
                 <Github className="w-4 h-4" />
-                View GitHub
+                <span className="hidden xs:inline">View GitHub</span>
               </a>
               <button
                 onClick={() => navigate("/explore")}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors"
+                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
               >
                 <Plus className="w-4 h-4" />
-                Find Issues
+                <span className="hidden xs:inline">Find Issues</span>
               </button>
             </div>
           </div>
 
           {/* GitHub Info Card */}
           {(githubProfile || customProfile) && (
-            <div className="bg-[#15161E] rounded-xl p-6 border border-white/5 mb-8">
-              <div className="flex flex-wrap items-center gap-6 text-sm text-gray-400">
+            <div className="bg-[#15161E] rounded-xl p-4 sm:p-6 border border-white/5 mb-6 sm:mb-8">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm text-gray-400">
                 {(customProfile?.location || githubProfile?.location) && (
                   <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    {customProfile?.location || githubProfile?.location}
+                    <MapPin className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{customProfile?.location || githubProfile?.location}</span>
                   </div>
                 )}
                 {(customProfile?.company || githubProfile?.company) && (
                   <div className="flex items-center gap-2">
-                    <Building className="w-4 h-4" />
-                    {customProfile?.company || githubProfile?.company}
+                    <Building className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{customProfile?.company || githubProfile?.company}</span>
                   </div>
                 )}
                 {(customProfile?.website || githubProfile?.blog) && (
@@ -420,13 +426,13 @@ const ProfilePageNew = () => {
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 hover:text-blue-400"
                   >
-                    <LinkIcon className="w-4 h-4" />
-                    {customProfile?.website || githubProfile?.blog}
+                    <LinkIcon className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">{customProfile?.website || githubProfile?.blog}</span>
                   </a>
                 )}
                 {githubProfile?.created_at && (
                   <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4" />
+                    <Calendar className="w-4 h-4 flex-shrink-0" />
                     Joined{" "}
                     {new Date(githubProfile.created_at).toLocaleDateString(
                       "en-US",
@@ -436,38 +442,17 @@ const ProfilePageNew = () => {
                 )}
               </div>
               {githubProfile && (
-                <div className="flex gap-6 mt-4 pt-4 border-t border-white/5">
-                  <div>
-                    <span className="text-xl font-bold text-white">
-                      {stats.publicRepos}
-                    </span>
-                    <span className="text-sm text-gray-500 ml-2">
-                      Repositories
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-xl font-bold text-white">
-                      {stats.followers}
-                    </span>
-                    <span className="text-sm text-gray-500 ml-2">
-                      Followers
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-xl font-bold text-white">
-                      {stats.following}
-                    </span>
-                    <span className="text-sm text-gray-500 ml-2">
-                      Following
-                    </span>
-                  </div>
+                <div className="flex gap-4 sm:gap-6 mt-4 pt-4 border-t border-white/5">
+                  <GitHubCounter label="Repositories" value={stats.publicRepos} />
+                  <GitHubCounter label="Followers" value={stats.followers} />
+                  <GitHubCounter label="Following" value={stats.following} />
                 </div>
               )}
             </div>
           )}
 
           {/* Contribution Heatmap */}
-          <div className="bg-[#15161E] rounded-xl p-6 border border-white/5 mb-8">
+          <div className="bg-[#15161E] rounded-xl p-4 sm:p-6 border border-white/5 mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
                 Contribution Activity
@@ -488,16 +473,16 @@ const ProfilePageNew = () => {
           </div>
 
           {/* Badges Section */}
-          <div className="mb-8">
-            <BadgesSection 
-              stats={contributionStats} 
+          <div className="mb-6 sm:mb-8">
+            <BadgesSection
+              stats={contributionStats}
               contributions={contributions}
               username={getGitHubUsername()}
             />
           </div>
 
           {/* Contribution Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
             <StatCard
               icon={GitMerge}
               label="Merged PRs"
@@ -529,79 +514,46 @@ const ProfilePageNew = () => {
           </div>
 
           {/* Two Column Layout */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Contribution Breakdown */}
-            <div className="bg-[#15161E] rounded-xl p-6 border border-white/5">
+            <div className="bg-[#15161E] rounded-xl p-5 sm:p-6 border border-white/5">
               <h3 className="text-lg font-semibold text-white mb-6">
                 Contribution Breakdown
               </h3>
               <div className="space-y-4">
-                <ContributionBar
-                  label="Merged"
-                  count={stats.merged}
-                  total={stats.totalContributions}
-                  color="bg-emerald-500"
-                  icon={<GitMerge className="w-4 h-4" />}
-                />
-                <ContributionBar
-                  label="In Progress"
-                  count={stats.inProgress}
-                  total={stats.totalContributions}
-                  color="bg-purple-500"
-                  icon={<GitPullRequest className="w-4 h-4" />}
-                />
-                <ContributionBar
-                  label="Applied"
-                  count={stats.applied}
-                  total={stats.totalContributions}
-                  color="bg-amber-500"
-                  icon={<AlertCircle className="w-4 h-4" />}
-                />
-                <ContributionBar
-                  label="Closed"
-                  count={stats.closed}
-                  total={stats.totalContributions}
-                  color="bg-red-500"
-                  icon={<XCircle className="w-4 h-4" />}
-                />
+                <ContributionBar label="Merged" count={stats.merged} total={stats.totalContributions} color="bg-emerald-500" icon={<GitMerge className="w-4 h-4" />} />
+                <ContributionBar label="In Progress" count={stats.inProgress} total={stats.totalContributions} color="bg-purple-500" icon={<GitPullRequest className="w-4 h-4" />} />
+                <ContributionBar label="Applied" count={stats.applied} total={stats.totalContributions} color="bg-amber-500" icon={<AlertCircle className="w-4 h-4" />} />
+                <ContributionBar label="Closed" count={stats.closed} total={stats.totalContributions} color="bg-red-500" icon={<XCircle className="w-4 h-4" />} />
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-[#15161E] rounded-xl p-6 border border-white/5">
+            <div className="bg-[#15161E] rounded-xl p-5 sm:p-6 border border-white/5">
               <h3 className="text-lg font-semibold text-white mb-6">
                 Quick Actions
               </h3>
               <div className="space-y-3">
-                <QuickActionButton
-                  icon={<Compass className="w-5 h-5" />}
-                  label="Explore Issues"
-                  description="Find new open source issues"
-                  onClick={() => navigate("/explore")}
-                />
-                <QuickActionButton
-                  icon={<Bookmark className="w-5 h-5" />}
-                  label="View Bookmarks"
-                  description={`${stats.bookmarksCount} saved issues`}
-                  onClick={() => navigate("/bookmarks")}
-                />
-                <QuickActionButton
-                  icon={<TrendingUp className="w-5 h-5" />}
-                  label="Check Status"
-                  description="Track your contributions"
-                  onClick={() => navigate("/status")}
-                />
-                <QuickActionButton
-                  icon={<Github className="w-5 h-5" />}
-                  label="GitHub Profile"
-                  description="View your GitHub profile"
-                  onClick={() => window.open(githubProfile?.html_url, "_blank")}
-                />
+                <QuickActionButton icon={<Compass className="w-5 h-5" />} label="Explore Issues" description="Find new open source issues" onClick={() => navigate("/explore")} />
+                <QuickActionButton icon={<Bookmark className="w-5 h-5" />} label="View Bookmarks" description={`${stats.bookmarksCount} saved issues`} onClick={() => navigate("/bookmarks")} />
+                <QuickActionButton icon={<TrendingUp className="w-5 h-5" />} label="Check Status" description="Track your contributions" onClick={() => navigate("/status")} />
+                <QuickActionButton icon={<Github className="w-5 h-5" />} label="GitHub Profile" description="View your GitHub profile" onClick={() => window.open(githubProfile?.html_url, "_blank")} />
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* ── Mobile Bottom Navigation ── */}
+      <div className="mobile-bottom-nav lg:hidden">
+        <div className="flex items-center justify-around py-2 px-2">
+          <MobileNavItem icon={Compass} label="Explore" onClick={() => navigate("/explore")} />
+          <MobileNavItem icon={Bookmark} label="Saved" onClick={() => navigate("/bookmarks")} />
+          <MobileNavItem icon={User} label="Profile" active onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
+          <MobileNavItem icon={TrendingUp} label="Status" onClick={() => navigate("/status")} />
+          <MobileNavItem icon={BookOpen} label="Docs" onClick={() => navigate("/getting-started")} />
+        </div>
+      </div>
 
       {/* Edit Profile Modal */}
       <EditProfileModal
@@ -623,20 +575,60 @@ const ProfilePageNew = () => {
   );
 };
 
-/* --- Sub Components --- */
+/* ── Sub Components ── */
 
 const NavItem = ({ icon: Icon, label, active, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
       active
         ? "bg-blue-600/10 text-blue-400"
         : "text-gray-400 hover:text-white hover:bg-white/5"
     }`}
   >
-    <Icon className={`w-5 h-5 ${active ? "text-blue-400" : "text-gray-500"}`} />
+    <Icon className={`w-5 h-5 flex-shrink-0 ${active ? "text-blue-400" : "text-gray-500"}`} />
     {label}
   </button>
+);
+
+const MobileNavItem = ({ icon: Icon, label, active, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors cursor-pointer min-w-0 ${
+      active ? "text-blue-400" : "text-gray-500 hover:text-gray-300"
+    }`}
+  >
+    <Icon className="w-5 h-5" />
+    <span className="text-[10px] font-medium">{label}</span>
+  </button>
+);
+
+const SidebarStatCard = ({ label, value, color, icon: Icon }) => {
+  const colors = {
+    emerald: { text: "text-emerald-400", bg: "bg-emerald-500/10" },
+    purple: { text: "text-purple-400", bg: "bg-purple-500/10" },
+    blue: { text: "text-blue-400", bg: "bg-blue-500/10" },
+  };
+  const c = colors[color] || colors.blue;
+
+  return (
+    <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
+      <div>
+        <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">{label}</p>
+        <p className={`text-2xl font-bold ${c.text}`}>{value}</p>
+      </div>
+      <div className={`w-10 h-10 rounded-lg ${c.bg} flex items-center justify-center`}>
+        <Icon className={`w-5 h-5 ${c.text}`} />
+      </div>
+    </div>
+  );
+};
+
+const GitHubCounter = ({ label, value }) => (
+  <div>
+    <span className="text-lg sm:text-xl font-bold text-white">{value}</span>
+    <span className="text-xs sm:text-sm text-gray-500 ml-1.5 sm:ml-2">{label}</span>
+  </div>
 );
 
 const StatCard = ({ icon: Icon, label, value, color, subtitle }) => {
@@ -648,15 +640,15 @@ const StatCard = ({ icon: Icon, label, value, color, subtitle }) => {
   };
 
   return (
-    <div className="bg-[#15161E] rounded-xl p-6 border border-white/5">
+    <div className="bg-[#15161E] rounded-xl p-4 sm:p-6 border border-white/5">
       <div
-        className={`w-12 h-12 rounded-lg ${colorClasses[color]} flex items-center justify-center mb-4`}
+        className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${colorClasses[color]} flex items-center justify-center mb-3 sm:mb-4`}
       >
-        <Icon className="w-6 h-6" />
+        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
       </div>
-      <p className="text-3xl font-bold text-white mb-1">{value}</p>
-      <p className="text-sm font-medium text-gray-300 mb-1">{label}</p>
-      <p className="text-xs text-gray-500">{subtitle}</p>
+      <p className="text-2xl sm:text-3xl font-bold text-white mb-0.5 sm:mb-1">{value}</p>
+      <p className="text-xs sm:text-sm font-medium text-gray-300 mb-0.5 sm:mb-1">{label}</p>
+      <p className="text-[10px] sm:text-xs text-gray-500 hidden xs:block">{subtitle}</p>
     </div>
   );
 };
@@ -669,7 +661,7 @@ const ContributionBar = ({ label, count, total, color, icon }) => {
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 text-white font-medium">
           {icon}
-          <span>{label}</span>
+          <span className="text-sm">{label}</span>
         </div>
         <span className="text-sm text-gray-400">{count}</span>
       </div>
@@ -686,16 +678,16 @@ const ContributionBar = ({ label, count, total, color, icon }) => {
 const QuickActionButton = ({ icon, label, description, onClick }) => (
   <button
     onClick={onClick}
-    className="w-full flex items-center gap-4 p-4 bg-[#0B0C10] border border-white/5 rounded-lg hover:border-white/10 hover:bg-[#12131a] transition-all group"
+    className="w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-[#0B0C10] border border-white/5 rounded-lg hover:border-white/10 hover:bg-[#12131a] transition-all group cursor-pointer"
   >
-    <div className="w-10 h-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors flex-shrink-0">
       {icon}
     </div>
-    <div className="flex-1 text-left">
+    <div className="flex-1 text-left min-w-0">
       <p className="text-white font-medium text-sm">{label}</p>
-      <p className="text-xs text-gray-500">{description}</p>
+      <p className="text-xs text-gray-500 truncate">{description}</p>
     </div>
-    <div className="text-gray-600 group-hover:text-white transition-colors">
+    <div className="text-gray-600 group-hover:text-white transition-colors flex-shrink-0">
       →
     </div>
   </button>
@@ -707,18 +699,12 @@ const ContributionHeatmap = ({ contributions }) => {
   // GitHub Premium Green Colors
   const getLevelColor = (level) => {
     switch (level) {
-      case 0:
-        return "bg-[#161b22]"; // No contributions
-      case 1:
-        return "bg-[#0e4429]"; // Low
-      case 2:
-        return "bg-[#006d32]"; // Medium-low
-      case 3:
-        return "bg-[#26a641]"; // Medium-high
-      case 4:
-        return "bg-[#39d353]"; // High
-      default:
-        return "bg-[#161b22]";
+      case 0: return "bg-[#161b22]";
+      case 1: return "bg-[#0e4429]";
+      case 2: return "bg-[#006d32]";
+      case 3: return "bg-[#26a641]";
+      case 4: return "bg-[#39d353]";
+      default: return "bg-[#161b22]";
     }
   };
 
@@ -794,7 +780,7 @@ const ContributionHeatmap = ({ contributions }) => {
   return (
     <div className="relative">
       {/* Month Labels */}
-      <div className="flex gap-[3px] mb-2 ml-8">
+      <div className="flex gap-[3px] mb-2 ml-8 heatmap-scroll overflow-x-auto">
         {monthLabels.map((month, idx) => (
           <div
             key={idx}
@@ -806,9 +792,9 @@ const ContributionHeatmap = ({ contributions }) => {
         ))}
       </div>
 
-      {/* Day Labels */}
+      {/* Day Labels + Grid */}
       <div className="flex gap-2">
-        <div className="flex flex-col gap-[3px] text-[10px] text-gray-500 justify-around pr-1">
+        <div className="flex flex-col gap-[3px] text-[10px] text-gray-500 justify-around pr-1 flex-shrink-0">
           <div style={{ height: "12px" }}>Mon</div>
           <div style={{ height: "12px" }}></div>
           <div style={{ height: "12px" }}>Wed</div>
@@ -818,10 +804,10 @@ const ContributionHeatmap = ({ contributions }) => {
           <div style={{ height: "12px" }}>Sun</div>
         </div>
 
-        {/* Heatmap Grid */}
-        <div className="flex gap-[3px] overflow-x-auto pb-2">
+        {/* Heatmap Grid — horizontally scrollable on mobile */}
+        <div className="flex gap-[3px] overflow-x-auto pb-2 heatmap-scroll">
           {heatmapData.map((week, weekIndex) => (
-            <div key={weekIndex} className="flex flex-col gap-[3px]">
+            <div key={weekIndex} className="flex flex-col gap-[3px] flex-shrink-0">
               {week.map((day, dayIndex) => (
                 <div
                   key={dayIndex}
@@ -838,9 +824,9 @@ const ContributionHeatmap = ({ contributions }) => {
       {/* Tooltip */}
       {hoveredDay && (
         <div
-          className="absolute z-50 bg-[#1c1d26] border border-white/20 rounded-lg px-3 py-2 text-xs text-white shadow-xl pointer-events-none"
+          className="absolute z-50 bg-[#1c1d26] border border-white/20 rounded-lg px-3 py-2 text-xs text-white shadow-xl pointer-events-none whitespace-nowrap"
           style={{
-            left: `${hoveredDay.weekIndex * 14 + 40}px`,
+            left: `${Math.min(hoveredDay.weekIndex * 14 + 40, (typeof window !== 'undefined' ? window.innerWidth - 200 : 600))}px`,
             top: `${hoveredDay.dayIndex * 14 + 30}px`,
             transform: "translateX(-50%)",
           }}

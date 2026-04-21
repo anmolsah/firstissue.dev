@@ -235,81 +235,144 @@ textarea:focus {
   animation: bounce-slow 2s ease-in-out infinite;
 }
 
-/* Badge animations */
+/* ============================================
+   Badge System — Clean, Polished Animations
+   ============================================ */
+
+/* Subtle shimmer for earned badge cards */
 @keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-@keyframes float-particle-1 {
-  0%, 100% {
-    transform: translate(0, 0);
-    opacity: 0;
-  }
-  50% {
-    transform: translate(-10px, -20px);
-    opacity: 1;
-  }
-}
-
-@keyframes float-particle-2 {
-  0%, 100% {
-    transform: translate(0, 0);
-    opacity: 0;
-  }
-  50% {
-    transform: translate(10px, -15px);
-    opacity: 1;
-  }
-}
-
-@keyframes float-particle-3 {
-  0%, 100% {
-    transform: translate(0, 0);
-    opacity: 0;
-  }
-  50% {
-    transform: translate(-8px, -18px);
-    opacity: 1;
-  }
-}
-
-@keyframes badge-glow {
-  0%, 100% {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-  }
-  50% {
-    box-shadow: 0 0 40px rgba(59, 130, 246, 0.8);
-  }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 .animate-shimmer {
   animation: shimmer 3s infinite;
 }
 
-.animate-float-particle-1 {
-  animation: float-particle-1 3s ease-in-out infinite;
-}
-
-.animate-float-particle-2 {
-  animation: float-particle-2 2.5s ease-in-out infinite;
-  animation-delay: 0.5s;
-}
-
-.animate-float-particle-3 {
-  animation: float-particle-3 3.5s ease-in-out infinite;
-  animation-delay: 1s;
+/* Smooth badge glow — single purpose, not stacked */
+@keyframes badge-glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
 }
 
 .animate-badge-glow {
-  animation: badge-glow 2s ease-in-out infinite;
+  animation: badge-glow-pulse 3s ease-in-out infinite;
 }
 
-/* Confetti animation */
+/* Badge card shine on hover */
+@keyframes badge-card-shine {
+  0% { transform: translateX(-100%) rotate(12deg); }
+  100% { transform: translateX(200%) rotate(12deg); }
+}
+
+/* ============================================
+   Badge Modal — Smooth Enter/Exit
+   ============================================ */
+
+@keyframes badge-modal-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes badge-modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes badge-modal-out {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+}
+
+.animate-badge-modal-backdrop {
+  animation: badge-modal-backdrop-in 0.2s ease-out forwards;
+}
+
+.animate-badge-modal-in {
+  animation: badge-modal-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-badge-modal-out {
+  animation: badge-modal-out 0.2s ease-in forwards;
+}
+
+/* Badge icon float in modal */
+@keyframes badge-icon-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-badge-float {
+  animation: badge-icon-float 3s ease-in-out infinite;
+}
+
+/* Rarity ring glow for showcase */
+@keyframes rarity-ring-glow {
+  0%, 100% { box-shadow: 0 0 20px currentColor; opacity: 0.5; }
+  50% { box-shadow: 0 0 40px currentColor; opacity: 0.8; }
+}
+
+.animate-rarity-glow {
+  animation: rarity-ring-glow 2.5s ease-in-out infinite;
+}
+
+/* ============================================
+   Badge Notification — Clean Slide In
+   ============================================ */
+
+@keyframes notification-slide-in {
+  from {
+    transform: translateX(100%) scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes notification-slide-out {
+  from {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%) scale(0.95);
+    opacity: 0;
+  }
+}
+
+.animate-notification-in {
+  animation: notification-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-notification-out {
+  animation: notification-slide-out 0.3s ease-in forwards;
+}
+
+/* Progress bar for notification auto-close */
+@keyframes progress-bar {
+  0% { width: 100%; }
+  100% { width: 0%; }
+}
+
+.animate-progress-bar {
+  animation: progress-bar 6s linear forwards;
+}
+
+/* Confetti fallback for notification */
 @keyframes confetti {
   0% {
     transform: translateY(0) rotate(0deg);
@@ -325,16 +388,66 @@ textarea:focus {
   animation: confetti 3s ease-out forwards;
 }
 
-/* Progress bar animation */
-@keyframes progress-bar {
-  0% {
-    width: 100%;
-  }
-  100% {
-    width: 0%;
-  }
+/* ============================================
+   Mobile Bottom Navigation
+   ============================================ */
+
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: rgba(11, 12, 16, 0.95);
+  backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-.animate-progress-bar {
-  animation: progress-bar 6s linear forwards;
+/* Hide scrollbar for heatmap on mobile */
+.heatmap-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.heatmap-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ============================================
+   Badge Card Hover Shine
+   ============================================ */
+
+.badge-card-shine {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.06) 45%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.06) 55%,
+    transparent 60%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+
+.group:hover .badge-card-shine {
+  opacity: 1;
+  animation: badge-card-shine 0.8s ease-out forwards;
+}
+
+/* ============================================
+   Responsive Heatmap
+   ============================================ */
+
+@media (max-width: 767px) {
+  .heatmap-container {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }

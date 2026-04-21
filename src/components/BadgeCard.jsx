@@ -1,8 +1,8 @@
 import React from 'react';
-import { Lock, Award, CheckCircle, Zap, Star, Trophy, Flame, Target, Crown, Sparkles, GitMerge } from 'lucide-react';
+import { Lock, CheckCircle, Award, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 
-// Badge icon mapping for more exciting visuals
+// Badge icon mapping
 const BADGE_ICONS = {
   'first-contribution': Star,
   'first-merge': GitMerge,
@@ -22,86 +22,85 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
   const rarityInfo = getBadgeRarityInfo(badge.rarity);
   const BadgeIcon = BADGE_ICONS[badge.id] || Award;
 
+  // Rarity accent colors for the icon ring
+  const rarityAccent = {
+    common: 'ring-gray-500/30',
+    uncommon: 'ring-green-500/40',
+    rare: 'ring-blue-500/40',
+    epic: 'ring-purple-500/40',
+    legendary: 'ring-amber-400/50'
+  };
+
+  const rarityGlow = {
+    common: '',
+    uncommon: 'shadow-[0_0_15px_rgba(34,197,94,0.15)]',
+    rare: 'shadow-[0_0_15px_rgba(59,130,246,0.15)]',
+    epic: 'shadow-[0_0_20px_rgba(168,85,247,0.2)]',
+    legendary: 'shadow-[0_0_25px_rgba(245,158,11,0.25)]'
+  };
+
   return (
-    <div
+    <button
       onClick={onClick}
-      className={`relative p-4 rounded-xl border transition-all cursor-pointer group ${
+      className={`relative flex flex-col items-center p-4 rounded-xl border transition-all duration-200 cursor-pointer group text-left w-full ${
         earned
-          ? `${rarityInfo.bgColor} ${rarityInfo.borderColor} hover:scale-105 hover:shadow-lg`
-          : 'bg-[#0B0C10] border-white/5 opacity-50 hover:opacity-70'
+          ? `bg-[#15161E] ${rarityInfo.borderColor} hover:border-white/20 ${rarityGlow[badge.rarity] || ''}`
+          : 'bg-[#0e0f15] border-white/[0.03] hover:border-white/10'
       }`}
+      aria-label={`${badge.name} badge — ${earned ? 'Earned' : 'Locked'}`}
     >
-      {/* Animated Glow Effect for Earned Badges */}
-      {earned && (
-        <>
-          <div className={`absolute inset-0 rounded-xl ${rarityInfo.bgColor} opacity-50 blur-xl animate-pulse`} />
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-shimmer" />
-        </>
-      )}
-
-      {/* Rarity Badge */}
-      <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-[10px] font-semibold ${rarityInfo.bgColor} ${rarityInfo.color} border ${rarityInfo.borderColor} z-10`}>
-        {rarityInfo.label}
-      </div>
-
-      {/* Badge Icon with Animation */}
-      <div className="relative mb-3 z-10">
-        <div className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center transition-all ${
-          earned ? `${rarityInfo.bgColor} group-hover:scale-110 group-hover:rotate-12` : 'bg-white/5'
-        }`}>
+      {/* Badge Icon Container */}
+      <div className="relative mb-3">
+        <div
+          className={`w-14 h-14 rounded-full flex items-center justify-center ring-2 transition-transform duration-200 group-hover:scale-105 ${
+            earned
+              ? `${rarityInfo.bgColor} ${rarityAccent[badge.rarity] || 'ring-gray-500/30'}`
+              : 'bg-white/[0.03] ring-white/[0.05]'
+          }`}
+        >
           {earned ? (
-            <>
-              <BadgeIcon className={`w-8 h-8 ${rarityInfo.color} transition-transform group-hover:scale-125`} />
-              {/* Sparkle effects for legendary badges */}
-              {badge.rarity === 'legendary' && (
-                <>
-                  <Sparkles className="absolute top-0 right-0 w-4 h-4 text-yellow-400 animate-ping" />
-                  <Sparkles className="absolute bottom-0 left-0 w-3 h-3 text-yellow-400 animate-ping" style={{ animationDelay: '0.5s' }} />
-                </>
-              )}
-            </>
+            <BadgeIcon className={`w-6 h-6 ${rarityInfo.color}`} />
           ) : (
-            <Lock className="w-8 h-8 text-gray-600" />
+            <Lock className="w-5 h-5 text-gray-600" />
           )}
         </div>
-        
-        {earned && (
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#15161E] animate-bounce">
-            <CheckCircle className="w-4 h-4 text-white" />
-          </div>
-        )}
 
-        {/* Floating particles for epic/legendary */}
-        {earned && (badge.rarity === 'epic' || badge.rarity === 'legendary') && (
-          <>
-            <div className={`absolute top-0 left-0 w-1 h-1 ${rarityInfo.color} rounded-full animate-float-particle-1`} />
-            <div className={`absolute top-2 right-2 w-1.5 h-1.5 ${rarityInfo.color} rounded-full animate-float-particle-2`} />
-            <div className={`absolute bottom-2 left-2 w-1 h-1 ${rarityInfo.color} rounded-full animate-float-particle-3`} />
-          </>
+        {/* Earned checkmark */}
+        {earned && (
+          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#15161E]">
+            <CheckCircle className="w-3 h-3 text-white" />
+          </div>
         )}
       </div>
 
       {/* Badge Info */}
-      <div className="text-center relative z-10">
-        <h3 className={`font-semibold mb-1 transition-colors ${earned ? 'text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-400' : 'text-gray-500'}`}>
+      <div className="text-center w-full min-w-0">
+        <h3
+          className={`text-xs font-semibold mb-0.5 truncate ${
+            earned ? 'text-white' : 'text-gray-500'
+          }`}
+        >
           {badge.name}
         </h3>
-        <p className={`text-xs ${earned ? 'text-gray-400' : 'text-gray-600'}`}>
-          {badge.description}
-        </p>
-        
-        {earned && badge.earnedAt && (
-          <p className="text-[10px] text-gray-500 mt-2">
-            🎉 {new Date(badge.earnedAt).toLocaleDateString()}
-          </p>
-        )}
+
+        {/* Rarity dot */}
+        <div className="flex items-center justify-center gap-1.5">
+          <span
+            className={`w-1.5 h-1.5 rounded-full ${
+              earned
+                ? rarityInfo.color.replace('text-', 'bg-')
+                : 'bg-gray-700'
+            }`}
+          />
+          <span className={`text-[10px] ${earned ? rarityInfo.color : 'text-gray-600'}`}>
+            {rarityInfo.label}
+          </span>
+        </div>
       </div>
 
-      {/* Shine Effect on Hover */}
-      {earned && (
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none transform -translate-x-full group-hover:translate-x-full duration-1000" />
-      )}
-    </div>
+      {/* Subtle shine on hover for earned badges */}
+      {earned && <div className="badge-card-shine" />}
+    </button>
   );
 };
 
