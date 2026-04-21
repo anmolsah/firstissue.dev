@@ -711,44 +711,44 @@ const ContributionHeatmap = ({ contributions }) => {
   // Generate heatmap data from contributions
   const generateHeatmapData = () => {
     const weeks = 52;
-    const days = 7;
     const heatmapData = [];
     const monthLabels = [];
 
     // Create a map of dates to contribution counts
+    // FIXED: Prioritize GitHub event dates over Supabase row timestamp
     const contributionMap = new Map();
     contributions.forEach((contrib) => {
       const date = new Date(
-        contrib.created_at || contrib.pr_created_at || contrib.assigned_at,
+        contrib.pr_created_at || contrib.assigned_at || contrib.created_at,
       );
       const dateStr = date.toISOString().split("T")[0];
       contributionMap.set(dateStr, (contributionMap.get(dateStr) || 0) + 1);
     });
 
-    // Generate heatmap for last 52 weeks
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay()); // Start from Sunday
+    // FIXED: Walk FORWARD from (today - 52 weeks) to today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Find the Sunday of the week 52 weeks ago
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - (weeks * 7) - today.getDay());
 
     let currentMonth = null;
 
-    for (let w = weeks - 1; w >= 0; w--) {
+    for (let w = 0; w < weeks; w++) {
       const week = [];
-      const weekDate = new Date(startOfWeek);
-      weekDate.setDate(startOfWeek.getDate() - w * 7);
 
-      // Track month changes for labels
-      const monthName = weekDate.toLocaleDateString("en-US", { month: "short" });
-      if (monthName !== currentMonth) {
-        monthLabels.push({ week: weeks - 1 - w, label: monthName });
-        currentMonth = monthName;
-      }
-
-      for (let d = 0; d < days; d++) {
-        const date = new Date(startOfWeek);
-        date.setDate(startOfWeek.getDate() - w * 7 + d);
+      for (let d = 0; d < 7; d++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + w * 7 + d);
         const dateStr = date.toISOString().split("T")[0];
         const count = contributionMap.get(dateStr) || 0;
+
+        // Don't show future dates
+        if (date > today) {
+          week.push({ level: 0, count: 0, date: dateStr, dateObj: date, isFuture: true });
+          continue;
+        }
 
         // Convert count to level (0-4)
         let level = 0;
@@ -757,8 +757,18 @@ const ContributionHeatmap = ({ contributions }) => {
         if (count >= 4) level = 3;
         if (count >= 6) level = 4;
 
-        week.push({ level, count, date: dateStr, dateObj: new Date(date) });
+        week.push({ level, count, date: dateStr, dateObj: date });
       }
+
+      // Track month changes for labels (use the Sunday of each week)
+      const weekSunday = new Date(startDate);
+      weekSunday.setDate(startDate.getDate() + w * 7);
+      const monthName = weekSunday.toLocaleDateString("en-US", { month: "short" });
+      if (monthName !== currentMonth) {
+        monthLabels.push({ week: w, label: monthName });
+        currentMonth = monthName;
+      }
+
       heatmapData.push(week);
     }
 

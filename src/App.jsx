@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
+import { SupporterProvider } from "./contexts/SupporterContext";
 import LoginPage from "./pages/LoginPage";
 import Navbar from "./components/Navbar";
 import GitHubReconnectBanner from "./components/GitHubReconnectBanner";
@@ -72,27 +73,29 @@ const App = () => {
   return (
     <AuthProvider>
       <DataProvider>
-        <AppLayout>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/getting-started" element={<DocsPage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/bookmarks" element={<BookmarksPage />} />
-            <Route path="/status" element={<StatusPage />} />
-            <Route path="/test-github" element={<TestGitHubPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/support" element={<SupportPage />} />
-            <Route path="/explore" element={<ExplorePage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/privacy" element={<PrivacyPage />} />
-            <Route path="/docs" element={<DocsPage />} />
-            <Route path="/docs/:section" element={<DocsSectionPage />} />
-            <Route
-              path="/docs/:section/:article"
-              element={<DocsArticlePage />}
-            />
-          </Routes>
-        </AppLayout>
+        <SupporterProvider>
+          <AppLayout>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/getting-started" element={<DocsPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/bookmarks" element={<BookmarksPage />} />
+              <Route path="/status" element={<StatusPage />} />
+              <Route path="/test-github" element={<TestGitHubPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/support" element={<SupportPage />} />
+              <Route path="/explore" element={<ExplorePage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/docs" element={<DocsPage />} />
+              <Route path="/docs/:section" element={<DocsSectionPage />} />
+              <Route
+                path="/docs/:section/:article"
+                element={<DocsArticlePage />}
+              />
+            </Routes>
+          </AppLayout>
+        </SupporterProvider>
       </DataProvider>
     </AuthProvider>
   );

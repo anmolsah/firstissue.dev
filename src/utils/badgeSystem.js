@@ -210,7 +210,7 @@ export const BADGE_DEFINITIONS = {
       email: 'badges@firstissue.dev'
     },
     type: 'BadgeClass',
-    requirement: (stats) => stats.merged >= 5 && (stats.merged / stats.total) === 1,
+    requirement: (stats) => stats.merged >= 5 && stats.closed === 0,
     rarity: 'legendary',
     color: 'yellow'
   },

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { getCache, setCache, clearCache, CACHE_KEYS } from "../utils/cache";
+import SmartMatchTab from "../components/SmartMatchTab";
 import AppSidebar from "../components/AppSidebar";
 import {
   Search,
@@ -18,6 +19,7 @@ import {
   User,
   Shield,
   GitFork,
+  Sparkles,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -428,9 +430,16 @@ const ExplorePage = () => {
                 onClick={() => setSelectedTab("trusted")}
                 icon={Shield}
               />
+              <TabButton
+                label="Smart Match"
+                active={selectedTab === "smart"}
+                onClick={() => setSelectedTab("smart")}
+                icon={Sparkles}
+                isPremium
+              />
             </div>
 
-            {selectedTab !== "trusted" && (
+            {selectedTab !== "trusted" && selectedTab !== "smart" && (
               <div className="flex items-center gap-2">
                 <div className="relative" ref={sortDropdownRef}>
                   <button
@@ -481,7 +490,15 @@ const ExplorePage = () => {
           </div>
 
           {/* Tab Content */}
-          {selectedTab === "trusted" ? (
+          {selectedTab === "smart" ? (
+            /* Smart Match Tab Content */
+            <SmartMatchTab
+              username={user?.user_metadata?.user_name || user?.user_metadata?.preferred_username}
+              token={null}
+              bookmarkedIssues={bookmarkedIssues}
+              onToggleBookmark={(issue) => toggleBookmark(issue.url, issue)}
+            />
+          ) : selectedTab === "trusted" ? (
             /* Trusted Repos Tab Content */
             <div>
               <div className="flex items-center gap-3 mb-6">
@@ -594,18 +611,26 @@ const ExplorePage = () => {
 
 /* --- Sub Components --- */
 
-const TabButton = ({ label, active, onClick, icon: Icon }) => (
+const TabButton = ({ label, active, onClick, icon: Icon, isPremium }) => (
   <button
     onClick={onClick}
     className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
       active
-        ? "bg-[#222831] text-white shadow-sm"
-        : "text-gray-400 hover:text-gray-200"
+        ? isPremium
+          ? "bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-purple-300 shadow-sm border border-purple-500/20"
+          : "bg-[#222831] text-white shadow-sm"
+        : isPremium
+          ? "text-purple-400/60 hover:text-purple-300"
+          : "text-gray-400 hover:text-gray-200"
     }`}
   >
     {Icon && (
       <Icon
-        className={`w-3.5 h-3.5 ${active ? "text-emerald-400" : "text-gray-500"}`}
+        className={`w-3.5 h-3.5 ${
+          active
+            ? isPremium ? "text-purple-400" : "text-emerald-400"
+            : isPremium ? "text-purple-500/50" : "text-gray-500"
+        }`}
       />
     )}
     {label}
