@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useSupporter } from "../contexts/SupporterContext";
-import { supabase } from "../lib/supabase";
 import {
   Sparkles,
   Crown,
@@ -29,7 +28,7 @@ import toast from "react-hot-toast";
 
 const SupportPage = () => {
   const { user } = useAuth();
-  const { isSupporter, supporterData, loading: supporterLoading } = useSupporter();
+  const { isSupporter, loading: supporterLoading } = useSupporter();
   const navigate = useNavigate();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
@@ -128,15 +127,21 @@ const SupportPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0B0C10] text-[#EEEEEE] overflow-hidden">
+      {/* Background Gradients — matches homepage */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-purple-600/10 rounded-full blur-[120px]" />
+        <div className="absolute top-[30%] right-[-10%] w-[40%] h-[40%] bg-blue-600/10 rounded-full blur-[100px]" />
+        <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[30%] bg-indigo-600/10 rounded-full blur-[80px]" />
+      </div>
+
       {/* Header */}
-      <header className="border-b border-white/5 bg-[#0a0a0f]/80 backdrop-blur-md sticky top-0 z-10">
+      <header className="relative z-10 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <Command className="w-4 h-4 text-white" />
-            </div>
-            <span className="font-bold text-white">FirstIssue.dev</span>
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+              FirstIssue.dev
+            </span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm text-gray-400">
             <Link to="/explore" className="hover:text-white transition-colors">Explore</Link>
@@ -144,38 +149,33 @@ const SupportPage = () => {
             <Link to="/support" className="text-white font-medium">Support</Link>
           </nav>
           {user ? (
-            <Link to="/profile" className="px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg text-sm font-medium hover:bg-white/10 transition-colors">
+            <Link to="/profile" className="px-4 py-2 bg-white/5 border border-white/10 text-white rounded-full text-sm font-medium hover:bg-white/10 transition-colors">
               Dashboard
             </Link>
           ) : (
-            <Link to="/login" className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 transition-colors">
-              Sign In
+            <Link to="/login" className="px-5 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full hover:from-blue-500 hover:to-indigo-500 transition-all duration-300 shadow-[0_0_20px_-5px_rgba(79,70,229,0.5)] border border-white/10">
+              Join the movement
             </Link>
           )}
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-24 px-6 overflow-hidden">
-        {/* Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-600/5 via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-r from-purple-600/10 via-blue-600/10 to-purple-600/10 blur-[120px] pointer-events-none" />
-
-        <div className="max-w-4xl mx-auto text-center relative">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-sm font-medium mb-8">
-            <Sparkles className="w-4 h-4" />
-            AI-Powered Open Source Matching
+      <section className="relative z-10 pt-24 pb-20 px-6">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wide uppercase mb-8">
+            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+            SUPPORTER EXCLUSIVE
           </div>
 
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
-            Find Your Perfect
-            <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400">
-              Open Source Match
+          <h1 className="text-5xl sm:text-7xl font-black mb-6 leading-tight tracking-tight">
+            Find Your{" "}
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">
+              Perfect Match
             </span>
           </h1>
 
-          <p className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed">
+          <p className="text-lg sm:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed">
             Our AI analyzes your GitHub profile to recommend issues that
             perfectly match your tech stack and experience level.
           </p>
@@ -183,31 +183,32 @@ const SupportPage = () => {
           {/* Already a supporter */}
           {isSupporter ? (
             <div className="inline-flex flex-col items-center gap-4">
-              <div className="flex items-center gap-2 px-6 py-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
+              <div className="flex items-center gap-2 px-6 py-3 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 font-semibold">
                 <Crown className="w-5 h-5" />
-                <span className="font-semibold">You're a Supporter!</span>
+                You're a Supporter!
               </div>
               <button
                 onClick={() => navigate("/explore")}
-                className="flex items-center gap-2 px-6 py-3 text-purple-400 hover:text-purple-300 transition-colors cursor-pointer"
+                className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
               >
                 Go to Smart Match
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           ) : (
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <button
                 onClick={handleCheckout}
                 disabled={checkoutLoading}
-                className="flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold text-lg hover:from-purple-500 hover:to-blue-500 transition-all shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 disabled:opacity-50 cursor-pointer"
+                className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-semibold text-lg hover:shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] transition-all duration-300 transform hover:-translate-y-1 disabled:opacity-50 cursor-pointer"
               >
                 {checkoutLoading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <Loader2 className="inline-block w-5 h-5 animate-spin mr-2" />
                 ) : (
-                  <Crown className="w-5 h-5" />
+                  <Crown className="inline-block w-5 h-5 mr-2" />
                 )}
                 {checkoutLoading ? "Processing..." : "Become a Supporter — $9/mo"}
+                {!checkoutLoading && <ArrowRight className="inline-block ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />}
               </button>
               <p className="text-sm text-gray-500">Cancel anytime · Secure checkout</p>
             </div>
@@ -216,53 +217,59 @@ const SupportPage = () => {
       </section>
 
       {/* How It Works */}
-      <section className="py-20 px-6">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">How Smart Matching Works</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">Three simple steps to find your perfect open source contribution.</p>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">How Smart Matching Works</h2>
+            <p className="text-gray-400 max-w-xl mx-auto text-lg">Three steps to your perfect open source contribution.</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
                 step: "01",
                 icon: Code2,
                 title: "We Analyze Your Profile",
                 description: "Our system scans your GitHub repos to identify your top languages, frameworks, and experience level.",
-                color: "purple",
+                color: "blue",
+                borderHover: "hover:border-blue-500/30",
               },
               {
                 step: "02",
                 icon: Brain,
                 title: "AI Finds Matches",
                 description: "OpenRouter AI scores every candidate issue against your unique developer profile for relevance.",
-                color: "blue",
+                color: "purple",
+                borderHover: "hover:border-purple-500/30",
               },
               {
                 step: "03",
                 icon: Target,
                 title: "You Contribute",
                 description: "Browse AI-ranked recommendations, find your perfect match, and make your next open source contribution.",
-                color: "emerald",
+                color: "green",
+                borderHover: "hover:border-green-500/30",
               },
             ].map((item) => (
-              <div key={item.step} className="relative group">
-                <div className="bg-[#12131a] border border-white/5 rounded-2xl p-8 hover:border-white/10 transition-all h-full">
-                  <div className="text-5xl font-bold text-white/5 mb-4">{item.step}</div>
-                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
-                    item.color === "purple" ? "bg-purple-500/10" :
-                    item.color === "blue" ? "bg-blue-500/10" :
-                    "bg-emerald-500/10"
+              <div key={item.step} className={`bg-[#15161E] rounded-3xl p-8 border border-white/5 ${item.borderHover} transition-all group relative overflow-hidden`}>
+                <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-25 transition-opacity">
+                  <item.icon className={`w-24 h-24 ${
+                    item.color === "blue" ? "text-blue-500" :
+                    item.color === "purple" ? "text-purple-500" :
+                    "text-green-500"
+                  }`} />
+                </div>
+                <div className="relative z-10">
+                  <div className="text-5xl font-black text-white/5 mb-4">{item.step}</div>
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 ${
+                    item.color === "blue" ? "bg-blue-500/20 text-blue-400" :
+                    item.color === "purple" ? "bg-purple-500/20 text-purple-400" :
+                    "bg-green-500/20 text-green-400"
                   }`}>
-                    <item.icon className={`w-6 h-6 ${
-                      item.color === "purple" ? "text-purple-400" :
-                      item.color === "blue" ? "text-blue-400" :
-                      "text-emerald-400"
-                    }`} />
+                    <item.icon className="w-6 h-6" />
                   </div>
-                  <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{item.description}</p>
+                  <h3 className="text-xl font-bold text-white mb-3">{item.title}</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">{item.description}</p>
                 </div>
               </div>
             ))}
@@ -271,56 +278,63 @@ const SupportPage = () => {
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 px-6 bg-gradient-to-b from-transparent via-purple-600/3 to-transparent">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-white mb-4">What You Unlock</h2>
-            <p className="text-gray-400 max-w-xl mx-auto">Everything included in your Supporter subscription.</p>
+            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">What You Unlock</h2>
+            <p className="text-gray-400 max-w-xl mx-auto text-lg">Everything included in your Supporter subscription.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {features.map((feature, i) => (
-              <div key={i} className="flex gap-5 p-6 bg-[#12131a] border border-white/5 rounded-xl hover:border-purple-500/20 transition-all">
-                <div className="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                  <feature.icon className="w-6 h-6 text-purple-400" />
+            {features.map((feature, i) => {
+              const colors = [
+                { bg: "bg-blue-500/20", text: "text-blue-400", border: "hover:border-blue-500/30" },
+                { bg: "bg-purple-500/20", text: "text-purple-400", border: "hover:border-purple-500/30" },
+                { bg: "bg-pink-500/20", text: "text-pink-400", border: "hover:border-pink-500/30" },
+                { bg: "bg-green-500/20", text: "text-green-400", border: "hover:border-green-500/30" },
+              ][i];
+              return (
+                <div key={i} className={`flex gap-5 p-8 bg-[#15161E] border border-white/5 rounded-3xl ${colors.border} transition-all group`}>
+                  <div className={`w-12 h-12 rounded-xl ${colors.bg} flex items-center justify-center flex-shrink-0`}>
+                    <feature.icon className={`w-6 h-6 ${colors.text}`} />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-bold text-lg mb-2">{feature.title}</h3>
+                    <p className="text-sm text-gray-400 leading-relaxed">{feature.description}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-white font-semibold mb-1">{feature.title}</h3>
-                  <p className="text-sm text-gray-500 leading-relaxed">{feature.description}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* Pricing Card */}
-      <section className="py-20 px-6" id="pricing">
-        <div className="max-w-md mx-auto">
-          <div className="relative bg-[#12131a] border border-purple-500/20 rounded-2xl overflow-hidden">
-            {/* Glow effect */}
-            <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-64 h-64 bg-gradient-to-r from-purple-600/20 to-blue-600/20 blur-[80px] pointer-events-none" />
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10" id="pricing">
+        <div className="max-w-md mx-auto relative group">
+          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-[2rem] blur opacity-25 group-hover:opacity-40 transition duration-1000" />
 
-            <div className="relative p-8">
+          <div className="relative bg-[#15161E] border border-white/10 rounded-3xl overflow-hidden">
+            <div className="p-10">
               {/* Badge */}
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-400 text-xs font-semibold mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wide uppercase mb-6">
                 <Crown className="w-3.5 h-3.5" />
                 SUPPORTER
               </div>
 
               {/* Price */}
               <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-5xl font-bold text-white">$9</span>
+                <span className="text-6xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">$9</span>
                 <span className="text-lg text-gray-500">/month</span>
               </div>
               <p className="text-sm text-gray-500 mb-8">Billed monthly. Cancel anytime.</p>
 
               {/* Features */}
-              <div className="space-y-3 mb-8">
+              <div className="space-y-3.5 mb-8">
                 {planFeatures.map((feature, i) => (
                   <div key={i} className="flex items-center gap-3">
-                    <div className="w-5 h-5 rounded-full bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                      <Check className="w-3 h-3 text-purple-400" />
+                    <div className="w-5 h-5 rounded-full bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                      <Check className="w-3 h-3 text-blue-400" />
                     </div>
                     <span className="text-sm text-gray-300">{feature}</span>
                   </div>
@@ -329,7 +343,7 @@ const SupportPage = () => {
 
               {/* CTA */}
               {isSupporter ? (
-                <div className="w-full flex items-center justify-center gap-2 py-3.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl font-semibold">
+                <div className="w-full flex items-center justify-center gap-2 py-4 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl font-semibold">
                   <Check className="w-5 h-5" />
                   Active Supporter
                 </div>
@@ -337,12 +351,12 @@ const SupportPage = () => {
                 <button
                   onClick={handleCheckout}
                   disabled={checkoutLoading}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-500 hover:to-blue-500 transition-all shadow-lg shadow-purple-500/20 cursor-pointer disabled:opacity-50"
+                  className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold text-lg hover:shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] transition-all duration-300 cursor-pointer disabled:opacity-50"
                 >
                   {checkoutLoading ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <Loader2 className="inline-block w-5 h-5 animate-spin mr-2" />
                   ) : (
-                    <Unlock className="w-5 h-5" />
+                    <Unlock className="inline-block w-5 h-5 mr-2" />
                   )}
                   {checkoutLoading ? "Processing..." : "Get Started"}
                 </button>
@@ -353,19 +367,19 @@ const SupportPage = () => {
       </section>
 
       {/* Comparison: Free vs Supporter */}
-      <section className="py-20 px-6">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">Free vs Supporter</h2>
+          <h2 className="text-4xl font-bold text-white text-center mb-12">Free vs Supporter</h2>
 
-          <div className="bg-[#12131a] border border-white/5 rounded-2xl overflow-hidden">
+          <div className="bg-[#15161E] border border-white/5 rounded-3xl overflow-hidden">
             <div className="grid grid-cols-3 gap-0">
               {/* Header */}
-              <div className="p-4 border-b border-white/5" />
-              <div className="p-4 border-b border-white/5 text-center">
-                <span className="text-sm font-semibold text-gray-400">Free</span>
+              <div className="p-5 border-b border-white/5" />
+              <div className="p-5 border-b border-white/5 text-center">
+                <span className="text-sm font-bold text-gray-400 uppercase tracking-wide">Free</span>
               </div>
-              <div className="p-4 border-b border-white/5 text-center bg-purple-500/5">
-                <span className="text-sm font-semibold text-purple-400">Supporter</span>
+              <div className="p-5 border-b border-white/5 text-center bg-blue-500/5">
+                <span className="text-sm font-bold text-blue-400 uppercase tracking-wide">Supporter</span>
               </div>
 
               {/* Rows */}
@@ -384,13 +398,13 @@ const SupportPage = () => {
                   </div>
                   <div className="p-4 border-b border-white/5 text-center">
                     {row.free ? (
-                      <Check className="w-5 h-5 text-emerald-400 mx-auto" />
+                      <Check className="w-5 h-5 text-green-400 mx-auto" />
                     ) : (
                       <Lock className="w-4 h-4 text-gray-600 mx-auto" />
                     )}
                   </div>
-                  <div className="p-4 border-b border-white/5 text-center bg-purple-500/5">
-                    <Check className="w-5 h-5 text-purple-400 mx-auto" />
+                  <div className="p-4 border-b border-white/5 text-center bg-blue-500/5">
+                    <Check className="w-5 h-5 text-blue-400 mx-auto" />
                   </div>
                 </React.Fragment>
               ))}
@@ -400,15 +414,15 @@ const SupportPage = () => {
       </section>
 
       {/* FAQ */}
-      <section className="py-20 px-6">
+      <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">Frequently Asked Questions</h2>
+          <h2 className="text-4xl font-bold text-white text-center mb-12">Frequently Asked Questions</h2>
 
           <div className="space-y-3">
             {faqs.map((faq, i) => (
               <div
                 key={i}
-                className="bg-[#12131a] border border-white/5 rounded-xl overflow-hidden hover:border-white/10 transition-all"
+                className="bg-[#15161E] border border-white/5 rounded-2xl overflow-hidden hover:border-white/10 transition-all"
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
@@ -433,7 +447,7 @@ const SupportPage = () => {
       </section>
 
       {/* Other Ways to Help */}
-      <section className="py-16 px-6 border-t border-white/5">
+      <section className="py-16 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-white/5">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-white mb-4">Other Ways to Support</h2>
           <p className="text-gray-500 mb-8 text-sm">
@@ -445,7 +459,7 @@ const SupportPage = () => {
               href="https://github.com/anmolsah/firstissue.dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-6 bg-[#12131a] border border-white/5 rounded-xl hover:border-white/20 transition-all"
+              className="p-6 bg-[#15161E] border border-white/5 rounded-2xl hover:border-white/20 transition-all"
             >
               <Github className="w-8 h-8 text-white mx-auto mb-3" />
               <h3 className="text-white font-medium mb-1">Star on GitHub</h3>
@@ -456,7 +470,7 @@ const SupportPage = () => {
               href="https://twitter.com/share?text=Check%20out%20FirstIssue.dev%20-%20a%20great%20platform%20for%20finding%20beginner-friendly%20open%20source%20issues!"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-6 bg-[#12131a] border border-white/5 rounded-xl hover:border-white/20 transition-all"
+              className="p-6 bg-[#15161E] border border-white/5 rounded-2xl hover:border-white/20 transition-all"
             >
               <Twitter className="w-8 h-8 text-blue-400 mx-auto mb-3" />
               <h3 className="text-white font-medium mb-1">Share on Twitter</h3>
@@ -465,9 +479,9 @@ const SupportPage = () => {
 
             <a
               href="mailto:annifind010@gmail.com?subject=Feedback"
-              className="p-6 bg-[#12131a] border border-white/5 rounded-xl hover:border-white/20 transition-all"
+              className="p-6 bg-[#15161E] border border-white/5 rounded-2xl hover:border-white/20 transition-all"
             >
-              <Mail className="w-8 h-8 text-emerald-400 mx-auto mb-3" />
+              <Mail className="w-8 h-8 text-green-400 mx-auto mb-3" />
               <h3 className="text-white font-medium mb-1">Send Feedback</h3>
               <p className="text-xs text-gray-500">Help us improve</p>
             </a>
@@ -476,7 +490,7 @@ const SupportPage = () => {
       </section>
 
       {/* Footer */}
-      <section className="py-12 px-6">
+      <section className="py-12 px-6 relative z-10">
         <div className="max-w-2xl mx-auto text-center">
           <p className="text-gray-600 text-sm">
             Built with <span className="text-pink-400">❤️</span> for the developer community

@@ -451,3 +451,70 @@ textarea:focus {
     -webkit-overflow-scrolling: touch;
   }
 }
+
+/* ============================================
+   Smart Analysis Wire Animation
+   ============================================ */
+
+@keyframes wire-flow {
+  to { stroke-dashoffset: -20; }
+}
+
+@keyframes float-slow-custom {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes bar-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes pulse-subtle-anim {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.animate-wire-flow {
+  animation: wire-flow 2s linear infinite;
+}
+
+.animate-wire-flow-delay {
+  animation: wire-flow 2s linear infinite 0.7s;
+}
+
+.animate-wire-flow-delay2 {
+  animation: wire-flow 2s linear infinite 1.4s;
+}
+
+.animate-float-slow {
+  animation: float-slow-custom 4s ease-in-out infinite;
+}
+
+.animate-float-slow-delay {
+  animation: float-slow-custom 4s ease-in-out infinite 1s;
+}
+
+.animate-float-slow-delay2 {
+  animation: float-slow-custom 4s ease-in-out infinite 2s;
+}
+
+.animate-bar-fill {
+  transform-origin: left;
+  animation: bar-fill 1.5s ease-out forwards;
+}
+
+.animate-bar-fill-delay {
+  transform-origin: left;
+  animation: bar-fill 1.5s ease-out 0.3s forwards;
+}
+
+.animate-bar-fill-delay2 {
+  transform-origin: left;
+  animation: bar-fill 1.5s ease-out 0.6s forwards;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle-anim 3s ease-in-out infinite;
+}
+
