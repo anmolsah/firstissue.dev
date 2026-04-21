@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
@@ -38,13 +38,12 @@ const ProfilePageNew = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [activeNav, setActiveNav] = useState("dashboard");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [customProfile, setCustomProfile] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Use GitHub sync hook for contributions with auto-sync enabled
-  const { contributions, getStats, getSuccessRate, sync, syncing, lastSynced } =
+  const { contributions, getStats, getSuccessRate } =
     useGitHubSync(
       user?.id,
       true, // Enable auto-sync for real-time updates
@@ -255,10 +254,10 @@ const ProfilePageNew = () => {
 
           {/* Navigation */}
           <nav className="space-y-1">
-            <NavItem icon={Compass} label="Explore" active={activeNav === "explore"} onClick={() => navigate("/explore")} />
-            <NavItem icon={FileText} label="Bookmarks" active={activeNav === "saved"} onClick={() => navigate("/bookmarks")} />
-            <NavItem icon={TrendingUp} label="Status" active={activeNav === "status"} onClick={() => navigate("/status")} />
-            <NavItem icon={BookOpen} label="Docs" active={activeNav === "docs"} onClick={() => navigate("/getting-started")} />
+            <SidebarLink icon={Compass} label="Explore" to="/explore" />
+            <SidebarLink icon={FileText} label="Bookmarks" to="/bookmarks" />
+            <SidebarLink icon={TrendingUp} label="Status" to="/status" />
+            <SidebarLink icon={BookOpen} label="Docs" to="/getting-started" />
           </nav>
         </div>
       </aside>
@@ -352,10 +351,10 @@ const ProfilePageNew = () => {
             </div>
 
             {/* Nav links */}
-            <NavItem icon={Compass} label="Explore" onClick={() => { navigate("/explore"); setMobileMenuOpen(false); }} />
-            <NavItem icon={FileText} label="Bookmarks" onClick={() => { navigate("/bookmarks"); setMobileMenuOpen(false); }} />
-            <NavItem icon={TrendingUp} label="Status" onClick={() => { navigate("/status"); setMobileMenuOpen(false); }} />
-            <NavItem icon={BookOpen} label="Docs" onClick={() => { navigate("/getting-started"); setMobileMenuOpen(false); }} />
+            <SidebarLink icon={Compass} label="Explore" to="/explore" onClick={() => setMobileMenuOpen(false)} />
+            <SidebarLink icon={FileText} label="Bookmarks" to="/bookmarks" onClick={() => setMobileMenuOpen(false)} />
+            <SidebarLink icon={TrendingUp} label="Status" to="/status" onClick={() => setMobileMenuOpen(false)} />
+            <SidebarLink icon={BookOpen} label="Docs" to="/getting-started" onClick={() => setMobileMenuOpen(false)} />
           </div>
         )}
 
@@ -416,8 +415,7 @@ const ProfilePageNew = () => {
                 {(customProfile?.website || githubProfile?.blog) && (
                   <a
                     href={
-                      (
-                        customProfile?.website || githubProfile?.blog
+                      (customProfile?.website || githubProfile?.blog || ""
                       ).startsWith("http")
                         ? customProfile?.website || githubProfile?.blog
                         : `https://${customProfile?.website || githubProfile?.blog}`
@@ -469,7 +467,7 @@ const ProfilePageNew = () => {
                 <span>More</span>
               </div>
             </div>
-            <ContributionHeatmap contributions={contributions} />
+            <ContributionHeatmap contributions={contributions} username={getGitHubUsername()} />
           </div>
 
           {/* Badges Section */}
@@ -577,19 +575,24 @@ const ProfilePageNew = () => {
 
 /* ── Sub Components ── */
 
-const NavItem = ({ icon: Icon, label, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
-      active
-        ? "bg-blue-600/10 text-blue-400"
-        : "text-gray-400 hover:text-white hover:bg-white/5"
-    }`}
-  >
-    <Icon className={`w-5 h-5 flex-shrink-0 ${active ? "text-blue-400" : "text-gray-500"}`} />
-    {label}
-  </button>
-);
+const SidebarLink = ({ icon: Icon, label, to, onClick }) => {
+  const location = useLocation();
+  const active = location.pathname === to;
+  return (
+    <Link
+      to={to}
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+        active
+          ? "bg-blue-600/10 text-blue-400"
+          : "text-gray-400 hover:text-white hover:bg-white/5"
+      }`}
+    >
+      <Icon className={`w-5 h-5 flex-shrink-0 ${active ? "text-blue-400" : "text-gray-500"}`} />
+      {label}
+    </Link>
+  );
+};
 
 const MobileNavItem = ({ icon: Icon, label, active, onClick }) => (
   <button
@@ -693,8 +696,80 @@ const QuickActionButton = ({ icon, label, description, onClick }) => (
   </button>
 );
 
-const ContributionHeatmap = ({ contributions }) => {
+const ContributionHeatmap = ({ contributions, username }) => {
   const [hoveredDay, setHoveredDay] = useState(null);
+  const [ghCalendar, setGhCalendar] = useState(null);
+  const [, setLoadingCalendar] = useState(false);
+
+  // Fetch real contribution data from GitHub GraphQL API
+  useEffect(() => {
+    if (!username) return;
+
+    const cacheKey = `gh_calendar_${username}`;
+    const cached = getCache(cacheKey);
+    if (cached) {
+      setGhCalendar(cached);
+      return;
+    }
+
+    const fetchCalendar = async () => {
+      setLoadingCalendar(true);
+      try {
+        // Get GitHub token
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.provider_token;
+
+        if (!token) {
+          console.warn("No GitHub token for GraphQL, falling back to local data");
+          setLoadingCalendar(false);
+          return;
+        }
+
+        const query = `
+          query($username: String!) {
+            user(login: $username) {
+              contributionsCollection {
+                contributionCalendar {
+                  totalContributions
+                  weeks {
+                    contributionDays {
+                      date
+                      contributionCount
+                      contributionLevel
+                    }
+                  }
+                }
+              }
+            }
+          }
+        `;
+
+        const response = await fetch("https://api.github.com/graphql", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ query, variables: { username } }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const calendar = data?.data?.user?.contributionsCollection?.contributionCalendar;
+          if (calendar) {
+            setGhCalendar(calendar);
+            setCache(cacheKey, calendar, 30 * 60 * 1000); // Cache 30 min
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch GitHub calendar:", err);
+      } finally {
+        setLoadingCalendar(false);
+      }
+    };
+
+    fetchCalendar();
+  }, [username]);
 
   // GitHub Premium Green Colors
   const getLevelColor = (level) => {
@@ -708,14 +783,55 @@ const ContributionHeatmap = ({ contributions }) => {
     }
   };
 
-  // Generate heatmap data from contributions
+  // Map GitHub GraphQL contributionLevel string to number
+  const levelToNumber = (levelStr) => {
+    switch (levelStr) {
+      case "NONE": return 0;
+      case "FIRST_QUARTILE": return 1;
+      case "SECOND_QUARTILE": return 2;
+      case "THIRD_QUARTILE": return 3;
+      case "FOURTH_QUARTILE": return 4;
+      default: return 0;
+    }
+  };
+
+  // Generate heatmap data — prefer GitHub GraphQL data, fallback to local
   const generateHeatmapData = () => {
+    // --- Source A: Real GitHub GraphQL calendar ---
+    if (ghCalendar?.weeks?.length) {
+      const heatmapData = [];
+      const monthLabels = [];
+      let currentMonth = null;
+
+      ghCalendar.weeks.forEach((week, wIndex) => {
+        const weekData = week.contributionDays.map((day) => ({
+          level: levelToNumber(day.contributionLevel),
+          count: day.contributionCount,
+          date: day.date,
+          dateObj: new Date(day.date),
+        }));
+
+        // Month label from first day of each week (Sunday)
+        if (week.contributionDays.length > 0) {
+          const firstDay = new Date(week.contributionDays[0].date);
+          const monthName = firstDay.toLocaleDateString("en-US", { month: "short" });
+          if (monthName !== currentMonth) {
+            monthLabels.push({ week: wIndex, label: monthName });
+            currentMonth = monthName;
+          }
+        }
+
+        heatmapData.push(weekData);
+      });
+
+      return { heatmapData, monthLabels };
+    }
+
+    // --- Source B: Fallback to local contributions data ---
     const weeks = 52;
     const heatmapData = [];
     const monthLabels = [];
 
-    // Create a map of dates to contribution counts
-    // FIXED: Prioritize GitHub event dates over Supabase row timestamp
     const contributionMap = new Map();
     contributions.forEach((contrib) => {
       const date = new Date(
@@ -725,11 +841,8 @@ const ContributionHeatmap = ({ contributions }) => {
       contributionMap.set(dateStr, (contributionMap.get(dateStr) || 0) + 1);
     });
 
-    // FIXED: Walk FORWARD from (today - 52 weeks) to today
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-
-    // Find the Sunday of the week 52 weeks ago
     const startDate = new Date(today);
     startDate.setDate(today.getDate() - (weeks * 7) - today.getDay());
 
@@ -737,20 +850,17 @@ const ContributionHeatmap = ({ contributions }) => {
 
     for (let w = 0; w < weeks; w++) {
       const week = [];
-
       for (let d = 0; d < 7; d++) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + w * 7 + d);
         const dateStr = date.toISOString().split("T")[0];
         const count = contributionMap.get(dateStr) || 0;
 
-        // Don't show future dates
         if (date > today) {
           week.push({ level: 0, count: 0, date: dateStr, dateObj: date, isFuture: true });
           continue;
         }
 
-        // Convert count to level (0-4)
         let level = 0;
         if (count > 0) level = 1;
         if (count >= 2) level = 2;
@@ -760,7 +870,6 @@ const ContributionHeatmap = ({ contributions }) => {
         week.push({ level, count, date: dateStr, dateObj: date });
       }
 
-      // Track month changes for labels (use the Sunday of each week)
       const weekSunday = new Date(startDate);
       weekSunday.setDate(startDate.getDate() + w * 7);
       const monthName = weekSunday.toLocaleDateString("en-US", { month: "short" });
@@ -776,6 +885,7 @@ const ContributionHeatmap = ({ contributions }) => {
   };
 
   const { heatmapData, monthLabels } = generateHeatmapData();
+  // totalContributions available: ghCalendar?.totalContributions ?? contributions.length
 
   const formatTooltipDate = (dateStr) => {
     const date = new Date(dateStr);
