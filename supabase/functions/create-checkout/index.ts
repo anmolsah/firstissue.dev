@@ -2,7 +2,6 @@
 // Deploy: supabase functions deploy create-checkout
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -33,33 +32,32 @@ serve(async (req: Request) => {
       );
     }
 
+    // Determine environment from key prefix
+    // Test keys start with "sk_test_", Live keys start with "sk_live_"
+    const isTestMode = DODO_API_KEY.includes("test");
+    const baseUrl = isTestMode
+      ? "https://test.dodopayments.com"
+      : "https://live.dodopayments.com";
+
     // Create Dodo Payments checkout session
-    // Docs: https://docs.dodopayments.com/api-reference/payments/create-payment
-    const dodoResponse = await fetch("https://api.dodopayments.com/payments", {
+    // Docs: https://docs.dodopayments.com/api-reference/checkout-sessions/create
+    const dodoResponse = await fetch(`${baseUrl}/checkouts`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${DODO_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        billing: {
-          city: null,
-          country: "US",
-          state: null,
-          street: null,
-          zipcode: null,
-        },
-        customer: {
-          email: email,
-          name: email.split("@")[0],
-        },
-        payment_link: false,
         product_cart: [
           {
             product_id: Deno.env.get("DODO_PRODUCT_ID") || "YOUR_PRODUCT_ID",
             quantity: 1,
           },
         ],
+        customer: {
+          email: email,
+          name: email.split("@")[0],
+        },
         return_url: returnUrl || "https://firstissue.dev/support?success=true",
         metadata: {
           user_id: userId,
@@ -70,19 +68,20 @@ serve(async (req: Request) => {
 
     if (!dodoResponse.ok) {
       const errorText = await dodoResponse.text();
-      console.error("Dodo API error:", errorText);
+      console.error("Dodo API error:", dodoResponse.status, errorText);
       return new Response(
-        JSON.stringify({ error: "Failed to create checkout session" }),
+        JSON.stringify({ error: "Failed to create checkout session", details: errorText }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const dodoData = await dodoResponse.json();
+    console.log("Dodo checkout created:", JSON.stringify(dodoData));
 
     return new Response(
       JSON.stringify({
-        checkoutUrl: dodoData.payment_link || dodoData.url || dodoData.checkout_url,
-        paymentId: dodoData.payment_id,
+        checkoutUrl: dodoData.checkout_url || dodoData.payment_link || dodoData.url,
+        sessionId: dodoData.session_id,
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
