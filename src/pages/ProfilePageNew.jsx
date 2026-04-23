@@ -42,6 +42,25 @@ const ProfilePageNew = () => {
   console.log("[ProfilePage] Rendering. Path:", location.pathname);
 
   const [activeTab, setActiveTab] = useState("overview");
+
+  useEffect(() => {
+    console.log("[ProfilePage] Path changed to:", location.pathname);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleGlobalClick = (e) => {
+      console.log("[ProfilePage] Global Click at:", {
+        x: e.clientX,
+        y: e.clientY,
+        target: e.target,
+        tagName: e.target.tagName,
+        classes: e.target.className
+      });
+    };
+    window.addEventListener("click", handleGlobalClick);
+    return () => window.removeEventListener("click", handleGlobalClick);
+  }, []);
+
   const [loading, setLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [customProfile, setCustomProfile] = useState(null);
