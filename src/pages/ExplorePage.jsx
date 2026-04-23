@@ -413,7 +413,7 @@ const ExplorePage = () => {
 
           {/* Filters Bar Row */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <div className="bg-[#15161E] p-1 rounded-lg inline-flex border border-white/5">
+            <div className="bg-[#15161E] p-1 rounded-lg flex border border-white/5 overflow-x-auto scrollbar-hide">
               <TabButton
                 label="All Issues"
                 active={selectedTab === "all"}
@@ -622,7 +622,7 @@ const ExplorePage = () => {
 const TabButton = ({ label, active, onClick, icon: Icon, isPremium }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 ${
+    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
       active
         ? isPremium
           ? "bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-purple-300 shadow-sm border border-purple-500/20"

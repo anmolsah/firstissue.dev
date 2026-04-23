@@ -66,8 +66,8 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl bg-[#15161E] rounded-2xl border border-white/10 overflow-hidden">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+      <div className="relative w-full max-w-2xl bg-[#15161E] rounded-2xl border border-white/10 overflow-hidden my-auto max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -106,7 +106,7 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
           {/* Social Share Buttons */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-white mb-3">Share on Social Media</h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 xs:grid-cols-3 gap-3">
               <TwitterShareButton
                 url={shareUrl}
                 title={shareTitle}

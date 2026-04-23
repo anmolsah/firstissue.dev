@@ -148,12 +148,12 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
       {/* Profile Summary + Re-analyze */}
       {userProfile && (
         <div className="bg-gradient-to-r from-purple-500/5 to-blue-500/5 border border-purple-500/10 rounded-xl p-4 mb-6">
-          <div className="flex items-start justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
                 <Target className="w-5 h-5 text-purple-400" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <h3 className="text-sm font-semibold text-white">Your Tech Profile</h3>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {userProfile.topLanguages.map((lang) => (
@@ -171,10 +171,10 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t border-white/5 sm:border-0">
               {/* Cache info */}
               {lastAnalyzedAt && (
-                <span className="hidden sm:flex items-center gap-1 text-[11px] text-gray-500">
+                <span className="flex items-center gap-1 text-[11px] text-gray-500">
                   <Clock className="w-3 h-3" />
                   {getTimeAgo(lastAnalyzedAt)}
                 </span>

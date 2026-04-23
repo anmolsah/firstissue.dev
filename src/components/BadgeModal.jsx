@@ -96,7 +96,7 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
       >
         {/* Modal Content */}
         <div
-          className={`relative w-full max-w-md bg-[#12131a] rounded-2xl border border-white/10 overflow-hidden ${
+          className={`relative w-full max-w-md bg-[#12131a] rounded-2xl border border-white/10 overflow-hidden max-h-[90vh] overflow-y-auto shadow-2xl ${
             isClosing ? 'animate-badge-modal-out' : 'animate-badge-modal-in'
           }`}
           onClick={(e) => e.stopPropagation()}
