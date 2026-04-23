@@ -576,12 +576,19 @@ const ProfilePageNew = () => {
 /* ── Sub Components ── */
 
 const SidebarLink = ({ icon: Icon, label, to, onClick }) => {
+  const navigate = useNavigate();
   const location = useLocation();
   const active = location.pathname === to;
+
+  const handleClick = (e) => {
+    e.preventDefault();
+    if (onClick) onClick();
+    navigate(to);
+  };
+
   return (
-    <Link
-      to={to}
-      onClick={onClick}
+    <button
+      onClick={handleClick}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
         active
           ? "bg-blue-600/10 text-blue-400"
@@ -590,7 +597,7 @@ const SidebarLink = ({ icon: Icon, label, to, onClick }) => {
     >
       <Icon className={`w-5 h-5 flex-shrink-0 ${active ? "text-blue-400" : "text-gray-500"}`} />
       {label}
-    </Link>
+    </button>
   );
 };
 
