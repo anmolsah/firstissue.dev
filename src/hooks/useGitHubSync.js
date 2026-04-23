@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { syncGitHubContributions } from "../services/githubSync";
 import { supabase } from "../lib/supabase";
 import { getCache, setCache, CACHE_KEYS, getCacheAge } from "../utils/cache";
@@ -163,10 +163,10 @@ export const useGitHubSync = (userId, autoSync = true) => {
     }, [userId, autoSync, shouldSync, sync, fetchContributions]);
 
     /**
-     * Get statistics
+     * Memoized statistics
      */
-    const getStats = useCallback(() => {
-        const stats = {
+    const stats = useMemo(() => {
+        const statsObj = {
             total: contributions.length,
             saved: 0,
             applied: 0,
@@ -177,19 +177,19 @@ export const useGitHubSync = (userId, autoSync = true) => {
 
         contributions.forEach((contribution) => {
             if (contribution.pr_status === 'merged') {
-                stats.merged++;
+                statsObj.merged++;
             } else if (contribution.pr_status === 'open' || contribution.pr_status === 'draft') {
-                stats.in_progress++;
+                statsObj.in_progress++;
             } else if (contribution.pr_status === 'closed' && !contribution.pr_merged_at) {
-                stats.closed++;
+                statsObj.closed++;
             } else if (contribution.is_assigned || contribution.has_commented) {
-                stats.applied++;
+                statsObj.applied++;
             } else {
-                stats.saved++;
+                statsObj.saved++;
             }
         });
 
-        return stats;
+        return statsObj;
     }, [contributions]);
 
     /**
@@ -211,7 +211,8 @@ export const useGitHubSync = (userId, autoSync = true) => {
         syncError,
         sync,
         shouldSync,
-        getStats,
+        stats,
+        getStats, // Keep for backward compatibility if needed
         getSuccessRate,
         fetchContributions,
     };

@@ -67,7 +67,7 @@ const ProfilePageNew = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Use GitHub sync hook for contributions with auto-sync enabled
-  const { contributions, getStats, getSuccessRate } =
+  const { contributions, stats: ghStats, getStats, getSuccessRate } =
     useGitHubSync(
       user?.id,
       true, // Enable auto-sync for real-time updates
@@ -75,7 +75,7 @@ const ProfilePageNew = () => {
 
   // Use badges hook for notifications
   const { newlyUnlockedBadge, dismissNotification } = useBadges(
-    getStats(),
+    ghStats,
     contributions
   );
 
@@ -196,7 +196,7 @@ const ProfilePageNew = () => {
   };
 
   // Calculate stats from contributions
-  const contributionStats = getStats();
+  const contributionStats = ghStats;
   const successRate = getSuccessRate();
 
   const stats = {
