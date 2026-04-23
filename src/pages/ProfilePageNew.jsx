@@ -7,6 +7,7 @@ import { useGitHubSync } from "../hooks/useGitHubSync";
 import EditProfileModal from "../components/EditProfileModal";
 import BadgesSection from "../components/BadgesSection";
 import BadgeUnlockedNotification from "../components/BadgeUnlockedNotification";
+import AppSidebar from "../components/AppSidebar";
 import { useBadges } from "../hooks/useBadges";
 import {
   Bookmark,
@@ -215,57 +216,47 @@ const ProfilePageNew = () => {
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
       {/* ── Left Sidebar (Desktop only) ── */}
-      <aside className="w-64 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto">
-        <div className="p-6">
-          {/* Profile Card */}
-          <div className="bg-[#15161E] rounded-xl p-5 border border-white/5 mb-6">
-            <div className="w-16 h-16 rounded-lg overflow-hidden mb-4">
-              <img
-                src={
-                  githubProfile?.avatar_url ||
-                  user?.user_metadata?.avatar_url ||
-                  `https://ui-avatars.com/api/?name=${user?.email}`
-                }
-                alt="Avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <h2 className="text-lg font-bold text-white mb-1 truncate">
-              {displayName}
-            </h2>
-            <p className="text-sm text-gray-400 mb-4 leading-relaxed line-clamp-2">
-              {displayBio}
-            </p>
-
-            <button
-              onClick={() => setIsEditModalOpen(true)}
-              className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm cursor-pointer"
-            >
-              Edit Profile
-            </button>
+      <AppSidebar>
+        {/* Profile Card */}
+        <div className="bg-[#15161E] rounded-xl p-5 border border-white/5 mb-6">
+          <div className="w-16 h-16 rounded-lg overflow-hidden mb-4">
+            <img
+              src={
+                githubProfile?.avatar_url ||
+                user?.user_metadata?.avatar_url ||
+                `https://ui-avatars.com/api/?name=${user?.email}`
+              }
+              alt="Avatar"
+              className="w-full h-full object-cover"
+            />
           </div>
+          <h2 className="text-lg font-bold text-white mb-1 truncate">
+            {displayName}
+          </h2>
+          <p className="text-sm text-gray-400 mb-4 leading-relaxed line-clamp-2">
+            {displayBio}
+          </p>
 
-          {/* GitHub Stats Cards */}
-          <div className="space-y-3 mb-6">
-            <SidebarStatCard label="Merged PRs" value={stats.merged} color="emerald" icon={GitMerge} />
-            <SidebarStatCard label="In Progress" value={stats.inProgress} color="purple" icon={GitPullRequest} />
-            <SidebarStatCard label="Bookmarks" value={stats.bookmarksCount} color="blue" icon={Bookmark} />
-          </div>
-
-          {/* Navigation */}
-          <nav className="space-y-1">
-            <SidebarLink icon={Compass} label="Explore" to="/explore" />
-            <SidebarLink icon={FileText} label="Bookmarks" to="/bookmarks" />
-            <SidebarLink icon={TrendingUp} label="Status" to="/status" />
-            <SidebarLink icon={BookOpen} label="Docs" to="/getting-started" />
-          </nav>
+          <button
+            onClick={() => setIsEditModalOpen(true)}
+            className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm cursor-pointer"
+          >
+            Edit Profile
+          </button>
         </div>
-      </aside>
+
+        {/* GitHub Stats Cards */}
+        <div className="space-y-3">
+          <SidebarStatCard label="Merged PRs" value={stats.merged} color="emerald" icon={GitMerge} />
+          <SidebarStatCard label="In Progress" value={stats.inProgress} color="purple" icon={GitPullRequest} />
+          <SidebarStatCard label="Bookmarks" value={stats.bookmarksCount} color="blue" icon={Bookmark} />
+        </div>
+      </AppSidebar>
 
       {/* ── Main Content ── */}
       <main className="flex-1 lg:ml-64 min-w-0 pb-20 lg:pb-0">
         {/* Top Header */}
-        <header className="h-14 sm:h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
+        <header className="h-14 sm:h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <button
@@ -352,7 +343,7 @@ const ProfilePageNew = () => {
 
             {/* Nav links */}
             <SidebarLink icon={Compass} label="Explore" to="/explore" onClick={() => setMobileMenuOpen(false)} />
-            <SidebarLink icon={FileText} label="Bookmarks" to="/bookmarks" onClick={() => setMobileMenuOpen(false)} />
+            <SidebarLink icon={Bookmark} label="Bookmarks" to="/bookmarks" onClick={() => setMobileMenuOpen(false)} />
             <SidebarLink icon={TrendingUp} label="Status" to="/status" onClick={() => setMobileMenuOpen(false)} />
             <SidebarLink icon={BookOpen} label="Docs" to="/getting-started" onClick={() => setMobileMenuOpen(false)} />
           </div>
@@ -576,19 +567,13 @@ const ProfilePageNew = () => {
 /* ── Sub Components ── */
 
 const SidebarLink = ({ icon: Icon, label, to, onClick }) => {
-  const navigate = useNavigate();
   const location = useLocation();
   const active = location.pathname === to;
 
-  const handleClick = (e) => {
-    e.preventDefault();
-    if (onClick) onClick();
-    navigate(to);
-  };
-
   return (
-    <button
-      onClick={handleClick}
+    <Link
+      to={to}
+      onClick={onClick}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
         active
           ? "bg-blue-600/10 text-blue-400"
@@ -597,7 +582,7 @@ const SidebarLink = ({ icon: Icon, label, to, onClick }) => {
     >
       <Icon className={`w-5 h-5 flex-shrink-0 ${active ? "text-blue-400" : "text-gray-500"}`} />
       {label}
-    </button>
+    </Link>
   );
 };
 
