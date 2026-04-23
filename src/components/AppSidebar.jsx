@@ -1,5 +1,4 @@
-import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import {
   Compass,
   Bookmark,
@@ -27,7 +26,6 @@ const AppSidebar = ({ children, className = "" }) => {
   };
 
   const activePage = getActivePage();
-  console.log("[AppSidebar] Rendering. Active Page:", activePage, "Path:", location.pathname);
 
   const navigationItems = [
     {
@@ -95,7 +93,6 @@ const AppSidebar = ({ children, className = "" }) => {
 const NavItem = ({ icon: Icon, label, active, to }) => (
   <Link
     to={to}
-    onClick={() => console.log("[AppSidebar] NavItem Clicked:", label)}
     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
       active
         ? "bg-blue-600/10 text-blue-400"
