@@ -159,12 +159,19 @@ export async function runSmartMatch(username, token, supabaseUrl) {
   // Step 3: Get AI rankings
   const matches = await getAIMatchedIssues(userProfile, candidates, supabaseUrl);
 
+  console.log('[SmartMatch] AI returned', matches.length, 'matches');
+  if (matches.length > 0) {
+    console.log('[SmartMatch] Sample AI match:', JSON.stringify(matches[0]));
+    console.log('[SmartMatch] Sample candidate ID:', candidates[0]?.id, typeof candidates[0]?.id);
+  }
+
   // Step 4: Merge AI scores back into full issue data
-  const matchMap = new Map(matches.map((m) => [m.issueId, m]));
+  // Coerce all IDs to strings for consistent matching (AI may return string or number IDs)
+  const matchMap = new Map(matches.map((m) => [String(m.issueId), m]));
 
   const rankedIssues = candidates
     .map((issue) => {
-      const match = matchMap.get(issue.id);
+      const match = matchMap.get(String(issue.id));
       return {
         ...issue,
         matchScore: match?.matchScore || 0,
@@ -173,6 +180,8 @@ export async function runSmartMatch(username, token, supabaseUrl) {
       };
     })
     .sort((a, b) => b.matchScore - a.matchScore);
+
+  console.log('[SmartMatch] Ranked issues - top score:', rankedIssues[0]?.matchScore);
 
   return {
     issues: rankedIssues,

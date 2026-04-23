@@ -496,7 +496,15 @@ const ExplorePage = () => {
               username={user?.user_metadata?.user_name || user?.user_metadata?.preferred_username}
               token={null}
               bookmarkedIssues={bookmarkedIssues}
-              onToggleBookmark={(issue) => toggleBookmark(issue.url, issue)}
+              onToggleBookmark={(issue) => {
+                // SmartMatch issues use 'url' instead of 'html_url'
+                const adaptedIssue = {
+                  ...issue,
+                  html_url: issue.url || issue.html_url,
+                  repository_url: `https://api.github.com/repos/${issue.repo}`,
+                };
+                handleBookmark(adaptedIssue);
+              }}
             />
           ) : selectedTab === "trusted" ? (
             /* Trusted Repos Tab Content */

@@ -81,7 +81,6 @@ ${candidateIssues.map((issue: any, i: number) =>
         ],
         temperature: 0.3,
         max_tokens: 2000,
-        response_format: { type: "json_object" },
       }),
     });
 
@@ -96,6 +95,8 @@ ${candidateIssues.map((issue: any, i: number) =>
 
     const aiData = await aiResponse.json();
     const content = aiData.choices?.[0]?.message?.content;
+
+    console.log("AI raw response content:", content);
 
     if (!content) {
       return new Response(
@@ -117,6 +118,18 @@ ${candidateIssues.map((issue: any, i: number) =>
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Normalize: ensure issueId is a number and matchScore is a float
+    if (parsed.matches && Array.isArray(parsed.matches)) {
+      parsed.matches = parsed.matches.map((m: any) => ({
+        ...m,
+        issueId: Number(m.issueId) || m.issueId,
+        matchScore: parseFloat(m.matchScore) || 0,
+      }));
+    }
+
+    console.log("Parsed matches count:", parsed.matches?.length);
+    console.log("Sample match:", JSON.stringify(parsed.matches?.[0]));
 
     return new Response(
       JSON.stringify(parsed),
