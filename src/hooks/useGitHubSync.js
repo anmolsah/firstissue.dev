@@ -193,6 +193,11 @@ export const useGitHubSync = (userId, autoSync = true) => {
     }, [contributions]);
 
     /**
+     * Get statistics (backward compatibility)
+     */
+    const getStats = useCallback(() => stats, [stats]);
+
+    /**
      * Get success rate
      */
     const getSuccessRate = useCallback(() => {

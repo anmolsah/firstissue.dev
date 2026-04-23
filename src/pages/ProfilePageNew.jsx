@@ -39,27 +39,10 @@ const ProfilePageNew = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  console.log("[ProfilePage] Rendering. Path:", location.pathname);
 
   const [activeTab, setActiveTab] = useState("overview");
 
-  useEffect(() => {
-    console.log("[ProfilePage] Path changed to:", location.pathname);
-  }, [location.pathname]);
 
-  useEffect(() => {
-    const handleGlobalClick = (e) => {
-      console.log("[ProfilePage] Global Click at:", {
-        x: e.clientX,
-        y: e.clientY,
-        target: e.target,
-        tagName: e.target.tagName,
-        classes: e.target.className
-      });
-    };
-    window.addEventListener("click", handleGlobalClick);
-    return () => window.removeEventListener("click", handleGlobalClick);
-  }, []);
 
   const [loading, setLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -596,10 +579,7 @@ const SidebarLink = ({ icon: Icon, label, to, onClick }) => {
   return (
     <Link
       to={to}
-      onClick={(e) => {
-        console.log("[ProfilePage] SidebarLink Clicked:", label, "to:", to);
-        if (onClick) onClick(e);
-      }}
+      onClick={onClick}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
         active
           ? "bg-blue-600/10 text-blue-400"
