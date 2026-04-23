@@ -13,7 +13,6 @@ import {
  * Used across Explore, Profile, Bookmarks, Status pages
  */
 const AppSidebar = ({ children, className = "" }) => {
-  const navigate = useNavigate();
   const location = useLocation();
 
   // Determine active page based on current route
@@ -28,6 +27,7 @@ const AppSidebar = ({ children, className = "" }) => {
   };
 
   const activePage = getActivePage();
+  console.log("[AppSidebar] Rendering. Active Page:", activePage, "Path:", location.pathname);
 
   const navigationItems = [
     {
@@ -83,7 +83,7 @@ const AppSidebar = ({ children, className = "" }) => {
               icon={item.icon}
               label={item.label}
               active={activePage === item.id}
-              onClick={() => navigate(item.path)}
+              to={item.path}
             />
           ))}
         </nav>
@@ -92,9 +92,10 @@ const AppSidebar = ({ children, className = "" }) => {
   );
 };
 
-const NavItem = ({ icon: Icon, label, active, onClick }) => (
-  <button
-    onClick={onClick}
+const NavItem = ({ icon: Icon, label, active, to }) => (
+  <Link
+    to={to}
+    onClick={() => console.log("[AppSidebar] NavItem Clicked:", label)}
     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
       active
         ? "bg-blue-600/10 text-blue-400"
@@ -105,7 +106,7 @@ const NavItem = ({ icon: Icon, label, active, onClick }) => (
       className={`w-5 h-5 ${active ? "text-blue-400" : "text-gray-500"}`}
     />
     {label}
-  </button>
+  </Link>
 );
 
 export default AppSidebar;

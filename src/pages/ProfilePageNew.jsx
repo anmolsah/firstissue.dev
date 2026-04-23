@@ -38,6 +38,10 @@ import {
 const ProfilePageNew = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  console.log("[ProfilePage] Rendering. Path:", location.pathname);
+
+  const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [customProfile, setCustomProfile] = useState(null);
@@ -573,7 +577,10 @@ const SidebarLink = ({ icon: Icon, label, to, onClick }) => {
   return (
     <Link
       to={to}
-      onClick={onClick}
+      onClick={(e) => {
+        console.log("[ProfilePage] SidebarLink Clicked:", label, "to:", to);
+        if (onClick) onClick(e);
+      }}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
         active
           ? "bg-blue-600/10 text-blue-400"
