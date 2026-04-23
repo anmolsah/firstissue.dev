@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useSupporter } from "../contexts/SupporterContext";
+import { supabase } from "../lib/supabase";
 import {
   Sparkles,
   Crown,
@@ -28,10 +29,65 @@ import toast from "react-hot-toast";
 
 const SupportPage = () => {
   const { user } = useAuth();
-  const { isSupporter, loading: supporterLoading } = useSupporter();
+  const { isSupporter, loading: supporterLoading, refreshStatus } = useSupporter();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
+
+  // Handle return from successful payment
+  useEffect(() => {
+    const success = searchParams.get("success");
+    if (success === "true" && user && !isSupporter && !supporterLoading) {
+      // User returned from payment — activate supporter status as fallback
+      const activateSupporter = async () => {
+        try {
+          // Check if supporter record already exists (webhook may have already handled it)
+          const { data: existing } = await supabase
+            .from("supporters")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("status", "active")
+            .single();
+
+          if (!existing) {
+            // Webhook hasn't fired yet — insert supporter record directly
+            const expiresAt = new Date();
+            expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+            const { error } = await supabase.from("supporters").upsert(
+              {
+                user_id: user.id,
+                email: user.email,
+                plan: "supporter",
+                status: "active",
+                amount_cents: 900,
+                currency: "USD",
+                started_at: new Date().toISOString(),
+                expires_at: expiresAt.toISOString(),
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: "user_id" }
+            );
+
+            if (error) {
+              console.error("Error activating supporter:", error);
+            } else {
+              toast.success("🎉 Welcome, Supporter! Smart Match is now unlocked.");
+              refreshStatus(); // Refresh the context
+            }
+          } else {
+            // Record exists, just refresh the context
+            refreshStatus();
+          }
+        } catch (err) {
+          console.error("Error in post-payment activation:", err);
+        }
+      };
+
+      activateSupporter();
+    }
+  }, [searchParams, user, isSupporter, supporterLoading, refreshStatus]);
 
   const handleCheckout = async () => {
     if (!user) {
