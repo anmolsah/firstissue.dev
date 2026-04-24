@@ -7,6 +7,7 @@ import BadgeImage from './BadgeImage';
 const BadgeShareModal = ({ badge, onClose, username }) => {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
   const badgeRef = useRef(null);
 
   const shareUrl = `https://firstissue.dev/badges/${badge.id}`;
@@ -15,23 +16,39 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
 
   // Download badge as image
   const downloadBadge = async () => {
+    if (downloading) return;
     setDownloading(true);
+    setIsCapturing(true);
+    
     try {
       const element = document.getElementById(`badge-share-${badge.id}`);
+      if (!element) {
+        throw new Error('Badge element not found');
+      }
+
+      // Wait for React to re-render without blur
+      await new Promise(resolve => setTimeout(resolve, 150));
+
       const canvas = await html2canvas(element, {
         backgroundColor: '#0B0C10',
-        scale: 2,
+        scale: 3, 
+        useCORS: true,
+        allowTaint: true,
         logging: false
       });
       
       const link = document.createElement('a');
-      link.download = `${badge.id}-badge.png`;
-      link.href = canvas.toDataURL();
+      link.download = `firstissue-${badge.id}.png`;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     } catch (error) {
       console.error('Error downloading badge:', error);
+      alert('Failed to download badge image. Please try again.');
     } finally {
       setDownloading(false);
+      setIsCapturing(false);
     }
   };
 
@@ -94,7 +111,7 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
           {/* Badge Preview */}
           <div className="bg-[#0B0C10] rounded-xl p-8 mb-6 flex justify-center" id={`badge-share-${badge.id}`}>
             <div className="text-center">
-              <BadgeImage badge={badge} size="large" showDetails={true} />
+              <BadgeImage badge={badge} size="large" showDetails={true} disableBlur={isCapturing} />
               <div className="mt-16 pt-4 border-t border-white/5">
                 <p className="text-gray-400 text-sm mb-1">Earned by</p>
                 <p className="text-white font-semibold">@{username}</p>

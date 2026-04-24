@@ -358,3 +358,5 @@ export function getNextBadgeToUnlock(stats, contributions = []) {
   // Sort by difficulty/requirement
   return unearnedBadges[0] || null;
 }
+
+export const ALL_BADGES = Object.values(BADGE_DEFINITIONS);

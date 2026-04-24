@@ -18,6 +18,7 @@ import DocsPage from "./pages/DocsPage";
 import DocsSectionPage from "./pages/DocsSectionPage";
 import DocsArticlePage from "./pages/DocsArticlePage";
 import TestGitHubPage from "./pages/TestGitHubPage";
+import BadgeShowcasePage from "./pages/BadgeShowcasePage";
 import Footer from "./components/Footer";
 import { Toaster } from "react-hot-toast";
 
@@ -93,6 +94,7 @@ const App = () => {
                 path="/docs/:section/:article"
                 element={<DocsArticlePage />}
               />
+              <Route path="/badges/:badgeId" element={<BadgeShowcasePage />} />
             </Routes>
           </AppLayout>
         </SupporterProvider>

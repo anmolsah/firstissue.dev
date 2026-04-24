@@ -46,7 +46,7 @@ const RARITY_COLORS = {
   }
 };
 
-const BadgeImage = ({ badge, size = 'large', showDetails = true }) => {
+const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = false }) => {
   const BadgeIcon = BADGE_ICONS[badge.id] || Award;
   const colors = RARITY_COLORS[badge.rarity] || RARITY_COLORS.common;
   
@@ -67,7 +67,9 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true }) => {
       {/* Badge Container */}
       <div className="w-full h-full relative">
         {/* Glow Effect */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} rounded-full blur-2xl opacity-50 ${colors.glow}`} />
+        {!disableBlur && (
+          <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} rounded-full blur-2xl opacity-50 ${colors.glow}`} />
+        )}
         
         {/* Main Badge Circle */}
         <div className={`relative w-full h-full rounded-full bg-gradient-to-br ${colors.bg} border-4 ${colors.border} shadow-2xl ${colors.glow} flex items-center justify-center overflow-hidden`}>
