@@ -1,4 +1,4 @@
-// Supabase Edge Function: Smart Match via OpenRouter AI
+// Supabase Edge Function: Smart Match via xAI Grok
 // Deploy: supabase functions deploy smart-match
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -23,10 +23,10 @@ serve(async (req: Request) => {
       );
     }
 
-    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
-    if (!OPENROUTER_API_KEY) {
+    const XAI_API_KEY = Deno.env.get("XAI_API_KEY");
+    if (!XAI_API_KEY) {
       return new Response(
-        JSON.stringify({ error: "OpenRouter API key not configured" }),
+        JSON.stringify({ error: "xAI API key not configured" }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -64,17 +64,15 @@ ${candidateIssues.map((issue: any, i: number) =>
   `${i + 1}. [ID: ${issue.id}] "${issue.title}" in ${issue.repo} | Labels: ${issue.labels.join(", ")} | ${issue.body?.substring(0, 150) || "no description"}`
 ).join("\n")}`;
 
-    // Call OpenRouter
-    const aiResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    // Call xAI
+    const aiResponse = await fetch("https://api.x.ai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+        "Authorization": `Bearer ${XAI_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": "https://firstissue.dev",
-        "X-Title": "FirstIssue.dev Smart Match",
       },
       body: JSON.stringify({
-        model: "tencent/hy3-preview:free",
+        model: "grok-3-mini",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -86,7 +84,7 @@ ${candidateIssues.map((issue: any, i: number) =>
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error("OpenRouter error:", errorText);
+      console.error("xAI error:", errorText);
       return new Response(
         JSON.stringify({ error: "AI matching failed", details: errorText }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

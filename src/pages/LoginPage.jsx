@@ -28,7 +28,11 @@ const LoginPage = () => {
         {/* <div className="inline-flex items-center justify-center w-14 h-14 bg-[#1a1b2e] border border-[#2a2b4e] rounded-xl mb-6">
           <Command className="w-7 h-7 text-blue-400" />
         </div> */}
-        <h1 className="text-4xl font-bold text-white mb-3">FirstIssue.dev</h1>
+        <Link to="/" className="flex items-center justify-center space-x-2 group mb-3">
+          <span className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
+            FirstIssue.dev
+          </span>
+        </Link>
         <p className="text-gray-500">The premier portal for open-source excellence</p>
       </div>
 

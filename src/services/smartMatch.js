@@ -1,6 +1,6 @@
 /**
  * Smart Match Service
- * Analyzes user's GitHub profile and calls OpenRouter AI via Edge Function
+ * Analyzes user's GitHub profile and calls xAI Grok via Edge Function
  * to provide personalized issue recommendations.
  */
 
