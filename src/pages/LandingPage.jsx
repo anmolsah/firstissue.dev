@@ -75,10 +75,7 @@ const LandingPage = () => {
       <section className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           {/* New Feature Pill */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wide uppercase mb-8 animate-fade-in hover:bg-blue-500/20 transition-colors cursor-default">
-            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-            NOW ROLLING BETA V2.0
-          </div>
+          
 
           <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black mb-8 leading-tight tracking-tight">
             Ship your{" "}
