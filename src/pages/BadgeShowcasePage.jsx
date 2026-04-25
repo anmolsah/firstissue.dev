@@ -4,6 +4,7 @@ import { Award, Share2, Download, ArrowLeft, Github, ExternalLink } from 'lucide
 import { ALL_BADGES, getBadgeRarityInfo } from '../utils/badgeSystem';
 import BadgeImage from '../components/BadgeImage';
 import html2canvas from 'html2canvas';
+import { fixOklchInElement } from '../utils/canvasHelper';
 
 const BadgeShowcasePage = () => {
   const { badgeId } = useParams();
@@ -56,7 +57,11 @@ const BadgeShowcasePage = () => {
         scale: 3,
         useCORS: true,
         allowTaint: true,
-        logging: false
+        logging: false,
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.getElementById(`badge-showcase-${badge.id}`);
+          if (el) fixOklchInElement(el);
+        }
       });
       
       const link = document.createElement('a');

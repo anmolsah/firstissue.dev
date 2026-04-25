@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { X, Download, Share2, Twitter, Linkedin, Facebook, Link as LinkIcon, Check } from 'lucide-react';
 import { TwitterShareButton, LinkedinShareButton, FacebookShareButton } from 'react-share';
 import html2canvas from 'html2canvas';
+import { fixOklchInElement } from '../utils/canvasHelper';
 import BadgeImage from './BadgeImage';
 
 const BadgeShareModal = ({ badge, onClose, username }) => {
@@ -34,7 +35,11 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
         scale: 3, 
         useCORS: true,
         allowTaint: true,
-        logging: false
+        logging: false,
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.getElementById(`badge-share-${badge.id}`);
+          if (el) fixOklchInElement(el);
+        }
       });
       
       const link = document.createElement('a');
