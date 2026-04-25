@@ -198,12 +198,11 @@ const ExplorePage = () => {
     }
     if (filters.language) query += ` language:${filters.language}`;
     if (filters.keywords) query += ` ${filters.keywords}`;
-    if (
-      filters.minStars &&
-      filters.minStars !== "0" &&
-      parseInt(filters.minStars) > 0
-    )
-      query += ` stars:>=${filters.minStars}`;
+    
+    const minStarsInt = parseInt(filters.minStars);
+    if (minStarsInt > 0) {
+      query += ` stars:>=${minStarsInt}`;
+    }
 
     return query;
   };
@@ -341,18 +340,30 @@ const ExplorePage = () => {
 
         {/* Project Stars Slider */}
         <div className="mt-6">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
-            Project Stars
-          </p>
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Project Stars
+            </p>
+            <span className="text-xs font-bold text-blue-400">
+              {parseInt(filters.minStars) >= 10000
+                ? "10k+"
+                : parseInt(filters.minStars).toLocaleString()}
+            </span>
+          </div>
           <input
             type="range"
             min="0"
             max="10000"
-            className="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer"
+            step="100"
+            value={filters.minStars}
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, minStars: e.target.value }))
+            }
+            className="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
           />
           <div className="flex justify-between text-[10px] text-gray-500 mt-2">
             <span>0</span>
-            <span>100k+</span>
+            <span>10k+</span>
           </div>
         </div>
       </AppSidebar>
