@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSupporter } from '../contexts/SupporterContext';
 import { useSmartMatch } from '../hooks/useSmartMatch';
@@ -17,7 +17,71 @@ import {
   Crown,
   AlertCircle,
   Clock,
+  BrainCircuit,
 } from 'lucide-react';
+
+const ProgressTimer = () => {
+  const [progress, setProgress] = useState(0);
+  const [statusIndex, setStatusIndex] = useState(0);
+  
+  const statuses = [
+    "Scanning your GitHub repositories...",
+    "Analyzing tech stack and expertise...",
+    "Evaluating issue difficulty levels...",
+    "Mapping repositories to your profile...",
+    "Generating personalized matches...",
+    "Finalizing your AI-curated list..."
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setProgress((oldProgress) => {
+        if (oldProgress >= 98) return 98;
+        const diff = Math.random() * 5;
+        return Math.min(oldProgress + diff, 98);
+      });
+    }, 300);
+
+    const statusTimer = setInterval(() => {
+      setStatusIndex((prev) => (prev + 1) % statuses.length);
+    }, 2500);
+
+    return () => {
+      clearInterval(timer);
+      clearInterval(statusTimer);
+    };
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto">
+      <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden mb-4 border border-white/5 relative">
+        <div 
+          className="h-full bg-gradient-to-r from-purple-600 via-blue-500 to-purple-600 bg-[length:200%_100%] animate-shimmer transition-all duration-700 ease-out"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+      <div className="flex justify-between items-center w-full">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-0.5">
+            {[0, 1, 2].map((i) => (
+              <div 
+                key={i} 
+                className="w-1 h-1 rounded-full bg-purple-400 animate-bounce" 
+                style={{ animationDelay: `${i * 0.15}s` }}
+              />
+            ))}
+          </div>
+          <span className="text-[10px] font-bold text-purple-300/80 uppercase tracking-widest min-w-[200px]">
+            {statuses[statusIndex]}
+          </span>
+        </div>
+        <span className="text-xl font-black text-white italic tracking-tighter">
+          {Math.floor(progress)}%
+        </span>
+      </div>
+    </div>
+  );
+};
 
 const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) => {
   const navigate = useNavigate();
@@ -107,17 +171,29 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
   // ── Loading State ──
   if (loading && (!matches || matches.length === 0)) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <div className="relative mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-purple-500/20">
-            <Sparkles className="w-8 h-8 text-purple-400 animate-pulse" />
+      <div className="flex flex-col items-center justify-center py-24 min-h-[400px]">
+        <div className="relative mb-10">
+          {/* Animated Brain/AI Pulse */}
+          <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full animate-pulse" />
+          <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-[#1A1B23] to-[#12131a] flex items-center justify-center border border-white/10 shadow-2xl overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-purple-600/10 via-transparent to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <BrainCircuit className="w-12 h-12 text-purple-400 relative z-10 animate-float-slow" />
+            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50" />
           </div>
+          
+          {/* Decorative floating dots */}
+          <Sparkles className="absolute -top-4 -right-4 w-6 h-6 text-purple-400/30 animate-pulse" />
+          <Zap className="absolute -bottom-2 -left-6 w-5 h-5 text-blue-400/30 animate-bounce-slow" />
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">Analyzing Your Profile</h3>
-        <p className="text-sm text-gray-400 mb-4 text-center max-w-sm">
-          AI is scanning your GitHub repos, languages, and contribution history to find perfect matches...
-        </p>
-        <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+
+        <div className="text-center mb-10 space-y-2">
+          <h3 className="text-2xl font-black text-white tracking-tight">AI Analysis in Progress</h3>
+          <p className="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">
+            Our neural network is processing your contribution history to generate high-precision matches.
+          </p>
+        </div>
+
+        <ProgressTimer />
       </div>
     );
   }
