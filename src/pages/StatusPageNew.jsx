@@ -322,7 +322,7 @@ const StatusPage = () => {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
+          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-4 scrollbar-hide mask-fade-right -mx-4 px-4 sm:mx-0 sm:px-0">
             {statusOptions.map(({ value, label, icon: Icon, color }) => {
               const count = value === "all" ? stats.total : stats[value] || 0;
               const isActive = selectedStatus === value;
@@ -330,16 +330,18 @@ const StatusPage = () => {
                 <button
                   key={value}
                   onClick={() => setSelectedStatus(value)}
-                  className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
                     isActive
-                      ? "bg-blue-600 text-white"
+                      ? "bg-blue-600 text-white shadow-[0_0_20px_-5px_rgba(37,99,235,0.4)]"
                       : "bg-[#15161E] text-gray-400 hover:text-white border border-white/5"
                   }`}
                 >
-                  {Icon && <Icon className="w-3.5 h-3.5 sm:w-4 h-4" />}
+                  {Icon && <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? "text-white" : color}`} />}
                   {label}
                   <span
-                    className={`text-[10px] sm:text-xs ${isActive ? "text-blue-200" : "text-gray-500"}`}
+                    className={`px-1.5 py-0.5 rounded-md text-[10px] sm:text-xs font-bold ${
+                      isActive ? "bg-white/20 text-white" : "bg-white/5 text-gray-500"
+                    }`}
                   >
                     {count}
                   </span>
