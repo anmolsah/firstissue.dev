@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { X, Download, Share2, Twitter, Linkedin, Facebook, Link as LinkIcon, Check } from 'lucide-react';
 import { TwitterShareButton, LinkedinShareButton, FacebookShareButton } from 'react-share';
-import html2canvas from 'html2canvas';
-import { fixOklchInElement } from '../utils/canvasHelper';
+import { toPng } from 'html-to-image';
 import BadgeImage from './BadgeImage';
 
 const BadgeShareModal = ({ badge, onClose, username }) => {
@@ -30,21 +29,14 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
       // Wait for React to re-render without blur
       await new Promise(resolve => setTimeout(resolve, 150));
 
-      const canvas = await html2canvas(element, {
+      const dataUrl = await toPng(element, {
         backgroundColor: '#0B0C10',
-        scale: 3, 
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        onclone: (clonedDoc) => {
-          const el = clonedDoc.getElementById(`badge-share-${badge.id}`);
-          if (el) fixOklchInElement(el);
-        }
+        pixelRatio: 3, 
       });
       
       const link = document.createElement('a');
       link.download = `firstissue-${badge.id}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
+      link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

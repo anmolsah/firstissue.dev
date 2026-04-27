@@ -3,8 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Award, Share2, Download, ArrowLeft, Github, ExternalLink } from 'lucide-react';
 import { ALL_BADGES, getBadgeRarityInfo } from '../utils/badgeSystem';
 import BadgeImage from '../components/BadgeImage';
-import html2canvas from 'html2canvas';
-import { fixOklchInElement } from '../utils/canvasHelper';
+import { toPng } from 'html-to-image';
 
 const BadgeShowcasePage = () => {
   const { badgeId } = useParams();
@@ -52,21 +51,14 @@ const BadgeShowcasePage = () => {
       // Wait for React to re-render without blur
       await new Promise(resolve => setTimeout(resolve, 150));
 
-      const canvas = await html2canvas(element, {
+      const dataUrl = await toPng(element, {
         backgroundColor: '#0B0C10',
-        scale: 3,
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        onclone: (clonedDoc) => {
-          const el = clonedDoc.getElementById(`badge-showcase-${badge.id}`);
-          if (el) fixOklchInElement(el);
-        }
+        pixelRatio: 3,
       });
       
       const link = document.createElement('a');
       link.download = `firstissue-${badge.id}.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = dataUrl;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

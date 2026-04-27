@@ -205,9 +205,9 @@ const StatusPage = () => {
         </header>
 
         {/* Content Body */}
-        <div className="p-6 sm:p-8">
+        <div className="p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
           {/* Sync Status Bar */}
-          <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 mb-6 flex items-center justify-between">
+          <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Github className="w-5 h-5 text-gray-400" />
               <div>
@@ -222,7 +222,7 @@ const StatusPage = () => {
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             >
               <RefreshCw
                 className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`}

@@ -47,6 +47,7 @@ const ProfilePageNew = () => {
   const [loading, setLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [customProfile, setCustomProfile] = useState(null);
+  const [isSupporter, setIsSupporter] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Use GitHub sync hook for contributions with auto-sync enabled
@@ -93,11 +94,28 @@ const ProfilePageNew = () => {
         fetchBookmarks(),
         fetchGitHubProfile(),
         fetchCustomProfile(),
+        fetchSupporterStatus(),
       ]);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchSupporterStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('supporters')
+        .select('status')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (!error && data?.status === 'active') {
+        setIsSupporter(true);
+      }
+    } catch (error) {
+      console.error("Error fetching supporter status:", error);
     }
   };
 
@@ -236,8 +254,14 @@ const ProfilePageNew = () => {
               className="w-full h-full object-cover"
             />
           </div>
-          <h2 className="text-lg font-bold text-white mb-1 truncate">
+          <h2 className="text-lg font-bold text-white mb-1 truncate flex items-center gap-2">
             {displayName}
+            {isSupporter && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded text-amber-400 text-[10px] uppercase tracking-wider font-bold">
+                <Star className="w-3 h-3 fill-amber-400" />
+                Supporter
+              </span>
+            )}
           </h2>
           <p className="text-sm text-gray-400 mb-4 leading-relaxed line-clamp-2">
             {displayBio}
@@ -282,7 +306,8 @@ const ProfilePageNew = () => {
           <div className="flex items-center gap-2 sm:gap-4">
             <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-white/5">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-white truncate max-w-[120px]">
+                <p className="text-sm font-medium text-white truncate max-w-[120px] flex items-center gap-1 justify-end">
+                  {isSupporter && <Star className="w-3 h-3 text-amber-400 fill-amber-400" />}
                   {githubProfile?.name || getGitHubUsername()}
                 </p>
                 <p className="text-xs text-gray-500">@{getGitHubUsername()}</p>
@@ -320,7 +345,10 @@ const ProfilePageNew = () => {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{displayName}</p>
+                <p className="text-sm font-semibold text-white truncate flex items-center gap-2">
+                  {displayName}
+                  {isSupporter && <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />}
+                </p>
                 <p className="text-xs text-gray-500 truncate">{displayBio}</p>
               </div>
               <button
