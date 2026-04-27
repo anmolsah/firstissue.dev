@@ -33,6 +33,7 @@ import {
   User,
   Menu,
   X,
+  BadgeCheck,
 } from "lucide-react";
 
 const ProfilePageNew = () => {
@@ -254,13 +255,10 @@ const ProfilePageNew = () => {
               className="w-full h-full object-cover"
             />
           </div>
-          <h2 className="text-lg font-bold text-white mb-1 truncate flex items-center gap-2">
+          <h2 className="text-lg font-bold text-white mb-1 truncate flex items-center gap-1.5">
             {displayName}
             {isSupporter && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/30 rounded text-amber-400 text-[10px] uppercase tracking-wider font-bold">
-                <Star className="w-3 h-3 fill-amber-400" />
-                Supporter
-              </span>
+              <BadgeCheck className="w-5 h-5 text-blue-400 fill-blue-400/20 flex-shrink-0" title="FirstIssue.dev Supporter" />
             )}
           </h2>
           <p className="text-sm text-gray-400 mb-4 leading-relaxed line-clamp-2">
@@ -307,7 +305,7 @@ const ProfilePageNew = () => {
             <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-white/5">
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-medium text-white truncate max-w-[120px] flex items-center gap-1 justify-end">
-                  {isSupporter && <Star className="w-3 h-3 text-amber-400 fill-amber-400" />}
+                  {isSupporter && <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-400/20" title="FirstIssue.dev Supporter" />}
                   {githubProfile?.name || getGitHubUsername()}
                 </p>
                 <p className="text-xs text-gray-500">@{getGitHubUsername()}</p>
@@ -345,9 +343,9 @@ const ProfilePageNew = () => {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate flex items-center gap-2">
+                <p className="text-sm font-semibold text-white truncate flex items-center gap-1.5">
                   {displayName}
-                  {isSupporter && <Star className="w-3 h-3 text-amber-400 fill-amber-400 flex-shrink-0" />}
+                  {isSupporter && <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-400/20 flex-shrink-0" title="FirstIssue.dev Supporter" />}
                 </p>
                 <p className="text-xs text-gray-500 truncate">{displayBio}</p>
               </div>
