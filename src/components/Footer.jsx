@@ -33,7 +33,7 @@ const Footer = () => {
         </div>
 
         {/* GitHub Star Section */}
-        <div className="flex justify-center pt-6 border-t border-white/5">
+        <div className="flex justify-end pt-6 border-t border-white/5">
           <a
             href="https://github.com/anmolsah/firstissue.dev"
             target="_blank"
