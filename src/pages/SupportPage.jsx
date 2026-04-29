@@ -294,7 +294,7 @@ const SupportPage = () => {
                 step: "02",
                 icon: Brain,
                 title: "AI Finds Matches",
-                description: "OpenRouter AI scores every candidate issue against your unique developer profile for relevance.",
+                description: "AI scores every candidate issue against your unique developer profile for relevance.",
                 color: "purple",
                 borderHover: "hover:border-purple-500/30",
               },
