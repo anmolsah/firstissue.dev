@@ -229,7 +229,7 @@ export const BADGE_DEFINITIONS = {
       email: 'badges@firstissue.dev'
     },
     type: 'BadgeClass',
-    requirement: () => false, // Manually awarded
+    requirement: (stats) => stats.signupIndex > 0 && stats.signupIndex <= 150,
     rarity: 'legendary',
     color: 'cyan'
   }

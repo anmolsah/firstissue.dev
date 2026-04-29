@@ -12,6 +12,7 @@ export const useGitHubSync = (userId, autoSync = true) => {
     const [syncError, setSyncError] = useState(null);
     const [contributions, setContributions] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [signupIndex, setSignupIndex] = useState(0);
 
     /**
      * Fetch contributions from database with caching
@@ -65,6 +66,27 @@ export const useGitHubSync = (userId, autoSync = true) => {
             setSyncError(error.message);
         } finally {
             setLoading(false);
+        }
+    }, [userId]);
+
+    /**
+     * Fetch profile info (signup_index)
+     */
+    const fetchProfileInfo = useCallback(async () => {
+        if (!userId) return;
+
+        try {
+            const { data, error } = await supabase
+                .from("profiles")
+                .select("signup_index")
+                .eq("id", userId)
+                .single();
+
+            if (!error && data) {
+                setSignupIndex(data.signup_index || 0);
+            }
+        } catch (error) {
+            console.error("Error fetching profile info:", error);
         }
     }, [userId]);
 
@@ -133,6 +155,7 @@ export const useGitHubSync = (userId, autoSync = true) => {
             }
 
             // Fetch fresh data
+            fetchProfileInfo();
             fetchContributions().then(() => {
                 // Auto-sync if needed and enabled
                 if (autoSync && shouldSync()) {
@@ -173,6 +196,7 @@ export const useGitHubSync = (userId, autoSync = true) => {
             in_progress: 0,
             merged: 0,
             closed: 0,
+            signupIndex: signupIndex,
         };
 
         contributions.forEach((contribution) => {
