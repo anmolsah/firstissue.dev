@@ -130,7 +130,7 @@ const SupportPage = () => {
     {
       icon: Brain,
       title: "AI-Powered Issue Matching",
-      description: "OpenRouter AI analyzes your GitHub profile to recommend issues that match your exact tech stack and experience level.",
+      description: "AI analyzes your GitHub profile to recommend issues that match your exact tech stack and experience level.",
     },
     {
       icon: Target,
@@ -152,11 +152,11 @@ const SupportPage = () => {
   const faqs = [
     {
       q: "What do I get as a Supporter?",
-      a: "You unlock AI-Powered Smart Matching on the Explore page, which uses OpenRouter AI to analyze your GitHub profile and recommend issues that perfectly match your skills. You also get priority support and early access to new features.",
+      a: "You unlock AI-Powered Smart Matching on the Explore page, which uses AI to analyze your GitHub profile and recommend issues that perfectly match your skills. You also get priority support and early access to new features.",
     },
     {
       q: "How does the AI matching work?",
-      a: "We fetch your public GitHub repos to identify your top languages, frameworks, and topics. Then our AI (powered by OpenRouter) scores open issues against your profile to find the best matches — ranked by relevance, difficulty, and recency.",
+      a: "We fetch your public GitHub repos to identify your top languages, frameworks, and topics. Then our AI scores open issues against your profile to find the best matches — ranked by relevance, difficulty, and recency.",
     },
     {
       q: "Can I cancel anytime?",

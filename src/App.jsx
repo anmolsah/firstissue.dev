@@ -20,6 +20,7 @@ import DocsArticlePage from "./pages/DocsArticlePage";
 import TestGitHubPage from "./pages/TestGitHubPage";
 import BadgeShowcasePage from "./pages/BadgeShowcasePage";
 import Footer from "./components/Footer";
+import CookieConsent from "./components/CookieConsent";
 import { Toaster } from "react-hot-toast";
 
 // Layout wrapper that conditionally shows Navbar/Footer
@@ -66,6 +67,7 @@ const AppLayout = ({ children }) => {
       />
       <div className="flex-1">{children}</div>
       {!hideGlobalLayout && !isLoginPage && <Footer />}
+      <CookieConsent />
     </div>
   );
 };
