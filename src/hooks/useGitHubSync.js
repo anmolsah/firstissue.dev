@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { syncGitHubContributions } from "../services/githubSync";
+ import { syncGitHubContributions } from "../services/githubSync";
 import { supabase } from "../lib/supabase";
 import { getCache, setCache, CACHE_KEYS, getCacheAge } from "../utils/cache";
 
@@ -84,6 +84,7 @@ export const useGitHubSync = (userId, autoSync = true) => {
 
             if (!error && data) {
                 setSignupIndex(data.signup_index || 0);
+                setCache(CACHE_KEYS.USER_PROFILE(userId) + "_index", data.signup_index || 0, 30 * 60 * 1000); // 30 mins
             }
         } catch (error) {
             console.error("Error fetching profile info:", error);
@@ -154,6 +155,12 @@ export const useGitHubSync = (userId, autoSync = true) => {
                 setLoading(true);
             }
 
+            // Load signup index from cache
+            const cachedIndex = getCache(CACHE_KEYS.USER_PROFILE(userId) + "_index");
+            if (cachedIndex) {
+                setSignupIndex(cachedIndex);
+            }
+
             // Fetch fresh data
             fetchProfileInfo();
             fetchContributions().then(() => {
@@ -214,7 +221,7 @@ export const useGitHubSync = (userId, autoSync = true) => {
         });
 
         return statsObj;
-    }, [contributions]);
+    }, [contributions, signupIndex]);
 
     /**
      * Get statistics (backward compatibility)
