@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 
 const ProfilePageNew = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -69,12 +69,14 @@ const ProfilePageNew = () => {
   const [githubProfile, setGithubProfile] = useState(null);
 
   useEffect(() => {
+    if (authLoading) return;
+    
     if (!user) {
       navigate("/login");
       return;
     }
     fetchAllData();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const fetchAllData = async () => {
     // Load from cache first

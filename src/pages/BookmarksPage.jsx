@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 
 const BookmarksPage = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -40,12 +40,14 @@ const BookmarksPage = () => {
   const itemsPerPage = 4;
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (!user) {
       navigate("/login");
       return;
     }
     fetchBookmarks();
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const fetchBookmarks = async () => {
     if (!user?.id) return;

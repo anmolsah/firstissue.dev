@@ -29,7 +29,7 @@ import {
 } from "lucide-react";
 
 const StatusPage = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
@@ -93,10 +93,12 @@ const StatusPage = () => {
   ];
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (!user) {
       navigate("/login");
     }
-  }, [user, navigate]);
+  }, [user, authLoading, navigate]);
 
   const getFilteredContributions = () => {
     let filtered = contributions;

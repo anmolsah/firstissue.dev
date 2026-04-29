@@ -4,14 +4,14 @@ import { useAuth } from "../contexts/AuthContext";
 import { Github, AlertCircle, Command, Loader2 } from "lucide-react";
 
 const LoginPage = () => {
-  const { signInWithGitHub, user } = useAuth();
+  const { signInWithGitHub, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   React.useEffect(() => {
-    if (user) navigate("/explore");
-  }, [user, navigate]);
+    if (!authLoading && user) navigate("/explore");
+  }, [user, authLoading, navigate]);
 
   const handleGitHubSignIn = async () => {
     setLoading(true);
