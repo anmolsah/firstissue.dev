@@ -832,12 +832,12 @@ const ContributionHeatmap = ({ contributions, username }) => {
           level: levelToNumber(day.contributionLevel),
           count: day.contributionCount,
           date: day.date,
-          dateObj: new Date(day.date),
+          dateObj: new Date(day.date + "T00:00:00"),
         }));
 
         // Month label from first day of each week (Sunday)
         if (week.contributionDays.length > 0) {
-          const firstDay = new Date(week.contributionDays[0].date);
+          const firstDay = new Date(week.contributionDays[0].date + "T00:00:00");
           const monthName = firstDay.toLocaleDateString("en-US", { month: "short" });
           if (monthName !== currentMonth) {
             monthLabels.push({ week: wIndex, label: monthName });
@@ -912,7 +912,7 @@ const ContributionHeatmap = ({ contributions, username }) => {
   // totalContributions available: ghCalendar?.totalContributions ?? contributions.length
 
   const formatTooltipDate = (dateStr) => {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr + "T00:00:00");
     return date.toLocaleDateString("en-US", {
       weekday: "short",
       month: "short",
@@ -929,7 +929,7 @@ const ContributionHeatmap = ({ contributions, username }) => {
           <div
             key={idx}
             className="text-[10px] text-gray-500"
-            style={{ marginLeft: idx === 0 ? 0 : `${(month.week - (monthLabels[idx - 1]?.week || 0)) * 14}px` }}
+            style={{ marginLeft: idx === 0 ? 0 : `${(month.week - (monthLabels[idx - 1]?.week || 0)) * 15 - 10}px` }}
           >
             {month.label}
           </div>
