@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import ComparisonSection from "../components/ComparisonSection";
 import {
   ArrowRight,
   Github,
@@ -408,6 +409,9 @@ const LandingPage = () => {
           </div>
         </div>
       </section>
+
+      {/* Feature Comparison Section */}
+      <ComparisonSection />
 
       {/* CTA Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
