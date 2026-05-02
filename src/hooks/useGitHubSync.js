@@ -139,37 +139,51 @@ export const useGitHubSync = (userId, autoSync = true) => {
      * Load data on mount
      */
     useEffect(() => {
-        if (userId) {
-            // Load from cache immediately (no loading state)
-            const cacheKey = CACHE_KEYS.CONTRIBUTIONS(userId);
-            const cached = getCache(cacheKey);
+        if (!userId) return;
 
-            if (cached) {
-                setContributions(cached);
-                const cacheAge = getCacheAge(cacheKey);
-                if (cacheAge !== null) {
-                    setLastSynced(new Date(Date.now() - cacheAge).toISOString());
-                }
-            } else {
-                // Only show loading if no cache
-                setLoading(true);
+        let cancelled = false;
+
+        // Load from cache immediately (no loading state)
+        const cacheKey = CACHE_KEYS.CONTRIBUTIONS(userId);
+        const cached = getCache(cacheKey);
+
+        if (cached) {
+            setContributions(cached);
+            const cacheAge = getCacheAge(cacheKey);
+            if (cacheAge !== null) {
+                setLastSynced(new Date(Date.now() - cacheAge).toISOString());
             }
+        } else {
+            // Only show loading if no cache
+            setLoading(true);
+        }
 
-            // Load signup index from cache
-            const cachedIndex = getCache(CACHE_KEYS.USER_PROFILE(userId) + "_index");
-            if (cachedIndex) {
-                setSignupIndex(cachedIndex);
-            }
+        // Load signup index from cache
+        const cachedIndex = getCache(CACHE_KEYS.USER_PROFILE(userId) + "_index");
+        if (cachedIndex) {
+            setSignupIndex(cachedIndex);
+        }
 
-            // Fetch fresh data
-            fetchProfileInfo();
-            fetchContributions().then(() => {
-                // Auto-sync if needed and enabled
-                if (autoSync && shouldSync()) {
+        // Fetch fresh data then auto-sync if needed
+        const init = async () => {
+            await fetchProfileInfo();
+            await fetchContributions();
+
+            if (cancelled) return;
+
+            // Auto-sync if needed and enabled (check fresh lastSynced)
+            if (autoSync) {
+                const lastSyncedTime = getCache(cacheKey) ? getCacheAge(cacheKey) : null;
+                const needsSync = !lastSyncedTime || lastSyncedTime > 2 * 60 * 1000;
+                if (needsSync) {
                     sync();
                 }
-            });
-        }
+            }
+        };
+
+        init();
+
+        return () => { cancelled = true; };
     }, [userId]); // Only run on mount or userId change
 
     /**

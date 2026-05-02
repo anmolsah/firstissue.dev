@@ -269,12 +269,38 @@ function calculateStreak(contributions) {
 export function checkEarnedBadges(stats, contributions = []) {
   const earnedBadges = [];
 
+  // Derive a stable "earned at" timestamp from the contributions data
+  // Use the earliest contribution date as a base, or fallback to now
+  const sortedDates = contributions
+    .map(c => c.created_at || c.pr_created_at)
+    .filter(Boolean)
+    .sort();
+
+  const baseDate = sortedDates.length > 0 ? sortedDates[0] : new Date().toISOString();
+
   Object.entries(BADGE_DEFINITIONS).forEach(([key, badge]) => {
     if (badge.requirement(stats, contributions)) {
+      // Use a stable earnedAt: the date of the Nth contribution that triggered this badge,
+      // or the base date for badges that don't depend on contribution count
+      let earnedAt = baseDate;
+
+      // For count-based badges, use the date of the contribution that triggered it
+      if (stats.merged > 0 && key.includes('merge')) {
+        const mergedContribs = contributions
+          .filter(c => c.pr_status === 'merged' && c.pr_merged_at)
+          .sort((a, b) => new Date(a.pr_merged_at) - new Date(b.pr_merged_at));
+        if (mergedContribs.length > 0) {
+          earnedAt = mergedContribs[mergedContribs.length - 1].pr_merged_at;
+        }
+      } else if (sortedDates.length > 0) {
+        // For other badges, use the most recent contribution date as the earned date
+        earnedAt = sortedDates[sortedDates.length - 1];
+      }
+
       earnedBadges.push({
         ...badge,
-        earnedAt: new Date().toISOString(),
-        issuedOn: new Date().toISOString()
+        earnedAt: earnedAt,
+        issuedOn: earnedAt,
       });
     }
   });

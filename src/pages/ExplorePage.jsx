@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { getCache, setCache, clearCache, CACHE_KEYS } from "../utils/cache";
@@ -111,10 +111,17 @@ const ExplorePage = () => {
     { id: "bug", label: "Bug Fix", color: "red" },
   ];
 
-  /* --- Fetch Logic --- */
+  /* --- Fetch Logic (debounced to prevent excessive API calls) --- */
   useEffect(() => {
-    resetAndFetch();
+    // Bookmarks don't need debouncing
     if (user) fetchBookmarkedIssues();
+
+    // Debounce the search/filter fetch by 400ms
+    const timer = setTimeout(() => {
+      resetAndFetch();
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [filters, selectedTab, user]);
 
   // Fetch Trusted Repos from Supabase
@@ -246,12 +253,17 @@ const ExplorePage = () => {
           return newSet;
         });
       } else {
+        // Detect language: prefer the active filter, then try to extract from issue labels
+        const detectedLanguage = filters.language ||
+          issue.labels?.find((l) => languages.some((lang) => lang.name.toLowerCase() === l.name?.toLowerCase()))?.name?.toLowerCase() ||
+          "unknown";
+
         const { error } = await supabase.from("bookmarks").insert({
           user_id: user.id,
           title: issue.title,
           issue_url: issue.html_url,
           repo_name: issue.repository_url.split("/").slice(-2).join("/"),
-          language: filters.language || "unknown",
+          language: detectedLanguage,
           status: "saved",
         });
         if (error) throw error;

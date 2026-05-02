@@ -70,7 +70,7 @@ export const SupporterProvider = ({ children }) => {
     if (!user?.id) return;
 
     const channel = supabase
-      .channel('supporter-status')
+      .channel(`supporter-status-${user.id}`)
       .on(
         'postgres_changes',
         {
