@@ -59,45 +59,42 @@ serve(async (req: Request) => {
 
     const subscriptionId = supporter.dodo_subscription_id;
 
-    if (!subscriptionId) {
-      return new Response(
-        JSON.stringify({ error: "No Dodo subscription ID found" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    if (subscriptionId && DODO_API_KEY) {
+      // Determine environment from key prefix
+      const isTestMode = DODO_API_KEY.includes("test");
+      const baseUrl = isTestMode
+        ? "https://test.dodopayments.com"
+        : "https://live.dodopayments.com";
+
+      try {
+        // Cancel the subscription via Dodo Payments API
+        const dodoResponse = await fetch(`${baseUrl}/subscriptions/${subscriptionId}`, {
+          method: "PATCH",
+          headers: {
+            "Authorization": `Bearer ${DODO_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: "cancelled",
+          }),
+        });
+
+        if (!dodoResponse.ok) {
+          const errorText = await dodoResponse.text();
+          console.error("Dodo API error:", dodoResponse.status, errorText);
+          // Don't fail the whole request, proceed to cancel locally
+        } else {
+          const dodoData = await dodoResponse.json();
+          console.log("Dodo subscription cancelled:", JSON.stringify(dodoData));
+        }
+      } catch (err) {
+        console.error("Failed to reach Dodo Payments API:", err);
+      }
+    } else {
+      console.log("No Dodo subscription ID found or API key missing, proceeding with local cancellation only.");
     }
 
-    // Determine environment from key prefix
-    const isTestMode = DODO_API_KEY.includes("test");
-    const baseUrl = isTestMode
-      ? "https://test.dodopayments.com"
-      : "https://live.dodopayments.com";
-
-    // Cancel the subscription via Dodo Payments API
-    // We set status to cancelled.
-    const dodoResponse = await fetch(`${baseUrl}/subscriptions/${subscriptionId}`, {
-      method: "PATCH",
-      headers: {
-        "Authorization": `Bearer ${DODO_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        status: "cancelled",
-      }),
-    });
-
-    if (!dodoResponse.ok) {
-      const errorText = await dodoResponse.text();
-      console.error("Dodo API error:", dodoResponse.status, errorText);
-      return new Response(
-        JSON.stringify({ error: "Failed to cancel subscription", details: errorText }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const dodoData = await dodoResponse.json();
-    console.log("Dodo subscription cancelled:", JSON.stringify(dodoData));
-
-    // Wait for the webhook to update the database, but we can proactively update it here for faster UI feedback.
+    // Proactively update it locally for faster UI feedback.
     const { error: updateError } = await supabase
       .from("supporters")
       .update({ status: "cancelled", updated_at: new Date().toISOString() })
@@ -105,6 +102,10 @@ serve(async (req: Request) => {
       
     if (updateError) {
         console.error("Failed to update status locally:", updateError);
+        return new Response(
+          JSON.stringify({ error: "Failed to update status locally" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
     }
 
     return new Response(
