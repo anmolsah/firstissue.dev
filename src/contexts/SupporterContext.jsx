@@ -31,7 +31,7 @@ export const SupporterProvider = ({ children }) => {
         .from('supporters')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'active')
+        .in('status', ['active', 'cancelled'])
         .single();
 
       if (error && error.code !== 'PGRST116') {

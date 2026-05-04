@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useSupporter } from "../contexts/SupporterContext";
 import { supabase } from "../lib/supabase";
 import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
 import { useGitHubSync } from "../hooks/useGitHubSync";
@@ -34,6 +35,7 @@ import {
   Menu,
   X,
   BadgeCheck,
+  CreditCard,
 } from "lucide-react";
 
 const ProfilePageNew = () => {
@@ -48,8 +50,12 @@ const ProfilePageNew = () => {
   const [loading, setLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [customProfile, setCustomProfile] = useState(null);
-  const [isSupporter, setIsSupporter] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Subscription states
+  const { isSupporter, supporterData, refreshStatus } = useSupporter();
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   // Use GitHub sync hook for contributions with auto-sync enabled
   const { contributions, stats: ghStats, getStats, getSuccessRate } =
@@ -97,28 +103,11 @@ const ProfilePageNew = () => {
         fetchBookmarks(),
         fetchGitHubProfile(),
         fetchCustomProfile(),
-        fetchSupporterStatus(),
       ]);
     } catch (error) {
       console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchSupporterStatus = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('supporters')
-        .select('status')
-        .eq('user_id', user.id)
-        .single();
-      
-      if (!error && data?.status === 'active') {
-        setIsSupporter(true);
-      }
-    } catch (error) {
-      console.error("Error fetching supporter status:", error);
     }
   };
 
@@ -197,6 +186,28 @@ const ProfilePageNew = () => {
     // Clear cache to force refresh
     const cacheKey = CACHE_KEYS.USER_PROFILE(user.id);
     setCache(cacheKey, null, 0);
+  };
+
+  const handleCancelSubscription = async () => {
+    try {
+      setIsCancelling(true);
+      const { data, error } = await supabase.functions.invoke("cancel-subscription", {
+        body: { userId: user.id }
+      });
+
+      if (error) throw error;
+      if (data?.success) {
+        await refreshStatus();
+      } else {
+        alert("Failed to cancel subscription: " + data?.error);
+      }
+    } catch (error) {
+      console.error("Error cancelling:", error);
+      alert("Error cancelling subscription");
+    } finally {
+      setIsCancelling(false);
+      setShowCancelModal(false);
+    }
   };
 
   // Calculate stats from contributions
@@ -564,6 +575,38 @@ const ProfilePageNew = () => {
               </div>
             </div>
           </div>
+
+          {/* Subscription Card */}
+          {supporterData && (
+            <div className="bg-[#15161E] rounded-xl p-5 sm:p-6 border border-white/5 mt-4 sm:mt-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                    <CreditCard className="w-6 h-6 text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                      FirstIssue.dev Supporter
+                      <BadgeCheck className="w-5 h-5 text-blue-400 fill-blue-400/20" />
+                    </h3>
+                    <p className="text-sm text-gray-400">
+                      {supporterData.status === "active"
+                        ? `Renews on ${new Date(supporterData.expires_at).toLocaleDateString()}`
+                        : `Access until ${new Date(supporterData.expires_at).toLocaleDateString()} (Cancelled)`}
+                    </p>
+                  </div>
+                </div>
+                {supporterData.status === "active" && (
+                  <button
+                    onClick={() => setShowCancelModal(true)}
+                    className="px-4 py-2 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Cancel Subscription
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </main>
 
@@ -593,6 +636,42 @@ const ProfilePageNew = () => {
           badge={newlyUnlockedBadge}
           onClose={dismissNotification}
         />
+      )}
+
+      {/* Cancel Subscription Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-[#15161E] border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
+            <button
+              onClick={() => setShowCancelModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h3 className="text-xl font-bold text-white mb-2">Cancel Subscription?</h3>
+            <p className="text-gray-400 mb-6 text-sm leading-relaxed">
+              Are you sure you want to cancel your FirstIssue.dev Supporter subscription? 
+              You'll continue to have full access until the end of your current billing period on 
+              {" "}<span className="text-white font-medium">{new Date(supporterData?.expires_at).toLocaleDateString()}</span>.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="px-4 py-2 bg-transparent text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Keep Subscription
+              </button>
+              <button
+                onClick={handleCancelSubscription}
+                disabled={isCancelling}
+                className="px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {isCancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {isCancelling ? "Cancelling..." : "Confirm Cancellation"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -1,0 +1,124 @@
+// Supabase Edge Function: Cancel Dodo Payments Subscription
+// Deploy: supabase functions deploy cancel-subscription
+
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { getCorsHeaders } from "../_shared/cors.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+serve(async (req: Request) => {
+  const corsHeaders = getCorsHeaders(req);
+  
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
+  try {
+    const { userId } = await req.json();
+
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: "Missing userId" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const DODO_API_KEY = Deno.env.get("DODO_API_KEY");
+    if (!DODO_API_KEY) {
+      return new Response(
+        JSON.stringify({ error: "Dodo API key not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Initialize Supabase client
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Fetch the supporter record to get the subscription ID
+    const { data: supporter, error: fetchError } = await supabase
+      .from("supporters")
+      .select("dodo_subscription_id, status")
+      .eq("user_id", userId)
+      .single();
+
+    if (fetchError || !supporter) {
+      return new Response(
+        JSON.stringify({ error: "Supporter record not found" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (supporter.status === "cancelled") {
+        return new Response(
+            JSON.stringify({ message: "Subscription already cancelled" }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+    }
+
+    const subscriptionId = supporter.dodo_subscription_id;
+
+    if (!subscriptionId) {
+      return new Response(
+        JSON.stringify({ error: "No Dodo subscription ID found" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Determine environment from key prefix
+    const isTestMode = DODO_API_KEY.includes("test");
+    const baseUrl = isTestMode
+      ? "https://test.dodopayments.com"
+      : "https://live.dodopayments.com";
+
+    // Cancel the subscription via Dodo Payments API
+    // We set status to cancelled.
+    const dodoResponse = await fetch(`${baseUrl}/subscriptions/${subscriptionId}`, {
+      method: "PATCH",
+      headers: {
+        "Authorization": `Bearer ${DODO_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: "cancelled",
+      }),
+    });
+
+    if (!dodoResponse.ok) {
+      const errorText = await dodoResponse.text();
+      console.error("Dodo API error:", dodoResponse.status, errorText);
+      return new Response(
+        JSON.stringify({ error: "Failed to cancel subscription", details: errorText }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const dodoData = await dodoResponse.json();
+    console.log("Dodo subscription cancelled:", JSON.stringify(dodoData));
+
+    // Wait for the webhook to update the database, but we can proactively update it here for faster UI feedback.
+    const { error: updateError } = await supabase
+      .from("supporters")
+      .update({ status: "cancelled", updated_at: new Date().toISOString() })
+      .eq("user_id", userId);
+      
+    if (updateError) {
+        console.error("Failed to update status locally:", updateError);
+    }
+
+    return new Response(
+      JSON.stringify({
+        success: true,
+        message: "Subscription successfully cancelled.",
+      }),
+      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("Error:", error);
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
+  }
+});
