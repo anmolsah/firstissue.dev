@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
-import { getCache, setCache, clearCache, CACHE_KEYS } from "../utils/cache";
+import { useAddBookmark, useRemoveBookmark, bookmarkKeys } from "../hooks/queries/useBookmarks";
+import { useQueryClient } from "@tanstack/react-query";
 import SmartMatchTab from "../components/SmartMatchTab";
 import AppSidebar from "../components/AppSidebar";
 import {
@@ -218,7 +219,11 @@ const ExplorePage = () => {
     if (!loadingMore && hasMore) fetchIssues(currentPage + 1, false);
   };
 
-  /* --- Bookmark Logic (from previous code) --- */
+  /* --- Bookmark Logic (using shared TanStack Query mutations) --- */
+  const addBookmarkMutation = useAddBookmark(user?.id);
+  const removeBookmarkMutation = useRemoveBookmark(user?.id);
+  const queryClient = useQueryClient();
+
   const fetchBookmarkedIssues = async () => {
     if (!user) return;
     try {
@@ -241,12 +246,20 @@ const ExplorePage = () => {
     const isBookmarked = bookmarkedIssues.has(issue.html_url);
     try {
       if (isBookmarked) {
-        const { error } = await supabase
-          .from("bookmarks")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("issue_url", issue.html_url);
-        if (error) throw error;
+        // Find the bookmark ID from the cached bookmarks
+        const cachedBookmarks = queryClient.getQueryData(bookmarkKeys.all(user.id)) || [];
+        const bookmark = cachedBookmarks.find(b => b.issue_url === issue.html_url);
+        if (bookmark) {
+          await removeBookmarkMutation.mutateAsync(bookmark.id);
+        } else {
+          // Fallback: delete directly if not in cache
+          await supabase
+            .from("bookmarks")
+            .delete()
+            .eq("user_id", user.id)
+            .eq("issue_url", issue.html_url);
+          queryClient.invalidateQueries({ queryKey: bookmarkKeys.all(user.id) });
+        }
         setBookmarkedIssues((prev) => {
           const newSet = new Set(prev);
           newSet.delete(issue.html_url);
@@ -258,20 +271,15 @@ const ExplorePage = () => {
           issue.labels?.find((l) => languages.some((lang) => lang.name.toLowerCase() === l.name?.toLowerCase()))?.name?.toLowerCase() ||
           "unknown";
 
-        const { error } = await supabase.from("bookmarks").insert({
-          user_id: user.id,
+        await addBookmarkMutation.mutateAsync({
           title: issue.title,
           issue_url: issue.html_url,
           repo_name: issue.repository_url.split("/").slice(-2).join("/"),
           language: detectedLanguage,
           status: "saved",
         });
-        if (error) throw error;
         setBookmarkedIssues((prev) => new Set([...prev, issue.html_url]));
       }
-
-      // Clear the bookmarks cache so BookmarksPage shows fresh data
-      clearCache(CACHE_KEYS.BOOKMARKS(user.id));
     } catch (error) {
       console.error("Error managing bookmark:", error);
     }

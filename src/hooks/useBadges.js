@@ -1,10 +1,34 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { checkEarnedBadges } from '../utils/badgeSystem';
+
+const ACKNOWLEDGED_BADGES_KEY = 'firstissue_acknowledged_badges';
+
+/**
+ * Load acknowledged badge IDs from localStorage
+ */
+function loadAcknowledgedBadges() {
+  try {
+    const stored = localStorage.getItem(ACKNOWLEDGED_BADGES_KEY);
+    return stored ? new Set(JSON.parse(stored)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+/**
+ * Save acknowledged badge IDs to localStorage
+ */
+function saveAcknowledgedBadges(badgeIds) {
+  try {
+    localStorage.setItem(ACKNOWLEDGED_BADGES_KEY, JSON.stringify([...badgeIds]));
+  } catch {
+    // Silently fail if localStorage is unavailable
+  }
+}
 
 export const useBadges = (stats, contributions = []) => {
   const [earnedBadges, setEarnedBadges] = useState([]);
   const [newlyUnlockedBadge, setNewlyUnlockedBadge] = useState(null);
-  const previousBadgeCountRef = useRef(0);
 
   // Stabilize the inputs to prevent re-renders when object references change but values don't
   const statsKey = useMemo(() => {
@@ -20,20 +44,36 @@ export const useBadges = (stats, contributions = []) => {
     if (!stats) return;
 
     const badges = checkEarnedBadges(stats, contributions);
+    setEarnedBadges(badges);
 
-    // Check if a new badge was unlocked
-    if (badges.length > previousBadgeCountRef.current && previousBadgeCountRef.current > 0) {
-      const newBadge = badges[badges.length - 1];
-      setNewlyUnlockedBadge(newBadge);
+    // Load previously acknowledged badges from localStorage
+    const acknowledged = loadAcknowledgedBadges();
+
+    // Find badges that the user has never seen before
+    const unseenBadges = badges.filter(b => !acknowledged.has(b.id));
+
+    if (unseenBadges.length > 0) {
+      // Show the most recently earned unseen badge
+      setNewlyUnlockedBadge(unseenBadges[unseenBadges.length - 1]);
     }
 
-    previousBadgeCountRef.current = badges.length;
-    setEarnedBadges(badges);
+    // Persist all currently earned badge IDs as acknowledged
+    // so they don't re-trigger on next login.
+    // We persist ALL earned badges (not just unseen) so that
+    // badges earned in earlier sessions are also covered.
+    const allEarnedIds = new Set([...acknowledged, ...badges.map(b => b.id)]);
+    saveAcknowledgedBadges(allEarnedIds);
   }, [statsKey, contributionsKey]); // Use stable string keys instead of object references
 
-  const dismissNotification = () => {
+  const dismissNotification = useCallback(() => {
+    if (newlyUnlockedBadge) {
+      // Mark this specific badge as acknowledged
+      const acknowledged = loadAcknowledgedBadges();
+      acknowledged.add(newlyUnlockedBadge.id);
+      saveAcknowledgedBadges(acknowledged);
+    }
     setNewlyUnlockedBadge(null);
-  };
+  }, [newlyUnlockedBadge]);
 
   return {
     earnedBadges,

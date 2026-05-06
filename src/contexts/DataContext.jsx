@@ -1,13 +1,17 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useCallback,
-  useEffect,
-} from "react";
-import { supabase } from "../lib/supabase";
+import React, { createContext, useContext } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "./AuthContext";
-import { getCache, setCache, clearCache, CACHE_KEYS } from "../utils/cache";
+import {
+  useContributions,
+  contributionKeys,
+} from "../hooks/queries/useContributions";
+import {
+  useBookmarks,
+  useAddBookmark,
+  useRemoveBookmark,
+  useUpdateBookmarkStatus,
+  bookmarkKeys,
+} from "../hooks/queries/useBookmarks";
 
 const DataContext = createContext();
 
@@ -21,246 +25,102 @@ export const useData = () => {
 
 export const DataProvider = ({ children }) => {
   const { user } = useAuth();
-  const [contributions, setContributions] = useState(null);
-  const [bookmarks, setBookmarks] = useState(null);
-  const [loading, setLoading] = useState({
-    contributions: false,
-    bookmarks: false,
-  });
+  const queryClient = useQueryClient();
+
+  // TanStack Query hooks for data fetching
+  const {
+    data: contributions = null,
+    isLoading: contributionsLoading,
+  } = useContributions(user?.id);
+
+  const {
+    data: bookmarks = null,
+    isLoading: bookmarksLoading,
+  } = useBookmarks(user?.id);
+
+  // Mutation hooks
+  const addBookmarkMutation = useAddBookmark(user?.id);
+  const removeBookmarkMutation = useRemoveBookmark(user?.id);
+  const updateBookmarkStatusMutation = useUpdateBookmarkStatus(user?.id);
+
+  const loading = {
+    contributions: contributionsLoading,
+    bookmarks: bookmarksLoading,
+  };
 
   /**
-   * Fetch contributions with caching
+   * Fetch contributions (triggers refetch via invalidation)
    */
-  const fetchContributions = useCallback(
-    async (forceRefresh = false) => {
-      if (!user?.id) return null;
+  const fetchContributions = async (forceRefresh = false) => {
+    if (!user?.id) return null;
 
-      const cacheKey = CACHE_KEYS.CONTRIBUTIONS(user.id);
-
-      // Return cached data if available and not forcing refresh
-      if (!forceRefresh) {
-        const cached = getCache(cacheKey);
-        if (cached) {
-          setContributions(cached);
-          return cached;
-        }
-      }
-
-      setLoading((prev) => ({ ...prev, contributions: true }));
-
-      try {
-        const { data, error } = await supabase
-          .from("contributions")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        // Cache the data
-        setCache(cacheKey, data, 5 * 60 * 1000); // 5 minutes
-        setContributions(data);
-        return data;
-      } catch (error) {
-        console.error("Error fetching contributions:", error);
-        return null;
-      } finally {
-        setLoading((prev) => ({ ...prev, contributions: false }));
-      }
-    },
-    [user?.id],
-  );
+    if (forceRefresh) {
+      await queryClient.invalidateQueries({ queryKey: contributionKeys.all(user.id) });
+    }
+    return queryClient.getQueryData(contributionKeys.all(user.id)) || null;
+  };
 
   /**
-   * Fetch bookmarks with caching
+   * Fetch bookmarks (triggers refetch via invalidation)
    */
-  const fetchBookmarks = useCallback(
-    async (forceRefresh = false) => {
-      if (!user?.id) return null;
+  const fetchBookmarks = async (forceRefresh = false) => {
+    if (!user?.id) return null;
 
-      const cacheKey = CACHE_KEYS.BOOKMARKS(user.id);
-
-      // Return cached data if available and not forcing refresh
-      if (!forceRefresh) {
-        const cached = getCache(cacheKey);
-        if (cached) {
-          setBookmarks(cached);
-          return cached;
-        }
-      }
-
-      setLoading((prev) => ({ ...prev, bookmarks: true }));
-
-      try {
-        const { data, error } = await supabase
-          .from("bookmarks")
-          .select("*")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (error) throw error;
-
-        // Cache the data
-        setCache(cacheKey, data, 5 * 60 * 1000); // 5 minutes
-        setBookmarks(data);
-        return data;
-      } catch (error) {
-        console.error("Error fetching bookmarks:", error);
-        return null;
-      } finally {
-        setLoading((prev) => ({ ...prev, bookmarks: false }));
-      }
-    },
-    [user?.id],
-  );
+    if (forceRefresh) {
+      await queryClient.invalidateQueries({ queryKey: bookmarkKeys.all(user.id) });
+    }
+    return queryClient.getQueryData(bookmarkKeys.all(user.id)) || null;
+  };
 
   /**
-   * Add bookmark and update cache
+   * Add bookmark
    */
-  const addBookmark = useCallback(
-    async (bookmarkData) => {
-      if (!user?.id) return null;
-
-      try {
-        const { data, error } = await supabase
-          .from("bookmarks")
-          .insert([{ ...bookmarkData, user_id: user.id }])
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        // Update local state
-        setBookmarks((prev) => [data, ...(prev || [])]);
-
-        // Update cache
-        const cacheKey = CACHE_KEYS.BOOKMARKS(user.id);
-        const updatedBookmarks = [data, ...(bookmarks || [])];
-        setCache(cacheKey, updatedBookmarks, 5 * 60 * 1000);
-
-        return data;
-      } catch (error) {
-        console.error("Error adding bookmark:", error);
-        return null;
-      }
-    },
-    [user?.id, bookmarks],
-  );
+  const addBookmark = async (bookmarkData) => {
+    if (!user?.id) return null;
+    try {
+      return await addBookmarkMutation.mutateAsync(bookmarkData);
+    } catch (error) {
+      console.error("Error adding bookmark:", error);
+      return null;
+    }
+  };
 
   /**
-   * Remove bookmark and update cache
+   * Remove bookmark
    */
-  const removeBookmark = useCallback(
-    async (bookmarkId) => {
-      if (!user?.id) return false;
-
-      try {
-        const { error } = await supabase
-          .from("bookmarks")
-          .delete()
-          .eq("id", bookmarkId)
-          .eq("user_id", user.id);
-
-        if (error) throw error;
-
-        // Update local state
-        setBookmarks((prev) => prev?.filter((b) => b.id !== bookmarkId) || []);
-
-        // Update cache
-        const cacheKey = CACHE_KEYS.BOOKMARKS(user.id);
-        const updatedBookmarks =
-          bookmarks?.filter((b) => b.id !== bookmarkId) || [];
-        setCache(cacheKey, updatedBookmarks, 5 * 60 * 1000);
-
-        return true;
-      } catch (error) {
-        console.error("Error removing bookmark:", error);
-        return false;
-      }
-    },
-    [user?.id, bookmarks],
-  );
+  const removeBookmark = async (bookmarkId) => {
+    if (!user?.id) return false;
+    try {
+      await removeBookmarkMutation.mutateAsync(bookmarkId);
+      return true;
+    } catch (error) {
+      console.error("Error removing bookmark:", error);
+      return false;
+    }
+  };
 
   /**
-   * Update bookmark status and update cache
+   * Update bookmark status
    */
-  const updateBookmarkStatus = useCallback(
-    async (bookmarkId, status) => {
-      if (!user?.id) return false;
-
-      try {
-        const { error } = await supabase
-          .from("bookmarks")
-          .update({ status })
-          .eq("id", bookmarkId)
-          .eq("user_id", user.id);
-
-        if (error) throw error;
-
-        // Update local state
-        setBookmarks(
-          (prev) =>
-            prev?.map((b) => (b.id === bookmarkId ? { ...b, status } : b)) ||
-            [],
-        );
-
-        // Update cache
-        const cacheKey = CACHE_KEYS.BOOKMARKS(user.id);
-        const updatedBookmarks =
-          bookmarks?.map((b) => (b.id === bookmarkId ? { ...b, status } : b)) ||
-          [];
-        setCache(cacheKey, updatedBookmarks, 5 * 60 * 1000);
-
-        return true;
-      } catch (error) {
-        console.error("Error updating bookmark status:", error);
-        return false;
-      }
-    },
-    [user?.id, bookmarks],
-  );
+  const updateBookmarkStatus = async (bookmarkId, status) => {
+    if (!user?.id) return false;
+    try {
+      await updateBookmarkStatusMutation.mutateAsync({ bookmarkId, status });
+      return true;
+    } catch (error) {
+      console.error("Error updating bookmark status:", error);
+      return false;
+    }
+  };
 
   /**
    * Clear all cached data for current user
    */
-  const clearUserCache = useCallback(() => {
+  const clearUserCache = () => {
     if (!user?.id) return;
-
-    clearCache(CACHE_KEYS.CONTRIBUTIONS(user.id));
-    clearCache(CACHE_KEYS.BOOKMARKS(user.id));
-    clearCache(CACHE_KEYS.USER_PROFILE(user.id));
-    clearCache(CACHE_KEYS.GITHUB_SYNC(user.id));
-
-    setContributions(null);
-    setBookmarks(null);
-  }, [user?.id]);
-
-  /**
-   * Preload data on mount
-   */
-  useEffect(() => {
-    if (user?.id) {
-      // Load from cache immediately
-      const contributionsCache = getCache(CACHE_KEYS.CONTRIBUTIONS(user.id));
-      const bookmarksCache = getCache(CACHE_KEYS.BOOKMARKS(user.id));
-
-      if (contributionsCache) setContributions(contributionsCache);
-      if (bookmarksCache) setBookmarks(bookmarksCache);
-
-      // Fetch fresh data in background if cache is old
-      if (!contributionsCache) fetchContributions();
-      if (!bookmarksCache) fetchBookmarks();
-    }
-  }, [user?.id]);
-
-  /**
-   * Clear cache on logout
-   */
-  useEffect(() => {
-    if (!user) {
-      clearUserCache();
-    }
-  }, [user, clearUserCache]);
+    queryClient.removeQueries({ queryKey: contributionKeys.all(user.id) });
+    queryClient.removeQueries({ queryKey: bookmarkKeys.all(user.id) });
+  };
 
   const value = {
     // Data

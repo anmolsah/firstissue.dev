@@ -1,210 +1,25 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
- import { syncGitHubContributions } from "../services/githubSync";
-import { supabase } from "../lib/supabase";
-import { getCache, setCache, CACHE_KEYS, getCacheAge } from "../utils/cache";
+import { useMemo, useCallback } from "react";
+import { useContributions } from "./queries/useContributions";
+import { useSignupIndex } from "./queries/useProfileInfo";
+import { useAutoGitHubSync } from "./queries/useGitHubSyncMutation";
 
 /**
- * Custom hook for GitHub sync functionality with caching
+ * Custom hook for GitHub sync functionality with TanStack Query.
+ * Maintains the same return shape as the original for backward compatibility.
  */
 export const useGitHubSync = (userId, autoSync = true) => {
-    const [syncing, setSyncing] = useState(false);
-    const [lastSynced, setLastSynced] = useState(null);
-    const [syncError, setSyncError] = useState(null);
-    const [contributions, setContributions] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [signupIndex, setSignupIndex] = useState(0);
+    // Contributions from TanStack Query
+    const {
+        data: contributions = [],
+        isLoading: loading,
+        dataUpdatedAt,
+    } = useContributions(userId);
 
-    /**
-     * Fetch contributions from database with caching
-     */
-    const fetchContributions = useCallback(async () => {
-        if (!userId) return;
+    // Signup index from TanStack Query
+    const { data: signupIndex = 0 } = useSignupIndex(userId);
 
-        const cacheKey = CACHE_KEYS.CONTRIBUTIONS(userId);
-
-        // Try to get from cache first
-        const cached = getCache(cacheKey);
-        if (cached) {
-            setContributions(cached);
-            setLoading(false);
-
-            // Get last synced time from cache metadata
-            const cacheAge = getCacheAge(cacheKey);
-            if (cacheAge !== null) {
-                setLastSynced(new Date(Date.now() - cacheAge).toISOString());
-            }
-            return;
-        }
-
-        // If no cache, fetch from database
-        try {
-            setLoading(true);
-            const { data, error } = await supabase
-                .from("contributions")
-                .select("*")
-                .eq("user_id", userId)
-                .order("created_at", { ascending: false });
-
-            if (error) throw error;
-
-            setContributions(data || []);
-
-            // Cache the data for 1 minute (shorter for real-time updates)
-            setCache(cacheKey, data || [], 1 * 60 * 1000);
-
-            // Get last synced time
-            if (data && data.length > 0) {
-                const mostRecent = data.reduce((latest, current) => {
-                    return new Date(current.last_synced_at) > new Date(latest.last_synced_at)
-                        ? current
-                        : latest;
-                });
-                setLastSynced(mostRecent.last_synced_at);
-            }
-        } catch (error) {
-            console.error("Error fetching contributions:", error);
-            setSyncError(error.message);
-        } finally {
-            setLoading(false);
-        }
-    }, [userId]);
-
-    /**
-     * Fetch profile info (signup_index)
-     */
-    const fetchProfileInfo = useCallback(async () => {
-        if (!userId) return;
-
-        try {
-            const { data, error } = await supabase
-                .from("profiles")
-                .select("signup_index")
-                .eq("id", userId)
-                .single();
-
-            if (!error && data) {
-                setSignupIndex(data.signup_index || 0);
-                setCache(CACHE_KEYS.USER_PROFILE(userId) + "_index", data.signup_index || 0, 30 * 60 * 1000); // 30 mins
-            }
-        } catch (error) {
-            console.error("Error fetching profile info:", error);
-        }
-    }, [userId]);
-
-    /**
-     * Sync with GitHub
-     */
-    const sync = useCallback(async () => {
-        if (!userId || syncing) return;
-
-        try {
-            setSyncing(true);
-            setSyncError(null);
-
-            const result = await syncGitHubContributions(userId);
-
-            if (result.success) {
-                setLastSynced(result.lastSynced);
-
-                // Clear cache and fetch fresh data
-                const cacheKey = CACHE_KEYS.CONTRIBUTIONS(userId);
-                setCache(cacheKey, [], 0); // Invalidate cache
-
-                await fetchContributions(); // Refresh data
-            } else {
-                setSyncError(result.error);
-            }
-
-            return result;
-        } catch (error) {
-            console.error("Error during sync:", error);
-            setSyncError(error.message);
-            return { success: false, error: error.message };
-        } finally {
-            setSyncing(false);
-        }
-    }, [userId, syncing, fetchContributions]);
-
-    /**
-     * Check if sync is needed (> 2 minutes since last sync)
-     */
-    const shouldSync = useCallback(() => {
-        if (!lastSynced) return true;
-
-        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
-        return new Date(lastSynced) < twoMinutesAgo;
-    }, [lastSynced]);
-
-    /**
-     * Load data on mount
-     */
-    useEffect(() => {
-        if (!userId) return;
-
-        let cancelled = false;
-
-        // Load from cache immediately (no loading state)
-        const cacheKey = CACHE_KEYS.CONTRIBUTIONS(userId);
-        const cached = getCache(cacheKey);
-
-        if (cached) {
-            setContributions(cached);
-            const cacheAge = getCacheAge(cacheKey);
-            if (cacheAge !== null) {
-                setLastSynced(new Date(Date.now() - cacheAge).toISOString());
-            }
-        } else {
-            // Only show loading if no cache
-            setLoading(true);
-        }
-
-        // Load signup index from cache
-        const cachedIndex = getCache(CACHE_KEYS.USER_PROFILE(userId) + "_index");
-        if (cachedIndex) {
-            setSignupIndex(cachedIndex);
-        }
-
-        // Fetch fresh data then auto-sync if needed
-        const init = async () => {
-            await fetchProfileInfo();
-            await fetchContributions();
-
-            if (cancelled) return;
-
-            // Auto-sync if needed and enabled (check fresh lastSynced)
-            if (autoSync) {
-                const lastSyncedTime = getCache(cacheKey) ? getCacheAge(cacheKey) : null;
-                const needsSync = !lastSyncedTime || lastSyncedTime > 2 * 60 * 1000;
-                if (needsSync) {
-                    sync();
-                }
-            }
-        };
-
-        init();
-
-        return () => { cancelled = true; };
-    }, [userId]); // Only run on mount or userId change
-
-    /**
-     * Set up periodic polling for real-time updates (every 2 minutes)
-     */
-    useEffect(() => {
-        if (!userId || !autoSync) return;
-
-        const pollInterval = setInterval(() => {
-            // Check if sync is needed
-            if (shouldSync()) {
-                console.log('Auto-syncing contributions...');
-                sync();
-            } else {
-                // Just refresh from database (no GitHub API call)
-                fetchContributions();
-            }
-        }, 2 * 60 * 1000); // Poll every 2 minutes
-
-        return () => clearInterval(pollInterval);
-    }, [userId, autoSync, shouldSync, sync, fetchContributions]);
+    // Auto-sync mutation
+    const syncMutation = useAutoGitHubSync(userId, autoSync);
 
     /**
      * Memoized statistics
@@ -253,17 +68,22 @@ export const useGitHubSync = (userId, autoSync = true) => {
         return Math.round((merged / withPR) * 100);
     }, [contributions]);
 
+    /**
+     * Last synced time derived from query cache
+     */
+    const lastSynced = dataUpdatedAt ? new Date(dataUpdatedAt).toISOString() : null;
+
     return {
         contributions,
         loading,
-        syncing,
+        syncing: syncMutation.isPending,
         lastSynced,
-        syncError,
-        sync,
-        shouldSync,
+        syncError: syncMutation.error?.message || null,
+        sync: () => syncMutation.mutate(),
+        shouldSync: () => !syncMutation.isPending,
         stats,
-        getStats, // Keep for backward compatibility if needed
+        getStats,
         getSuccessRate,
-        fetchContributions,
+        fetchContributions: () => {}, // No-op — TanStack Query handles refetching
     };
 };

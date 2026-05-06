@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../contexts/AuthContext";
 import { useSupporter } from "../contexts/SupporterContext";
 import { supabase } from "../lib/supabase";
-import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
 import { useGitHubSync } from "../hooks/useGitHubSync";
+import { useGitHubProfile } from "../hooks/queries/useGitHubProfile";
+import { useCustomProfile, profileInfoKeys } from "../hooks/queries/useProfileInfo";
+import { useBookmarks } from "../hooks/queries/useBookmarks";
 import EditProfileModal from "../components/EditProfileModal";
 import BadgesSection from "../components/BadgesSection";
 import BadgeUnlockedNotification from "../components/BadgeUnlockedNotification";
@@ -42,14 +45,11 @@ const ProfilePageNew = () => {
   const { user, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   const [activeTab, setActiveTab] = useState("overview");
 
-
-
-  const [loading, setLoading] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [customProfile, setCustomProfile] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Subscription states
@@ -57,8 +57,16 @@ const ProfilePageNew = () => {
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
 
+  const getGitHubUsername = () => {
+    return (
+      user?.user_metadata?.user_name ||
+      user?.user_metadata?.preferred_username ||
+      user?.identities?.[0]?.identity_data?.user_name
+    );
+  };
+
   // Use GitHub sync hook for contributions with auto-sync enabled
-  const { contributions, stats: ghStats, getStats, getSuccessRate } =
+  const { contributions, stats: ghStats, getStats, getSuccessRate, loading: syncLoading } =
     useGitHubSync(
       user?.id,
       true, // Enable auto-sync for real-time updates
@@ -70,9 +78,12 @@ const ProfilePageNew = () => {
     contributions
   );
 
-  // Cached data
-  const [bookmarks, setBookmarks] = useState([]);
-  const [githubProfile, setGithubProfile] = useState(null);
+  // TanStack Query hooks for data
+  const { data: bookmarks = [], isLoading: bookmarksLoading } = useBookmarks(user?.id);
+  const { data: githubProfile = null } = useGitHubProfile(getGitHubUsername());
+  const { data: customProfile = null } = useCustomProfile(user?.id);
+
+  const loading = syncLoading || bookmarksLoading;
 
   useEffect(() => {
     if (authLoading) return;
@@ -81,111 +92,11 @@ const ProfilePageNew = () => {
       navigate("/login");
       return;
     }
-    fetchAllData();
   }, [user, authLoading, navigate]);
 
-  const fetchAllData = async () => {
-    // Load from cache first
-    const bookmarksCache = getCache(CACHE_KEYS.BOOKMARKS(user.id));
-    if (bookmarksCache) {
-      setBookmarks(bookmarksCache);
-    }
-
-    const profileCache = getCache(CACHE_KEYS.USER_PROFILE(user.id));
-    if (profileCache) {
-      setGithubProfile(profileCache);
-    }
-
-    // Fetch fresh data in background
-    setLoading(true);
-    try {
-      await Promise.all([
-        fetchBookmarks(),
-        fetchGitHubProfile(),
-        fetchCustomProfile(),
-      ]);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchBookmarks = async () => {
-    const cacheKey = CACHE_KEYS.BOOKMARKS(user.id);
-    const cached = getCache(cacheKey);
-    if (cached) {
-      setBookmarks(cached);
-      return;
-    }
-
-    const { data, error } = await supabase
-      .from("bookmarks")
-      .select("*")
-      .eq("user_id", user.id);
-
-    if (!error) {
-      setBookmarks(data || []);
-      setCache(cacheKey, data || [], 5 * 60 * 1000);
-    }
-  };
-
-  const getGitHubUsername = () => {
-    return (
-      user?.user_metadata?.user_name ||
-      user?.user_metadata?.preferred_username ||
-      user?.identities?.[0]?.identity_data?.user_name
-    );
-  };
-
-  const fetchGitHubProfile = async () => {
-    const username = getGitHubUsername();
-    if (!username) return;
-
-    const cacheKey = CACHE_KEYS.USER_PROFILE(user.id);
-    const cached = getCache(cacheKey);
-    if (cached) {
-      setGithubProfile(cached);
-      return;
-    }
-
-    try {
-      const response = await fetch(`https://api.github.com/users/${username}`, {
-        headers: {
-          Accept: "application/vnd.github.v3+json",
-        },
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setGithubProfile(data);
-        setCache(cacheKey, data, 10 * 60 * 1000); // Cache for 10 minutes
-      }
-    } catch (error) {
-      console.error("Error fetching GitHub profile:", error);
-    }
-  };
-
-  const fetchCustomProfile = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("name, bio, location, company, website")
-        .eq("id", user.id)
-        .single();
-
-      if (!error && data) {
-        setCustomProfile(data);
-      }
-    } catch (error) {
-      console.error("Error fetching custom profile:", error);
-    }
-  };
-
   const handleProfileSave = (updatedData) => {
-    setCustomProfile(updatedData);
-    // Clear cache to force refresh
-    const cacheKey = CACHE_KEYS.USER_PROFILE(user.id);
-    setCache(cacheKey, null, 0);
+    // Invalidate custom profile cache so it refetches
+    queryClient.invalidateQueries({ queryKey: profileInfoKeys.custom(user.id) });
   };
 
   const handleCancelSubscription = async () => {
