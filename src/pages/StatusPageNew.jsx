@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useGitHubSync } from "../hooks/useGitHubSync";
 import { getContributionStatus, getStatusConfig } from "../services/githubSync";
+import { useBookmarks } from "../hooks/queries/useBookmarks";
 import AppSidebar from "../components/AppSidebar";
 import {
   CheckCircle,
@@ -38,14 +39,18 @@ const StatusPage = () => {
   // GitHub sync hook
   const {
     contributions,
-    loading,
+    loading: syncLoading,
     syncing,
     lastSynced,
     syncError,
     sync,
-    getStats,
     getSuccessRate,
   } = useGitHubSync(user?.id, true);
+
+  // Bookmarks hook
+  const { data: bookmarks = [], isLoading: bookmarksLoading } = useBookmarks(user?.id);
+
+  const loading = syncLoading || bookmarksLoading;
 
   const statusOptions = [
     {
@@ -100,13 +105,61 @@ const StatusPage = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Combine contributions and bookmarks
+  const allItems = React.useMemo(() => {
+    // Map bookmarks to contribution shape
+    const bookmarkedContributions = bookmarks.map((b) => ({
+      ...b,
+      id: b.id,
+      issue_title: b.title,
+      github_repo_name: b.repo_name?.split("/")?.[1] || b.repo_name,
+      github_repo_owner: b.repo_name?.split("/")?.[0] || "",
+      is_bookmark: true,
+      // Status mapping
+      status: b.status || "saved",
+      created_at: b.created_at,
+    }));
+
+    // Deduplicate: if an issue is both bookmarked and in contributions, 
+    // prefer the contribution data as it has more GitHub metadata
+    const contributionUrls = new Set(contributions.map((c) => c.issue_url));
+    const uniqueBookmarks = bookmarkedContributions.filter(
+      (b) => !contributionUrls.has(b.issue_url)
+    );
+
+    // Merge and sort by date
+    return [...contributions, ...uniqueBookmarks].sort(
+      (a, b) => new Date(b.created_at || b.pr_created_at) - new Date(a.created_at || a.pr_created_at)
+    );
+  }, [contributions, bookmarks]);
+
+  const stats = React.useMemo(() => {
+    const s = {
+      total: allItems.length,
+      saved: 0,
+      applied: 0,
+      in_progress: 0,
+      merged: 0,
+      closed: 0,
+    };
+
+    allItems.forEach((item) => {
+      const status = item.is_bookmark ? item.status : getContributionStatus(item);
+      if (s[status] !== undefined) {
+        s[status]++;
+      }
+    });
+
+    return s;
+  }, [allItems]);
+
   const getFilteredContributions = () => {
-    let filtered = contributions;
+    let filtered = allItems;
 
     // Filter by status
     if (selectedStatus !== "all") {
-      filtered = filtered.filter((c) => {
-        const status = getContributionStatus(c);
+      filtered = filtered.filter((item) => {
+        const status = item.is_bookmark ? item.status : getContributionStatus(item);
         return status === selectedStatus;
       });
     }
@@ -159,7 +212,6 @@ const StatusPage = () => {
     );
   }
 
-  const stats = getStats();
   const successRate = getSuccessRate();
   const filteredContributions = getFilteredContributions();
 
@@ -375,14 +427,14 @@ const StatusPage = () => {
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredContributions.map((contribution) => {
-                const status = getContributionStatus(contribution);
+              {filteredContributions.map((item) => {
+                const status = item.is_bookmark ? item.status : getContributionStatus(item);
                 const statusConfig = getStatusConfig(status);
 
                 return (
                   <ContributionCard
-                    key={contribution.id}
-                    contribution={contribution}
+                    key={item.id}
+                    contribution={item}
                     status={status}
                     statusConfig={statusConfig}
                     formatDate={formatDate}

@@ -14,9 +14,13 @@ import {
   Copy,
   Check,
   ExternalLink,
+  ThumbsUp,
+  ThumbsDown,
+  Loader2,
 } from "lucide-react";
 import Footer from "../components/Footer";
 import { docContent } from "../data/docContent";
+import { supabase } from "../lib/supabase";
 
 const DocsArticlePage = () => {
   const { section, article } = useParams();
@@ -36,6 +40,83 @@ const DocsArticlePage = () => {
   const copyToClipboard = (text, id) => {
     navigator.clipboard.writeText(text);
     setCopiedCode(id);
+  };
+
+  const [vote, setVote] = useState(null);
+  const [isVoting, setIsVoting] = useState(false);
+  const [voteStats, setVoteStats] = useState({ up: 0, down: 0 });
+
+  const articleId = `${section}/${article}`;
+
+  useEffect(() => {
+    fetchVotes();
+    // Check local storage for previous vote
+    const savedVote = localStorage.getItem(`docs-vote-${articleId}`);
+    if (savedVote) setVote(savedVote);
+  }, [articleId]);
+
+  const fetchVotes = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("docs_feedback")
+        .select("vote_type")
+        .eq("article_id", articleId);
+
+      if (error) throw error;
+
+      const stats = data.reduce(
+        (acc, curr) => {
+          if (curr.vote_type === "up") acc.up++;
+          if (curr.vote_type === "down") acc.down++;
+          return acc;
+        },
+        { up: 0, down: 0 }
+      );
+      setVoteStats(stats);
+    } catch (error) {
+      console.error("Error fetching votes:", error);
+    }
+  };
+
+  const handleVote = async (type) => {
+    if (isVoting) return;
+    setIsVoting(true);
+
+    try {
+      const { error } = await supabase
+        .from("docs_feedback")
+        .insert([{ article_id: articleId, vote_type: type }]);
+
+      if (error) throw error;
+
+      setVote(type);
+      localStorage.setItem(`docs-vote-${articleId}`, type);
+      fetchVotes();
+    } catch (error) {
+      console.error("Error submitting vote:", error);
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
+  const getDynamicUpdatedDate = (staticDate) => {
+    // If the static date is like "2 days ago", "1 week ago", etc.
+    // we can either keep it or return something more formal based on today.
+    // For now, let's make it look like a real date from May 2026.
+    const now = new Date();
+    if (staticDate.includes("day")) {
+      const days = parseInt(staticDate) || 1;
+      now.setDate(now.getDate() - days);
+    } else if (staticDate.includes("week")) {
+      const weeks = parseInt(staticDate) || 1;
+      now.setDate(now.getDate() - weeks * 7);
+    }
+    
+    return now.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   if (!currentArticle) {
@@ -216,7 +297,7 @@ const DocsArticlePage = () => {
                 <div className="flex items-center gap-4 text-sm text-gray-500 pb-6 border-b border-[#1e1f2e]">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
-                    <span>Updated {currentArticle.updated}</span>
+                    <span>Updated {getDynamicUpdatedDate(currentArticle.updated)}</span>
                   </div>
                   {currentArticle.difficulty && (
                     <div className="flex items-center gap-2">
@@ -321,19 +402,51 @@ const DocsArticlePage = () => {
 
               {/* Article Footer */}
               <div className="mt-12 pt-8 border-t border-[#1e1f2e]">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-500">
-                    Was this article helpful?
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <span className="text-sm text-gray-400">
+                      Was this article helpful?
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleVote("up")}
+                        disabled={vote !== null || isVoting}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
+                          vote === "up"
+                            ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400"
+                            : "bg-[#15161E] border-white/5 text-gray-400 hover:text-white hover:border-white/10"
+                        } disabled:cursor-default`}
+                      >
+                        {isVoting && vote === null ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <ThumbsUp className={`w-4 h-4 ${vote === "up" ? "fill-emerald-400/20" : ""}`} />
+                        )}
+                        <span className="text-xs font-medium">{voteStats.up}</span>
+                      </button>
+                      <button
+                        onClick={() => handleVote("down")}
+                        disabled={vote !== null || isVoting}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
+                          vote === "down"
+                            ? "bg-red-500/10 border-red-500/50 text-red-400"
+                            : "bg-[#15161E] border-white/5 text-gray-400 hover:text-white hover:border-white/10"
+                        } disabled:cursor-default`}
+                      >
+                        {isVoting && vote === null ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <ThumbsDown className={`w-4 h-4 ${vote === "down" ? "fill-red-400/20" : ""}`} />
+                        )}
+                        <span className="text-xs font-medium">{voteStats.down}</span>
+                      </button>
+                    </div>
                   </div>
-                  {/* <div className="flex items-center gap-4">
-                    <a
-                      href="#"
-                      className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      Edit on GitHub
-                    </a>
-                  </div> */}
+                  {vote && (
+                    <span className="text-xs text-blue-400 animate-fade-in">
+                      Thanks for your feedback!
+                    </span>
+                  )}
                 </div>
               </div>
             </article>
