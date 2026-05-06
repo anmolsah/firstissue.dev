@@ -722,11 +722,17 @@ const ContributionHeatmap = ({ contributions, username }) => {
     if (!username) return;
 
     const cacheKey = `gh_calendar_${username}`;
-    const cached = getCache(cacheKey);
-    if (cached) {
-      setGhCalendar(cached);
-      return;
-    }
+    // Try sessionStorage cache
+    try {
+      const cached = sessionStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Date.now() - parsed._ts < 30 * 60 * 1000) {
+          setGhCalendar(parsed.data);
+          return;
+        }
+      }
+    } catch {}
 
     const fetchCalendar = async () => {
       setLoadingCalendar(true);
@@ -774,7 +780,9 @@ const ContributionHeatmap = ({ contributions, username }) => {
           const calendar = data?.data?.user?.contributionsCollection?.contributionCalendar;
           if (calendar) {
             setGhCalendar(calendar);
-            setCache(cacheKey, calendar, 30 * 60 * 1000); // Cache 30 min
+            try {
+              sessionStorage.setItem(cacheKey, JSON.stringify({ data: calendar, _ts: Date.now() }));
+            } catch {}
           }
         }
       } catch (err) {

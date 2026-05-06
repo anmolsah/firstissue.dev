@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { supabase } from "../lib/supabase";
-import { getCache, setCache, CACHE_KEYS } from "../utils/cache";
+import { useBookmarks, useRemoveBookmark } from "../hooks/queries/useBookmarks";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import AppSidebar from "../components/AppSidebar";
 import {
@@ -24,12 +23,12 @@ import {
 const BookmarksPage = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [bookmarks, setBookmarks] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const { data: bookmarks = [], isLoading: loading } = useBookmarks(user?.id);
+  const removeBookmarkMutation = useRemoveBookmark(user?.id);
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortOrder, setSortOrder] = useState("desc"); // 'desc' for newest first, 'asc' for oldest first
+  const [sortOrder, setSortOrder] = useState("desc");
   const [deleteDialog, setDeleteDialog] = useState({
     isOpen: false,
     bookmarkId: null,
@@ -46,57 +45,12 @@ const BookmarksPage = () => {
       navigate("/login");
       return;
     }
-    fetchBookmarks();
   }, [user, authLoading, navigate]);
-
-  const fetchBookmarks = async () => {
-    if (!user?.id) return;
-
-    const cacheKey = CACHE_KEYS.BOOKMARKS(user.id);
-
-    // Try to get from cache first
-    const cached = getCache(cacheKey);
-    if (cached) {
-      setBookmarks(cached);
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from("bookmarks")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      setBookmarks(data || []);
-
-      // Cache the data for 5 minutes
-      setCache(cacheKey, data || [], 5 * 60 * 1000);
-    } catch (error) {
-      console.error("Error fetching bookmarks:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const deleteBookmark = async (bookmarkId) => {
     setDeleteDialog((prev) => ({ ...prev, loading: true }));
     try {
-      const { error } = await supabase
-        .from("bookmarks")
-        .delete()
-        .eq("id", bookmarkId);
-      if (error) throw error;
-
-      // Update local state
-      const updatedBookmarks = bookmarks.filter((b) => b.id !== bookmarkId);
-      setBookmarks(updatedBookmarks);
-
-      // Update cache
-      const cacheKey = CACHE_KEYS.BOOKMARKS(user.id);
-      setCache(cacheKey, updatedBookmarks, 5 * 60 * 1000);
+      await removeBookmarkMutation.mutateAsync(bookmarkId);
 
       setDeleteDialog({
         isOpen: false,
