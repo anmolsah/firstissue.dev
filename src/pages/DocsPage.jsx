@@ -439,7 +439,7 @@ const DocsPage = () => {
                 Can't find what you're looking for?
               </h3>
               <p className="text-sm sm:text-base text-gray-500 mb-4 sm:mb-6 max-w-md mx-auto">
-                Our community is here to help. Join our Discord or submit a
+                Our community is here to help. Submit a
                 support ticket for personalized assistance.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">

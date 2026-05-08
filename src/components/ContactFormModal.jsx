@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { X, Send, Mail, User, MessageSquare } from "lucide-react";
 import toast from "react-hot-toast";
+import emailjs from '@emailjs/browser';
 
 const ContactFormModal = ({ isOpen, onClose }) => {
   const [formData, setFormData] = useState({
@@ -22,19 +23,24 @@ const ContactFormModal = ({ isOpen, onClose }) => {
     setIsSubmitting(true);
 
     try {
-      // Create mailto link with form data
-      const subject = encodeURIComponent(
-        `Support Request from ${formData.name}`,
-      );
-      const body = encodeURIComponent(
-        `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`,
-      );
-      const mailtoLink = `mailto:annifind010@gmail.com?subject=${subject}&body=${body}`;
+      // You should set these in your .env file:
+      // VITE_EMAILJS_SERVICE_ID, VITE_EMAILJS_TEMPLATE_ID, VITE_EMAILJS_PUBLIC_KEY
+      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || 'YOUR_SERVICE_ID';
+      const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || 'YOUR_TEMPLATE_ID';
+      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || 'YOUR_PUBLIC_KEY';
 
-      // Open default email client
-      window.location.href = mailtoLink;
+      await emailjs.send(
+        serviceId,
+        templateId,
+        {
+          from_name: formData.name,
+          reply_to: formData.email,
+          message: formData.message,
+        },
+        publicKey
+      );
 
-      toast.success("Opening your email client...");
+      toast.success("Message sent successfully!");
 
       // Reset form
       setFormData({
@@ -48,7 +54,8 @@ const ContactFormModal = ({ isOpen, onClose }) => {
         onClose();
       }, 1000);
     } catch (error) {
-      toast.error("Failed to open email client. Please try again.");
+      console.error("EmailJS Error:", error);
+      toast.error("Failed to send message. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
