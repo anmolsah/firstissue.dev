@@ -309,78 +309,122 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
 const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   const matchPercentage = Math.round((issue.matchScore || 0) * 100);
 
-  const getMatchColor = (score) => {
-    if (score >= 0.8) return { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' };
-    if (score >= 0.6) return { text: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/20' };
-    if (score >= 0.4) return { text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' };
-    return { text: 'text-gray-400', bg: 'bg-white/5', border: 'border-white/10' };
+  const getMatchStyles = (score) => {
+    if (score >= 0.8) return { 
+      text: 'text-emerald-400', 
+      bg: 'bg-emerald-500/10', 
+      border: 'border-emerald-500/20',
+      glow: 'shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]'
+    };
+    if (score >= 0.6) return { 
+      text: 'text-blue-400', 
+      bg: 'bg-blue-500/10', 
+      border: 'border-blue-500/20',
+      glow: 'shadow-[0_0_15px_-3px_rgba(59,130,246,0.2)]'
+    };
+    if (score >= 0.4) return { 
+      text: 'text-amber-400', 
+      bg: 'bg-amber-500/10', 
+      border: 'border-amber-500/20',
+      glow: 'shadow-[0_0_15px_-3px_rgba(245,158,11,0.2)]'
+    };
+    return { 
+      text: 'text-gray-400', 
+      bg: 'bg-white/5', 
+      border: 'border-white/10',
+      glow: ''
+    };
   };
 
-  const colors = getMatchColor(issue.matchScore);
+  const styles = getMatchStyles(issue.matchScore);
 
   return (
-    <div className="bg-[#15161E] border border-white/5 rounded-xl p-6 hover:border-purple-500/20 transition-all duration-300 group flex flex-col h-full relative">
-      {/* Match Score Badge */}
-      <div className="flex items-start justify-between mb-3">
-        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${colors.bg} ${colors.text} border ${colors.border}`}>
-          <Sparkles className="w-3 h-3" />
+    <div className="group relative bg-[#0D0E14] border border-white/5 rounded-2xl p-5 hover:border-purple-500/30 transition-all duration-500 flex flex-col h-full overflow-hidden">
+      {/* Premium background glow on hover */}
+      <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-600/5 blur-[80px] group-hover:bg-purple-600/10 transition-colors pointer-events-none" />
+      
+      {/* Top Header: Badge + Bookmark */}
+      <div className="flex items-start justify-between mb-5 relative z-10">
+        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-tight uppercase ${styles.bg} ${styles.text} border ${styles.border} ${styles.glow} backdrop-blur-md`}>
+          <Sparkles className="w-3 h-3 animate-pulse" />
           {matchPercentage}% Match
         </div>
+        
         <button
           onClick={(e) => {
             e.preventDefault();
             onToggleBookmark?.();
           }}
-          className={`p-1.5 rounded-full transition-all cursor-pointer ${
+          className={`p-2 rounded-xl transition-all duration-300 transform active:scale-90 cursor-pointer ${
             isBookmarked
-              ? 'bg-amber-500/20 text-amber-400'
-              : 'bg-transparent text-gray-600 hover:text-gray-300 hover:bg-white/5'
+              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+              : 'bg-white/5 text-gray-500 hover:text-white hover:bg-white/10 border border-transparent'
           }`}
         >
-          {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+          {isBookmarked ? <BookmarkCheck className="w-4.5 h-4.5" /> : <Bookmark className="w-4.5 h-4.5" />}
         </button>
       </div>
 
-      {/* Repo */}
-      <a
-        href={issue.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-xs text-gray-500 hover:text-purple-400 font-mono transition-colors mb-2"
-      >
-        {issue.repo}
-      </a>
+      {/* Repo Name */}
+      <div className="flex items-center gap-2 mb-3 relative z-10">
+        <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden">
+          <img 
+            src={`https://github.com/${issue.repo.split('/')[0]}.png`} 
+            alt="" 
+            className="w-full h-full object-cover"
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        </div>
+        <a
+          href={`https://github.com/${issue.repo}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[11px] text-gray-400 hover:text-purple-400 font-medium transition-colors truncate max-w-[180px]"
+        >
+          {issue.repo}
+        </a>
+      </div>
 
       {/* Title */}
-      <h3 className="text-base font-semibold text-gray-100 mb-2 leading-snug group-hover:text-purple-300 transition-colors line-clamp-2">
+      <h3 className="text-lg font-bold text-white mb-4 leading-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-purple-200 transition-all line-clamp-2 min-h-[3rem]">
         <a href={issue.url} target="_blank" rel="noopener noreferrer">
           {issue.title}
         </a>
       </h3>
 
-      {/* AI Reason */}
+      {/* AI Insight Section (The most premium part) */}
       {issue.matchReason && (
-        <p className="text-xs text-purple-300/70 mb-3 italic line-clamp-2 flex items-start gap-1.5">
-          <Sparkles className="w-3 h-3 flex-shrink-0 mt-0.5" />
-          {issue.matchReason}
-        </p>
+        <div className="relative mb-5 p-3.5 rounded-xl bg-[#15161E]/80 border border-white/5 backdrop-blur-sm group-hover:border-purple-500/20 transition-all">
+          <div className="flex items-center gap-1.5 mb-2">
+            <div className="px-1.5 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-[9px] font-black text-purple-400 uppercase tracking-widest">
+              AI Insight
+            </div>
+          </div>
+          <p className="text-[11px] text-gray-300/90 leading-relaxed font-medium">
+            {issue.matchReason}
+          </p>
+          {/* Subtle accent line */}
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-3/5 bg-gradient-to-b from-purple-500/50 to-blue-500/50 rounded-full" />
+        </div>
       )}
 
-      {/* Labels */}
-      <div className="flex flex-wrap gap-1.5 mt-auto pt-4 border-t border-white/5">
-        {issue.labels?.slice(0, 3).map((label, i) => (
-          <span
-            key={i}
-            className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/5"
-          >
-            {label.length > 18 ? label.substring(0, 18) + '...' : label}
-          </span>
-        ))}
+      {/* Footer: Labels + Link */}
+      <div className="flex items-center gap-1.5 mt-auto pt-4 relative z-10">
+        <div className="flex flex-wrap gap-1.5 flex-1">
+          {issue.labels?.slice(0, 2).map((label, i) => (
+            <span
+              key={i}
+              className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-white/5 text-gray-500 border border-white/5 uppercase tracking-wide"
+            >
+              {label.length > 15 ? label.substring(0, 15) + '...' : label}
+            </span>
+          ))}
+        </div>
         <a
           href={issue.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-auto text-gray-500 hover:text-purple-400 transition-colors"
+          className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-purple-600 transition-all transform hover:-translate-y-0.5"
         >
           <ExternalLink className="w-4 h-4" />
         </a>
