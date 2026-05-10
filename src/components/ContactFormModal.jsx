@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+ import React, { useState } from "react";
 import { X, Send, Mail, User, MessageSquare } from "lucide-react";
 import toast from "react-hot-toast";
 import emailjs from '@emailjs/browser';
@@ -36,6 +37,7 @@ const ContactFormModal = ({ isOpen, onClose }) => {
           from_name: formData.name,
           reply_to: formData.email,
           message: formData.message,
+          to_email: import.meta.env.VITE_EMAILJS_RECEIVER_EMAIL || 'annifind010@gmail.com',
         },
         publicKey
       );
