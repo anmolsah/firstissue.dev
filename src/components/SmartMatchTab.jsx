@@ -172,24 +172,31 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
   if (loading && (!matches || matches.length === 0)) {
     return (
       <div className="flex flex-col items-center justify-center py-24 min-h-[400px]">
-        <div className="relative mb-10">
-          {/* Animated Brain/AI Pulse */}
-          <div className="absolute inset-0 bg-purple-500/20 blur-3xl rounded-full animate-pulse" />
-          <div className="relative w-24 h-24 rounded-3xl bg-gradient-to-br from-[#1A1B23] to-[#12131a] flex items-center justify-center border border-white/10 shadow-2xl overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-tr from-purple-600/10 via-transparent to-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <BrainCircuit className="w-12 h-12 text-purple-400 relative z-10 animate-float-slow" />
-            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50" />
+        {/* Abstract Neural Scanner */}
+        <div className="relative mb-12">
+          {/* Main Ring */}
+          <div className="w-32 h-32 rounded-full border-2 border-white/5 relative flex items-center justify-center">
+            {/* Spinning Scanner Line */}
+            <div className="absolute inset-0 rounded-full border-t-2 border-purple-500/50 animate-spin" style={{ animationDuration: '2s' }} />
+            
+            {/* Inner Glowing Core */}
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600/20 to-blue-600/20 flex items-center justify-center border border-white/10 shadow-[0_0_40px_-10px_rgba(168,85,247,0.3)]">
+              <BrainCircuit className="w-10 h-10 text-purple-400/80" />
+            </div>
+
+            {/* Orbiting particles (simplified) */}
+            <div className="absolute -inset-4 border border-white/5 rounded-full animate-reverse-spin" style={{ animationDuration: '4s' }} />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.8)]" />
           </div>
           
-          {/* Decorative floating dots */}
-          <Sparkles className="absolute -top-4 -right-4 w-6 h-6 text-purple-400/30 animate-pulse" />
-          <Zap className="absolute -bottom-2 -left-6 w-5 h-5 text-blue-400/30 animate-bounce-slow" />
+          {/* Background Ambient Glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-600/10 blur-[100px] -z-10" />
         </div>
 
-        <div className="text-center mb-10 space-y-2">
-          <h3 className="text-2xl font-black text-white tracking-tight">AI Analysis in Progress</h3>
-          <p className="text-gray-500 text-sm max-w-xs mx-auto leading-relaxed">
-            Our neural network is processing your contribution history to generate high-precision matches.
+        <div className="text-center mb-10 space-y-3">
+          <h3 className="text-xl font-bold text-white tracking-tight">AI Matching in Progress</h3>
+          <p className="text-gray-400 text-sm max-w-xs mx-auto leading-relaxed">
+            Comparing your GitHub contributions against thousands of open issues to find the perfect fit.
           </p>
         </div>
 
@@ -309,45 +316,17 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
 const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   const matchPercentage = Math.round((issue.matchScore || 0) * 100);
 
-  const getMatchStyles = (score) => {
-    if (score >= 0.8) return { 
-      text: 'text-emerald-400', 
-      bg: 'bg-emerald-500/10', 
-      border: 'border-emerald-500/20',
-      glow: 'shadow-[0_0_15px_-3px_rgba(16,185,129,0.2)]'
-    };
-    if (score >= 0.6) return { 
-      text: 'text-blue-400', 
-      bg: 'bg-blue-500/10', 
-      border: 'border-blue-500/20',
-      glow: 'shadow-[0_0_15px_-3px_rgba(59,130,246,0.2)]'
-    };
-    if (score >= 0.4) return { 
-      text: 'text-amber-400', 
-      bg: 'bg-amber-500/10', 
-      border: 'border-amber-500/20',
-      glow: 'shadow-[0_0_15px_-3px_rgba(245,158,11,0.2)]'
-    };
-    return { 
-      text: 'text-gray-400', 
-      bg: 'bg-white/5', 
-      border: 'border-white/10',
-      glow: ''
-    };
-  };
-
-  const styles = getMatchStyles(issue.matchScore);
-
   return (
-    <div className="group relative bg-[#0D0E14] border border-white/5 rounded-2xl p-5 hover:border-purple-500/30 transition-all duration-500 flex flex-col h-full overflow-hidden">
-      {/* Premium background glow on hover */}
-      <div className="absolute -top-24 -right-24 w-48 h-48 bg-purple-600/5 blur-[80px] group-hover:bg-purple-600/10 transition-colors pointer-events-none" />
-      
-      {/* Top Header: Badge + Bookmark */}
-      <div className="flex items-start justify-between mb-5 relative z-10">
-        <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold tracking-tight uppercase ${styles.bg} ${styles.text} border ${styles.border} ${styles.glow} backdrop-blur-md`}>
-          <Sparkles className="w-3 h-3 animate-pulse" />
-          {matchPercentage}% Match
+    <div className="group flex flex-col h-full bg-[#0B0C10] border border-white/5 rounded-2xl p-6 transition-all duration-300 hover:border-white/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+      {/* Card Header: AI Match & Bookmark */}
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 w-fit">
+            <BrainCircuit className="w-3.5 h-3.5 text-purple-400" />
+            <span className="text-[11px] font-bold text-white tracking-wide uppercase">AI Match</span>
+            <span className="w-1 h-1 rounded-full bg-white/20" />
+            <span className="text-[11px] font-bold text-purple-400">{matchPercentage}%</span>
+          </div>
         </div>
         
         <button
@@ -355,19 +334,19 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
             e.preventDefault();
             onToggleBookmark?.();
           }}
-          className={`p-2 rounded-xl transition-all duration-300 transform active:scale-90 cursor-pointer ${
+          className={`p-2 rounded-xl transition-all duration-200 ${
             isBookmarked
-              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-              : 'bg-white/5 text-gray-500 hover:text-white hover:bg-white/10 border border-transparent'
+              ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
+              : 'text-gray-500 hover:text-white hover:bg-white/5 border border-transparent'
           }`}
         >
-          {isBookmarked ? <BookmarkCheck className="w-4.5 h-4.5" /> : <Bookmark className="w-4.5 h-4.5" />}
+          {isBookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Repo Name */}
-      <div className="flex items-center gap-2 mb-3 relative z-10">
-        <div className="w-5 h-5 rounded-md bg-white/5 flex items-center justify-center border border-white/10 overflow-hidden">
+      {/* Repo Metadata */}
+      <div className="flex items-center gap-2 mb-3">
+        <div className="w-5 h-5 rounded bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
           <img 
             src={`https://github.com/${issue.repo.split('/')[0]}.png`} 
             alt="" 
@@ -375,58 +354,52 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
             onError={(e) => { e.target.style.display = 'none'; }}
           />
         </div>
-        <a
-          href={`https://github.com/${issue.repo}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-[11px] text-gray-400 hover:text-purple-400 font-medium transition-colors truncate max-w-[180px]"
-        >
-          {issue.repo}
-        </a>
+        <span className="text-xs font-medium text-gray-500 truncate">{issue.repo}</span>
       </div>
 
       {/* Title */}
-      <h3 className="text-lg font-bold text-white mb-4 leading-tight group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-purple-200 transition-all line-clamp-2 min-h-[3rem]">
+      <h3 className="text-lg font-semibold text-white mb-4 leading-tight line-clamp-2 min-h-[3rem] group-hover:text-purple-400 transition-colors">
         <a href={issue.url} target="_blank" rel="noopener noreferrer">
           {issue.title}
         </a>
       </h3>
 
-      {/* AI Insight Section (The most premium part) */}
+      {/* AI Insight Section */}
       {issue.matchReason && (
-        <div className="relative mb-5 p-3.5 rounded-xl bg-[#15161E]/80 border border-white/5 backdrop-blur-sm group-hover:border-purple-500/20 transition-all">
-          <div className="flex items-center gap-1.5 mb-2">
-            <div className="px-1.5 py-0.5 rounded-md bg-purple-500/10 border border-purple-500/20 text-[9px] font-black text-purple-400 uppercase tracking-widest">
-              AI Insight
-            </div>
+        <div className="mb-6 p-4 rounded-xl bg-white/[0.02] border border-white/5 relative overflow-hidden">
+          <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+            <Sparkles className="w-3 h-3" />
+            Why this match?
           </div>
-          <p className="text-[11px] text-gray-300/90 leading-relaxed font-medium">
+          <p className="text-xs text-gray-400 leading-relaxed font-medium">
             {issue.matchReason}
           </p>
-          {/* Subtle accent line */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] h-3/5 bg-gradient-to-b from-purple-500/50 to-blue-500/50 rounded-full" />
+          {/* Subtle gradient accent */}
+          <div className="absolute top-0 left-0 w-1 h-full bg-purple-500/30" />
         </div>
       )}
 
-      {/* Footer: Labels + Link */}
-      <div className="flex items-center gap-1.5 mt-auto pt-4 relative z-10">
-        <div className="flex flex-wrap gap-1.5 flex-1">
+      {/* Tags & Actions */}
+      <div className="flex items-center justify-between mt-auto pt-5 border-t border-white/5">
+        <div className="flex flex-wrap gap-2">
           {issue.labels?.slice(0, 2).map((label, i) => (
             <span
               key={i}
-              className="text-[9px] font-bold px-2 py-0.5 rounded-md bg-white/5 text-gray-500 border border-white/5 uppercase tracking-wide"
+              className="text-[10px] font-semibold px-2.5 py-1 rounded-md bg-white/5 text-gray-400 border border-white/10 uppercase tracking-tighter"
             >
-              {label.length > 15 ? label.substring(0, 15) + '...' : label}
+              {label}
             </span>
           ))}
         </div>
+        
         <a
           href={issue.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="p-2 rounded-lg bg-white/5 text-gray-400 hover:text-white hover:bg-purple-600 transition-all transform hover:-translate-y-0.5"
+          className="flex items-center gap-2 text-xs font-bold text-white hover:text-purple-400 transition-colors group/link"
         >
-          <ExternalLink className="w-4 h-4" />
+          View Issue
+          <ArrowRight className="w-3.5 h-3.5 transform group-hover/link:translate-x-1 transition-transform" />
         </a>
       </div>
     </div>
