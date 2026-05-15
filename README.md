@@ -1,7 +1,7 @@
 <div align="center">
   
   <h1>
-    <img src="public/officialLogo.png" alt="FirstIssue.dev" height="100"/>
+    <img src="public/officialLogo.png" alt="FirstIssue.dev" height="400"/>
   </h1>
   
   <h3> Discover, Track, and Contribute to Open Source Projects </h3>
