@@ -1,9 +1,21 @@
 <div align="center">
-  <img src="public/logo01.png" alt="FirstIssue.dev Logo" width="200"/>
   
-  # FirstIssue.dev
+<h1 align="center">
+  <span style="
+    background: linear-gradient(to right, #ffffff, #9ca3af);
+    -webkit-background-clip: text;
+    color: transparent;
+    font-weight: bold;
+  ">
+    FirstIssue.dev
+  </span>
+</h1>
+
+<p align="center">
+  Open Source • Beginner Friendly • Contribution Platform
+</p>
   
-  **Discover, Track, and Contribute to Open Source Projects**
+  <h3>✨ Discover, Track, and Contribute to Open Source Projects ✨</h3>
   
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
   [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](docs/CONTRIBUTING.md)
