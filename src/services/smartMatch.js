@@ -56,7 +56,21 @@ export async function getAIMatchedIssues(userProfile, candidateIssues) {
       }
     });
 
-    if (error) throw error;
+    if (error) {
+      // Try to read the response body for more details
+      let details = error.message || 'Unknown error';
+      try {
+        if (error.context?.body) {
+          const reader = error.context.body.getReader();
+          const { value } = await reader.read();
+          const bodyText = new TextDecoder().decode(value);
+          const bodyJson = JSON.parse(bodyText);
+          details = bodyJson.details || bodyJson.error || details;
+        }
+      } catch (_) { /* ignore parse errors */ }
+      console.error('Smart Match edge function error:', details);
+      throw new Error(`AI matching failed: ${details}`);
+    }
     if (data?.error) throw new Error(data.error);
 
     return data?.matches || [];

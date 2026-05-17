@@ -69,7 +69,7 @@ ${candidateIssues.map((issue: any, i: number) =>
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "grok-3-mini",
+        model: "grok-4.3",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -81,9 +81,9 @@ ${candidateIssues.map((issue: any, i: number) =>
 
     if (!aiResponse.ok) {
       const errorText = await aiResponse.text();
-      console.error("xAI error:", errorText);
+      console.error("xAI error status:", aiResponse.status, "body:", errorText);
       return new Response(
-        JSON.stringify({ error: "AI matching failed", details: errorText }),
+        JSON.stringify({ error: "AI matching failed", details: errorText, status: aiResponse.status }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
