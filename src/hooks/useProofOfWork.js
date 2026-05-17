@@ -24,25 +24,20 @@ export function useVerifyContribution() {
 
   return useMutation({
     mutationFn: async ({ prUrl }) => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/verify-contribution`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({ prUrl })
+      const { data, error } = await supabase.functions.invoke('verify-contribution', {
+        body: { prUrl }
       });
 
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.error || 'Verification failed');
+      if (error) {
+        // Try to parse the error body for a user-friendly message
+        throw new Error(error.message || 'Verification failed');
       }
 
-      return responseData.data;
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      return data?.data || data;
     },
     onSuccess: (data, variables, context) => {
       // Invalidate the query to fetch the new attestation
