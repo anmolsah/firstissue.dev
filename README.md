@@ -18,41 +18,41 @@
 
 ---
 
-## 📖 About The Project
+## About The Project
 
 FirstIssue.dev is a comprehensive platform designed to help developers discover beginner-friendly open source issues and track their contribution journey. Whether you're a first-time contributor or an experienced developer looking for new projects, FirstIssue.dev simplifies the process of finding and managing open source contributions.
 
-### ✨ Key Highlights
+### Key Highlights
 
-- 🔍 **Smart Issue Discovery** - Find beginner-friendly issues across thousands of repositories
-- 📊 **Contribution Tracking** - Automatic synchronization with GitHub to monitor your progress
-- 🎯 **Personal Dashboard** - Visualize your contribution journey with detailed statistics
-- 🔖 **Bookmark Management** - Save and organize issues for later
-- 🔐 **Secure Authentication** - GitHub OAuth integration for seamless login
+- **Smart Issue Discovery** - Find beginner-friendly issues across thousands of repositories
+- **Contribution Tracking** - Automatic synchronization with GitHub to monitor your progress
+- **Personal Dashboard** - Visualize your contribution journey with detailed statistics
+- **Bookmark Management** - Save and organize issues for later
+- **Secure Authentication** - GitHub OAuth integration for seamless login
 
 ---
 
-## 🚀 Features
+## Features
 
-### 🔍 Issue Discovery
+### Issue Discovery
 
 - **Smart Filtering** - Search by programming language, repository, and labels
 - **Beginner-Friendly Focus** - Curated issues tagged with `good first issue` and `help wanted`
 - **Repository Curation** - Browse projects known for welcoming first-time contributors
 
-### 📈 Contribution Tracking
+### Contribution Tracking
 
 - **Automatic GitHub Sync** - Real-time tracking of assigned issues and pull requests
 - **Status Updates** - Monitor contribution status (Applied, In Progress, Merged, Closed)
 - **Manual Entry** - Track contributions made outside the platform
 
-### 📊 Personal Dashboard
+### Personal Dashboard
 
 - **Comprehensive Statistics** - View merge rate, contribution breakdown, and more
 - **Visual Heatmap** - Activity visualization over time
 - **Quick Access** - Easy navigation to bookmarked issues and active contributions
 
-### 🔖 Bookmark Management
+### Bookmark Management
 
 - **Save for Later** - Bookmark interesting issues for future reference
 - **Organization** - Sort bookmarks by status and priority
@@ -60,7 +60,7 @@ FirstIssue.dev is a comprehensive platform designed to help developers discover 
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 | Category | Technologies |
 |----------|-------------|
@@ -75,7 +75,7 @@ FirstIssue.dev is a comprehensive platform designed to help developers discover 
 
 ---
 
-## 📋 Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed:
 
@@ -86,22 +86,22 @@ Before you begin, ensure you have the following installed:
 
 ---
 
-## ⚙️ Installation
+## Installation
 
-### 1️⃣ Clone the Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/anmolsah/firstissue.dev.git
 cd firstissue.dev
 ```
 
-### 2️⃣ Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3️⃣ Configure Environment Variables
+### 3. Configure Environment Variables
 
 Create a `.env` file in the root directory:
 
@@ -116,24 +116,24 @@ VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-### 4️⃣ Set Up Supabase
+### 4. Set Up Supabase
 
 1. Create a new project in Supabase
 2. Enable GitHub OAuth provider in Authentication settings
 3. Run the database migration from `supabase/migrations/create_contributions_table.sql`
 4. Configure Row Level Security (RLS) policies for the contributions table
 
-### 5️⃣ Start Development Server
+### 5. Start Development Server
 
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173` 🎉
+The application will be available at `http://localhost:5173`.
 
 ---
 
-## 📜 Available Scripts
+## Available Scripts
 
 | Command | Description |
 |---------|-------------|
@@ -144,33 +144,33 @@ The application will be available at `http://localhost:5173` 🎉
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```plaintext
 firstissue.dev/
-├── 📂 public/              # Static assets
-├── 📂 src/
-│   ├── 📂 assets/          # Images and media files
-│   ├── 📂 components/      # Reusable React components
-│   ├── 📂 contexts/        # React Context providers
-│   ├── 📂 data/            # Static data and content
-│   ├── 📂 hooks/           # Custom React hooks
-│   ├── 📂 lib/             # External service configurations
-│   ├── 📂 pages/           # Page components
-│   ├── 📂 services/        # API and business logic
-│   ├── 📂 utils/           # Utility functions
-│   ├── 📄 App.jsx          # Main application component
-│   └── 📄 main.jsx         # Application entry point
-├── 📂 docs/                # Documentation
-├── 📂 supabase/            # Database migrations and functions
-└── 📄 package.json
+├── public/              # Static assets
+├── src/
+│   ├── assets/          # Images and media files
+│   ├── components/      # Reusable React components
+│   ├── contexts/        # React Context providers
+│   ├── data/            # Static data and content
+│   ├── hooks/           # Custom React hooks
+│   ├── lib/             # External service configurations
+│   ├── pages/           # Page components
+│   ├── services/        # API and business logic
+│   ├── utils/           # Utility functions
+│   ├── App.jsx          # Main application component
+│   └── main.jsx         # Application entry point
+├── docs/                # Documentation
+├── supabase/            # Database migrations and functions
+└── package.json
 ```
 
 ---
 
-## 🔑 Key Components
+## Key Components
 
-### 🔄 GitHub Synchronization
+### GitHub Synchronization
 
 The platform automatically syncs with GitHub to track:
 
@@ -181,7 +181,7 @@ The platform automatically syncs with GitHub to track:
 
 Synchronization occurs automatically every 5 minutes or can be triggered manually.
 
-### 🎯 Status Detection
+### Status Detection
 
 Contributions are automatically categorized:
 
@@ -191,7 +191,7 @@ Contributions are automatically categorized:
 - **Merged**: Pull request successfully merged
 - **Closed**: Pull request closed without merge
 
-### ⚡ Caching Strategy
+### Caching Strategy
 
 The application implements client-side caching to:
 
@@ -201,11 +201,11 @@ The application implements client-side caching to:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**! 🙏
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-### 🚀 Quick Start for Contributors
+### Quick Start for Contributors
 
 1. **Fork the repository**
 2. **Create a feature branch**
@@ -222,11 +222,11 @@ Contributions are what make the open source community such an amazing place to l
    ```
 5. **Open a Pull Request**
 
-📖 See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 | Document | Description |
 |----------|-------------|
@@ -238,24 +238,24 @@ Contributions are what make the open source community such an amazing place to l
 
 ---
 
-## 🔒 Security
+## Security
 
 Security is a top priority for FirstIssue.dev:
 
-- 🔐 **Secure Authentication** - All authentication handled through Supabase with GitHub OAuth
-- 🛡️ **Row Level Security** - RLS policies ensure users can only access their own data
-- 🔑 **Token Protection** - GitHub tokens are securely stored and never exposed to the client
-- ⚠️ **Rate Limiting** - API rate limiting implemented to prevent abuse
+- **Secure Authentication** - All authentication handled through Supabase with GitHub OAuth
+- **Row Level Security** - RLS policies ensure users can only access their own data
+- **Token Protection** - GitHub tokens are securely stored and never exposed to the client
+- **Rate Limiting** - API rate limiting implemented to prevent abuse
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Anmol Sah**
 
@@ -264,26 +264,26 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 ---
 
-## 💬 Support & Community
+## Support & Community
 
 Need help or have questions?
 
-- 📧 **Email**: Open an issue on GitHub
-- 🐛 **Bug Reports**: [Create an issue](https://github.com/anmolsah/firstissue.dev/issues)
-- 💡 **Feature Requests**: [Request a feature](https://github.com/anmolsah/firstissue.dev/issues)
-- 📖 **Documentation**: Check our [docs](docs/)
+- **Email**: Open an issue on GitHub
+- **Bug Reports**: [Create an issue](https://github.com/anmolsah/firstissue.dev/issues)
+- **Feature Requests**: [Request a feature](https://github.com/anmolsah/firstissue.dev/issues)
+- **Documentation**: Check our [docs](docs/)
 
 ---
 
-## ⭐ Show Your Support
+## Show Your Support
 
-If you find this project helpful, please consider giving it a ⭐ on GitHub!
+If you find this project helpful, please consider giving it a star on GitHub!
 
 ---
 
 <div align="center">
   
-  **Made with ❤️ by the Open Source Community**
+  **Made by the Open Source Community**
   
   [Website](https://firstissue.dev) • [Documentation](docs/) • [Contributing](docs/CONTRIBUTING.md)
   
