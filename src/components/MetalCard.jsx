@@ -1,22 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, ExternalLink, Code, MessageSquare, Plus, Minus, Star, Github } from 'lucide-react';
-import { SiJavascript, SiPython, SiTypescript, SiReact, SiNextdotjs } from 'react-icons/si';
+import { CheckCircle, ExternalLink, Code, Star, Github } from 'lucide-react';
 
-const languageIcons = {
-  javascript: SiJavascript,
-  typescript: SiTypescript,
-  python: SiPython,
-  react: SiReact,
-  'next.js': SiNextdotjs,
-};
-
-const getLanguageIcon = (lang) => {
-  if (!lang) return Code;
-  const key = lang.toLowerCase();
-  return languageIcons[key] || Code;
-};
-
+const getLanguageIcon = () => Code;
 const MetalCard = ({ attestation }) => {
   const cardRef = useRef(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
