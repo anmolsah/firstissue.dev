@@ -637,4 +637,34 @@ textarea:focus {
   animation: border-pulse-red 4s ease-in-out infinite;
 }
 
+/* ============================================
+   Proof of Work Card Animations
+   ============================================ */
+@keyframes float-3d {
+  0%, 100% {
+    transform: translateY(0px) rotateX(4deg) rotateY(-8deg);
+  }
+  50% {
+    transform: translateY(-8px) rotateX(-4deg) rotateY(8deg);
+  }
+}
+
+@keyframes sheen-sweep {
+  0% {
+    left: -150%;
+  }
+  25%, 100% {
+    left: 150%;
+  }
+}
+
+.animate-float-3d {
+  animation: float-3d 6s ease-in-out infinite;
+}
+
+.animate-sheen-sweep {
+  animation: sheen-sweep 6s ease-in-out infinite;
+}
+
+
 

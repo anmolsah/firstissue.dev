@@ -13,6 +13,8 @@ import {
   Database,
   Layout,
   Star,
+  CheckCircle,
+  ExternalLink,
 } from "lucide-react";
 
 const LandingPage = () => {
@@ -46,7 +48,7 @@ const LandingPage = () => {
   }, [isVisible]);
 
   const animateCount = () => {
-    const target = 150;
+    const target = 200;
     const duration = 2000;
     const steps = 60;
     const increment = target / steps;
@@ -167,32 +169,44 @@ const LandingPage = () => {
       {/* Bento Grid Features */}
       <section className="py-24 px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-7xl mx-auto">
+          {/* Feature Section Header */}
+          <div className="text-center mb-16">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4">
+              Everything you need to <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400">scale your impact</span>
+            </h2>
+            <p className="text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
+              A cohesive ecosystem built to match you with top-tier issues and prove your contribution credentials.
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Feature 1: AI Match - Large — With animated flow */}
-            <div className="lg:col-span-2 bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-blue-500/30 transition-all group overflow-hidden relative">
-              <div className="flex flex-col md:flex-row gap-8">
+            <div className="lg:col-span-2 bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-blue-500/30 transition-all group overflow-hidden relative min-h-[460px] flex flex-col justify-between">
+              <div className="flex flex-col md:flex-row gap-8 h-full items-stretch">
                 {/* Left: Text */}
-                <div className="flex-1 relative z-10 cursor-default">
-                  <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-6">
-                    <Zap className="w-6 h-6" />
+                <div className="flex-1 relative z-10 cursor-default flex flex-col justify-between py-2">
+                  <div>
+                    <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-6">
+                      <Zap className="w-6 h-6" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">
+                      AI-Driven Smart Matching
+                    </h3>
+                    <p className="text-gray-400 max-w-md mb-6">
+                      We analyze your GitHub history to recommend issues that
+                      perfectly match your tech stack and experience level.
+                    </p>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-4">
-                    AI-Driven Smart Matching
-                  </h3>
-                  <p className="text-gray-400 max-w-md mb-6">
-                    We analyze your GitHub history to recommend issues that
-                    perfectly match your tech stack and experience level.
-                  </p>
                   <Link
                     to="/support"
-                    className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors font-medium"
+                    className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 transition-colors font-medium mt-auto"
                   >
                     Learn more <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
 
                 {/* Right: Animated visualization */}
-                <div className="flex-1 relative">
+                <div className="flex-grow flex-1 relative flex items-center justify-center min-h-[240px]">
                   {/* Connecting wires */}
                   <svg className="absolute inset-0 w-full h-full z-0 pointer-events-none" viewBox="0 0 300 220" fill="none">
                     {/* Wire from Profile to AI */}
@@ -298,34 +312,97 @@ const LandingPage = () => {
             </div>
 
             {/* Feature 2: Proof of Work */}
-            <div className="bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-purple-500/30 transition-all group relative overflow-hidden">
-              <div className="absolute bottom-0 right-0 p-8 opacity-10 group-hover:opacity-30 transition-opacity">
-                <Shield className="w-24 h-24 text-purple-500" />
+            <div className="bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-purple-500/30 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[460px]">
+              <div>
+                <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 mb-6">
+                  <Shield className="w-6 h-6" />
+                </div>
+                <h3 className="text-xl font-bold text-white mb-3">
+                  Proof of Work
+                </h3>
+                <p className="text-gray-400 text-sm">
+                  Build a verifiable on-chain resume of your contributions. No more resume padding, just cryptographically signed badges of achievement.
+                </p>
               </div>
-              <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 mb-6">
-                <Shield className="w-6 h-6" />
+
+              {/* Floating Mini Gold Metal Card */}
+              <div className="mt-8 relative flex justify-center items-center h-[220px]" style={{ perspective: '800px' }}>
+                <div className="w-[260px] rounded-2xl bg-gradient-to-br from-amber-950 via-zinc-900 to-zinc-950 border border-amber-500/30 p-4 shadow-[0_20px_40px_-15px_rgba(234,179,8,0.2)] text-yellow-100 flex flex-col justify-between animate-float-3d relative overflow-hidden h-[190px]">
+                  {/* Scanline pattern overlay */}
+                  <div className="absolute inset-0 opacity-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSJub25lIi8+CjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjEiIGZpbGw9IiNmZmYiLz4KPC9zdmc+')] mix-blend-overlay pointer-events-none z-10"></div>
+                  
+                  {/* Sheen sweep element */}
+                  <div className="absolute top-0 w-[40%] h-full bg-gradient-to-r from-transparent via-amber-400/25 to-transparent skew-x-[-30deg] animate-sheen-sweep pointer-events-none z-20" />
+                  
+                  {/* Card content */}
+                  <div className="relative z-30 flex flex-col h-full justify-between">
+                    {/* Card Header */}
+                    <div className="flex justify-between items-start">
+                      <div className="flex flex-col">
+                        <span className="text-[12px] font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 to-amber-500">
+                          FirstIssue.dev
+                        </span>
+                        <div className="flex items-center gap-1.5 mt-1">
+                          <div className="w-4 h-4 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
+                            <Code2 className="w-2.5 h-2.5 text-amber-400" />
+                          </div>
+                          <span className="text-[9px] font-semibold text-amber-100 opacity-90 truncate max-w-[100px]">facebook/react</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                        <CheckCircle className="w-2 h-2" />
+                        <span className="text-[7px] font-extrabold tracking-widest">VERIFIED</span>
+                      </div>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="my-2">
+                      <h4 className="font-semibold text-[11px] leading-snug line-clamp-2 text-yellow-50/90">
+                        <span className="opacity-60 mr-1 text-amber-500 font-mono">#24089</span>
+                        Implement Concurrent Mode Suspense lifecycle hooks
+                      </h4>
+                      
+                      <div className="flex gap-3 mt-1.5 text-[9px] text-amber-200/80 font-medium">
+                        <div className="flex items-center gap-0.5">
+                          <Star className="w-2.5 h-2.5 text-amber-400 fill-amber-400/20" />
+                          <span>98 Impact</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <span className="text-emerald-400 font-bold">+320</span>
+                          <span className="text-red-400 font-bold">-45</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Card Footer */}
+                    <div className="pt-1.5 border-t border-white/5 flex justify-between items-center text-[7px] font-mono text-amber-200/40">
+                      <div className="flex flex-col">
+                        <span className="uppercase tracking-widest scale-90 origin-left">Attestation Hash</span>
+                        <span className="tracking-wider mt-0.5 text-amber-200/60">0x8fa4...7640</span>
+                      </div>
+                      <div className="px-1 py-0.2 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20 font-sans font-bold scale-90 origin-right">
+                        Gold Mint
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-white mb-4">
-                Proof of Work
-              </h3>
-              <p className="text-gray-400 text-sm">
-                Build a verifiable on-chain resume of your contributions. No
-                more resume padding.
-              </p>
-              <div className="mt-6 flex items-center gap-2">
+
+              <div className="mt-4 flex items-center gap-2 relative z-10">
                 <div className="flex items-center">
                   <img
-                    className="w-7.5 rounded-full border-3 border-white"
+                    className="w-7.5 rounded-full border-3 border-[#15161E]"
                     src="https://images.unsplash.com/photo-1633332755192-727a05c4013d?q=80&w=50"
                     alt="userImage1"
                   />
                   <img
-                    className="w-7.5 rounded-full border-3 border-white -translate-x-2"
+                    className="w-7.5 rounded-full border-3 border-[#15161E] -translate-x-2"
                     src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=50"
                     alt="userImage2"
                   />
                   <img
-                    className="w-7.5 rounded-full border-3 border-white -translate-x-4"
+                    className="w-7.5 rounded-full border-3 border-[#15161E] -translate-x-4"
                     src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=50&h=50&auto=format&fit=crop"
                     alt="userImage3"
                   />
@@ -335,44 +412,97 @@ const LandingPage = () => {
             </div>
 
             {/* Feature 3: Real-time Collab */}
-            <div className="bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-pink-500/30 transition-all group">
-              <div className="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 mb-6">
-                <Users className="w-6 h-6" />
+            <div className="bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-pink-500/30 transition-all group relative overflow-hidden flex flex-col justify-between min-h-[460px]">
+              <div>
+                <div className="w-12 h-12 rounded-xl bg-pink-500/20 flex items-center justify-center text-pink-400 mb-6">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div className="flex items-center gap-2.5 mb-3">
+                  <h3 className="text-xl font-bold text-white">
+                    Real-time Collab
+                  </h3>
+                  <span className="px-2 py-0.5 rounded bg-pink-500/10 text-[9px] font-black text-pink-400 uppercase tracking-widest border border-pink-500/20">
+                    Upcoming
+                  </span>
+                </div>
+                <p className="text-gray-400 text-sm">
+                  Live pair programming sessions with maintainers and teammates, built directly into your issues workspace.
+                </p>
               </div>
-              <h3 className="text-xl font-bold text-white mb-4">
-                Real-time Collab
-              </h3>
-              <p className="text-gray-400 text-sm">
-                Live code sessions with maintainers and teammates built directly
-                into the platform.
-              </p>
+
+              {/* Pair Programming Animated Workspace */}
+              <div className="mt-6 bg-black/40 rounded-2xl border border-white/5 p-4 relative overflow-hidden font-mono text-[10px] text-zinc-400 h-[190px] flex flex-col justify-between">
+                {/* Terminal header */}
+                <div className="flex items-center justify-between pb-2 border-b border-white/5">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-2 h-2 rounded-full bg-red-500/40" />
+                    <div className="w-2 h-2 rounded-full bg-yellow-500/40" />
+                    <div className="w-2 h-2 rounded-full bg-green-500/40" />
+                  </div>
+                  <span className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider">collab-session.js</span>
+                </div>
+                
+                {/* Code simulation with live caret */}
+                <div className="flex-grow py-3 space-y-1.5 text-zinc-300">
+                  <div className="flex items-center"><span className="text-pink-400">const</span>&nbsp;<span className="text-blue-400">collabSession</span>&nbsp;=&nbsp;<span className="text-yellow-400">async</span>&nbsp;() =&gt; &#123;</div>
+                  <div className="pl-4 flex items-center"><span className="text-pink-400">await</span>&nbsp;<span className="text-emerald-400">pairProgram</span>(issueId);</div>
+                  <div className="pl-4 flex items-center gap-0.5">
+                    <span className="text-zinc-500">// active session with </span>
+                    <span className="px-1 py-0.2 rounded bg-pink-500/20 text-pink-400 text-[8px] font-bold">@sarah</span>
+                    <span className="w-[1.5px] h-3 bg-pink-400 animate-pulse ml-0.5" />
+                  </div>
+                </div>
+
+                {/* Simulated Cursors overlay */}
+                <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-1.5">
+                      <img className="w-5 h-5 rounded-full border border-black" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=30" alt="" />
+                      <img className="w-5 h-5 rounded-full border border-black" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=30" alt="" />
+                    </div>
+                    <span className="text-[8px] text-zinc-500 font-bold">2 dev active</span>
+                  </div>
+                  <span className="text-emerald-400 font-mono text-[8px] font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    CONNECTED
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-4 flex items-center gap-2 relative z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="text-xs text-pink-400 font-medium flex items-center gap-1">
+                  Start sharing workspace <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+              </div>
             </div>
 
             {/* Feature 4: Curated Top Tier - Large — With animated curation flow */}
-            <div className="lg:col-span-2 bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-green-500/30 transition-all group overflow-hidden relative">
-              <div className="flex flex-col md:flex-row gap-8">
+            <div className="lg:col-span-2 bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-green-500/30 transition-all group overflow-hidden relative min-h-[460px] flex flex-col justify-between">
+              <div className="flex flex-col md:flex-row gap-8 h-full items-stretch">
                 {/* Left: Text */}
-                <div className="flex-1 relative z-10 cursor-default">
-                  <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center text-green-400 mb-6">
-                    <Star className="w-6 h-6 animate-pulse" />
+                <div className="flex-1 relative z-10 cursor-default flex flex-col justify-between py-2">
+                  <div>
+                    <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center text-green-400 mb-6">
+                      <Star className="w-6 h-6 animate-pulse" />
+                    </div>
+                    <h3 className="text-2xl font-bold text-white mb-4">
+                      Curated Top Tier
+                    </h3>
+                    <p className="text-gray-400 max-w-md mb-6">
+                      Only high-quality issues from verified companies. No
+                      "good-first-issue" spam or stale tickets — just real, high-impact contributions.
+                    </p>
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-4">
-                    Curated Top Tier
-                  </h3>
-                  <p className="text-gray-400 max-w-md mb-6">
-                    Only high-quality issues from verified companies. No
-                    "good-first-issue" spam or stale tickets — just real, high-impact contributions.
-                  </p>
                   <Link
                     to="/explore"
-                    className="inline-flex items-center gap-2 text-sm text-green-400 hover:text-green-300 transition-colors font-medium"
+                    className="inline-flex items-center gap-2 text-sm text-green-400 hover:text-green-300 transition-colors font-medium mt-auto"
                   >
                     Browse curated projects <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
 
                 {/* Right: Animated Curation Visualizer */}
-                <div className="flex-1 relative min-h-[260px] bg-black/20 rounded-2xl p-4 border border-white/5 overflow-hidden flex flex-col justify-between">
+                <div className="flex-grow flex-1 relative min-h-[260px] bg-black/20 rounded-2xl p-4 border border-white/5 overflow-hidden flex flex-col justify-between">
                   {/* Laser Sweeper */}
                   <div className="absolute left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-green-400 to-transparent shadow-[0_0_8px_rgba(74,222,128,0.8)] z-20 pointer-events-none animate-laser-sweep" />
 
