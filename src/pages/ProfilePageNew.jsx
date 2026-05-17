@@ -12,6 +12,7 @@ import EditProfileModal from "../components/EditProfileModal";
 import BadgesSection from "../components/BadgesSection";
 import BadgeUnlockedNotification from "../components/BadgeUnlockedNotification";
 import AppSidebar from "../components/AppSidebar";
+import ProofOfWorkTab from "../components/ProofOfWorkTab";
 import { useBadges } from "../hooks/useBadges";
 import {
   Bookmark,
@@ -39,6 +40,7 @@ import {
   X,
   BadgeCheck,
   CreditCard,
+  ShieldCheck,
 } from "lucide-react";
 
 const ProfilePageNew = () => {
@@ -343,6 +345,32 @@ const ProfilePageNew = () => {
             </div>
           </div>
 
+          {/* Tab Navigation */}
+          <div className="flex space-x-4 border-b border-white/10 mb-6">
+            <button
+              onClick={() => setActiveTab('overview')}
+              className={`px-1 py-3 text-sm font-medium transition-colors border-b-2 ${
+                activeTab === 'overview'
+                  ? 'border-blue-500 text-blue-400'
+                  : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab('proof-of-work')}
+              className={`px-1 py-3 text-sm font-medium transition-colors border-b-2 flex items-center gap-1.5 ${
+                activeTab === 'proof-of-work'
+                  ? 'border-emerald-500 text-emerald-400'
+                  : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" /> Proof of Work
+            </button>
+          </div>
+
+          {activeTab === 'overview' ? (
+            <>
           {/* GitHub Info Card */}
           {(githubProfile || customProfile) && (
             <div className="bg-[#15161E] rounded-xl p-4 sm:p-6 border border-white/5 mb-6 sm:mb-8">
@@ -517,6 +545,10 @@ const ProfilePageNew = () => {
                 )}
               </div>
             </div>
+          )}
+          </>
+          ) : (
+            <ProofOfWorkTab />
           )}
         </div>
       </main>
