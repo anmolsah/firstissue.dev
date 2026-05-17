@@ -94,13 +94,15 @@ const MetalCard = ({ attestation }) => {
         <div className="relative z-30 p-5 flex flex-col h-full transform-gpu translate-z-10">
           {/* Header */}
           <div className="flex justify-between items-start mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
-                <LangIcon className="w-4 h-4 text-white/80" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xs font-mono opacity-60 tracking-wider">ON-CHAIN PROOF</span>
-                <span className="text-sm font-semibold truncate max-w-[150px]">{attestation.repo_name}</span>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
+                FirstIssue.dev
+              </span>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="w-6 h-6 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
+                  <LangIcon className="w-3 h-3 text-white/80" />
+                </div>
+                <span className="text-xs font-semibold opacity-80 truncate max-w-[150px]">{attestation.repo_name}</span>
               </div>
             </div>
             
