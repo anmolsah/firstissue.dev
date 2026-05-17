@@ -348,44 +348,132 @@ const LandingPage = () => {
               </p>
             </div>
 
-            {/* Feature 4: Curated Top Tier - Large */}
-            <div className="lg:col-span-2 bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-green-500/30 transition-all group">
-              <div className="flex flex-col md:flex-row gap-8 items-start">
-                <div className="flex-1">
+            {/* Feature 4: Curated Top Tier - Large — With animated curation flow */}
+            <div className="lg:col-span-2 bg-[#15161E] rounded-3xl p-8 border border-white/5 hover:border-green-500/30 transition-all group overflow-hidden relative">
+              <div className="flex flex-col md:flex-row gap-8">
+                {/* Left: Text */}
+                <div className="flex-1 relative z-10 cursor-default">
                   <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center text-green-400 mb-6">
-                    <Star className="w-6 h-6" />
+                    <Star className="w-6 h-6 animate-pulse" />
                   </div>
                   <h3 className="text-2xl font-bold text-white mb-4">
                     Curated Top Tier
                   </h3>
-                  <p className="text-gray-400">
+                  <p className="text-gray-400 max-w-md mb-6">
                     Only high-quality issues from verified companies. No
-                    "good-first-issue" spam, just real impact.
+                    "good-first-issue" spam or stale tickets — just real, high-impact contributions.
                   </p>
+                  <Link
+                    to="/explore"
+                    className="inline-flex items-center gap-2 text-sm text-green-400 hover:text-green-300 transition-colors font-medium"
+                  >
+                    Browse curated projects <ArrowRight className="w-4 h-4" />
+                  </Link>
                 </div>
 
-                {/* Mock Cards */}
-                <div className="flex-1 space-y-3 w-full">
-                  <div className="bg-[#0B0C10] p-4 rounded-xl border border-white/5 flex items-center gap-4">
-                    <div className="w-2 h-2 rounded-full bg-cyan-400" />
-                    <div className="flex-1">
-                      <div className="h-2 w-32 bg-white/20 rounded mb-1" />
-                      <div className="h-1.5 w-16 bg-white/10 rounded" />
+                {/* Right: Animated Curation Visualizer */}
+                <div className="flex-1 relative min-h-[260px] bg-black/20 rounded-2xl p-4 border border-white/5 overflow-hidden flex flex-col justify-between">
+                  {/* Laser Sweeper */}
+                  <div className="absolute left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-green-400 to-transparent shadow-[0_0_8px_rgba(74,222,128,0.8)] z-20 pointer-events-none animate-laser-sweep" />
+
+                  {/* Curation Feed Cards */}
+                  <div className="space-y-3 z-10 w-full relative">
+                    {/* Verified Issue 1 */}
+                    <div className="bg-[#0B0C10] rounded-xl p-3 border border-white/5 animate-pulse-emerald-border transition-all duration-300 relative group/card">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-4.5 h-4.5 rounded bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                            <img src="https://github.com/vercel.png" alt="" className="w-full h-full object-cover" />
+                          </div>
+                          <span className="text-[10px] font-bold text-white tracking-wide">vercel/next.js</span>
+                        </div>
+                        
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[8px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-0.5 border border-emerald-500/20">
+                          <svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Verified Premium
+                        </span>
+                      </div>
+                      
+                      <div className="text-[11px] font-semibold text-gray-200 mb-2">
+                        Optimize streaming SSR hydration rendering lifecycle
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <span className="text-[9px] text-gray-500 flex items-center gap-1">
+                          <Star className="w-3 h-3 text-amber-400 fill-amber-400/20" /> 116k stars
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[8px] font-bold text-emerald-300">
+                          High Impact (+45 pts)
+                        </span>
+                      </div>
                     </div>
-                    <div className="px-2 py-1 rounded bg-blue-500/20 text-[10px] text-blue-400">
-                      Buy Now?
+
+                    {/* Rejected Spam Card */}
+                    <div className="bg-[#0B0C10]/40 rounded-xl p-3 border border-red-500/10 opacity-35 transition-all duration-300 relative overflow-hidden animate-reject-shake animate-pulse-red-border">
+                      {/* Crossed line */}
+                      <div className="absolute top-1/2 left-0 w-full h-[1px] bg-red-500/30 -translate-y-1/2 rotate-1" />
+                      
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-4.5 h-4.5 rounded bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 text-[8px] font-bold">
+                            ?
+                          </div>
+                          <span className="text-[10px] font-medium text-gray-500 line-through">spammer/docs-repo</span>
+                        </div>
+                        
+                        <span className="px-1.5 py-0.5 rounded bg-red-500/15 text-[8px] font-black text-red-500 uppercase tracking-widest flex items-center gap-0.5 border border-red-500/25 rotate-6 absolute right-4 top-3 shadow-lg z-20 animate-stamp-pop">
+                          Spam Blocked
+                        </span>
+                      </div>
+                      
+                      <div className="text-[11px] font-medium text-gray-500 line-through mb-2">
+                        Fix typo in README: change "teh" to "the"
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <span className="px-1.5 py-0.5 rounded bg-red-500/10 text-[8px] font-bold text-red-400">
+                          Rejected: Stale / Zero Impact
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Verified Issue 2 */}
+                    <div className="bg-[#0B0C10] rounded-xl p-3 border border-white/5 animate-pulse-emerald-border transition-all duration-300 relative group/card">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-4.5 h-4.5 rounded bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                            <img src="https://github.com/supabase.png" alt="" className="w-full h-full object-cover" />
+                          </div>
+                          <span className="text-[10px] font-bold text-white tracking-wide">supabase/supabase</span>
+                        </div>
+                        
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[8px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-0.5 border border-emerald-500/20">
+                          <svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          Verified Premium
+                        </span>
+                      </div>
+                      
+                      <div className="text-[11px] font-semibold text-gray-200 mb-2">
+                        Optimize transaction connection pool release timing
+                      </div>
+                      
+                      <div className="flex items-center gap-3">
+                        <span className="text-[9px] text-gray-500 flex items-center gap-1">
+                          <Star className="w-3 h-3 text-amber-400 fill-amber-400/20" /> 74k stars
+                        </span>
+                        <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-[8px] font-bold text-emerald-300">
+                          High Impact (+50 pts)
+                        </span>
+                      </div>
                     </div>
                   </div>
-                  <div className="bg-[#0B0C10] p-4 rounded-xl border border-white/5 flex items-center gap-4 opacity-50">
-                    <div className="w-2 h-2 rounded-full bg-purple-400" />
-                    <div className="flex-1">
-                      <div className="h-2 w-24 bg-white/20 rounded mb-1" />
-                      <div className="h-1.5 w-20 bg-white/10 rounded" />
-                    </div>
-                    <div className="px-2 py-1 rounded bg-purple-500/20 text-[10px] text-purple-400">
-                      Urgent
-                    </div>
-                  </div>
+
+                  {/* Ambient background glow inside cards */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-emerald-500/5 blur-[80px] -z-10" />
                 </div>
               </div>
             </div>
