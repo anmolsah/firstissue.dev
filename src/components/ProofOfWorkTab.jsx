@@ -30,7 +30,8 @@ const ProofOfWorkTab = () => {
     const loadingToast = toast.loading("Verifying PR and Minting Attestation...");
 
     try {
-      await verifyMutation.mutateAsync({ prUrl: prUrl.trim() });
+      const githubUsername = user?.user_metadata?.user_name || user?.user_metadata?.preferred_username;
+      await verifyMutation.mutateAsync({ prUrl: prUrl.trim(), userId: user?.id, githubUsername });
       toast.success("Successfully minted your Proof of Work!", { id: loadingToast });
       setPrUrl('');
     } catch (error) {

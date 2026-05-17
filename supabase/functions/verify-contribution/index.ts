@@ -11,49 +11,11 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { prUrl } = await req.json();
+    const { prUrl, userId, githubUsername } = await req.json();
 
-    if (!prUrl) {
-      return new Response(JSON.stringify({ error: "Missing prUrl" }), { 
+    if (!prUrl || !userId || !githubUsername) {
+      return new Response(JSON.stringify({ error: "Missing prUrl, userId, or githubUsername" }), { 
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } 
-      });
-    }
-
-    // Initialize Supabase Client to verify the user
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Missing Authorization header" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
-
-    // Get the user's GitHub username from profile
-    const { data: profile } = await supabaseClient
-      .from('profiles')
-      .select('github_username')
-      .eq('id', user.id)
-      .single();
-
-    const githubUsername = profile?.github_username || 
-                          user.user_metadata?.user_name || 
-                          user.user_metadata?.preferred_username;
-
-    if (!githubUsername) {
-      return new Response(JSON.stringify({ error: "GitHub username not found in profile" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
@@ -142,7 +104,7 @@ serve(async (req: Request) => {
     
     // In Deno, we use Web Crypto API to generate a hash
     const encoder = new TextEncoder();
-    const dataToHash = encoder.encode(`${user.id}-${repoName}-${pullNumber}-${timestampStr}`);
+    const dataToHash = encoder.encode(`${userId}-${repoName}-${pullNumber}-${timestampStr}`);
     const hashBuffer = await crypto.subtle.digest('SHA-256', dataToHash);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const txHash = '0x' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
@@ -156,7 +118,7 @@ serve(async (req: Request) => {
     );
 
     const attestationData = {
-      user_id: user.id,
+      user_id: userId,
       repo_name: repoName,
       pr_number: parseInt(pullNumber, 10),
       pr_title: prData.title,

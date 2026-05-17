@@ -23,9 +23,9 @@ export function useVerifyContribution() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ prUrl }) => {
+    mutationFn: async ({ prUrl, userId, githubUsername }) => {
       const { data, error } = await supabase.functions.invoke('verify-contribution', {
-        body: { prUrl }
+        body: { prUrl, userId, githubUsername }
       });
 
       if (error) {
