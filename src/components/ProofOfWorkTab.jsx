@@ -58,10 +58,28 @@ const ProofOfWorkTab = () => {
           </p>
         </div>
         
-        <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/80 w-full md:w-auto shadow-inner">
-          <div className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">Your Total Impact</div>
-          <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
-            {attestations?.reduce((acc, curr) => acc + (curr.impact_score || 0), 0) || 0}
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <button
+            onClick={() => {
+              const githubUsername = user?.user_metadata?.user_name || user?.user_metadata?.preferred_username;
+              if (githubUsername) {
+                navigator.clipboard.writeText(`${window.location.origin}/u/${githubUsername}`);
+                toast.success("Public profile link copied to clipboard!");
+              } else {
+                toast.error("Could not find GitHub username");
+              }
+            }}
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700 rounded-xl transition-colors shadow-sm whitespace-nowrap"
+          >
+            <LinkIcon className="w-4 h-4" />
+            <span className="font-medium text-sm">Share Profile</span>
+          </button>
+          
+          <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/80 shadow-inner min-w-[120px]">
+            <div className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">Total Impact</div>
+            <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
+              {attestations?.reduce((acc, curr) => acc + (curr.impact_score || 0), 0) || 0}
+            </div>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, ExternalLink, Code, Star, Github } from 'lucide-react';
+import { CheckCircle, ExternalLink, Code, Star, Github, Download } from 'lucide-react';
+import { toPng } from 'html-to-image';
 
 const getLanguageIcon = () => Code;
 const MetalCard = ({ attestation }) => {
@@ -27,6 +28,34 @@ const MetalCard = ({ attestation }) => {
   const handleMouseLeave = () => {
     setRotation({ x: 0, y: 0 });
     setIsHovered(false);
+  };
+
+  const handleDownload = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!cardRef.current) return;
+    
+    try {
+      // Temporarily remove 3D transform for a clean screenshot
+      const currentTransform = cardRef.current.style.transform;
+      cardRef.current.style.transform = 'none';
+      
+      const dataUrl = await toPng(cardRef.current, { 
+        quality: 1.0,
+        pixelRatio: 2, // High resolution
+        skipFonts: false,
+      });
+      
+      // Restore transform
+      cardRef.current.style.transform = currentTransform;
+
+      const link = document.createElement('a');
+      link.download = `${attestation.repo_name.replace('/', '-')}-pow.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Failed to export image:', err);
+    }
   };
 
   const LangIcon = getLanguageIcon(attestation.primary_language);
@@ -134,22 +163,35 @@ const MetalCard = ({ attestation }) => {
           </div>
 
           {/* Footer - Cryptographic Stamp */}
-          <div className="mt-auto pt-3 border-t border-white/10 flex justify-between items-center bg-black/20 -mx-5 -mb-5 p-4 rounded-b-2xl">
-            <div className="flex flex-col">
+          <div className="mt-auto pt-3 border-t border-white/10 flex justify-between items-end bg-black/20 -mx-5 -mb-5 p-4 rounded-b-2xl">
+            <div className="flex flex-col gap-3">
               <span className="text-[10px] font-mono opacity-50 uppercase tracking-widest">Attestation Hash</span>
               <span className="text-xs font-mono font-medium tracking-wider flex items-center gap-1">
                 <Github className="w-3 h-3 opacity-50" />
                 {shortHash}
               </span>
             </div>
-            <a 
-              href={`https://github.com/${attestation.repo_name}/pull/${attestation.pr_number}`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center border border-white/5"
-            >
-              <ExternalLink className="w-4 h-4 opacity-70" />
-            </a>
+            
+            <div className="flex items-center gap-2 z-40">
+              <button 
+                onClick={handleDownload}
+                title="Download as Image"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors flex items-center justify-center border border-white/5 hover:border-emerald-500/30"
+              >
+                <Download className="w-4 h-4 opacity-70 hover:opacity-100" />
+              </button>
+              
+              <a 
+                href={`https://github.com/${attestation.repo_name}/pull/${attestation.pr_number}`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                title="View on GitHub"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center border border-white/5"
+              >
+                <ExternalLink className="w-4 h-4 opacity-70" />
+              </a>
+            </div>
           </div>
         </div>
       </motion.div>

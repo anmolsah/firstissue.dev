@@ -20,6 +20,7 @@ import DocsArticlePage from "./pages/DocsArticlePage";
 import TestGitHubPage from "./pages/TestGitHubPage";
 import BadgeShowcasePage from "./pages/BadgeShowcasePage";
 import NotFoundPage from "./pages/NotFoundPage";
+import PublicProfilePage from "./pages/PublicProfilePage";
 import Footer from "./components/Footer";
 import CookieConsent from "./components/CookieConsent";
 import { Toaster } from "react-hot-toast";
@@ -98,6 +99,7 @@ const App = () => {
                 element={<DocsArticlePage />}
               />
               <Route path="/badges/:badgeId" element={<BadgeShowcasePage />} />
+              <Route path="/u/:username" element={<PublicProfilePage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </AppLayout>

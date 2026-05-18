@@ -19,6 +19,44 @@ export function useAttestations(userId) {
   });
 }
 
+export function usePublicProfileAndAttestations(githubUsername) {
+  return useQuery({
+    queryKey: ['publicProfile', githubUsername],
+    queryFn: async () => {
+      if (!githubUsername) return null;
+
+      // 1. Fetch user ID from profiles using github_username
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, github_username, avatar_url, full_name')
+        .eq('github_username', githubUsername)
+        .single();
+
+      if (profileError) {
+        if (profileError.code === 'PGRST116') return null; // Not found
+        throw profileError;
+      }
+
+      if (!profileData?.id) return null;
+
+      // 2. Fetch attestations for this user ID
+      const { data: attestations, error: attestationsError } = await supabase
+        .from('user_attestations')
+        .select('*')
+        .eq('user_id', profileData.id)
+        .order('created_at', { ascending: false });
+
+      if (attestationsError) throw attestationsError;
+
+      return {
+        profile: profileData,
+        attestations: attestations || []
+      };
+    },
+    enabled: !!githubUsername,
+  });
+}
+
 export function useVerifyContribution() {
   const queryClient = useQueryClient();
 
