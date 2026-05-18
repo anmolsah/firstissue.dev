@@ -99,7 +99,7 @@ const PublicProfilePage = () => {
           </div>
 
           {attestations.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" style={{ perspective: '1000px' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" style={{ perspective: '1000px' }}>
               {attestations.map((attestation, index) => (
                 <motion.div
                   key={attestation.id}
@@ -107,7 +107,7 @@ const PublicProfilePage = () => {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <MetalCard attestation={attestation} />
+                  <MetalCard attestation={attestation} showActions={false} />
                 </motion.div>
               ))}
             </div>

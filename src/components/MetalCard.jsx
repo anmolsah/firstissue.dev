@@ -4,7 +4,7 @@ import { CheckCircle, ExternalLink, Code, Star, Github, Download } from 'lucide-
 import { toPng } from 'html-to-image';
 
 const getLanguageIcon = () => Code;
-const MetalCard = ({ attestation }) => {
+const MetalCard = ({ attestation, showActions = true }) => {
   const cardRef = useRef(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -179,6 +179,7 @@ const MetalCard = ({ attestation }) => {
               </span>
             </div>
             
+            {showActions && (
             <div className={`flex items-center gap-2 z-40 ${isExporting ? 'opacity-0' : ''}`}>
               <button 
                 onClick={handleDownload}
@@ -199,6 +200,7 @@ const MetalCard = ({ attestation }) => {
                 <ExternalLink className="w-4 h-4 opacity-70" />
               </a>
             </div>
+            )}
           </div>
         </div>
       </motion.div>
