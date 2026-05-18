@@ -8,6 +8,7 @@ const MetalCard = ({ attestation }) => {
   const cardRef = useRef(null);
   const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
@@ -36,18 +37,23 @@ const MetalCard = ({ attestation }) => {
     if (!cardRef.current) return;
     
     try {
-      // Temporarily remove 3D transform for a clean screenshot
+      // Hide buttons and remove 3D transform for a clean screenshot
+      setIsExporting(true);
       const currentTransform = cardRef.current.style.transform;
       cardRef.current.style.transform = 'none';
       
+      // Wait a tick for React to re-render with buttons hidden
+      await new Promise(r => setTimeout(r, 100));
+
       const dataUrl = await toPng(cardRef.current, { 
         quality: 1.0,
         pixelRatio: 2, // High resolution
         skipFonts: false,
       });
       
-      // Restore transform
+      // Restore transform and buttons
       cardRef.current.style.transform = currentTransform;
+      setIsExporting(false);
 
       const link = document.createElement('a');
       link.download = `${attestation.repo_name.replace('/', '-')}-pow.png`;
@@ -55,6 +61,7 @@ const MetalCard = ({ attestation }) => {
       link.click();
     } catch (err) {
       console.error('Failed to export image:', err);
+      setIsExporting(false);
     }
   };
 
@@ -172,7 +179,7 @@ const MetalCard = ({ attestation }) => {
               </span>
             </div>
             
-            <div className="flex items-center gap-2 z-40">
+            <div className={`flex items-center gap-2 z-40 ${isExporting ? 'opacity-0' : ''}`}>
               <button 
                 onClick={handleDownload}
                 title="Download as Image"

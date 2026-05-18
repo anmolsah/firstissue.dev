@@ -28,7 +28,7 @@ export function usePublicProfileAndAttestations(githubUsername) {
       // 1. Fetch user ID from profiles using github_username
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, github_username, avatar_url, full_name')
+        .select('id, github_username, github_avatar_url, name')
         .eq('github_username', githubUsername)
         .single();
 

@@ -51,7 +51,7 @@ const PublicProfilePage = () => {
           <div className="relative">
             <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-zinc-800 shadow-xl z-10 relative">
               <img 
-                src={profile.avatar_url || `https://github.com/${profile.github_username}.png`} 
+                src={profile.github_avatar_url || `https://github.com/${profile.github_username}.png`} 
                 alt={profile.github_username}
                 className="w-full h-full object-cover"
               />
@@ -61,7 +61,7 @@ const PublicProfilePage = () => {
           
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-zinc-100 flex items-center gap-3">
-              {profile.full_name || profile.github_username}
+              {profile.name || profile.github_username}
               <a 
                 href={`https://github.com/${profile.github_username}`}
                 target="_blank"
