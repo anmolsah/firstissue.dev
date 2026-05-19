@@ -24,6 +24,7 @@ import PublicProfilePage from "./pages/PublicProfilePage";
 import Footer from "./components/Footer";
 import CookieConsent from "./components/CookieConsent";
 import { Toaster } from "react-hot-toast";
+import ScrollToTop from "./components/ScrollToTop";
 
 // Layout wrapper that conditionally shows Navbar/Footer
 const AppLayout = ({ children }) => {
@@ -48,6 +49,7 @@ const AppLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#222831]">
+      <ScrollToTop />
       {!hideGlobalLayout && !isLoginPage && <Navbar />}
       {!isLoginPage && <GitHubReconnectBanner />}
       <Toaster

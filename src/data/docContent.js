@@ -176,8 +176,8 @@ export const docContent = {
         "platform-guide": {
             title: "Using FirstIssue.dev Platform",
             description: "Complete guide to navigating and using all features of FirstIssue.dev",
-            readTime: "7 min read",
-            updated: "1 day ago",
+            readTime: "10 min read",
+            updated: "today",
             difficulty: "Beginner",
             content: [
                 {
@@ -265,6 +265,59 @@ export const docContent = {
                     variant: "success",
                     title: "Pro Tip",
                     text: "Regularly update your issue statuses to keep track of your progress and help us recommend better issues for you!"
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Proof of Work (PoW) Attestations"
+                },
+                {
+                    type: "paragraph",
+                    text: "To combat resume padding and prove actual contribution impact, FirstIssue.dev introduces cryptographic Proof of Work (PoW) Attestations. You can input any merged GitHub pull request URL to verify it automatically."
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "🔗 Paste your merged PR URL in the Proof of Work tab",
+                        "⚡ Verification happens instantly via a secure Supabase Edge Function",
+                        "🛡️ A cryptographically signed attestation is stored, proving your ownership of the contribution",
+                        "💎 Earn an impact score based on the contribution's size and complexity"
+                    ]
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "3D MetalCards & Impact Showcase"
+                },
+                {
+                    type: "paragraph",
+                    text: "Every verified Proof of Work is minted into a premium, interactive 3D MetalCard. These cards visually showcase your accomplishments:"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "✨ Beautiful 3D layouts that react to mouse movements",
+                        "🎨 Color-coded by primary programming language used in the PR",
+                        "📊 Displays repository name, PR number, title, transaction hash, and impact score",
+                        "📥 Downloadable as a high-quality PNG to share on social media or attach to resumes"
+                    ]
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Public Developer Profiles & Freemium Limits"
+                },
+                {
+                    type: "paragraph",
+                    text: "Your contributions and MetalCards are aggregated on your Public Developer Profile page. Share your unique link (e.g., /u/your-username) with recruiters, team leads, or on your social profiles to show off your verified portfolio."
+                },
+                {
+                    type: "callout",
+                    variant: "warning",
+                    title: "Freemium Limits",
+                    text: "To ensure system resources are fairly distributed, free tier accounts are limited to minting 1 free Proof of Work credential. To unlock unlimited verified attestations and 3D MetalCards, you can upgrade to the Supporter plan at any time."
                 }
             ]
         }

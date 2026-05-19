@@ -26,11 +26,50 @@ import {
 } from "lucide-react";
 import Footer from "../components/Footer";
 import ContactFormModal from "../components/ContactFormModal";
+import { docContent } from "../data/docContent";
 
 const DocsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+  const getLatestUpdateDate = () => {
+    let minDays = Infinity;
+    
+    Object.keys(docContent).forEach((sectionKey) => {
+      const section = docContent[sectionKey];
+      Object.keys(section).forEach((articleKey) => {
+        if (["title", "icon", "color"].includes(articleKey)) return;
+        const article = section[articleKey];
+        if (article.updated) {
+          let days = 0;
+          if (article.updated === "today") {
+            days = 0;
+          } else if (article.updated.includes("day")) {
+            days = parseInt(article.updated) || 1;
+          } else if (article.updated.includes("week")) {
+            days = (parseInt(article.updated) || 1) * 7;
+          } else if (article.updated.includes("month")) {
+            days = (parseInt(article.updated) || 1) * 30;
+          }
+          if (days < minDays) {
+            minDays = days;
+          }
+        }
+      });
+    });
+
+    const date = new Date();
+    if (minDays !== Infinity && minDays > 0) {
+      date.setDate(date.getDate() - minDays);
+    }
+    
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
 
   const docSections = [
     {
@@ -342,7 +381,7 @@ const DocsPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Clock className="w-4 h-4" />
-                  <span>Last updated today</span>
+                  <span>Last updated {getLatestUpdateDate()}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Star className="w-4 h-4" />
