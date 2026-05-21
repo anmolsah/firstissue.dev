@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSupporter } from '../contexts/SupporterContext';
 import { useSmartMatch } from '../hooks/useSmartMatch';
+import { useRateLimiter } from '../hooks/useRateLimiter';
 import {
   Sparkles,
   Lock,
@@ -18,6 +19,7 @@ import {
   AlertCircle,
   Clock,
   BrainCircuit,
+  ShieldAlert,
 } from 'lucide-react';
 
 const ProgressTimer = () => {
@@ -87,6 +89,23 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
   const navigate = useNavigate();
   const { isSupporter, loading: supporterLoading } = useSupporter();
   const { matches, userProfile, loading, error, fetchMatches, refresh, lastAnalyzedAt, isCached } = useSmartMatch(username, token);
+  const { isRateLimited, remainingCooldown, checkRateLimit, recordAttempt } = useRateLimiter({
+    maxAttempts: 2,
+    windowMs: 5 * 60 * 1000,   // 5-minute window
+    cooldownMs: 60 * 1000,      // 60-second cooldown
+  });
+
+  const handleRefresh = () => {
+    if (!checkRateLimit()) return;
+    recordAttempt();
+    refresh();
+  };
+
+  const handleAnalyze = () => {
+    if (!checkRateLimit()) return;
+    recordAttempt();
+    refresh();
+  };
 
   useEffect(() => {
     if (isSupporter && username && !isCached && !loading) {
@@ -263,15 +282,22 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
                 </span>
               )}
               {/* Re-analyze button */}
-              <button
-                onClick={refresh}
-                disabled={loading}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 hover:text-purple-200 transition-colors cursor-pointer disabled:opacity-50"
-                title="Re-analyze your profile and find new matches"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-                {loading ? 'Analyzing...' : 'Re-analyze'}
-              </button>
+              {isRateLimited ? (
+                <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20 rounded-lg">
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  Wait {remainingCooldown}s
+                </div>
+              ) : (
+                <button
+                  onClick={handleRefresh}
+                  disabled={loading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 hover:text-purple-200 transition-colors cursor-pointer disabled:opacity-50"
+                  title="Re-analyze your profile and find new matches"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                  {loading ? 'Analyzing...' : 'Re-analyze'}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -294,17 +320,25 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
           <Sparkles className="w-12 h-12 text-purple-400/40 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-white mb-2">No matches yet</h3>
           <p className="text-sm text-gray-500 mb-6">Click the button below to analyze your profile and find matching issues.</p>
+          {isRateLimited && (
+            <div className="flex items-center gap-2 text-amber-400 text-sm mb-4">
+              <ShieldAlert className="w-4 h-4" />
+              Rate limited — try again in {remainingCooldown}s
+            </div>
+          )}
           <button
-            onClick={refresh}
-            disabled={loading}
+            onClick={handleAnalyze}
+            disabled={loading || isRateLimited}
             className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-500 hover:to-blue-500 transition-all shadow-lg shadow-purple-500/20 cursor-pointer disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
+            ) : isRateLimited ? (
+              <ShieldAlert className="w-4 h-4" />
             ) : (
               <Sparkles className="w-4 h-4" />
             )}
-            {loading ? 'Analyzing...' : 'Analyze My Profile'}
+            {loading ? 'Analyzing...' : isRateLimited ? `Wait ${remainingCooldown}s` : 'Analyze My Profile'}
           </button>
         </div>
       )}

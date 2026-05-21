@@ -1,19 +1,30 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { Github, AlertCircle, Command, Loader2 } from "lucide-react";
+import { useRateLimiter } from "../hooks/useRateLimiter";
+import { Github, AlertCircle, Command, Loader2, ShieldAlert } from "lucide-react";
 
 const LoginPage = () => {
   const { signInWithGitHub, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { isRateLimited, remainingCooldown, checkRateLimit, recordAttempt } = useRateLimiter({
+    maxAttempts: 3,
+    windowMs: 60 * 1000,
+    cooldownMs: 30 * 1000,
+  });
 
   React.useEffect(() => {
     if (!authLoading && user) navigate("/explore");
   }, [user, authLoading, navigate]);
 
   const handleGitHubSignIn = async () => {
+    if (!checkRateLimit()) {
+      setError("Too many sign-in attempts. Please wait before trying again.");
+      return;
+    }
+    recordAttempt();
     setLoading(true);
     setError("");
     const { error } = await signInWithGitHub();
@@ -50,15 +61,27 @@ const LoginPage = () => {
           </div>
         )}
 
+        {isRateLimited && (
+          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-3">
+            <ShieldAlert className="h-5 w-5 text-amber-400 flex-shrink-0" />
+            <span className="text-amber-400 text-sm">Too many attempts. Try again in {remainingCooldown}s</span>
+          </div>
+        )}
+
         <button
           onClick={handleGitHubSignIn}
-          disabled={loading}
+          disabled={loading || isRateLimited}
           className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#1a1b2e] border border-[#2a2b4e] text-white rounded-xl font-medium hover:bg-[#22233a] hover:border-[#3a3b5e] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
               Connecting...
+            </>
+          ) : isRateLimited ? (
+            <>
+              <ShieldAlert className="h-5 w-5 text-amber-400" />
+              Wait {remainingCooldown}s...
             </>
           ) : (
             <>

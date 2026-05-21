@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { Mail, Lock, Github, AlertCircle, CheckCircle } from "lucide-react";
+import { useRateLimiter } from "../hooks/useRateLimiter";
+import { Mail, Lock, Github, AlertCircle, CheckCircle, ShieldAlert } from "lucide-react";
 import logo from "../assets/logo01.png";
 
 const SignupPage = () => {
@@ -15,6 +16,11 @@ const SignupPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const { isRateLimited, remainingCooldown, checkRateLimit, recordAttempt } = useRateLimiter({
+    maxAttempts: 3,
+    windowMs: 60 * 1000,
+    cooldownMs: 30 * 1000,
+  });
 
   React.useEffect(() => {
     if (user) navigate("/");
@@ -47,6 +53,11 @@ const SignupPage = () => {
   };
 
   const handleGitHubSignIn = async () => {
+    if (!checkRateLimit()) {
+      setError("Too many sign-in attempts. Please wait before trying again.");
+      return;
+    }
+    recordAttempt();
     setLoading(true);
     setError("");
     const { error } = await signInWithGitHub();
@@ -95,13 +106,29 @@ const SignupPage = () => {
             </div>
           )}
 
+          {isRateLimited && (
+            <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 text-amber-400 flex-shrink-0" />
+              <span className="text-amber-400 text-sm">Too many attempts. Try again in {remainingCooldown}s</span>
+            </div>
+          )}
+
           <button
             onClick={handleGitHubSignIn}
-            disabled={loading || success}
+            disabled={loading || success || isRateLimited}
             className="w-full mb-6 flex items-center justify-center gap-3 px-4 py-3 bg-[#222831] text-[#EEEEEE] rounded-lg font-medium hover:bg-[#222831]/80 border border-[#393E46] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Github className="h-5 w-5" />
-            Continue with GitHub
+            {isRateLimited ? (
+              <>
+                <ShieldAlert className="h-5 w-5 text-amber-400" />
+                Wait {remainingCooldown}s...
+              </>
+            ) : (
+              <>
+                <Github className="h-5 w-5" />
+                Continue with GitHub
+              </>
+            )}
           </button>
 
           <div className="relative mb-6">

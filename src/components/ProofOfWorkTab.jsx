@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSupporter } from '../contexts/SupporterContext';
 import { useAttestations, useVerifyContribution } from '../hooks/useProofOfWork';
 import MetalCard from './MetalCard';
-import { ShieldCheck, Plus, Link as LinkIcon, AlertCircle, Loader2 } from 'lucide-react';
+import { ShieldCheck, Plus, Link as LinkIcon, AlertCircle, Loader2, Crown } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ProofOfWorkTab = () => {
@@ -16,13 +16,18 @@ const ProofOfWorkTab = () => {
   const [prUrl, setPrUrl] = useState('');
   const [isMinting, setIsMinting] = useState(false);
 
+  const FREE_LIMIT = 5;
+  const attestationCount = attestations?.length || 0;
+  const freeRemaining = Math.max(0, FREE_LIMIT - attestationCount);
+  const isFreeLimitReached = !isSupporter && attestationCount >= FREE_LIMIT;
+
   const handleMint = async (e) => {
     e.preventDefault();
     if (!prUrl.trim()) return;
 
-    // Basic Freemium check (Allow 1 free, unlimited for supporters)
-    if (!isSupporter && attestations?.length >= 1) {
-      toast.error("Free accounts are limited to 1 Proof of Work. Upgrade to supporter for unlimited attestations!", { duration: 5000 });
+    // Freemium check — 5 free, unlimited for supporters
+    if (!isSupporter && attestations?.length >= FREE_LIMIT) {
+      toast.error(`Free accounts are limited to ${FREE_LIMIT} Proofs of Work. Become a supporter for unlimited attestations!`, { duration: 5000 });
       return;
     }
 
@@ -91,12 +96,38 @@ const ProofOfWorkTab = () => {
           Mint New Credential
         </h3>
         
-        {!isSupporter && attestations?.length >= 1 && (
-          <div className="mb-4 flex items-start gap-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-amber-200/90 text-sm">
-            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-400" />
-            <div>
-              <p className="font-semibold text-amber-400">Freemium Limit Reached</p>
-              <p className="mt-0.5">You've minted your 1 free credential. Become a supporter to mint unlimited verified PRs.</p>
+        {isFreeLimitReached && (
+          <div className="mb-4 p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl">
+            <div className="flex items-start gap-3">
+              <Crown className="w-5 h-5 flex-shrink-0 mt-0.5 text-amber-400" />
+              <div className="flex-1">
+                <p className="font-semibold text-amber-400">Free Limit Reached</p>
+                <p className="mt-0.5 text-amber-200/90 text-sm">You've used all {FREE_LIMIT} free credentials. Become a supporter to mint unlimited verified PRs and unlock premium features.</p>
+                <a
+                  href="/support"
+                  className="inline-flex items-center gap-1.5 mt-3 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 text-sm font-semibold rounded-lg hover:from-amber-400 hover:to-orange-400 transition-all shadow-lg shadow-amber-500/20"
+                >
+                  <Crown className="w-4 h-4" />
+                  Become a Supporter
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {!isSupporter && !isFreeLimitReached && (
+          <div className="mb-4 flex items-center gap-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-medium text-blue-300">Free credentials used</span>
+                <span className="text-xs font-bold text-blue-400">{attestationCount}/{FREE_LIMIT}</span>
+              </div>
+              <div className="w-full bg-blue-500/10 h-1.5 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full transition-all duration-500"
+                  style={{ width: `${(attestationCount / FREE_LIMIT) * 100}%` }}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -112,13 +143,13 @@ const ProofOfWorkTab = () => {
               onChange={(e) => setPrUrl(e.target.value)}
               placeholder="https://github.com/owner/repo/pull/123"
               required
-              disabled={isMinting || (!isSupporter && attestations?.length >= 1)}
+              disabled={isMinting || isFreeLimitReached}
               className="block w-full pl-10 pr-3 py-3 border border-zinc-700 rounded-xl leading-5 bg-zinc-950 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-all disabled:opacity-50"
             />
           </div>
           <button
             type="submit"
-            disabled={isMinting || !prUrl.trim() || (!isSupporter && attestations?.length >= 1)}
+            disabled={isMinting || !prUrl.trim() || isFreeLimitReached}
             className="inline-flex justify-center items-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-xl text-zinc-950 bg-emerald-400 hover:bg-emerald-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             {isMinting ? (
