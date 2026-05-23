@@ -34,25 +34,33 @@ const MetalCard = ({ attestation, showActions = true }) => {
   const handleDownload = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (!cardRef.current) return;
+    if (!cardRef.current || isExporting) return;
     
     try {
-      // Hide buttons and remove 3D transform for a clean screenshot
+      // 1. Reset 3D rotation via React state so Framer Motion applies flat transform
       setIsExporting(true);
-      const currentTransform = cardRef.current.style.transform;
-      cardRef.current.style.transform = 'none';
+      setIsHovered(false);
+      setRotation({ x: 0, y: 0 });
       
-      // Wait a tick for React to re-render with buttons hidden
-      await new Promise(r => setTimeout(r, 100));
+      // 2. Wait for Framer Motion to settle to the flat orientation and React to hide buttons
+      await new Promise(r => setTimeout(r, 350));
+
+      // 3. Find and hide the action buttons container via DOM (belt-and-suspenders with isExporting)
+      const actionsEl = cardRef.current.querySelector('[data-export-hide]');
+      if (actionsEl) actionsEl.style.display = 'none';
 
       const dataUrl = await toPng(cardRef.current, { 
         quality: 1.0,
-        pixelRatio: 2, // High resolution
+        pixelRatio: 4, // Premium 4x resolution for crisp exports
         skipFonts: false,
+        cacheBust: true,
+        style: {
+          transform: 'none', // Ensure no residual 3D transform in the capture
+        },
       });
       
-      // Restore transform and buttons
-      cardRef.current.style.transform = currentTransform;
+      // 4. Restore action buttons visibility
+      if (actionsEl) actionsEl.style.display = '';
       setIsExporting(false);
 
       const link = document.createElement('a');
@@ -61,6 +69,9 @@ const MetalCard = ({ attestation, showActions = true }) => {
       link.click();
     } catch (err) {
       console.error('Failed to export image:', err);
+      // Restore state on failure
+      const actionsEl = cardRef.current?.querySelector('[data-export-hide]');
+      if (actionsEl) actionsEl.style.display = '';
       setIsExporting(false);
     }
   };
@@ -180,7 +191,7 @@ const MetalCard = ({ attestation, showActions = true }) => {
             </div>
             
             {showActions && (
-            <div className={`flex items-center gap-2 z-40 ${isExporting ? 'opacity-0' : ''}`}>
+            <div data-export-hide className={`flex items-center gap-2 z-40 ${isExporting ? 'hidden' : ''}`}>
               <button 
                 onClick={handleDownload}
                 title="Download as Image"
