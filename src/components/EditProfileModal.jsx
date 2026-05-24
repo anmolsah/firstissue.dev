@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 const TECH_SUGGESTIONS = [
   "React", "Next.js", "Vue", "Nuxt", "Angular", "Svelte", "SvelteKit",
   "JavaScript", "TypeScript", "Node.js", "Express", "Fastify", "NestJS",
+  "HTML", "CSS",
   "Python", "Django", "Flask", "FastAPI",
   "Java", "Spring Boot", "Kotlin",
   "Go", "Rust", "C++", "C#", ".NET",
@@ -178,7 +179,7 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
             .select("tech_stack")
             .eq("id", user.id)
             .single();
-          
+
           setFormData({
             name: githubProfile.name || "",
             bio: githubProfile.bio || "",
