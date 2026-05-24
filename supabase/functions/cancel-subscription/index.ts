@@ -68,6 +68,8 @@ serve(async (req: Request) => {
 
       try {
         // Cancel the subscription via Dodo Payments API
+        // Dodo requires cancel_at_next_billing_date: true to schedule cancellation
+        // at the end of the current billing period (not a direct status change)
         const dodoResponse = await fetch(`${baseUrl}/subscriptions/${subscriptionId}`, {
           method: "PATCH",
           headers: {
@@ -75,7 +77,7 @@ serve(async (req: Request) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            status: "cancelled",
+            cancel_at_next_billing_date: true,
           }),
         });
 

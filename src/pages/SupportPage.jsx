@@ -42,41 +42,62 @@ const SupportPage = () => {
   useEffect(() => {
     const success = searchParams.get("success");
     if (success === "true" && user && !isSupporter && !supporterLoading) {
-      const activateSupporter = async () => {
+      const waitForWebhookActivation = async () => {
         try {
-          const { data: existing } = await supabase
-            .from("supporters")
-            .select("id")
-            .eq("user_id", user.id)
-            .eq("status", "active")
-            .single();
+          // Poll for the webhook-created supporter record.
+          // The webhook should fire within a few seconds and create a full record
+          // with dodo_subscription_id and dodo_customer_id.
+          const maxAttempts = 8;
+          const delayMs = 1000;
 
-          if (!existing) {
-            const expiresAt = new Date();
-            expiresAt.setMonth(expiresAt.getMonth() + 1);
+          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            const { data: existing } = await supabase
+              .from("supporters")
+              .select("id, dodo_subscription_id")
+              .eq("user_id", user.id)
+              .eq("status", "active")
+              .single();
 
-            const { error } = await supabase.from("supporters").upsert(
-              {
-                user_id: user.id,
-                email: user.email,
-                plan: "supporter",
-                status: "active",
-                amount_cents: 900,
-                currency: "USD",
-                started_at: new Date().toISOString(),
-                expires_at: expiresAt.toISOString(),
-                updated_at: new Date().toISOString(),
-              },
-              { onConflict: "user_id" }
-            );
-
-            if (error) {
-              console.error("Error activating supporter:", error);
-            } else {
+            if (existing) {
+              console.log(`Supporter record found on attempt ${attempt}`, existing);
               toast.success("🎉 Welcome, Supporter! Smart Match and Unlimited Proof of Work are now unlocked.");
               refreshStatus();
+              return;
             }
+
+            // Wait before next attempt
+            if (attempt < maxAttempts) {
+              await new Promise((r) => setTimeout(r, delayMs));
+            }
+          }
+
+          // Fallback: if the webhook hasn't arrived after polling,
+          // create a minimal record so the user gets access immediately.
+          // The webhook will later fill in dodo_subscription_id and dodo_customer_id
+          // via upsert on the user_id conflict.
+          console.warn("Webhook record not found after polling, creating fallback supporter record");
+          const expiresAt = new Date();
+          expiresAt.setMonth(expiresAt.getMonth() + 1);
+
+          const { error } = await supabase.from("supporters").upsert(
+            {
+              user_id: user.id,
+              email: user.email,
+              plan: "supporter",
+              status: "active",
+              amount_cents: 900,
+              currency: "USD",
+              started_at: new Date().toISOString(),
+              expires_at: expiresAt.toISOString(),
+              updated_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id" }
+          );
+
+          if (error) {
+            console.error("Error activating supporter (fallback):", error);
           } else {
+            toast.success("🎉 Welcome, Supporter! Smart Match and Unlimited Proof of Work are now unlocked.");
             refreshStatus();
           }
         } catch (err) {
@@ -84,7 +105,7 @@ const SupportPage = () => {
         }
       };
 
-      activateSupporter();
+      waitForWebhookActivation();
     }
   }, [searchParams, user, isSupporter, supporterLoading, refreshStatus]);
 
