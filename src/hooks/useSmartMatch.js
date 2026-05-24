@@ -6,11 +6,13 @@ import { runSmartMatch } from '../services/smartMatch';
  * Query key factory for smart match
  */
 const smartMatchKeys = {
-  forUser: (username) => ['smartMatch', username],
+  forUser: (username, preferredLabels) => ['smartMatch', username, preferredLabels?.sort()?.join(',') || 'default'],
 };
 
-export const useSmartMatch = (username, token) => {
+export const useSmartMatch = (username, token, { userId, preferredLabels } = {}) => {
   const queryClient = useQueryClient();
+
+  const queryKey = smartMatchKeys.forUser(username, preferredLabels);
 
   const {
     data,
@@ -18,8 +20,8 @@ export const useSmartMatch = (username, token) => {
     error: queryError,
     dataUpdatedAt,
   } = useQuery({
-    queryKey: smartMatchKeys.forUser(username),
-    queryFn: () => runSmartMatch(username, token, import.meta.env.VITE_SUPABASE_URL),
+    queryKey,
+    queryFn: () => runSmartMatch(username, token, import.meta.env.VITE_SUPABASE_URL, { userId, preferredLabels }),
     enabled: false, // Manual trigger only — don't auto-fetch
     staleTime: 10 * 60 * 1000, // 10 minutes
     gcTime: 15 * 60 * 1000,    // 15 minutes
@@ -32,16 +34,16 @@ export const useSmartMatch = (username, token) => {
 
     if (forceRefresh) {
       // Invalidate cache and refetch
-      await queryClient.invalidateQueries({ queryKey: smartMatchKeys.forUser(username) });
+      await queryClient.invalidateQueries({ queryKey });
     }
 
     // Trigger the query
     await queryClient.fetchQuery({
-      queryKey: smartMatchKeys.forUser(username),
-      queryFn: () => runSmartMatch(username, token, import.meta.env.VITE_SUPABASE_URL),
+      queryKey,
+      queryFn: () => runSmartMatch(username, token, import.meta.env.VITE_SUPABASE_URL, { userId, preferredLabels }),
       staleTime: forceRefresh ? 0 : 10 * 60 * 1000,
     });
-  }, [username, token, queryClient]);
+  }, [username, token, userId, preferredLabels, queryClient, queryKey]);
 
   const refresh = useCallback(() => {
     return fetchMatches(true);

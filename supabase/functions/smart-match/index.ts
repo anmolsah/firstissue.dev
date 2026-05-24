@@ -29,37 +29,61 @@ serve(async (req: Request) => {
     }
 
     // Build the AI prompt
-    const systemPrompt = `You are an expert developer-issue matchmaker for open source contributions. 
+    const systemPrompt = `You are an expert developer-issue matchmaker for open source contributions.
 
-Given a developer's profile and a list of open GitHub issues, score each issue from 0.0 to 1.0 on how well it matches the developer's skills.
+Given a developer's profile (including their self-declared tech stack) and a list of open GitHub issues, score each issue from 0.0 to 1.0 on how well it matches the developer.
 
-Consider:
-- Language/framework alignment (highest weight)
-- Difficulty vs experience level
-- Topic relevance
-- Issue freshness and engagement
+Scoring criteria (in order of importance):
+1. **Tech Stack Alignment** (highest weight): Match the developer's declared tech stack and frameworks. A React developer should score React issues much higher than Vue issues. Language match alone is not enough — framework matters most.
+2. **Difficulty Appropriateness**: Match issue complexity to the developer's experience level. Beginners should get simple, well-documented issues. Advanced developers should get meatier challenges.
+3. **Repo Quality**: Prefer issues from repos with 10+ stars, recent activity, and responsive maintainers. Penalize issues from very low-quality repos (< 5 stars, no recent updates).
+4. **Issue Quality**: Prefer issues with clear, detailed descriptions over vague one-liners. Issues with 0 comments and poor descriptions should score lower.
+5. **Uniqueness**: If multiple issues are nearly identical tasks (e.g., "Create X Theme: Y Section"), they should NOT all get the same high score. Give the BEST one a high score and progressively lower scores to the rest. Developers want variety.
+
+CRITICAL RULES:
+- Do NOT give the same score to multiple similar issues. Differentiate them.
+- Scores should span a wide range (use the full 0.0 to 1.0 scale).
+- Every reason must be specific to the issue, not generic.
 
 Return ONLY valid JSON, no markdown, no explanation. Format:
 {
   "matches": [
-    {"issueId": <number>, "matchScore": <0.0-1.0>, "reason": "<1 sentence why>"}
+    {"issueId": <number>, "matchScore": <0.0-1.0>, "reason": "<1 specific sentence>"}
   ]
 }
 
 Sort by matchScore descending. Include ALL issues from the input.`;
 
+    // Build tech stack display
+    const techStackDisplay = userProfile.techStack && userProfile.techStack.length > 0
+      ? `- Declared Tech Stack: ${userProfile.techStack.join(", ")}`
+      : "";
+    
+    const frameworksDisplay = userProfile.detectedFrameworks && userProfile.detectedFrameworks.length > 0
+      ? `- Auto-detected Frameworks: ${userProfile.detectedFrameworks.join(", ")}`
+      : "";
+
     const userPrompt = `## Developer Profile
 - Username: ${userProfile.username}
 - Top Languages: ${userProfile.topLanguages.map((l: any) => `${l.language} (${l.repoCount} repos)`).join(", ")}
+${techStackDisplay}
+${frameworksDisplay}
 - Topics: ${userProfile.topics.join(", ") || "none detected"}
 - Experience Level: ${userProfile.experienceLevel}
 - Total Repos: ${userProfile.repoCount}
 - Total Stars: ${userProfile.totalStars}
 
 ## Candidate Issues (score each one)
-${candidateIssues.map((issue: any, i: number) => 
-  `${i + 1}. [ID: ${issue.id}] "${issue.title}" in ${issue.repo} | Labels: ${issue.labels.join(", ")} | ${issue.body?.substring(0, 150) || "no description"}`
-).join("\n")}`;
+${candidateIssues.map((issue: any, i: number) => {
+  const stars = issue.repo_stars ? `⭐${issue.repo_stars}` : '';
+  const age = issue.created_days_ago != null ? `${issue.created_days_ago}d old` : '';
+  const comments = issue.comments != null ? `${issue.comments} comments` : '';
+  const meta = [stars, age, comments].filter(Boolean).join(', ');
+  return `${i + 1}. [ID: ${issue.id}] "${issue.title}" in ${issue.repo} (${meta}) | Labels: ${issue.labels.join(", ")} | ${issue.body?.substring(0, 200) || "no description"}`;
+}).join("\n")}`;
+
+    console.log("[SmartMatch] Sending", candidateIssues.length, "issues to AI");
+    console.log("[SmartMatch] User tech stack:", userProfile.techStack || "not set");
 
     // Call xAI
     const aiResponse = await fetch("https://api.x.ai/v1/chat/completions", {
@@ -75,7 +99,7 @@ ${candidateIssues.map((issue: any, i: number) =>
           { role: "user", content: userPrompt },
         ],
         temperature: 0.3,
-        max_tokens: 2000,
+        max_tokens: 3000,
       }),
     });
 
@@ -91,7 +115,7 @@ ${candidateIssues.map((issue: any, i: number) =>
     const aiData = await aiResponse.json();
     const content = aiData.choices?.[0]?.message?.content;
 
-    console.log("AI raw response content:", content);
+    console.log("AI raw response length:", content?.length);
 
     if (!content) {
       return new Response(
@@ -124,7 +148,13 @@ ${candidateIssues.map((issue: any, i: number) =>
     }
 
     console.log("Parsed matches count:", parsed.matches?.length);
-    console.log("Sample match:", JSON.stringify(parsed.matches?.[0]));
+    if (parsed.matches?.length > 0) {
+      console.log("Score range:", 
+        Math.min(...parsed.matches.map((m: any) => m.matchScore)),
+        "to",
+        Math.max(...parsed.matches.map((m: any) => m.matchScore))
+      );
+    }
 
     return new Response(
       JSON.stringify(parsed),

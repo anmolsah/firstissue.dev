@@ -7,6 +7,25 @@ import { supabase } from '../lib/supabase';
  */
 
 /**
+ * Fetch user's tech stack from their Supabase profile
+ */
+export async function fetchUserTechStack(userId) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('tech_stack')
+      .eq('id', userId)
+      .single();
+
+    if (error) throw error;
+    return data?.tech_stack || [];
+  } catch (error) {
+    console.error('Error fetching tech stack:', error);
+    return [];
+  }
+}
+
+/**
  * Extract user's tech stack from their GitHub repos
  */
 export async function extractUserProfile(username, token) {
@@ -28,10 +47,10 @@ export async function extractUserProfile(username, token) {
 /**
  * Fetch candidate issues from GitHub for matching
  */
-export async function fetchCandidateIssues(languages, token) {
+export async function fetchCandidateIssues(languages, token, preferredLabels) {
   try {
     const { data, error } = await supabase.functions.invoke('github-data', {
-      body: { action: 'fetchIssues', languages, token }
+      body: { action: 'fetchIssues', languages, token, preferredLabels }
     });
 
     if (error) throw error;
@@ -52,7 +71,7 @@ export async function getAIMatchedIssues(userProfile, candidateIssues) {
     const { data, error } = await supabase.functions.invoke('smart-match', {
       body: {
         userProfile,
-        candidateIssues: candidateIssues.slice(0, 20), // Limit to save tokens
+        candidateIssues, // Send ALL candidates — no slicing
       }
     });
 
@@ -83,26 +102,35 @@ export async function getAIMatchedIssues(userProfile, candidateIssues) {
 /**
  * Full smart match pipeline
  */
-export async function runSmartMatch(username, token, supabaseUrl) {
-  // Step 1: Extract user profile
+export async function runSmartMatch(username, token, supabaseUrl, { userId, preferredLabels } = {}) {
+  // Step 1: Extract user profile from GitHub
   const userProfile = await extractUserProfile(username, token);
   if (!userProfile) throw new Error('Could not analyze GitHub profile');
 
-  // Step 2: Fetch candidate issues
-  const candidates = await fetchCandidateIssues(userProfile.topLanguages, token);
+  // Step 2: Fetch user's declared tech stack from Supabase profile
+  let techStack = [];
+  if (userId) {
+    techStack = await fetchUserTechStack(userId);
+  }
+  
+  // Merge tech stack into profile for AI
+  userProfile.techStack = techStack;
+
+  console.log('[SmartMatch] User tech stack:', techStack);
+  console.log('[SmartMatch] Detected frameworks:', userProfile.detectedFrameworks);
+
+  // Step 3: Fetch candidate issues with preferred labels
+  const candidates = await fetchCandidateIssues(userProfile.topLanguages, token, preferredLabels);
   if (candidates.length === 0) throw new Error('No candidate issues found');
 
-  // Step 3: Get AI rankings
+  console.log('[SmartMatch] Candidates fetched:', candidates.length);
+
+  // Step 4: Get AI rankings for ALL candidates
   const matches = await getAIMatchedIssues(userProfile, candidates);
 
   console.log('[SmartMatch] AI returned', matches.length, 'matches');
-  if (matches.length > 0) {
-    console.log('[SmartMatch] Sample AI match:', JSON.stringify(matches[0]));
-    console.log('[SmartMatch] Sample candidate ID:', candidates[0]?.id, typeof candidates[0]?.id);
-  }
 
-  // Step 4: Merge AI scores back into full issue data
-  // Coerce all IDs to strings for consistent matching (AI may return string or number IDs)
+  // Step 5: Merge AI scores back into full issue data
   const matchMap = new Map(matches.map((m) => [String(m.issueId), m]));
 
   const rankedIssues = candidates
@@ -111,13 +139,18 @@ export async function runSmartMatch(username, token, supabaseUrl) {
       return {
         ...issue,
         matchScore: match?.matchScore || 0,
-        matchReason: match?.reason || 'Matches your tech stack',
+        matchReason: match?.reason || 'Could not be scored by AI',
         isAIRanked: !!match,
       };
     })
-    .sort((a, b) => b.matchScore - a.matchScore);
+    .sort((a, b) => b.matchScore - a.matchScore)
+    // Cap at top 25 results
+    .slice(0, 25);
 
-  console.log('[SmartMatch] Ranked issues - top score:', rankedIssues[0]?.matchScore);
+  console.log('[SmartMatch] Final results:', rankedIssues.length);
+  if (rankedIssues.length > 0) {
+    console.log('[SmartMatch] Score range:', rankedIssues[0]?.matchScore, 'to', rankedIssues[rankedIssues.length - 1]?.matchScore);
+  }
 
   return {
     issues: rankedIssues,

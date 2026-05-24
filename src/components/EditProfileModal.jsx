@@ -1,6 +1,159 @@
-import React, { useState, useEffect } from "react";
-import { X, Loader2, Check } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, Loader2, Check, Plus } from "lucide-react";
 import { supabase } from "../lib/supabase";
+
+const TECH_SUGGESTIONS = [
+  "React", "Next.js", "Vue", "Nuxt", "Angular", "Svelte", "SvelteKit",
+  "JavaScript", "TypeScript", "Node.js", "Express", "Fastify", "NestJS",
+  "Python", "Django", "Flask", "FastAPI",
+  "Java", "Spring Boot", "Kotlin",
+  "Go", "Rust", "C++", "C#", ".NET",
+  "Ruby", "Rails", "PHP", "Laravel",
+  "Swift", "React Native", "Flutter", "Dart",
+  "Tailwind CSS", "Bootstrap", "Sass",
+  "GraphQL", "REST API", "tRPC",
+  "PostgreSQL", "MongoDB", "MySQL", "Redis", "Supabase", "Firebase",
+  "Docker", "Kubernetes", "AWS", "GCP", "Azure",
+  "Git", "CI/CD", "Linux",
+  "Machine Learning", "TensorFlow", "PyTorch",
+  "Solidity", "Web3",
+];
+
+const TechStackInput = ({ value = [], onChange }) => {
+  const [inputValue, setInputValue] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const inputRef = useRef(null);
+  const containerRef = useRef(null);
+
+  const filteredSuggestions = TECH_SUGGESTIONS.filter(
+    (tech) =>
+      tech.toLowerCase().includes(inputValue.toLowerCase()) &&
+      !value.includes(tech)
+  ).slice(0, 8);
+
+  const addTag = (tag) => {
+    const trimmed = tag.trim();
+    if (trimmed && !value.includes(trimmed)) {
+      onChange([...value, trimmed]);
+    }
+    setInputValue("");
+    setShowSuggestions(false);
+    inputRef.current?.focus();
+  };
+
+  const removeTag = (tagToRemove) => {
+    onChange(value.filter((t) => t !== tagToRemove));
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (inputValue.trim()) {
+        // If there's a matching suggestion, use it (preserves casing)
+        const match = filteredSuggestions.find(
+          (s) => s.toLowerCase() === inputValue.trim().toLowerCase()
+        );
+        addTag(match || inputValue.trim());
+      }
+    } else if (e.key === "Backspace" && !inputValue && value.length > 0) {
+      removeTag(value[value.length - 1]);
+    }
+  };
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div ref={containerRef} className="relative">
+      <label className="block text-sm font-medium text-gray-300 mb-2">
+        Tech Stack
+      </label>
+      <p className="text-xs text-gray-500 mb-2">
+        Add your skills to get better SmartMatch recommendations
+      </p>
+
+      {/* Tags display */}
+      <div className="flex flex-wrap gap-1.5 mb-2">
+        {value.map((tag) => (
+          <span
+            key={tag}
+            className="inline-flex items-center gap-1 px-2.5 py-1 bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-lg text-xs font-medium"
+          >
+            {tag}
+            <button
+              type="button"
+              onClick={() => removeTag(tag)}
+              className="p-0.5 hover:bg-purple-500/20 rounded transition-colors"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          </span>
+        ))}
+      </div>
+
+      {/* Input */}
+      <div className="relative">
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+            setShowSuggestions(true);
+          }}
+          onFocus={() => setShowSuggestions(true)}
+          onKeyDown={handleKeyDown}
+          placeholder={value.length === 0 ? "e.g., React, Node.js, Python..." : "Add more..."}
+          className="w-full px-4 py-3 bg-[#0B0C10] border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/50 transition-all text-sm"
+        />
+      </div>
+
+      {/* Suggestions dropdown */}
+      {showSuggestions && inputValue && filteredSuggestions.length > 0 && (
+        <div className="absolute z-50 w-full mt-1 bg-[#1a1b25] border border-white/10 rounded-lg shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+          {filteredSuggestions.map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => addTag(suggestion)}
+              className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors text-left"
+            >
+              <Plus className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Quick-add popular tags when empty */}
+      {value.length === 0 && !inputValue && (
+        <div className="mt-2">
+          <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">Popular</p>
+          <div className="flex flex-wrap gap-1.5">
+            {["React", "TypeScript", "Node.js", "Python", "Next.js", "Tailwind CSS"].map((tech) => (
+              <button
+                key={tech}
+                type="button"
+                onClick={() => addTag(tech)}
+                className="px-2 py-1 text-[11px] bg-white/5 text-gray-400 border border-white/10 rounded-md hover:bg-purple-500/10 hover:text-purple-300 hover:border-purple-500/20 transition-colors"
+              >
+                + {tech}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
   const [formData, setFormData] = useState({
@@ -9,6 +162,7 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
     location: "",
     company: "",
     website: "",
+    tech_stack: [],
   });
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -16,15 +170,37 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
 
   useEffect(() => {
     if (isOpen && githubProfile) {
-      setFormData({
-        name: githubProfile.name || "",
-        bio: githubProfile.bio || "",
-        location: githubProfile.location || "",
-        company: githubProfile.company || "",
-        website: githubProfile.blog || "",
-      });
+      // Fetch existing tech_stack from profiles table
+      const fetchTechStack = async () => {
+        try {
+          const { data } = await supabase
+            .from("profiles")
+            .select("tech_stack")
+            .eq("id", user.id)
+            .single();
+          
+          setFormData({
+            name: githubProfile.name || "",
+            bio: githubProfile.bio || "",
+            location: githubProfile.location || "",
+            company: githubProfile.company || "",
+            website: githubProfile.blog || "",
+            tech_stack: data?.tech_stack || [],
+          });
+        } catch {
+          setFormData({
+            name: githubProfile.name || "",
+            bio: githubProfile.bio || "",
+            location: githubProfile.location || "",
+            company: githubProfile.company || "",
+            website: githubProfile.blog || "",
+            tech_stack: [],
+          });
+        }
+      };
+      fetchTechStack();
     }
-  }, [isOpen, githubProfile]);
+  }, [isOpen, githubProfile, user?.id]);
 
   const handleChange = (e) => {
     setFormData({
@@ -49,6 +225,7 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
           location: formData.location,
           company: formData.company,
           website: formData.website,
+          tech_stack: formData.tech_stack,
           updated_at: new Date().toISOString(),
         },
         {
@@ -143,6 +320,14 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
                 {formData.bio.length}/160 characters
               </p>
             </div>
+
+            {/* Tech Stack */}
+            <TechStackInput
+              value={formData.tech_stack}
+              onChange={(newStack) =>
+                setFormData({ ...formData, tech_stack: newStack })
+              }
+            />
 
             {/* Location */}
             <div>

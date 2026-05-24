@@ -20,7 +20,37 @@ import {
   Clock,
   BrainCircuit,
   ShieldAlert,
+  Tag,
 } from 'lucide-react';
+
+const LABEL_OPTIONS = [
+  { id: 'good first issue', label: 'Good First Issue', color: 'emerald' },
+  { id: 'help wanted', label: 'Help Wanted', color: 'blue' },
+  { id: 'beginner', label: 'Beginner', color: 'purple' },
+  { id: 'easy', label: 'Easy', color: 'green' },
+  { id: 'starter', label: 'Starter', color: 'cyan' },
+  { id: 'documentation', label: 'Documentation', color: 'yellow' },
+];
+
+const DEFAULT_LABELS = ['good first issue', 'help wanted'];
+
+// Get/set label preferences from localStorage
+const getStoredLabels = () => {
+  try {
+    const stored = localStorage.getItem('smartmatch_labels');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch {}
+  return DEFAULT_LABELS;
+};
+
+const setStoredLabels = (labels) => {
+  try {
+    localStorage.setItem('smartmatch_labels', JSON.stringify(labels));
+  } catch {}
+};
 
 const ProgressTimer = () => {
   const [progress, setProgress] = useState(0);
@@ -29,10 +59,10 @@ const ProgressTimer = () => {
   const statuses = [
     "Scanning your GitHub repositories...",
     "Analyzing tech stack and expertise...",
-    "Evaluating issue difficulty levels...",
-    "Mapping repositories to your profile...",
+    "Searching for diverse issues...",
+    "Filtering for quality and freshness...",
     "Generating personalized matches...",
-    "Finalizing your AI-curated list..."
+    "Finalizing your AI-curated list...",
   ];
 
   useEffect(() => {
@@ -85,15 +115,66 @@ const ProgressTimer = () => {
   );
 };
 
-const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) => {
+// Label preference selector component
+const LabelPreferences = ({ selectedLabels, onToggle }) => {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {LABEL_OPTIONS.map((opt) => {
+        const isSelected = selectedLabels.includes(opt.id);
+        const colorMap = {
+          emerald: isSelected ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-white/5 text-gray-500 border-white/10',
+          blue: isSelected ? 'bg-blue-500/15 text-blue-300 border-blue-500/30' : 'bg-white/5 text-gray-500 border-white/10',
+          purple: isSelected ? 'bg-purple-500/15 text-purple-300 border-purple-500/30' : 'bg-white/5 text-gray-500 border-white/10',
+          green: isSelected ? 'bg-green-500/15 text-green-300 border-green-500/30' : 'bg-white/5 text-gray-500 border-white/10',
+          cyan: isSelected ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' : 'bg-white/5 text-gray-500 border-white/10',
+          yellow: isSelected ? 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' : 'bg-white/5 text-gray-500 border-white/10',
+        };
+
+        return (
+          <button
+            key={opt.id}
+            onClick={() => onToggle(opt.id)}
+            className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all cursor-pointer hover:scale-[1.02] ${colorMap[opt.color]}`}
+          >
+            {opt.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
+const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBookmark }) => {
   const navigate = useNavigate();
   const { isSupporter, loading: supporterLoading } = useSupporter();
-  const { matches, userProfile, loading, error, fetchMatches, refresh, lastAnalyzedAt, isCached } = useSmartMatch(username, token);
+  const [preferredLabels, setPreferredLabels] = useState(getStoredLabels);
+  
+  const { matches, userProfile, loading, error, fetchMatches, refresh, lastAnalyzedAt, isCached } = useSmartMatch(
+    username,
+    token,
+    { userId, preferredLabels }
+  );
+  
   const { isRateLimited, remainingCooldown, checkRateLimit, recordAttempt } = useRateLimiter({
     maxAttempts: 2,
     windowMs: 5 * 60 * 1000,   // 5-minute window
     cooldownMs: 60 * 1000,      // 60-second cooldown
   });
+
+  const handleLabelToggle = (labelId) => {
+    setPreferredLabels(prev => {
+      let next;
+      if (prev.includes(labelId)) {
+        next = prev.filter(l => l !== labelId);
+        // Don't allow empty — keep at least one
+        if (next.length === 0) return prev;
+      } else {
+        next = [...prev, labelId];
+      }
+      setStoredLabels(next);
+      return next;
+    });
+  };
 
   const handleRefresh = () => {
     if (!checkRateLimit()) return;
@@ -247,7 +328,7 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
   // ── Results ──
   return (
     <div>
-      {/* Profile Summary + Re-analyze */}
+      {/* Profile Summary + Label Preferences + Re-analyze */}
       {userProfile && (
         <div className="bg-gradient-to-r from-purple-500/5 to-blue-500/5 border border-purple-500/10 rounded-xl p-4 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -258,14 +339,25 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold text-white">Your Tech Profile</h3>
                 <div className="flex flex-wrap gap-1.5 mt-1">
-                  {userProfile.topLanguages.map((lang) => (
-                    <span
-                      key={lang.language}
-                      className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20"
-                    >
-                      {lang.language}
-                    </span>
-                  ))}
+                  {userProfile.techStack && userProfile.techStack.length > 0 ? (
+                    userProfile.techStack.map((tech) => (
+                      <span
+                        key={tech}
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                      >
+                        {tech}
+                      </span>
+                    ))
+                  ) : (
+                    userProfile.topLanguages.map((lang) => (
+                      <span
+                        key={lang.language}
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                      >
+                        {lang.language}
+                      </span>
+                    ))
+                  )}
                   <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20">
                     {userProfile.experienceLevel}
                   </span>
@@ -299,6 +391,18 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
                 </button>
               )}
             </div>
+          </div>
+
+          {/* Label Preferences */}
+          <div className="mt-3 pt-3 border-t border-white/5">
+            <div className="flex items-center gap-2 mb-2">
+              <Tag className="w-3 h-3 text-gray-500" />
+              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Issue Labels</span>
+            </div>
+            <LabelPreferences
+              selectedLabels={preferredLabels}
+              onToggle={handleLabelToggle}
+            />
           </div>
         </div>
       )}
@@ -350,16 +454,43 @@ const SmartMatchTab = ({ username, token, bookmarkedIssues, onToggleBookmark }) 
 const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   const matchPercentage = Math.round((issue.matchScore || 0) * 100);
 
+  // Color-code match scores
+  const getScoreColor = (pct) => {
+    if (pct >= 80) return { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' };
+    if (pct >= 50) return { text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' };
+    return { text: 'text-gray-400', bg: 'bg-white/5', border: 'border-white/10' };
+  };
+
+  const scoreColor = getScoreColor(matchPercentage);
+
+  // Format freshness
+  const getFreshness = () => {
+    if (issue.created_days_ago != null) {
+      if (issue.created_days_ago === 0) return 'Today';
+      if (issue.created_days_ago === 1) return '1d ago';
+      return `${issue.created_days_ago}d ago`;
+    }
+    if (issue.created_at) {
+      const days = Math.floor((Date.now() - new Date(issue.created_at).getTime()) / (1000 * 60 * 60 * 24));
+      if (days === 0) return 'Today';
+      if (days === 1) return '1d ago';
+      return `${days}d ago`;
+    }
+    return null;
+  };
+
+  const freshness = getFreshness();
+
   return (
     <div className="group flex flex-col h-full bg-[#0B0C10] border border-white/5 rounded-2xl p-6 transition-all duration-300 hover:border-white/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
       {/* Card Header: AI Match & Bookmark */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-1.5">
-          <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 w-fit">
-            <BrainCircuit className="w-3.5 h-3.5 text-purple-400" />
+          <div className={`flex items-center gap-2 px-2.5 py-1 rounded-md ${scoreColor.bg} border ${scoreColor.border} w-fit`}>
+            <BrainCircuit className={`w-3.5 h-3.5 ${scoreColor.text}`} />
             <span className="text-[11px] font-bold text-white tracking-wide uppercase">AI Match</span>
             <span className="w-1 h-1 rounded-full bg-white/20" />
-            <span className="text-[11px] font-bold text-purple-400">{matchPercentage}%</span>
+            <span className={`text-[11px] font-bold ${scoreColor.text}`}>{matchPercentage}%</span>
           </div>
         </div>
         
@@ -389,6 +520,20 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
           />
         </div>
         <span className="text-xs font-medium text-gray-500 truncate">{issue.repo}</span>
+        {/* Repo stars */}
+        {issue.repo_stars != null && (
+          <span className="flex items-center gap-0.5 text-[10px] text-gray-600 ml-auto">
+            <Star className="w-3 h-3 text-amber-500/60" />
+            {issue.repo_stars >= 1000 ? `${(issue.repo_stars / 1000).toFixed(1)}k` : issue.repo_stars}
+          </span>
+        )}
+        {/* Freshness */}
+        {freshness && (
+          <span className="flex items-center gap-0.5 text-[10px] text-gray-600">
+            <Clock className="w-3 h-3" />
+            {freshness}
+          </span>
+        )}
       </div>
 
       {/* Title */}
@@ -408,8 +553,11 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
           <p className="text-xs text-gray-400 leading-relaxed font-medium">
             {issue.matchReason}
           </p>
-          {/* Subtle gradient accent */}
-          <div className="absolute top-0 left-0 w-1 h-full bg-purple-500/30" />
+          {/* Subtle gradient accent — color matches score */}
+          <div className={`absolute top-0 left-0 w-1 h-full ${
+            matchPercentage >= 80 ? 'bg-emerald-500/30' :
+            matchPercentage >= 50 ? 'bg-amber-500/30' : 'bg-gray-500/30'
+          }`} />
         </div>
       )}
 

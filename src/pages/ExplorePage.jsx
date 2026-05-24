@@ -526,6 +526,7 @@ const ExplorePage = () => {
             <SmartMatchTab
               username={user?.user_metadata?.user_name || user?.user_metadata?.preferred_username}
               token={null}
+              userId={user?.id}
               bookmarkedIssues={bookmarkedIssues}
               onToggleBookmark={(issue) => {
                 // SmartMatch issues use 'url' instead of 'html_url'
