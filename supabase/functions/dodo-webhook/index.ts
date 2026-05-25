@@ -121,6 +121,38 @@ serve(async (req: Request) => {
         );
       }
 
+      // Check if there's an existing record that was cancelled.
+      // If so, do NOT re-activate — the user explicitly cancelled and
+      // Dodo may still fire payment.succeeded for the current billing period.
+      const { data: existingSupporter } = await supabase
+        .from("supporters")
+        .select("status, dodo_subscription_id, dodo_customer_id")
+        .eq("user_id", userId)
+        .single();
+
+      if (existingSupporter?.status === "cancelled") {
+        console.log("⚠️ Payment success event received but subscription is cancelled. Only updating IDs, NOT re-activating for user:", userId);
+
+        // Still update the Dodo IDs if they were missing
+        const updates: Record<string, any> = { updated_at: new Date().toISOString() };
+        if (subscriptionId && !existingSupporter.dodo_subscription_id) {
+          updates.dodo_subscription_id = subscriptionId;
+        }
+        if (customerId && !existingSupporter.dodo_customer_id) {
+          updates.dodo_customer_id = customerId;
+        }
+
+        await supabase
+          .from("supporters")
+          .update(updates)
+          .eq("user_id", userId);
+
+        return new Response(
+          JSON.stringify({ received: true, info: "Subscription cancelled, payment event ignored" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       // Calculate expiry (1 month from now)
       const expiresAt = new Date();
       expiresAt.setMonth(expiresAt.getMonth() + 1);
