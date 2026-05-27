@@ -25,6 +25,7 @@ import Footer from "./components/Footer";
 import CookieConsent from "./components/CookieConsent";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
+import AICopilot from "./components/AICopilot";
 
 // Layout wrapper that conditionally shows Navbar/Footer
 const AppLayout = ({ children }) => {
@@ -72,6 +73,7 @@ const AppLayout = ({ children }) => {
       <div className="flex-1">{children}</div>
       {!hideGlobalLayout && !isLoginPage && <Footer />}
       <CookieConsent />
+      <AICopilot />
     </div>
   );
 };
