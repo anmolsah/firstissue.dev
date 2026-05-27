@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Sparkles, X, Send, Bot, User, ChevronRight, MessageSquare, AlertCircle } from "lucide-react";
+import { Sparkles, X, Send, Bot, User, ChevronRight, MessageSquare, AlertCircle, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
@@ -297,13 +297,16 @@ const AICopilot = () => {
               <div className="p-5 border-b border-white/5 bg-[#1a1f26]/80 flex justify-between items-center">
                 <div className="flex items-center gap-2.5">
                   <div className="p-2 bg-[#00ADB5]/10 text-[#00ADB5] rounded-xl border border-[#00ADB5]/20">
-                    <Sparkles className="w-5 h-5" />
+                    <Sparkles className="w-5 h-5 animate-pulse" />
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
                       FirstIssue AI Copilot
                     </h2>
-                    <p className="text-[10px] text-gray-500 font-medium">Ready to help you contribute</p>
+                    <p className="text-[10px] text-amber-400 font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                      Development Mode
+                    </p>
                   </div>
                 </div>
                 <button
@@ -314,150 +317,58 @@ const AICopilot = () => {
                 </button>
               </div>
 
-              {/* Chat Messages Logs */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-4 select-text">
-                {messages.map((msg, index) => (
-                  <div
-                    key={index}
-                    className={`flex gap-3 max-w-[85%] ${
-                      msg.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
-                    }`}
-                  >
-                    {/* Icon */}
-                    <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 border ${
-                        msg.role === "user"
-                          ? "bg-blue-600/10 text-blue-400 border-blue-500/20"
-                          : "bg-[#00ADB5]/10 text-[#00ADB5] border-[#00ADB5]/20"
-                      }`}
-                    >
-                      {msg.role === "user" ? (
-                        <User className="w-4 h-4" />
-                      ) : (
-                        <Bot className="w-4 h-4" />
-                      )}
-                    </div>
-
-                    {/* Bubble Content */}
-                    <div className="space-y-1.5">
-                      <div
-                        className={`p-3.5 rounded-2xl ${
-                          msg.role === "user"
-                            ? "bg-gradient-to-tr from-blue-600 to-blue-500 text-white rounded-tr-xs"
-                            : "bg-[#393E46]/50 text-gray-100 border border-white/5 rounded-tl-xs backdrop-blur-md"
-                        }`}
-                      >
-                        {renderMarkdown(msg.content)}
-                      </div>
-
-                      {/* Sources / Citations */}
-                      {msg.sources && msg.sources.length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 pt-1 px-1.5">
-                          <span className="text-[9px] text-gray-500 font-semibold uppercase self-center mr-1">
-                            Sources:
-                          </span>
-                          {msg.sources.map((src, sIdx) => (
-                            <a
-                              key={sIdx}
-                              href={src.path}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#393E46]/40 text-[#00ADB5] hover:text-white hover:bg-[#00ADB5]/20 rounded-md border border-white/5 text-[10px] font-medium transition-all"
-                            >
-                              {src.title}
-                              <ChevronRight className="w-3 h-3" />
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                    </div>
+              {/* Development Mode Body Placeholder */}
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
+                <div className="relative">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600/20 to-[#00ADB5]/20 border border-[#00ADB5]/30 flex items-center justify-center text-[#00ADB5] mx-auto animate-bounce">
+                    <Bot className="w-8 h-8" />
                   </div>
-                ))}
-
-                {/* AI Typing Loader */}
-                {isLoading && (
-                  <div className="flex gap-3 max-w-[85%] mr-auto">
-                    <div className="w-7 h-7 rounded-full bg-[#00ADB5]/10 text-[#00ADB5] border border-[#00ADB5]/20 flex items-center justify-center shrink-0 animate-pulse">
-                      <Bot className="w-4 h-4" />
-                    </div>
-                    <div className="bg-[#393E46]/50 border border-white/5 p-4 rounded-2xl rounded-tl-xs flex items-center space-x-1.5">
-                      <span className="block w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                      <span className="block w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                      <span className="block w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
-                    </div>
+                  <div className="absolute -bottom-1 -right-1 p-1 bg-amber-500 text-black rounded-lg border border-[#222831]">
+                    <Sparkles className="w-3.5 h-3.5 text-black" />
                   </div>
-                )}
+                </div>
 
-                {/* Suggestions List - show when no user queries have been made yet */}
-                {messages.length === 1 && !isLoading && (
-                  <div className="pt-4 space-y-2">
-                    <p className="text-[10px] text-gray-500 font-semibold uppercase tracking-wider flex items-center gap-1">
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      Suggested questions:
-                    </p>
-                    <div className="grid grid-cols-1 gap-2">
-                      {suggestions.map((sug, sIdx) => (
-                        <button
-                          key={sIdx}
-                          onClick={() => handleSuggestionClick(sug)}
-                          className="w-full text-left p-3 bg-[#393E46]/20 hover:bg-[#393E46]/50 text-gray-300 hover:text-white rounded-xl border border-white/5 hover:border-white/10 transition-all text-xs font-medium flex justify-between items-center group"
-                        >
-                          {sug}
-                          <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-white transition-colors" />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <div className="space-y-2.5">
+                  <span className="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-[9px] font-black uppercase tracking-widest">
+                    Upcoming Feature
+                  </span>
+                  <h3 className="text-lg font-bold text-white tracking-tight">AI Copilot is Coming Soon</h3>
+                  <p className="text-xs text-gray-400 leading-relaxed max-w-sm">
+                    We are currently building and training the AI Copilot to automatically parse open source repositories, document guides, and GitHub issues to guide you through your first pull request.
+                  </p>
+                </div>
 
-                <div ref={messagesEndRef} />
+                {/* Sneak peek feature items */}
+                <div className="w-full bg-[#393E46]/20 border border-white/5 rounded-2xl p-4 text-left space-y-3">
+                  <h4 className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Features under development:</h4>
+                  <ul className="space-y-2.5 text-xs text-gray-300">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#00ADB5]" />
+                      Real-time Git Command Assistance
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#00ADB5]" />
+                      Repository Codebase Walkthroughs
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#00ADB5]" />
+                      Instant Pull Request Debugging
+                    </li>
+                  </ul>
+                </div>
               </div>
 
-              {/* Bottom Input Area */}
-              <div className="p-4 border-t border-white/5 bg-[#1a1f26]/80 space-y-3">
-                {/* Guest limit message */}
-                {!user && isGuestLimitReached && (
-                  <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl flex gap-2.5 items-start">
-                    <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                    <div className="space-y-1.5">
-                      <p className="text-[11px] text-amber-200 font-medium">
-                        You've used your 1 free guest message.
-                      </p>
-                      <p className="text-[10px] text-amber-300/80 leading-relaxed">
-                        Log in or sign up with GitHub to continue chatting and unlock unlimited questions!
-                      </p>
-                      <a
-                        href="/login"
-                        className="inline-block mt-1 text-[10px] font-semibold text-white bg-amber-600 hover:bg-amber-500 px-3 py-1 rounded-md transition-colors"
-                      >
-                        Log In Now
-                      </a>
-                    </div>
+              {/* Locked Input Field */}
+              <div className="p-4 border-t border-white/5 bg-[#1a1f26]/80">
+                <div className="flex gap-2 opacity-50 cursor-not-allowed items-center">
+                  <div className="flex-1 px-4 py-3 bg-[#222831] border border-white/5 text-gray-500 rounded-xl text-xs flex items-center gap-2">
+                    <Lock className="w-3.5 h-3.5 text-gray-500" />
+                    <span>AI Chat disabled in development mode...</span>
                   </div>
-                )}
-
-                {/* Input form */}
-                <form onSubmit={handleSubmit} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    disabled={isLoading || (!user && isGuestLimitReached)}
-                    placeholder={
-                      !user && isGuestLimitReached
-                        ? "Log in to ask more questions..."
-                        : "Ask about git, syntax, first PR..."
-                    }
-                    className="flex-1 px-4 py-3 bg-[#222831] border border-white/5 focus:border-[#00ADB5]/50 text-white rounded-xl text-xs outline-none transition-all placeholder:text-gray-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                  <button
-                    type="submit"
-                    disabled={isLoading || !input.trim() || (!user && isGuestLimitReached)}
-                    className="p-3 bg-gradient-to-tr from-blue-600 to-[#00ADB5] hover:from-blue-500 hover:to-[#00C2CB] text-white rounded-xl shadow-md transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shrink-0"
-                  >
+                  <div className="p-3 bg-gray-700 text-gray-500 rounded-xl flex items-center justify-center shrink-0">
                     <Send className="w-4 h-4" />
-                  </button>
-                </form>
+                  </div>
+                </div>
               </div>
             </motion.div>
           </>
