@@ -12,6 +12,8 @@ import {
   Code2,
   Database,
   Layout,
+  Globe,
+  Sparkles,
 } from "lucide-react";
 
 // Individual Timeline Row Item Component
@@ -55,6 +57,14 @@ const TimelineItem = ({ index, accent, title, description, icon: Icon, badge, vi
       borderHover: "hover:border-emerald-500/30",
       text: "text-emerald-400",
       bgGlow: "from-emerald-500/10 via-teal-500/5 to-transparent",
+    },
+    cyan: {
+      accent: "#00ADB5",
+      glow: "rgba(0, 173, 181, 0.25)",
+      borderActive: "border-[#00ADB5]/40",
+      borderHover: "hover:border-[#00ADB5]/30",
+      text: "text-[#00ADB5]",
+      bgGlow: "from-[#00ADB5]/10 via-blue-500/5 to-transparent",
     },
   }[accent];
 
@@ -617,6 +627,74 @@ const CuratedVisualizer = ({ active }) => {
   );
 };
 
+// Visualizer 5: AI RAG Copilot
+const AICopilotVisualizer = ({ active }) => {
+  return (
+    <div className="w-full h-full relative flex items-center justify-center min-h-[220px]">
+      {/* Aspect Ratio Box to keep layout pixel-perfect */}
+      <div className="relative w-[300px] h-[220px] flex-shrink-0 scale-90 sm:scale-100 transition-transform origin-center flex flex-col justify-between p-2">
+        {/* User Query (Top Left) */}
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={active ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-blue-600/10 border border-blue-500/20 rounded-xl p-2.5 max-w-[180px] self-start text-left z-10"
+        >
+          <p className="text-[9px] text-blue-300 font-medium">How do I fix a merge conflict?</p>
+        </motion.div>
+
+        {/* AI Sparkle Vector Link (Middle) */}
+        <div className="absolute top-[90px] left-[135px] z-20">
+          <motion.div
+            animate={active ? { rotate: 360 } : {}}
+            transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+            className="w-8 h-8 rounded-full bg-[#00ADB5]/15 border border-[#00ADB5]/30 flex items-center justify-center text-[#00ADB5] shadow-[0_0_15px_rgba(0,173,181,0.2)]"
+          >
+            <Sparkles className="w-4 h-4 animate-pulse" />
+          </motion.div>
+        </div>
+
+        {/* Connecting Lines / Wires */}
+        <svg className="absolute inset-0 w-full h-full z-0 pointer-events-none" viewBox="0 0 300 220" fill="none">
+          <motion.path
+            d="M 60 70 Q 150 90 150 106"
+            stroke="#3b82f6"
+            strokeWidth="1"
+            strokeDasharray="4 4"
+            animate={active ? { strokeDashoffset: [-20, 0] } : {}}
+            transition={{ repeat: Infinity, ease: "linear", duration: 2 }}
+            className="opacity-40"
+          />
+          <motion.path
+            d="M 150 106 Q 150 120 220 135"
+            stroke="#00ADB5"
+            strokeWidth="1"
+            strokeDasharray="4 4"
+            animate={active ? { strokeDashoffset: [-20, 0] } : {}}
+            transition={{ repeat: Infinity, ease: "linear", duration: 2 }}
+            className="opacity-40"
+          />
+        </svg>
+
+        {/* AI Response (Bottom Right) */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={active ? { opacity: 1, x: 0 } : { opacity: 0, x: 20 }}
+          transition={{ duration: 0.5, delay: 1 }}
+          className="bg-[#1a1f26] border border-white/5 rounded-xl p-2.5 max-w-[200px] self-end text-left shadow-xl z-10"
+        >
+          <p className="text-[8px] text-gray-300 leading-normal mb-1.5">
+            Run <code className="text-[#00ADB5] font-mono bg-[#222831] px-1 rounded">git rebase main</code> to integrate recent changes...
+          </p>
+          <div className="flex gap-1 items-center bg-[#00ADB5]/5 border border-[#00ADB5]/10 rounded px-1.5 py-0.5 w-max">
+            <span className="text-[6px] text-[#00ADB5] font-semibold">Source: Troubleshooting</span>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
 // --- MAIN TIMELINE FEATURES SECTION ---
 const TimelineFeatures = () => {
   const containerRef = useRef(null);
@@ -676,6 +754,17 @@ const TimelineFeatures = () => {
       visual: <CuratedVisualizer />,
       link: "/explore",
       linkText: "Browse top issues",
+    },
+    {
+      accent: "cyan",
+      title: "AI RAG Copilot",
+      description:
+        "An intelligent chat companion to guide you through git commands, documentation, codebase setup, and contribution hurdles in real-time.",
+      icon: Sparkles,
+      badge: "Upcoming",
+      visual: <AICopilotVisualizer />,
+      link: "/docs",
+      linkText: "Ask questions",
     },
   ];
 
