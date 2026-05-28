@@ -213,20 +213,22 @@ const AICopilot = () => {
     const userMessage = { role: "user", content: text };
     setMessages(prev => [...prev, userMessage]);
 
-    // Handle Guest Limit tracking
-    if (!user) {
-      localStorage.setItem("firstissue_guest_chat_used", "true");
-      setIsGuestLimitReached(true);
-    }
-
     try {
       // Get authentication token if available
       const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      
+      // Handle Guest Limit tracking
+      if (!token) {
+        localStorage.setItem("firstissue_guest_chat_used", "true");
+        setIsGuestLimitReached(true);
+      }
+
       const headers = {
         "Content-Type": "application/json",
       };
-      if (session?.access_token) {
-        headers["Authorization"] = `Bearer ${session.access_token}`;
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
       }
 
       // Call Edge Function
@@ -236,9 +238,10 @@ const AICopilot = () => {
         body: JSON.stringify({
           message: text,
           history: messages.slice(1).map(m => ({ role: m.role, content: m.content })), // skip welcome message
-          isGuestQuery: !user
+          isGuestQuery: !token
         })
       });
+
 
       if (!response.ok) {
         const errorJson = await response.json().catch(() => ({}));

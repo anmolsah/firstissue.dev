@@ -35,11 +35,18 @@ serve(async (req: Request) => {
     let isUserAuthenticated = false;
     let user = null;
 
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-      const { data: { user: supabaseUser }, error: userError } = await supabaseClient.auth.getUser();
+    if (authHeader && /^bearer /i.test(authHeader)) {
+      const token = authHeader.replace(/^bearer /i, "").trim();
+      // Try explicitly passing JWT token to getUser, or fallback to default parameter
+      const { data: { user: supabaseUser }, error: userError } = token 
+        ? await supabaseClient.auth.getUser(token)
+        : await supabaseClient.auth.getUser();
+        
       if (!userError && supabaseUser) {
         isUserAuthenticated = true;
         user = supabaseUser;
+      } else if (userError) {
+        console.error("[kb-query] auth.getUser error:", userError.message);
       }
     }
 
@@ -47,11 +54,13 @@ serve(async (req: Request) => {
     // If not authenticated and not claiming guest mode, block it.
     // In production, you can add IP rate limits or check redis for abuse.
     if (!isUserAuthenticated && !isGuestQuery) {
+      console.warn(`[kb-query] Access denied: isUserAuthenticated=${isUserAuthenticated}, isGuestQuery=${isGuestQuery}`);
       return new Response(
         JSON.stringify({ error: "Unauthorized. Please log in to use FirstMate." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
 
     // Get API Key for OpenRouter
     const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY") || Deno.env.get("XAI_API_KEY");
