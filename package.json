@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seed-kb": "node scripts/seed_kb.js"
+    "seed-kb": "node scripts/seed_kb.js",
+    "scrape-docs": "node scripts/scrape_docs.js"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
