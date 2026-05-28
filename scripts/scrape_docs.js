@@ -111,13 +111,13 @@ function parseGitScmHtml(html) {
   const mainContentMatch = html.match(/<div id="main"[\s\S]*?>([\s\S]*?)<\/div>\s*?<div id="footer">/i);
   const contentHtml = mainContentMatch ? mainContentMatch[1] : html;
 
-  const sectionRegex = /<h2 id="([^"]+)">([^<]+)<\/h2>([\s\S]*?)(?=<h2 id="|$)/gi;
+  const sectionRegex = /<h2[^>]*>([\s\S]*?)<\/h2>([\s\S]*?)(?=<h2|$)/gi;
   const chunks = [];
   let match;
 
   while ((match = sectionRegex.exec(contentHtml)) !== null) {
-    const sectionTitle = match[2].trim();
-    let sectionHtml = match[3];
+    const sectionTitle = match[1].replace(/<[^>]+>/g, '').trim();
+    let sectionHtml = match[2];
 
     let markdownText = cleanHtmlToMarkdown(sectionHtml);
 
@@ -148,12 +148,12 @@ function parseGithubCliHtml(html) {
   const bodyMatch = html.match(/<main[\s\S]*?>([\s\S]*?)<\/main>/i) || html.match(/<article[\s\S]*?>([\s\S]*?)<\/article>/i);
   const contentHtml = bodyMatch ? bodyMatch[1] : html;
 
-  const sectionRegex = /<(h2|h3)[^>]*>([^<]+)<\/\1>([\s\S]*?)(?=<h2|<h3|$)/gi;
+  const sectionRegex = /<(h2|h3)[^>]*>([\s\S]*?)<\/\1>([\s\S]*?)(?=<h2|<h3|$)/gi;
   const chunks = [];
   let match;
 
   while ((match = sectionRegex.exec(contentHtml)) !== null) {
-    const sectionTitle = match[2].trim();
+    const sectionTitle = match[2].replace(/<[^>]+>/g, '').trim();
     let sectionHtml = match[3];
 
     let markdownText = cleanHtmlToMarkdown(sectionHtml);

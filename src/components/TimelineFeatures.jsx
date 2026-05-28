@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 // Individual Timeline Row Item Component
-const TimelineItem = ({ index, accent, title, description, icon: Icon, badge, visual, link, linkText }) => {
+const TimelineItem = ({ index, accent, title, description, icon: Icon, badge, visual, link, linkText, onClick }) => {
   const containerRef = useRef(null);
   const isInView = useInView(containerRef, {
     once: false,
@@ -220,16 +220,27 @@ const TimelineItem = ({ index, accent, title, description, icon: Icon, badge, vi
         </div>
 
         {/* Action Link */}
-        {link && (
+        {(link || onClick) && (
           <div className="mt-6 relative z-10">
-            <Link
-              to={link}
-              style={{ color: colors.accent }}
-              className="inline-flex items-center gap-2 text-sm font-medium hover:brightness-125 transition-all"
-            >
-              {linkText || "Learn more"}
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </Link>
+            {onClick ? (
+              <button
+                onClick={onClick}
+                style={{ color: colors.accent }}
+                className="inline-flex items-center gap-2 text-sm font-medium hover:brightness-125 transition-all cursor-pointer bg-transparent border-none p-0 outline-none"
+              >
+                {linkText || "Learn more"}
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </button>
+            ) : (
+              <Link
+                to={link}
+                style={{ color: colors.accent }}
+                className="inline-flex items-center gap-2 text-sm font-medium hover:brightness-125 transition-all"
+              >
+                {linkText || "Learn more"}
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            )}
           </div>
         )}
       </motion.div>
@@ -761,9 +772,8 @@ const TimelineFeatures = () => {
       description:
         "An intelligent chat companion to guide you through git commands, documentation, codebase setup, and contribution hurdles in real-time.",
       icon: Sparkles,
-      badge: "Upcoming",
       visual: <AICopilotVisualizer />,
-      link: "/docs",
+      onClick: () => window.dispatchEvent(new CustomEvent("open-firstmate")),
       linkText: "Ask questions",
     },
   ];
@@ -812,6 +822,7 @@ const TimelineFeatures = () => {
                 visual={feature.visual}
                 link={feature.link}
                 linkText={feature.linkText}
+                onClick={feature.onClick}
               />
             ))}
           </div>

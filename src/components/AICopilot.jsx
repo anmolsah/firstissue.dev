@@ -178,6 +178,17 @@ const AICopilot = () => {
     }
   }, [user]);
 
+  // Listen for open-firstmate event
+  useEffect(() => {
+    const handleOpen = () => {
+      setIsOpen(true);
+    };
+    window.addEventListener("open-firstmate", handleOpen);
+    return () => {
+      window.removeEventListener("open-firstmate", handleOpen);
+    };
+  }, []);
+
   const handleSuggestionClick = (text) => {
     if (isLoading || isGuestLimitReached) return;
     sendMessage(text);
@@ -303,9 +314,9 @@ const AICopilot = () => {
                     <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
                       FirstMate
                     </h2>
-                    <p className="text-[10px] text-amber-400 font-semibold flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                      Development Mode
+                    <p className="text-[10px] text-[#00ADB5] font-semibold flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#00ADB5] animate-ping" />
+                      Online
                     </p>
                   </div>
                 </div>
@@ -317,58 +328,147 @@ const AICopilot = () => {
                 </button>
               </div>
 
-              {/* Development Mode Body Placeholder */}
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-6">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600/20 to-[#00ADB5]/20 border border-[#00ADB5]/30 flex items-center justify-center text-[#00ADB5] mx-auto animate-bounce">
-                    <Bot className="w-8 h-8" />
+              {/* Chat Message Logs */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                {messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex flex-col ${msg.role === "user" ? "items-end" : "items-start"} space-y-1`}
+                  >
+                    <div className={`flex items-start gap-2 max-w-[85%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+                      <div className={`p-1.5 rounded-lg shrink-0 ${msg.role === "user" ? "bg-blue-600/20 text-blue-400 border border-blue-500/20" : "bg-[#00ADB5]/10 text-[#00ADB5] border border-[#00ADB5]/20"}`}>
+                        {msg.role === "user" ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+                      </div>
+                      
+                      <div className={`rounded-2xl px-4 py-2.5 text-xs leading-relaxed ${
+                        msg.role === "user"
+                          ? "bg-gradient-to-tr from-blue-600 to-blue-700 text-white rounded-tr-none border border-blue-500/30"
+                          : "bg-[#2A2F3B] text-gray-200 rounded-tl-none border border-white/5"
+                      }`}>
+                        {msg.role === "user" ? msg.content : renderMarkdown(msg.content)}
+                        
+                        {/* Render Sources/Citations under response if any */}
+                        {msg.role === "assistant" && msg.sources && msg.sources.length > 0 && (
+                          <div className="mt-3 pt-2.5 border-t border-white/5 space-y-1">
+                            <span className="text-[9px] text-[#00ADB5] font-black uppercase tracking-wider block">Sources & Context:</span>
+                            <div className="flex flex-wrap gap-1.5 mt-1">
+                              {msg.sources.map((src, srcIdx) => {
+                                const isUrl = src.path && (src.path.startsWith("http://") || src.path.startsWith("https://"));
+                                return isUrl ? (
+                                  <a
+                                    key={srcIdx}
+                                    href={src.path}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#1e222b] text-[10px] text-[#00ADB5] border border-[#00ADB5]/10 hover:border-[#00ADB5]/30 hover:bg-[#252a36] transition-colors"
+                                  >
+                                    <ChevronRight className="w-2.5 h-2.5" />
+                                    <span>{src.title || src.source}</span>
+                                  </a>
+                                ) : (
+                                  <div
+                                    key={srcIdx}
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#1e222b] text-[10px] text-gray-400 border border-white/5"
+                                  >
+                                    <span>{src.title || src.source}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 p-1 bg-amber-500 text-black rounded-lg border border-[#222831]">
-                    <Sparkles className="w-3.5 h-3.5 text-black" />
+                ))}
+
+                {/* Loading Indicator */}
+                {isLoading && (
+                  <div className="flex items-start gap-2 max-w-[85%]">
+                    <div className="p-1.5 rounded-lg shrink-0 bg-[#00ADB5]/10 text-[#00ADB5] border border-[#00ADB5]/20">
+                      <Bot className="w-3.5 h-3.5 animate-pulse" />
+                    </div>
+                    <div className="bg-[#2A2F3B] rounded-2xl rounded-tl-none border border-white/5 px-4 py-3 flex gap-1 items-center">
+                      <span className="w-1.5 h-1.5 bg-[#00ADB5] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-1.5 h-1.5 bg-[#00ADB5] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-1.5 h-1.5 bg-[#00ADB5] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
                   </div>
-                </div>
+                )}
 
-                <div className="space-y-2.5">
-                  <span className="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-[9px] font-black uppercase tracking-widest">
-                    Upcoming Feature
-                  </span>
-                  <h3 className="text-lg font-bold text-white tracking-tight">FirstMate is Coming Soon</h3>
-                  <p className="text-xs text-gray-400 leading-relaxed max-w-sm">
-                    We are currently building and training FirstMate to automatically parse open source repositories, document guides, and GitHub issues to guide you through your first pull request.
-                  </p>
-                </div>
+                {/* Suggestions (only shown on startup before any user query) */}
+                {messages.length === 1 && !isLoading && !isGuestLimitReached && (
+                  <div className="pt-4 space-y-2 text-left">
+                    <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block px-1">Suggested Questions</span>
+                    <div className="grid grid-cols-1 gap-2">
+                      {suggestions.map((sug, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleSuggestionClick(sug)}
+                          className="w-full text-left px-4 py-2.5 rounded-xl bg-[#2A2F3B]/50 hover:bg-[#2A2F3B] border border-white/5 hover:border-[#00ADB5]/30 text-xs text-gray-300 hover:text-white transition-all duration-200 flex items-center justify-between group"
+                        >
+                          <span>{sug}</span>
+                          <ChevronRight className="w-4 h-4 text-gray-500 group-hover:text-[#00ADB5] transition-colors" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-                {/* Sneak peek feature items */}
-                <div className="w-full bg-[#393E46]/20 border border-white/5 rounded-2xl p-4 text-left space-y-3">
-                  <h4 className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Features under development:</h4>
-                  <ul className="space-y-2.5 text-xs text-gray-300">
-                    <li className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#00ADB5]" />
-                      Real-time Git Command Assistance
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#00ADB5]" />
-                      Repository Codebase Walkthroughs
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#00ADB5]" />
-                      Instant Pull Request Debugging
-                    </li>
-                  </ul>
-                </div>
+                {/* Guest Limit reached message */}
+                {isGuestLimitReached && (
+                  <div className="bg-gradient-to-tr from-amber-500/10 to-orange-500/10 border border-amber-500/25 rounded-2xl p-5 text-center space-y-4 my-2">
+                    <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 mx-auto border border-amber-500/30">
+                      <AlertCircle className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider">Free Question Limit Reached</h4>
+                      <p className="text-xs text-gray-300 leading-relaxed">
+                        Public visitors get 1 free question. Please sign up or log in with GitHub to unlock unlimited assistance from FirstMate!
+                      </p>
+                    </div>
+                    <a
+                      href="/login"
+                      className="block w-full text-center py-2.5 bg-gradient-to-r from-blue-600 to-[#00ADB5] hover:from-blue-500 hover:to-[#00C2CB] text-white text-xs font-bold rounded-xl transition-all duration-200 border border-white/10"
+                    >
+                      Sign In / Sign Up
+                    </a>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
 
-              {/* Locked Input Field */}
+              {/* Chat Input Field */}
               <div className="p-4 border-t border-white/5 bg-[#1a1f26]/80">
-                <div className="flex gap-2 opacity-50 cursor-not-allowed items-center">
-                  <div className="flex-1 px-4 py-3 bg-[#222831] border border-white/5 text-gray-500 rounded-xl text-xs flex items-center gap-2">
-                    <Lock className="w-3.5 h-3.5 text-gray-500" />
-                    <span>AI Chat disabled in development mode...</span>
+                {isGuestLimitReached ? (
+                  <div className="flex gap-2 opacity-50 cursor-not-allowed items-center">
+                    <div className="flex-1 px-4 py-3 bg-[#222831] border border-white/5 text-gray-500 rounded-xl text-xs flex items-center gap-2">
+                      <Lock className="w-3.5 h-3.5 text-gray-500" />
+                      <span>Please sign in to continue chatting...</span>
+                    </div>
+                    <div className="p-3 bg-gray-700 text-gray-500 rounded-xl flex items-center justify-center shrink-0">
+                      <Send className="w-4 h-4" />
+                    </div>
                   </div>
-                  <div className="p-3 bg-gray-700 text-gray-500 rounded-xl flex items-center justify-center shrink-0">
-                    <Send className="w-4 h-4" />
-                  </div>
-                </div>
+                ) : (
+                  <form onSubmit={handleSubmit} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder="Ask FirstMate a question..."
+                      disabled={isLoading}
+                      className="flex-1 px-4 py-3 bg-[#222831] border border-white/5 hover:border-white/10 focus:border-[#00ADB5] focus:outline-none text-white placeholder-gray-500 rounded-xl text-xs transition-colors disabled:opacity-50"
+                    />
+                    <button
+                      type="submit"
+                      disabled={isLoading || !input.trim()}
+                      className="p-3 bg-gradient-to-tr from-blue-600 to-[#00ADB5] hover:brightness-110 active:scale-95 text-white rounded-xl flex items-center justify-center shrink-0 disabled:opacity-40 disabled:pointer-events-none transition-all"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </form>
+                )}
               </div>
             </motion.div>
           </>
