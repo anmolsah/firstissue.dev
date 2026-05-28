@@ -142,7 +142,7 @@ const AICopilot = () => {
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: "Hi! I am the **FirstIssue AI Copilot**. 🌟\n\nAsk me anything about git, open source workflows, PR setup, codebase architecture, or firstissue.dev features! I will pull relevant documentation to answer your questions."
+      content: "Hi! I am **FirstMate**, your AI Copilot. 🌟\n\nAsk me anything about git, open source workflows, PR setup, codebase architecture, or firstissue.dev features! I will pull relevant documentation to answer your questions."
     }
   ]);
   const [input, setInput] = useState("");
@@ -267,7 +267,7 @@ const AICopilot = () => {
       <button
         onClick={() => setIsOpen(true)}
         className="fixed bottom-6 right-6 z-50 p-4 bg-gradient-to-tr from-blue-600 to-[#00ADB5] hover:from-blue-500 hover:to-[#00C2CB] text-white rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20 group"
-        aria-label="Ask AI Copilot"
+        aria-label="Ask FirstMate"
       >
         <Sparkles className="w-6 h-6 animate-pulse group-hover:rotate-12 transition-transform duration-300" />
       </button>
@@ -301,7 +301,7 @@ const AICopilot = () => {
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
-                      FirstIssue AI Copilot
+                      FirstMate
                     </h2>
                     <p className="text-[10px] text-amber-400 font-semibold flex items-center gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
@@ -332,9 +332,9 @@ const AICopilot = () => {
                   <span className="px-3 py-1 bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded-full text-[9px] font-black uppercase tracking-widest">
                     Upcoming Feature
                   </span>
-                  <h3 className="text-lg font-bold text-white tracking-tight">AI Copilot is Coming Soon</h3>
+                  <h3 className="text-lg font-bold text-white tracking-tight">FirstMate is Coming Soon</h3>
                   <p className="text-xs text-gray-400 leading-relaxed max-w-sm">
-                    We are currently building and training the AI Copilot to automatically parse open source repositories, document guides, and GitHub issues to guide you through your first pull request.
+                    We are currently building and training FirstMate to automatically parse open source repositories, document guides, and GitHub issues to guide you through your first pull request.
                   </p>
                 </div>
 

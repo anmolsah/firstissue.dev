@@ -48,7 +48,7 @@ serve(async (req: Request) => {
     // In production, you can add IP rate limits or check redis for abuse.
     if (!isUserAuthenticated && !isGuestQuery) {
       return new Response(
-        JSON.stringify({ error: "Unauthorized. Please log in to use the AI Copilot." }),
+        JSON.stringify({ error: "Unauthorized. Please log in to use FirstMate." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -126,8 +126,8 @@ serve(async (req: Request) => {
           .join("\n\n---\n\n")
       : "";
 
-    const systemPrompt = `You are a helpful, expert AI Copilot for FirstIssue.dev. 
-Your goal is to answer developer questions related to open source contributions, GitHub workflows, git commands, coding syntax, codebase architecture, and firstissue.dev platform features.
+    const systemPrompt = `You are a helpful, expert AI assistant named FirstMate for FirstIssue.dev. 
+Your goal is to act as a friendly 'first mate' and answer developer questions related to open source contributions, GitHub workflows, git commands, coding syntax, codebase architecture, and firstissue.dev platform features.
 
 Use the following retrieved context chunks from our documentation to answer the question. If the context is not sufficient, answer to the best of your knowledge but clarify that it is not explicitly documented in our guides.
 

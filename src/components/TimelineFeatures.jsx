@@ -757,7 +757,7 @@ const TimelineFeatures = () => {
     },
     {
       accent: "cyan",
-      title: "AI RAG Copilot",
+      title: "FirstMate",
       description:
         "An intelligent chat companion to guide you through git commands, documentation, codebase setup, and contribution hurdles in real-time.",
       icon: Sparkles,

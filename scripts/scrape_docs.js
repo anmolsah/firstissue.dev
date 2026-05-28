@@ -1,5 +1,36 @@
 import { createClient } from '@supabase/supabase-js';
 import process from 'process';
+import fs from 'fs';
+import path from 'path';
+
+// Manual .env loader to support all Node versions without external dependencies
+function loadEnv() {
+  try {
+    const envPath = path.join(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf-8');
+      const lines = envContent.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith('#') && trimmed.includes('=')) {
+          const equalsIdx = trimmed.indexOf('=');
+          const key = trimmed.substring(0, equalsIdx).trim();
+          let val = trimmed.substring(equalsIdx + 1).trim();
+          if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+            val = val.substring(1, val.length - 1);
+          }
+          if (key && !process.env[key]) {
+            process.env[key] = val;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Warning: Failed to load .env file manually:', err.message);
+  }
+}
+
+loadEnv();
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 // Prefer service role key for inserting to database
