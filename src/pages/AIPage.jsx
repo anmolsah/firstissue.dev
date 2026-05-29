@@ -267,9 +267,10 @@ const AIPage = () => {
         {/* Sticky ChatGPT Header */}
         <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6">
           <div className="flex items-center gap-2.5">
-            <h1 className="text-base font-bold text-white tracking-tight">FirstMate AI</h1>
+            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
+              FirstMate AI
+            </span>
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-[#00ADB5]/10 border border-[#00ADB5]/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00ADB5] animate-ping" />
               <span className="text-[9px] text-[#00ADB5] font-black uppercase tracking-wider">Online</span>
             </div>
           </div>
