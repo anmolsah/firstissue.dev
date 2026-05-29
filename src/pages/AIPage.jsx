@@ -4,7 +4,8 @@ import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, Externa
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import AppSidebar from "../components/AppSidebar";
-import logo from "public/oficialLogo.png";
+const logo = "/officialLogo.png";
+
 
 // Helper to parse simple markdown to React elements
 const parseInlineElements = (text) => {

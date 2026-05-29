@@ -5,7 +5,7 @@ import {
   TrendingUp,
   User,
   BookOpen,
-  botMessageSquare 
+  BotMessageSquare
 } from "lucide-react";
 
 /**
@@ -44,7 +44,7 @@ const AppSidebar = ({ children, className = "" }) => {
     },
     {
       id: "firstmate",
-      icon: botMessageSquare ,
+      icon: BotMessageSquare,
       label: "FirstMate",
       path: "/firstmate",
     },
