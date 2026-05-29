@@ -6,6 +6,11 @@ import {
   User,
   BookOpen,
 } from "lucide-react";
+import logo from "../assets/logo01.png";
+
+const LogoIcon = ({ className }) => (
+  <img src={logo} alt="FirstMate" className={`${className} object-contain`} />
+);
 
 /**
  * Reusable Sidebar Component
@@ -22,6 +27,7 @@ const AppSidebar = ({ children, className = "" }) => {
     if (path.includes("/status")) return "status";
     if (path.includes("/profile")) return "profile";
     if (path.includes("/docs") || path.includes("/getting-started")) return "docs";
+    if (path.includes("/firstmate")) return "firstmate";
     return "";
   };
 
@@ -39,6 +45,12 @@ const AppSidebar = ({ children, className = "" }) => {
       icon: Bookmark,
       label: "Saved",
       path: "/bookmarks",
+    },
+    {
+      id: "firstmate",
+      icon: LogoIcon,
+      label: "FirstMate",
+      path: "/firstmate",
     },
     {
       id: "status",

@@ -773,7 +773,7 @@ const TimelineFeatures = () => {
         "An intelligent chat companion to guide you through git commands, documentation, codebase setup, and contribution hurdles in real-time.",
       icon: Sparkles,
       visual: <AICopilotVisualizer />,
-      onClick: () => window.dispatchEvent(new CustomEvent("open-firstmate")),
+      link: "/firstmate",
       linkText: "Ask questions",
     },
   ];

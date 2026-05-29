@@ -25,7 +25,7 @@ import Footer from "./components/Footer";
 import CookieConsent from "./components/CookieConsent";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
-import AICopilot from "./components/AICopilot";
+import AIPage from "./pages/AIPage";
 
 // Layout wrapper that conditionally shows Navbar/Footer
 const AppLayout = ({ children }) => {
@@ -40,6 +40,7 @@ const AppLayout = ({ children }) => {
     "/docs",
     "/terms",
     "/privacy",
+    "/firstmate",
   ];
   const hideGlobalLayout = dashboardPages.some((page) =>
     location.pathname.startsWith(page),
@@ -73,7 +74,6 @@ const AppLayout = ({ children }) => {
       <div className="flex-1">{children}</div>
       {!hideGlobalLayout && !isLoginPage && <Footer />}
       <CookieConsent />
-      <AICopilot />
     </div>
   );
 };
@@ -97,6 +97,7 @@ const App = () => {
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />
               <Route path="/docs" element={<DocsPage />} />
+              <Route path="/firstmate" element={<AIPage />} />
               <Route path="/docs/:section" element={<DocsSectionPage />} />
               <Route
                 path="/docs/:section/:article"

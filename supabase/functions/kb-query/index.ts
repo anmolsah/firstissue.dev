@@ -12,7 +12,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { message, history = [], isGuestQuery = false } = await req.json();
+    const { message, history = [] } = await req.json();
 
     if (!message) {
       return new Response(
@@ -51,10 +51,9 @@ serve(async (req: Request) => {
     }
 
     // Access Control Logic
-    // If not authenticated and not claiming guest mode, block it.
-    // In production, you can add IP rate limits or check redis for abuse.
-    if (!isUserAuthenticated && !isGuestQuery) {
-      console.warn(`[kb-query] Access denied: isUserAuthenticated=${isUserAuthenticated}, isGuestQuery=${isGuestQuery}`);
+    // Only authenticated users can use FirstMate
+    if (!isUserAuthenticated) {
+      console.warn(`[kb-query] Access denied: Unauthenticated request`);
       return new Response(
         JSON.stringify({ error: "Unauthorized. Please log in to use FirstMate." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -71,7 +70,7 @@ serve(async (req: Request) => {
       );
     }
 
-    console.log(`[kb-query] Processing query: "${message.substring(0, 60)}..." (Auth: ${isUserAuthenticated ? 'User' : 'Guest'})`);
+    console.log(`[kb-query] Processing query: "${message.substring(0, 60)}..." (Auth: User)`);
 
     // 1. Generate text embedding using OpenRouter
     // Model used: openai/text-embedding-3-small (1536 dimensions)
