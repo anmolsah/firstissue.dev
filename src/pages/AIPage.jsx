@@ -1,16 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import AppSidebar from "../components/AppSidebar";
-import logo from "../assets/logo01.png";
+import logo from "../../public/oficialLogo.png";
 
 // Helper to parse simple markdown to React elements
 const parseInlineElements = (text) => {
   if (typeof text !== "string") return text;
-  
+
   // Parse Bold: **text**
   let parts = text.split(/(\*\*.*?\*\*)/g);
   let elements = parts.map((part, i) => {
