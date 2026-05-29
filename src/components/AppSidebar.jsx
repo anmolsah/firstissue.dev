@@ -5,12 +5,8 @@ import {
   TrendingUp,
   User,
   BookOpen,
+  botMessageSquare 
 } from "lucide-react";
-import logo from "../assets/logo01.png";
-
-const LogoIcon = ({ className }) => (
-  <img src={logo} alt="FirstMate" className={`${className} object-contain`} />
-);
 
 /**
  * Reusable Sidebar Component
@@ -48,7 +44,7 @@ const AppSidebar = ({ children, className = "" }) => {
     },
     {
       id: "firstmate",
-      icon: LogoIcon,
+      icon: botMessageSquare ,
       label: "FirstMate",
       path: "/firstmate",
     },
