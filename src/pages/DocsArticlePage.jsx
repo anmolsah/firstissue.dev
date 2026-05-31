@@ -175,29 +175,29 @@ const DocsArticlePage = () => {
       <div className="border-b border-[#1e1f2e] bg-[#12131a]/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
           <div className="flex items-center justify-between gap-2">
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm min-w-0 overflow-hidden">
               <Link
                 to="/docs"
-                className="text-gray-400 hover:text-white transition-colors flex-shrink-0"
+                className="text-gray-400 hover:text-white transition-colors flex-shrink-0 inline-flex items-center"
               >
                 <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Link>
               <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600 flex-shrink-0" />
               <Link
                 to="/docs"
-                className="text-gray-400 hover:text-white transition-colors hidden sm:inline"
+                className="text-gray-400 hover:text-white transition-colors hidden sm:inline-block truncate max-w-[60px]"
               >
                 Docs
               </Link>
-              <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600 flex-shrink-0 hidden sm:inline" />
+              <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600 flex-shrink-0 hidden sm:inline-block" />
               <Link
                 to={`/docs/${section}`}
-                className="text-gray-400 hover:text-white transition-colors truncate max-w-[80px] sm:max-w-[150px]"
+                className="text-gray-400 hover:text-white transition-colors inline-block truncate max-w-[80px] sm:max-w-[150px]"
               >
                 {sectionData?.title}
               </Link>
               <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600 flex-shrink-0" />
-              <span className="text-white truncate max-w-[120px] sm:max-w-[250px]">{currentArticle.title}</span>
+              <span className="text-white inline-block truncate max-w-[120px] sm:max-w-[250px]">{currentArticle.title}</span>
             </div>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
