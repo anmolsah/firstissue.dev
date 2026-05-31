@@ -170,38 +170,39 @@ const DocsArticlePage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[#0a0a0f] overflow-x-hidden">
       {/* Header */}
       <div className="border-b border-[#1e1f2e] bg-[#12131a]/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs sm:text-sm min-w-0">
               <Link
                 to="/docs"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors flex-shrink-0"
               >
-                <Home className="w-4 h-4" />
+                <Home className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Link>
-              <ChevronRight className="w-3 h-3 text-gray-600" />
+              <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600 flex-shrink-0" />
               <Link
                 to="/docs"
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors hidden sm:inline"
               >
                 Docs
               </Link>
-              <ChevronRight className="w-3 h-3 text-gray-600" />
+              <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600 flex-shrink-0 hidden sm:inline" />
               <Link
                 to={`/docs/${section}`}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-white transition-colors truncate max-w-[80px] sm:max-w-[150px]"
               >
                 {sectionData?.title}
               </Link>
-              <ChevronRight className="w-3 h-3 text-gray-600" />
-              <span className="text-white">{currentArticle.title}</span>
+              <ChevronRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-gray-600 flex-shrink-0" />
+              <span className="text-white truncate max-w-[120px] sm:max-w-[250px]">{currentArticle.title}</span>
             </div>
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
+              className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors flex-shrink-0 -mr-2"
+              aria-label="Toggle menu"
             >
               {sidebarOpen ? (
                 <X className="w-5 h-5" />
@@ -213,13 +214,29 @@ const DocsArticlePage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Mobile Sidebar Overlay */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
+
           {/* Sidebar */}
           <div
-            className={`lg:block ${sidebarOpen ? "block" : "hidden"} w-80 flex-shrink-0`}
+            className={`
+              fixed lg:static inset-y-0 left-0 z-50 lg:z-0
+              w-80 lg:w-80 flex-shrink-0
+              bg-[#0a0a0f] lg:bg-transparent
+              transform transition-transform duration-300 ease-in-out
+              ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+              overflow-y-auto lg:overflow-visible
+              border-r border-[#1e1f2e] lg:border-0
+            `}
           >
-            <div className="sticky top-24">
+            <div className="lg:sticky lg:top-24 p-6 lg:p-0">
               {/* Back to Docs */}
               <Link
                 to="/docs"
@@ -251,6 +268,7 @@ const DocsArticlePage = () => {
                           <Link
                             key={key}
                             to={`/docs/${section}/${key}`}
+                            onClick={() => setSidebarOpen(false)}
                             className={`block px-3 py-1.5 text-sm rounded-md transition-colors ${
                               key === article
                                 ? "text-blue-400 bg-blue-500/10"
@@ -284,17 +302,17 @@ const DocsArticlePage = () => {
                   </div>
                 </div>
 
-                <h1 className="text-4xl font-bold text-white mb-4">
+                <h1 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">
                   {currentArticle.title}
                 </h1>
 
                 {currentArticle.description && (
-                  <p className="text-xl text-gray-400 mb-6">
+                  <p className="text-lg sm:text-xl text-gray-400 mb-4 sm:mb-6">
                     {currentArticle.description}
                   </p>
                 )}
 
-                <div className="flex items-center gap-4 text-sm text-gray-500 pb-6 border-b border-[#1e1f2e]">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 pb-6 border-b border-[#1e1f2e]">
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4" />
                     <span>Updated {getDynamicUpdatedDate(currentArticle.updated)}</span>
