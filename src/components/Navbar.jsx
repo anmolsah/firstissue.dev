@@ -21,6 +21,7 @@ const Navbar = () => {
   // New public nav links based on design
   const publicLinks = [
     { to: "/explore", label: "Explore" },
+    { to: "/firstmate", label: "FirstMate" },
     { to: "/docs", label: "Docs" },
     { to: "/support", label: "Support" },
   ];
@@ -28,6 +29,7 @@ const Navbar = () => {
   // Keep existing auth links for logged in users
   const authLinks = [
     { to: "/explore", label: "Explore" },
+    { to: "/firstmate", label: "FirstMate" },
     { to: "/docs", label: "Docs" },
     { to: "/bookmarks", label: "Bookmarks" },
     { to: "/status", label: "Status" },
