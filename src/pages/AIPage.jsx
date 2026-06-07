@@ -291,9 +291,9 @@ const AIPage = () => {
             
             {/* Empty Chat Welcome State */}
             {messages.length === 1 && !isLoading && (
-              <div className="py-12 text-center space-y-8 flex flex-col items-center justify-center">
+              <div className="py-8 text-center space-y-4 flex flex-col items-center justify-center">
                 <div className="relative">
-                  <img src={logo} alt="FirstMate" className="w-full h-full object-contain animate-pulse" />
+                  <img src={logo} alt="FirstMate" className="max-w-xs max-h-20 object-contain animate-pulse" />
                 </div>
 
                 <div className="space-y-2">
