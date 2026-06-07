@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useSupporter } from '../contexts/SupporterContext';
 import { useAttestations, useVerifyContribution } from '../hooks/useProofOfWork';
 import MetalCard from './MetalCard';
-import { ShieldCheck, Plus, Link as LinkIcon, AlertCircle, Loader2, Crown } from 'lucide-react';
+import { ShieldCheck, Plus, Link as LinkIcon, AlertCircle, Loader2, Crown, HelpCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ProofOfWorkTab = () => {
@@ -15,6 +15,7 @@ const ProofOfWorkTab = () => {
   
   const [prUrl, setPrUrl] = useState('');
   const [isMinting, setIsMinting] = useState(false);
+  const [showImpactTooltip, setShowImpactTooltip] = useState(false);
 
   const FREE_LIMIT = 5;
   const attestationCount = attestations?.length || 0;
@@ -24,6 +25,22 @@ const ProofOfWorkTab = () => {
   const handleMint = async (e) => {
     e.preventDefault();
     if (!prUrl.trim()) return;
+
+    // Duplicate PR check — parse owner/repo and PR number from the URL
+    const prMatch = prUrl.trim().match(/github\.com\/([^/]+\/[^/]+)\/pull\/(\d+)/);
+    if (prMatch && attestations?.length > 0) {
+      const [, repoName, prNumber] = prMatch;
+      const isDuplicate = attestations.some(
+        (a) => a.repo_name === repoName && String(a.pr_number) === prNumber
+      );
+      if (isDuplicate) {
+        toast.error("This Pull Request has already been verified! Each PR can only be minted once.", {
+          duration: 4000,
+          icon: '⚠️',
+        });
+        return;
+      }
+    }
 
     // Freemium check — 5 free, unlimited for supporters
     if (!isSupporter && attestations?.length >= FREE_LIMIT) {
@@ -80,8 +97,36 @@ const ProofOfWorkTab = () => {
             <span className="font-medium text-sm">Share Profile</span>
           </button>
           
-          <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/80 shadow-inner min-w-[120px]">
-            <div className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">Total Impact</div>
+          <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/80 shadow-inner min-w-[120px] relative">
+            <div className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1 flex items-center gap-1.5">
+              Total Impact
+              <button
+                onClick={() => setShowImpactTooltip(!showImpactTooltip)}
+                onMouseEnter={() => setShowImpactTooltip(true)}
+                onMouseLeave={() => setShowImpactTooltip(false)}
+                className="opacity-50 hover:opacity-100 transition-opacity"
+                aria-label="What is Impact Score?"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+              </button>
+              <AnimatePresence>
+                {showImpactTooltip && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-zinc-950 border border-zinc-700 rounded-xl shadow-2xl z-50 pointer-events-none"
+                  >
+                    <p className="text-[11px] font-semibold text-zinc-200 mb-1">Impact Score</p>
+                    <p className="text-[10px] text-zinc-400 leading-relaxed">
+                      A composite score (0–100) calculated from lines changed, code complexity, repository star count, and PR review depth. Higher scores indicate greater contribution impact.
+                    </p>
+                    <div className="absolute left-4 -bottom-1 w-2 h-2 bg-zinc-950 border-r border-b border-zinc-700 rotate-45"></div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
               {attestations?.reduce((acc, curr) => acc + (curr.impact_score || 0), 0) || 0}
             </div>

@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { ShieldCheck, Github, ArrowLeft } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ShieldCheck, Github, ArrowLeft, HelpCircle } from 'lucide-react';
 import { usePublicProfileAndAttestations } from '../hooks/useProofOfWork';
 import MetalCard from '../components/MetalCard';
 
 const PublicProfilePage = () => {
   const { username } = useParams();
   const { data, isLoading, error } = usePublicProfileAndAttestations(username);
+  const [showImpactTooltip, setShowImpactTooltip] = useState(false);
 
   if (isLoading) {
     return (
@@ -78,8 +79,36 @@ const PublicProfilePage = () => {
             </p>
           </div>
 
-          <div className="bg-zinc-950 p-5 rounded-2xl border border-zinc-800/80 shadow-inner min-w-[200px]">
-            <div className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2">Total Impact Score</div>
+          <div className="bg-zinc-950 p-5 rounded-2xl border border-zinc-800/80 shadow-inner min-w-[200px] relative">
+            <div className="text-xs text-zinc-500 uppercase tracking-widest font-semibold mb-2 flex items-center gap-1.5">
+              Total Impact Score
+              <button
+                onClick={() => setShowImpactTooltip(!showImpactTooltip)}
+                onMouseEnter={() => setShowImpactTooltip(true)}
+                onMouseLeave={() => setShowImpactTooltip(false)}
+                className="opacity-50 hover:opacity-100 transition-opacity"
+                aria-label="What is Impact Score?"
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+              </button>
+              <AnimatePresence>
+                {showImpactTooltip && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-zinc-950 border border-zinc-700 rounded-xl shadow-2xl z-50 pointer-events-none"
+                  >
+                    <p className="text-[11px] font-semibold text-zinc-200 mb-1">Impact Score</p>
+                    <p className="text-[10px] text-zinc-400 leading-relaxed">
+                      A composite score (0–100) calculated from lines changed, code complexity, repository star count, and PR review depth. Higher scores indicate greater contribution impact.
+                    </p>
+                    <div className="absolute left-4 -bottom-1 w-2 h-2 bg-zinc-950 border-r border-b border-zinc-700 rotate-45"></div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
             <div className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
               {totalImpact}
             </div>
