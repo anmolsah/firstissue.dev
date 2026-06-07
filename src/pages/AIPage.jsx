@@ -293,9 +293,7 @@ const AIPage = () => {
             {messages.length === 1 && !isLoading && (
               <div className="py-12 text-center space-y-8 flex flex-col items-center justify-center">
                 <div className="relative">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-[#00ADB5]/5 to-[#00ADB5]/20 border border-[#00ADB5]/20 flex items-center justify-center p-3.5 shadow-xl shadow-[#00ADB5]/5">
-                    <img src={logo} alt="FirstMate" className="w-full h-full object-contain animate-pulse" />
-                  </div>
+                  <img src={logo} alt="FirstMate" className="w-full h-full object-contain animate-pulse" />
                 </div>
 
                 <div className="space-y-2">
