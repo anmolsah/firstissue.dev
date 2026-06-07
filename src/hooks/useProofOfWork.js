@@ -67,8 +67,21 @@ export function useVerifyContribution() {
       });
 
       if (error) {
-        // Try to parse the error body for a user-friendly message
-        throw new Error(error.message || 'Verification failed');
+        // Supabase client wraps non-2xx Edge Function responses in a generic error.
+        // The actual JSON body with the user-friendly message is in error.context.
+        // We need to parse it to show the real reason (e.g. "PR not merged", "author mismatch").
+        let message = 'Verification failed';
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const body = await error.context.json();
+            if (body?.error) message = body.error;
+          } else if (error.message && !error.message.includes('non-2xx')) {
+            message = error.message;
+          }
+        } catch {
+          // If parsing fails, fall back to generic message
+        }
+        throw new Error(message);
       }
 
       if (data?.error) {
