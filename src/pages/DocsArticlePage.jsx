@@ -43,12 +43,17 @@ const DocsArticlePage = () => {
   };
 
   const [vote, setVote] = useState(null);
-  const [isVoting, setIsVoting] = useState(false);
+  const [votingType, setVotingType] = useState(null);
   const [voteStats, setVoteStats] = useState({ up: 0, down: 0 });
 
   const articleId = `${section}/${article}`;
 
   useEffect(() => {
+    // Reset state when navigating to a different article
+    setVote(null);
+    setVoteStats({ up: 0, down: 0 });
+    setVotingType(null);
+
     fetchVotes();
     // Check local storage for previous vote
     const savedVote = localStorage.getItem(`docs-vote-${articleId}`);
@@ -79,8 +84,8 @@ const DocsArticlePage = () => {
   };
 
   const handleVote = async (type) => {
-    if (isVoting) return;
-    setIsVoting(true);
+    if (votingType) return;
+    setVotingType(type);
 
     try {
       const { error } = await supabase
@@ -95,7 +100,7 @@ const DocsArticlePage = () => {
     } catch (error) {
       console.error("Error submitting vote:", error);
     } finally {
-      setIsVoting(false);
+      setVotingType(null);
     }
   };
 
@@ -428,14 +433,14 @@ const DocsArticlePage = () => {
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => handleVote("up")}
-                        disabled={vote !== null || isVoting}
+                        disabled={vote !== null || votingType !== null}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
                           vote === "up"
                             ? "bg-emerald-500/10 border-emerald-500/50 text-emerald-400"
                             : "bg-[#15161E] border-white/5 text-gray-400 hover:text-white hover:border-white/10"
                         } disabled:cursor-default`}
                       >
-                        {isVoting && vote === null ? (
+                        {votingType === "up" ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <ThumbsUp className={`w-4 h-4 ${vote === "up" ? "fill-emerald-400/20" : ""}`} />
@@ -444,14 +449,14 @@ const DocsArticlePage = () => {
                       </button>
                       <button
                         onClick={() => handleVote("down")}
-                        disabled={vote !== null || isVoting}
+                        disabled={vote !== null || votingType !== null}
                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all ${
                           vote === "down"
                             ? "bg-red-500/10 border-red-500/50 text-red-400"
                             : "bg-[#15161E] border-white/5 text-gray-400 hover:text-white hover:border-white/10"
                         } disabled:cursor-default`}
                       >
-                        {isVoting && vote === null ? (
+                        {votingType === "down" ? (
                           <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
                           <ThumbsDown className={`w-4 h-4 ${vote === "down" ? "fill-red-400/20" : ""}`} />
