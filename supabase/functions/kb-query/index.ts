@@ -149,7 +149,7 @@ ${contextText ? `Retrieved Context Chunks:\n${contextText}` : "No relevant docum
 
     // 4. Call OpenRouter for chat completion
     // Model used: google/gemini-2.5-flash (standard, fast, cheap) or meta-llama/llama-3.1-8b-instruct
-    const completionModel = Deno.env.get("RAG_COMPLETION_MODEL") || "google/gemini-2.5-flash";
+    const completionModel = Deno.env.get("RAG_COMPLETION_MODEL") || "google/gemini-2.5-flash-lite";
     
     // Standardize history formatting to avoid issues
     const formattedHistory = history.map((h: any) => ({

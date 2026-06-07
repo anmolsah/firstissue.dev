@@ -2,8 +2,8 @@ name: Scheduled Docs Scraper & Vector Indexer
 
 on:
   schedule:
-    # Run every day at midnight UTC
-    - cron: '0 0 * * *'
+    # Run every Monday at midnight UTC
+    - cron: '0 0 * * 1'
   workflow_dispatch: # Allow running manually from GitHub Actions tab
 
 jobs:

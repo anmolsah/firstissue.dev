@@ -49,25 +49,87 @@ if (!OPENROUTER_API_KEY) {
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Target list of documentation URLs to scrape
+// =============================================================================
+// TARGET LIST — All documentation URLs to scrape and index
+// =============================================================================
 const TARGETS = [
-  // Git Command Manuals
-  { url: 'https://git-scm.com/docs/git-commit', type: 'git-scm' },
-  { url: 'https://git-scm.com/docs/git-push', type: 'git-scm' },
-  { url: 'https://git-scm.com/docs/git-pull', type: 'git-scm' },
-  { url: 'https://git-scm.com/docs/git-rebase', type: 'git-scm' },
-  { url: 'https://git-scm.com/docs/git-merge', type: 'git-scm' },
-  { url: 'https://git-scm.com/docs/git-clone', type: 'git-scm' },
-  { url: 'https://git-scm.com/docs/git-init', type: 'git-scm' },
-  { url: 'https://git-scm.com/docs/git-add', type: 'git-scm' },
-  { url: 'https://git-scm.com/docs/git-branch', type: 'git-scm' },
-  { url: 'https://git-scm.com/docs/git-checkout', type: 'git-scm' },
-  
-  // GitHub CLI Manuals
-  { url: 'https://cli.github.com/manual/gh_pr_create', type: 'gh-cli' },
-  { url: 'https://cli.github.com/manual/gh_pr_view', type: 'gh-cli' },
-  { url: 'https://cli.github.com/manual/gh_repo_fork', type: 'gh-cli' }
+  // ─── Git Command Manuals (git-scm.com/docs) ──────────────────────────────
+  { url: 'https://git-scm.com/docs/git-commit',      type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-push',        type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-pull',        type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-rebase',      type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-merge',       type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-clone',       type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-init',        type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-add',         type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-branch',      type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-checkout',    type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-stash',       type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-log',         type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-diff',        type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-reset',       type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-remote',      type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-fetch',       type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-cherry-pick', type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-tag',         type: 'git-scm', category: 'Git Commands' },
+
+  // ─── GitHub CLI Manuals (cli.github.com/manual) ───────────────────────────
+  { url: 'https://cli.github.com/manual/gh_pr_create',    type: 'gh-cli', category: 'GitHub CLI' },
+  { url: 'https://cli.github.com/manual/gh_pr_view',      type: 'gh-cli', category: 'GitHub CLI' },
+  { url: 'https://cli.github.com/manual/gh_repo_fork',    type: 'gh-cli', category: 'GitHub CLI' },
+  { url: 'https://cli.github.com/manual/gh_issue_create', type: 'gh-cli', category: 'GitHub CLI' },
+  { url: 'https://cli.github.com/manual/gh_issue_list',   type: 'gh-cli', category: 'GitHub CLI' },
+  { url: 'https://cli.github.com/manual/gh_issue_view',   type: 'gh-cli', category: 'GitHub CLI' },
+  { url: 'https://cli.github.com/manual/gh_pr_checkout',  type: 'gh-cli', category: 'GitHub CLI' },
+  { url: 'https://cli.github.com/manual/gh_pr_merge',     type: 'gh-cli', category: 'GitHub CLI' },
+  { url: 'https://cli.github.com/manual/gh_pr_list',      type: 'gh-cli', category: 'GitHub CLI' },
+  { url: 'https://cli.github.com/manual/gh_repo_clone',   type: 'gh-cli', category: 'GitHub CLI' },
+
+  // ─── GitHub Docs (docs.github.com — uses Markdown API) ────────────────────
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/get-started/using-github/github-flow',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/get-started/getting-started-with-git/setting-up-git',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/actions/writing-workflows/quickstart',
+    type: 'github-docs', category: 'GitHub Docs' },
+
+  // ─── Open Source Guides (opensource.guide) ─────────────────────────────────
+  { url: 'https://opensource.guide/how-to-contribute/',  type: 'opensource-guide', category: 'Open Source Guides' },
+  { url: 'https://opensource.guide/starting-a-project/', type: 'opensource-guide', category: 'Open Source Guides' },
+  { url: 'https://opensource.guide/best-practices/',     type: 'opensource-guide', category: 'Open Source Guides' },
+  { url: 'https://opensource.guide/finding-users/',      type: 'opensource-guide', category: 'Open Source Guides' },
+  { url: 'https://opensource.guide/code-of-conduct/',    type: 'opensource-guide', category: 'Open Source Guides' },
+  { url: 'https://opensource.guide/getting-paid/',       type: 'opensource-guide', category: 'Open Source Guides' },
+
+  // ─── Pro Git Book (git-scm.com/book) ──────────────────────────────────────
+  { url: 'https://git-scm.com/book/en/v2/Git-Branching-Branching-Workflows',      type: 'git-book', category: 'Pro Git Book' },
+  { url: 'https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project', type: 'git-book', category: 'Pro Git Book' },
+  { url: 'https://git-scm.com/book/en/v2/Git-Tools-Interactive-Staging',           type: 'git-book', category: 'Pro Git Book' },
+  { url: 'https://git-scm.com/book/en/v2/Git-Tools-Stashing-and-Cleaning',        type: 'git-book', category: 'Pro Git Book' },
+  { url: 'https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History',            type: 'git-book', category: 'Pro Git Book' },
 ];
+
+// =============================================================================
+// HTML → Markdown Utilities
+// =============================================================================
 
 // Helper to clean HTML and translate to markdown
 function cleanHtmlToMarkdown(html) {
@@ -103,7 +165,11 @@ function cleanHtmlToMarkdown(html) {
   return text;
 }
 
-// Git-SCM HTML Parser
+// =============================================================================
+// PARSERS — One for each site type
+// =============================================================================
+
+// Git-SCM HTML Parser (for /docs/git-*)
 function parseGitScmHtml(html) {
   const titleMatch = html.match(/<title>(.*?)<\/title>/i);
   const pageTitle = titleMatch ? titleMatch[1].replace(' - Git documentation', '').trim() : 'Git Command';
@@ -140,7 +206,7 @@ function parseGitScmHtml(html) {
   return chunks;
 }
 
-// GitHub CLI HTML Parser
+// GitHub CLI HTML Parser (for cli.github.com/manual)
 function parseGithubCliHtml(html) {
   const titleMatch = html.match(/<title>(.*?)<\/title>/i);
   const pageTitle = titleMatch ? titleMatch[1].replace(' | GitHub CLI Manual', '').trim() : 'GitHub CLI';
@@ -177,7 +243,175 @@ function parseGithubCliHtml(html) {
   return chunks;
 }
 
-// Helper to generate embedding via OpenRouter API
+// GitHub Docs Parser — fetches clean Markdown via their official API
+// instead of parsing complex Next.js HTML
+async function fetchGithubDocsMarkdown(url) {
+  // Extract the pathname from the full URL
+  // e.g. https://docs.github.com/en/get-started/using-github/github-flow
+  //   → /en/get-started/using-github/github-flow
+  const urlObj = new URL(url);
+  const pathname = urlObj.pathname;
+
+  const apiUrl = `https://docs.github.com/api/article/body?pathname=${pathname}`;
+
+  const response = await fetch(apiUrl, {
+    headers: {
+      'User-Agent': 'FirstIssueScraper/1.0 (https://firstissue.dev; bot)',
+      'Accept': 'text/markdown, text/plain, */*'
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`GitHub Docs API error: ${response.status}`);
+  }
+
+  const markdown = await response.text();
+
+  // Extract the title from the first # heading
+  const titleMatch = markdown.match(/^#\s+(.+)$/m);
+  const pageTitle = titleMatch ? titleMatch[1].trim() : pathname.split('/').pop().replace(/-/g, ' ');
+
+  return parseMarkdownIntoChunks(markdown, pageTitle, url);
+}
+
+// Open Source Guide Parser (opensource.guide) — HTML with <article> wrapper
+function parseOpenSourceGuideHtml(html) {
+  const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+  const pageTitle = titleMatch
+    ? titleMatch[1].replace(/\s*\|\s*Open Source Guides/i, '').trim()
+    : 'Open Source Guide';
+
+  // Content is inside <article> → <div class="article-body">
+  const articleMatch = html.match(/<article[\s\S]*?>([\s\S]*?)<\/article>/i);
+  const contentHtml = articleMatch ? articleMatch[1] : html;
+
+  // Split by h2 sections
+  const sectionRegex = /<h2[^>]*id="([^"]*)"[^>]*>([\s\S]*?)<\/h2>([\s\S]*?)(?=<h2|$)/gi;
+  const chunks = [];
+  let match;
+
+  while ((match = sectionRegex.exec(contentHtml)) !== null) {
+    const sectionTitle = match[2].replace(/<[^>]+>/g, '').trim();
+    let sectionHtml = match[3];
+
+    let markdownText = cleanHtmlToMarkdown(sectionHtml);
+
+    // Remove <aside class="pquote"> quote attribution noise but keep the quote text
+    markdownText = markdownText.replace(/— @\w+,\s*"[^"]*"/g, '');
+
+    if (markdownText.trim().length > 0) {
+      chunks.push({
+        title: `${pageTitle} - ${sectionTitle}`,
+        content: `## ${pageTitle} - ${sectionTitle}\n\n${markdownText}`
+      });
+    }
+  }
+
+  if (chunks.length === 0) {
+    let text = cleanHtmlToMarkdown(contentHtml);
+    chunks.push({
+      title: pageTitle,
+      content: `# ${pageTitle}\n\n${text}`
+    });
+  }
+
+  return chunks;
+}
+
+// Pro Git Book Parser (git-scm.com/book) — HTML with <div id="main"> wrapper
+function parseGitBookHtml(html) {
+  const titleMatch = html.match(/<title>(.*?)<\/title>/i);
+  const pageTitle = titleMatch
+    ? titleMatch[1].replace(/^Git\s*-\s*/, '').trim()
+    : 'Pro Git';
+
+  // Content is inside <div class="sect1"> or <div id="main">
+  const mainMatch = html.match(/<div class="sect1">([\s\S]*?)(?:<div id="nav"|<div id="footer"|$)/i);
+  const contentHtml = mainMatch ? mainMatch[1] : html;
+
+  // Split by h2 and h3 sections
+  const sectionRegex = /<(h2|h3)[^>]*>([\s\S]*?)<\/\1>([\s\S]*?)(?=<h2|<h3|<div class="sect|$)/gi;
+  const chunks = [];
+  let match;
+
+  while ((match = sectionRegex.exec(contentHtml)) !== null) {
+    const sectionTitle = match[2].replace(/<[^>]+>/g, '').trim();
+    let sectionHtml = match[3];
+
+    let markdownText = cleanHtmlToMarkdown(sectionHtml);
+
+    if (markdownText.trim().length > 0) {
+      chunks.push({
+        title: `Pro Git: ${pageTitle} - ${sectionTitle}`,
+        content: `## Pro Git: ${pageTitle} - ${sectionTitle}\n\n${markdownText}`
+      });
+    }
+  }
+
+  if (chunks.length === 0) {
+    let text = cleanHtmlToMarkdown(contentHtml);
+    chunks.push({
+      title: `Pro Git: ${pageTitle}`,
+      content: `# Pro Git: ${pageTitle}\n\n${text}`
+    });
+  }
+
+  return chunks;
+}
+
+// =============================================================================
+// Shared Markdown Chunker (for GitHub Docs Markdown API responses)
+// =============================================================================
+function parseMarkdownIntoChunks(markdown, pageTitle, sourceUrl) {
+  const lines = markdown.split('\n');
+  const chunks = [];
+  let currentHeader = pageTitle;
+  let currentChunk = [];
+
+  for (const line of lines) {
+    // Split on h2 (##) headings
+    if (line.startsWith('## ') || line.startsWith('### ')) {
+      if (currentChunk.length > 0) {
+        const text = currentChunk.join('\n').trim();
+        if (text.length > 0) {
+          chunks.push({
+            title: `${pageTitle} - ${currentHeader}`,
+            content: text
+          });
+        }
+      }
+      currentHeader = line.replace(/^#+\s+/, '').trim();
+      currentChunk = [line];
+    } else {
+      currentChunk.push(line);
+    }
+  }
+
+  // Push the last chunk
+  if (currentChunk.length > 0) {
+    const text = currentChunk.join('\n').trim();
+    if (text.length > 0) {
+      chunks.push({
+        title: `${pageTitle} - ${currentHeader}`,
+        content: text
+      });
+    }
+  }
+
+  // If no sections were found, treat the whole page as one chunk
+  if (chunks.length === 0) {
+    chunks.push({
+      title: pageTitle,
+      content: markdown.trim()
+    });
+  }
+
+  return chunks;
+}
+
+// =============================================================================
+// Embedding Generation (OpenRouter API)
+// =============================================================================
 async function getEmbedding(text) {
   try {
     const response = await fetch('https://openrouter.ai/api/v1/embeddings', {
@@ -207,91 +441,121 @@ async function getEmbedding(text) {
   }
 }
 
+// =============================================================================
+// Main Scrape & Index Pipeline
+// =============================================================================
 async function scrapeAndIndex() {
-  console.log('=== Starting Web Documentation Scraper ===\n');
+  console.log('=== Starting Web Documentation Scraper ===');
+  console.log(`Total targets: ${TARGETS.length} pages across ${[...new Set(TARGETS.map(t => t.category))].length} categories\n`);
 
-  for (const target of TARGETS) {
-    console.log(`[CRAWL] Fetching: ${target.url}...`);
+  // Group targets by category for logging
+  const categories = [...new Set(TARGETS.map(t => t.category))];
+  for (const cat of categories) {
+    const count = TARGETS.filter(t => t.category === cat).length;
+    console.log(`  📂 ${cat}: ${count} pages`);
+  }
+  console.log('');
+
+  let totalSuccess = 0;
+  let totalChunks = 0;
+
+  for (let idx = 0; idx < TARGETS.length; idx++) {
+    const target = TARGETS[idx];
+    console.log(`[${idx + 1}/${TARGETS.length}] [${target.category}] Fetching: ${target.url}...`);
+
     try {
-      // 1. Fetch web page
-      const response = await fetch(target.url, {
-        headers: {
-          'User-Agent': 'FirstIssueScraper/1.0 (https://firstissue.dev; bot)'
-        }
-      });
-
-      if (!response.ok) {
-        console.error(`[ERROR] Failed to fetch ${target.url}: Status ${response.status}`);
-        continue;
-      }
-
-      const html = await response.text();
-      
-      // 2. Parse HTML into text chunks
       let chunks = [];
-      if (target.type === 'git-scm') {
-        chunks = parseGitScmHtml(html);
-      } else if (target.type === 'gh-cli') {
-        chunks = parseGithubCliHtml(html);
+
+      // ── GitHub Docs: Use their Markdown API (no HTML parsing needed) ──
+      if (target.type === 'github-docs') {
+        chunks = await fetchGithubDocsMarkdown(target.url);
+      } else {
+        // ── All other types: Fetch HTML and parse ──
+        const response = await fetch(target.url, {
+          headers: {
+            'User-Agent': 'FirstIssueScraper/1.0 (https://firstissue.dev; bot)'
+          }
+        });
+
+        if (!response.ok) {
+          console.error(`  [ERROR] Failed to fetch: Status ${response.status}`);
+          continue;
+        }
+
+        const html = await response.text();
+
+        // Route to the right parser
+        if (target.type === 'git-scm') {
+          chunks = parseGitScmHtml(html);
+        } else if (target.type === 'gh-cli') {
+          chunks = parseGithubCliHtml(html);
+        } else if (target.type === 'opensource-guide') {
+          chunks = parseOpenSourceGuideHtml(html);
+        } else if (target.type === 'git-book') {
+          chunks = parseGitBookHtml(html);
+        }
       }
 
-      console.log(`[PARSE] Split page into ${chunks.length} semantic chunks.`);
+      console.log(`  [PARSE] Split into ${chunks.length} semantic chunks.`);
 
       if (chunks.length === 0) continue;
 
-      // 3. Clear existing chunks for this specific URL (de-duplication)
+      // Clear existing chunks for this URL (de-duplication)
       const { error: deleteError } = await supabase
         .from('kb_chunks')
         .delete()
         .eq('source', target.url);
 
       if (deleteError) {
-        console.warn(`[WARN] Failed to clear old database chunks for ${target.url}: ${deleteError.message}`);
+        console.warn(`  [WARN] Failed to clear old chunks: ${deleteError.message}`);
       }
 
-      // 4. Generate embeddings and insert into Supabase
+      // Generate embeddings and insert
       let successCount = 0;
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
-        console.log(`  -> Embedding chunk [${i + 1}/${chunks.length}]: "${chunk.title.substring(0, 40)}..."`);
-        
+        console.log(`    → Embedding [${i + 1}/${chunks.length}]: "${chunk.title.substring(0, 50)}..."`);
+
         try {
           const embedding = await getEmbedding(chunk.content);
-          
+
           const { error: insertError } = await supabase
             .from('kb_chunks')
             .insert({
               source: target.url,
               title: chunk.title,
-              path: target.url, // Map url to path so links inside RAG citation work
+              path: target.url,
               content: chunk.content,
               embedding: embedding
             });
 
           if (insertError) {
-            console.error(`  [DB ERROR] Failed to save chunk: ${insertError.message}`);
+            console.error(`    [DB ERROR] ${insertError.message}`);
           } else {
             successCount++;
           }
         } catch (err) {
-          console.error(`  [API ERROR] Failed to process embedding: ${err.message}`);
+          console.error(`    [API ERROR] ${err.message}`);
         }
 
         // Delay to prevent hitting rate limits
         await new Promise(resolve => setTimeout(resolve, 300));
       }
 
-      console.log(`[SUCCESS] Scraping completed for ${target.url}. Indexed ${successCount}/${chunks.length} chunks.\n`);
+      totalSuccess += successCount;
+      totalChunks += chunks.length;
+      console.log(`  [DONE] Indexed ${successCount}/${chunks.length} chunks.\n`);
 
     } catch (error) {
-      console.error(`[FATAL] Error crawling ${target.url}:`, error.message);
+      console.error(`  [FATAL] Error crawling ${target.url}:`, error.message);
     }
 
-    // 1.5 seconds delay between targeting sites to respect robots.txt rate-limits
+    // 1.5 seconds delay between sites to respect rate limits
     await new Promise(resolve => setTimeout(resolve, 1500));
   }
 
   console.log('=== Web Documentation Scraper completed ===');
+  console.log(`Total: ${totalSuccess}/${totalChunks} chunks indexed across ${TARGETS.length} pages.`);
 }
 
 scrapeAndIndex().catch(err => {
