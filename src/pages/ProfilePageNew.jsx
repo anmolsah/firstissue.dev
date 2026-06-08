@@ -58,6 +58,8 @@ const ProfilePageNew = () => {
   const { isSupporter, supporterData, refreshStatus } = useSupporter();
   const [isCancelling, setIsCancelling] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const [invoices, setInvoices] = useState([]);
+  const [loadingInvoices, setLoadingInvoices] = useState(false);
 
   const getGitHubUsername = () => {
     return (
@@ -122,6 +124,31 @@ const ProfilePageNew = () => {
       setShowCancelModal(false);
     }
   };
+
+  const fetchInvoices = async () => {
+    setLoadingInvoices(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("list-invoices");
+      if (error) throw error;
+      if (data?.items) {
+        // Sort invoices by created_at descending (newest first)
+        const sortedInvoices = [...data.items].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        setInvoices(sortedInvoices);
+      }
+    } catch (err) {
+      console.error("Error fetching invoices:", err);
+    } finally {
+      setLoadingInvoices(false);
+    }
+  };
+
+  useEffect(() => {
+    if (isSupporter) {
+      fetchInvoices();
+    }
+  }, [isSupporter]);
 
   // Calculate stats from contributions
   const contributionStats = ghStats;
@@ -538,10 +565,88 @@ const ProfilePageNew = () => {
                 {supporterData.status === "active" && (
                   <button
                     onClick={() => setShowCancelModal(true)}
-                    className="px-4 py-2 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-lg text-sm font-medium transition-colors"
+                    className="px-4 py-2 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-lg text-sm font-medium transition-colors cursor-pointer"
                   >
                     Cancel Subscription
                   </button>
+                )}
+              </div>
+
+              {/* Billing History & Invoices */}
+              <div className="mt-6 pt-6 border-t border-white/5">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-blue-400" />
+                  Billing History & Invoices
+                </h4>
+                {loadingInvoices ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+                    <span className="ml-2.5 text-xs text-gray-500">Loading invoices...</span>
+                  </div>
+                ) : invoices.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead>
+                        <tr className="border-b border-white/5 text-gray-500 font-medium">
+                          <th className="pb-2 text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Date</th>
+                          <th className="pb-2 text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Invoice ID</th>
+                          <th className="pb-2 text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Amount</th>
+                          <th className="pb-2 text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Status</th>
+                          <th className="pb-2 text-right text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Invoice</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {invoices.map((invoice) => (
+                          <tr key={invoice.payment_id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
+                            <td className="py-3 text-gray-300 font-sans">
+                              {new Date(invoice.created_at).toLocaleDateString(undefined, {
+                                year: "numeric",
+                                month: "short",
+                                day: "numeric",
+                              })}
+                            </td>
+                            <td className="py-3 text-gray-400 font-mono truncate max-w-[120px]" title={invoice.invoice_id || invoice.payment_id}>
+                              {invoice.invoice_id || invoice.payment_id}
+                            </td>
+                            <td className="py-3 text-white font-medium">
+                              {(invoice.amount / 100).toLocaleString(undefined, {
+                                style: "currency",
+                                currency: invoice.currency || "USD",
+                              })}
+                            </td>
+                            <td className="py-3">
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                                invoice.status === "succeeded" || invoice.status === "completed"
+                                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                  : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                              }`}>
+                                {invoice.status}
+                              </span>
+                            </td>
+                            <td className="py-3 text-right">
+                              {invoice.invoice_url ? (
+                                <a
+                                  href={invoice.invoice_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors font-medium hover:underline"
+                                >
+                                  <FileText className="w-3.5 h-3.5" />
+                                  Download
+                                </a>
+                              ) : (
+                                <span className="text-gray-600">Pending</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-500 py-3 text-center bg-zinc-950/20 border border-dashed border-white/5 rounded-lg">
+                    No payment history or invoices found.
+                  </p>
                 )}
               </div>
             </div>
