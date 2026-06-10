@@ -3,7 +3,7 @@
 // Set webhook URL in Dodo dashboard to: https://<your-project>.supabase.co/functions/v1/dodo-webhook
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createAdminClient } from "../_shared/supabaseClient.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
 serve(async (req: Request) => {
@@ -34,10 +34,8 @@ serve(async (req: Request) => {
       console.log("Webhook signature present:", !!signature);
     }
 
-    // Initialize Supabase admin client
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Initialize Supabase admin client (via shared pooling-optimized factory)
+    const supabase = createAdminClient();
 
     // Dodo Payments uses "type" as the event field name
     const event = payload.type || payload.event || payload.event_type || "";

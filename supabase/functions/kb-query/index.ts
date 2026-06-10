@@ -2,7 +2,7 @@
 // Deploy: supabase functions deploy kb-query
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { createUserClient } from "../_shared/supabaseClient.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
 serve(async (req: Request) => {
@@ -21,45 +21,25 @@ serve(async (req: Request) => {
       );
     }
 
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL") || "";
-    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY") || "";
-    
-    // Read the authorization header to verify authentication
-    const authHeader = req.headers.get("Authorization");
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-      global: {
-        headers: authHeader ? { Authorization: authHeader } : {},
-      },
-    });
-
-    let isUserAuthenticated = false;
+    // Authenticate via shared pooling-optimized client factory
+    let supabaseClient;
     let user = null;
 
-    if (authHeader && /^bearer /i.test(authHeader)) {
-      const token = authHeader.replace(/^bearer /i, "").trim();
-      // Try explicitly passing JWT token to getUser, or fallback to default parameter
-      const { data: { user: supabaseUser }, error: userError } = token 
-        ? await supabaseClient.auth.getUser(token)
-        : await supabaseClient.auth.getUser();
-        
-      if (!userError && supabaseUser) {
-        isUserAuthenticated = true;
-        user = supabaseUser;
-      } else if (userError) {
-        console.error("[kb-query] auth.getUser error:", userError.message);
-      }
-    }
+    try {
+      supabaseClient = createUserClient(req);
+      const { data: { user: supabaseUser }, error: userError } = await supabaseClient.auth.getUser();
 
-    // Access Control Logic
-    // Only authenticated users can use FirstMate
-    if (!isUserAuthenticated) {
-      console.warn(`[kb-query] Access denied: Unauthenticated request`);
+      if (userError || !supabaseUser) {
+        throw new Error(userError?.message || "Invalid session");
+      }
+      user = supabaseUser;
+    } catch (authErr: any) {
+      console.warn(`[kb-query] Access denied: ${authErr.message}`);
       return new Response(
         JSON.stringify({ error: "Unauthorized. Please log in to use FirstMate." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
 
     // Get API Key for OpenRouter
     const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY") || Deno.env.get("XAI_API_KEY");

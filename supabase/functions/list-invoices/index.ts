@@ -2,7 +2,7 @@
 // Deploy: supabase functions deploy list-invoices
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createUserClient } from "../_shared/supabaseClient.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
 serve(async (req: Request) => {
@@ -14,21 +14,16 @@ serve(async (req: Request) => {
   }
 
   try {
-    // 1. Authenticate user from the request Authorization header
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
+    // 1. Authenticate user — createUserClient throws if Authorization header is missing
+    let supabaseClient;
+    try {
+      supabaseClient = createUserClient(req);
+    } catch {
       return new Response(
         JSON.stringify({ error: "Missing Authorization header" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
-
-    // Initialize Supabase client with user's Auth Header (respects RLS)
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-    const supabaseClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } }
-    });
 
     // Get the authenticated user identity
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();

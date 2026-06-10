@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
+import { createAdminClient } from "../_shared/supabaseClient.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 
 const GITHUB_API_BASE = 'https://api.github.com';
@@ -111,11 +111,8 @@ serve(async (req: Request) => {
     
     const attestationId = 'att_' + txHash.substring(2, 18);
 
-    // Insert into database using Service Role key
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-    );
+    // Insert into database using Service Role key (via shared pooling-optimized factory)
+    const supabaseAdmin = createAdminClient();
 
     const attestationData = {
       user_id: userId,

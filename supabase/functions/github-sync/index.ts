@@ -2,7 +2,7 @@
 // Deploy: supabase functions deploy github-sync
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { createUserClient } from '../_shared/supabaseClient.ts';
 
 const ALLOWED_ORIGINS = [
   "https://firstissue.dev",
@@ -85,15 +85,8 @@ serve(async (req: Request) => {
   }
 
   try {
-    // 1. Initialize Supabase Client using the user's Auth Header
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) throw new Error("Missing Authorization header");
-
-    const supabaseClient = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    // 1. Initialize Supabase Client (via shared pooling-optimized factory)
+    const supabaseClient = createUserClient(req);
 
     // 2. Get the user identity securely
     const { data: { user }, error: userError } = await supabaseClient.auth.getUser();
