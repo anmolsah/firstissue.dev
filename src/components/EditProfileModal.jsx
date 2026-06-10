@@ -17,7 +17,7 @@ const TECH_SUGGESTIONS = [
   "Docker", "Kubernetes", "AWS", "GCP", "Azure",
   "Git", "CI/CD", "Linux",
   "Machine Learning", "TensorFlow", "PyTorch",
-  "Solidity", "Web3",
+  "Solidity", "Web3", "Cloudflare"
 ];
 
 const TechStackInput = ({ value = [], onChange }) => {

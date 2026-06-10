@@ -1068,6 +1068,23 @@ const ContributionHeatmap = ({ contributions, username }) => {
   const { heatmapData, monthLabels } = generateHeatmapData();
   // totalContributions available: ghCalendar?.totalContributions ?? contributions.length
 
+  // Group heatmapData by month to separate them
+  const monthGroups = [];
+  let currentGroup = null;
+  heatmapData.forEach((week, weekIndex) => {
+    const ml = monthLabels.find(m => m.week === weekIndex);
+    if (ml) {
+      currentGroup = { label: ml.label, weeks: [], groupIdx: monthGroups.length };
+      monthGroups.push(currentGroup);
+    } else if (!currentGroup && weekIndex === 0) {
+      currentGroup = { label: "", weeks: [], groupIdx: 0 };
+      monthGroups.push(currentGroup);
+    }
+    if (currentGroup) {
+      currentGroup.weeks.push({ days: week, weekIndex });
+    }
+  });
+
   const formatTooltipDate = (dateStr) => {
     const date = new Date(dateStr + "T00:00:00");
     return date.toLocaleDateString("en-US", {
@@ -1080,22 +1097,9 @@ const ContributionHeatmap = ({ contributions, username }) => {
 
   return (
     <div className="relative">
-      {/* Month Labels */}
-      <div className="flex gap-[3px] mb-2 ml-8 heatmap-scroll overflow-x-auto">
-        {monthLabels.map((month, idx) => (
-          <div
-            key={idx}
-            className="text-[10px] text-gray-500"
-            style={{ marginLeft: idx === 0 ? 0 : `${(month.week - (monthLabels[idx - 1]?.week || 0)) * 15 - 10}px` }}
-          >
-            {month.label}
-          </div>
-        ))}
-      </div>
-
-      {/* Day Labels + Grid */}
       <div className="flex gap-2">
-        <div className="flex flex-col gap-[3px] text-[10px] text-gray-500 justify-around pr-1 flex-shrink-0">
+        {/* Fixed Day Labels */}
+        <div className="flex flex-col gap-[3px] text-[10px] text-gray-500 justify-around pr-1 flex-shrink-0 mt-[18px]">
           <div style={{ height: "12px" }}>Mon</div>
           <div style={{ height: "12px" }}></div>
           <div style={{ height: "12px" }}>Wed</div>
@@ -1105,31 +1109,44 @@ const ContributionHeatmap = ({ contributions, username }) => {
           <div style={{ height: "12px" }}>Sun</div>
         </div>
 
-        {/* Heatmap Grid — horizontally scrollable on mobile */}
-        <div className="flex gap-[3px] overflow-x-auto pb-2 heatmap-scroll">
-          {heatmapData.map((week, weekIndex) => (
-            <div key={weekIndex} className="flex flex-col gap-[3px] flex-shrink-0">
-              {week.map((day, dayIndex) => (
-                <div
-                  key={dayIndex}
-                  className={`w-3 h-3 rounded-sm ${getLevelColor(day.level)} hover:ring-2 hover:ring-white/40 transition-all cursor-pointer relative`}
-                  onMouseEnter={() => setHoveredDay({ ...day, weekIndex, dayIndex })}
-                  onMouseLeave={() => setHoveredDay(null)}
-                />
-              ))}
+        {/* Scrollable Heatmap Grid */}
+        <div className="flex gap-3 overflow-x-auto pb-2 heatmap-scroll">
+          {monthGroups.map((group, groupIdx) => (
+            <div key={groupIdx} className="flex flex-col">
+              <div className="text-[10px] text-gray-500 mb-1.5 h-3">{group.label}</div>
+              <div className="flex gap-[3px]">
+                {group.weeks.map(({ days, weekIndex }) => (
+                  <div key={weekIndex} className="flex flex-col gap-[3px] flex-shrink-0">
+                    {days.map((day, dayIndex) => (
+                      <div
+                        key={dayIndex}
+                        className={`w-3 h-3 rounded-sm ${getLevelColor(day.level)} hover:ring-2 hover:ring-white/40 transition-all cursor-pointer relative`}
+                        onMouseEnter={(e) => {
+                          const rect = e.target.getBoundingClientRect();
+                          setHoveredDay({ 
+                            ...day, 
+                            rect: { top: rect.top, left: rect.left, width: rect.width }
+                          });
+                        }}
+                        onMouseLeave={() => setHoveredDay(null)}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
       </div>
 
       {/* Tooltip */}
-      {hoveredDay && (
+      {hoveredDay && hoveredDay.rect && (
         <div
-          className="absolute z-50 bg-[#1c1d26] border border-white/20 rounded-lg px-3 py-2 text-xs text-white shadow-xl pointer-events-none whitespace-nowrap"
+          className="fixed z-50 bg-[#1c1d26] border border-white/20 rounded-lg px-3 py-2 text-xs text-white shadow-xl pointer-events-none whitespace-nowrap"
           style={{
-            left: `${Math.min(hoveredDay.weekIndex * 14 + 40, (typeof window !== 'undefined' ? window.innerWidth - 200 : 600))}px`,
-            top: `${hoveredDay.dayIndex * 14 + 30}px`,
-            transform: "translateX(-50%)",
+            left: `${hoveredDay.rect.left + hoveredDay.rect.width / 2}px`,
+            top: `${hoveredDay.rect.top - 8}px`,
+            transform: "translate(-50%, -100%)",
           }}
         >
           <div className="font-semibold">
