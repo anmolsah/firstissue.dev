@@ -1570,5 +1570,123 @@ export const docContent = {
                 }
             ]
         }
+    },
+
+    "architecture-guide": {
+        title: "Architecture & Workflow",
+        icon: Code,
+        color: "text-red-400",
+
+        "system-architecture": {
+            title: "Website Workflow & System Architecture",
+            description: "Deep dive into FirstIssue.dev's workflow, system architecture, database design, and backend processing.",
+            readTime: "12 min read",
+            updated: "today",
+            difficulty: "Advanced",
+            content: [
+                {
+                    type: "paragraph",
+                    text: "FirstIssue.dev is a decentralized verification and matchmaking platform that helps developers contribute to open source while building cryptographically verified portfolios. This guide outlines the platform's workflow, database architecture, and integration with the GitHub API."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "High-Level System Architecture"
+                },
+                {
+                    type: "paragraph",
+                    text: "The platform is built using a modern, serverless architecture that separates the user-facing frontend from sensitive back-end operations. This ensures security when handling users' GitHub OAuth tokens and performing cryptographic operations."
+                },
+                {
+                    type: "image",
+                    src: "/architecture_diagram.png",
+                    alt: "FirstIssue.dev System Architecture Diagram",
+                    caption: "Figure 1: High-level visual representation of system modules, APIs, and data flow."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Core Components"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "Frontend Application: Built with Vite, React, Tailwind CSS (or Vanilla CSS for maximum styling control), and Framer Motion for premium, glassmorphic UI interactions.",
+                        "Supabase Backend: Handles user authentication (OAuth via GitHub), database storage, and serves as our API layer.",
+                        "Supabase Edge Functions: Serverless JavaScript/TypeScript functions running on Deno. These securely make calls to the GitHub GraphQL/REST APIs, sign Proof of Work credentials, and generate payment webhooks without exposing private tokens to the client.",
+                        "GitHub Sync Engine: Periodically fetches pull requests, assignments, and commits from the user's connected GitHub account to build their activity stats.",
+                        "Proof of Work (PoW) Verification Engine: Validates that a submitted PR is merged, belongs to the logged-in user, and scores its impact based on repository prestige and codebase diff size."
+                    ]
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Step-by-Step Workflow Behind the Scenes"
+                },
+                {
+                    type: "heading",
+                    level: 3,
+                    text: "1. Authentication & Syncing"
+                },
+                {
+                    type: "paragraph",
+                    text: "When a user signs in, Supabase handles the OAuth handshake with GitHub. It returns a temporary provider token. The sync engine immediately triggers a secure Supabase Edge Function that uses this provider token to request the user's recent repository contributions."
+                },
+                {
+                    type: "heading",
+                    level: 3,
+                    text: "2. Proof of Work Submission"
+                },
+                {
+                    type: "paragraph",
+                    text: "To claim a contribution, a user inputs a merged PR link (e.g., github.com/owner/repo/pull/123). The frontend sends this to our Edge Function. The backend performs the following checks:"
+                },
+                {
+                    type: "list",
+                    ordered: true,
+                    items: [
+                        "GitHub API check: Fetches details of the PR using GitHub GraphQL API.",
+                        "Author matching: Validates that the PR author's GitHub ID matches the authenticated user's GitHub ID.",
+                        "Status check: Validates that the PR state is marked as 'MERGED'.",
+                        "Attestation signing: If valid, the engine cryptographically signs a JSON payload proving the contribution."
+                    ]
+                },
+                {
+                    type: "heading",
+                    level: 3,
+                    text: "3. MetalCard Generation"
+                },
+                {
+                    type: "paragraph",
+                    text: "Once the attestation is verified and saved to the Supabase database, the client UI is notified. The application renders an interactive 3D MetalCard matching the programming languages detected in the PR. The card can be downloaded as an image using html-to-image conversion, enabling seamless sharing."
+                },
+                {
+                    type: "heading",
+                    level: 2,
+                    text: "Data Model & Database Design"
+                },
+                {
+                    type: "paragraph",
+                    text: "The data is structured cleanly to support real-time querying and secure validation. The core tables include:"
+                },
+                {
+                    type: "list",
+                    ordered: false,
+                    items: [
+                        "profiles: Stores user metadata, display name, bio, location, and total impact score.",
+                        "contributions: Cached representation of GitHub PRs, issues, and sync statuses.",
+                        "attestations: Stores cryptographically signed Proof of Work credentials (transaction hashes, impact scores).",
+                        "supporters: Manages subscription status, payment IDs, and freemium feature limits."
+                    ]
+                },
+                {
+                    type: "callout",
+                    variant: "info",
+                    title: "Security Consideration",
+                    text: "All operations involving the GitHub API are proxied through server-side Edge Functions. This ensures GitHub OAuth provider tokens are never stored long-term in the database or exposed in client browser memory."
+                }
+            ]
+        }
     }
 };

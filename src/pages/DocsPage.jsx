@@ -213,6 +213,22 @@ const DocsPage = () => {
         },
       ],
     },
+    {
+      id: "architecture-guide",
+      title: "Architecture & Workflow",
+      icon: Code,
+      color: "text-red-400",
+      bgColor: "bg-red-500/10",
+      borderColor: "border-red-500/20",
+      description: "Platform workflow, database design, and system architecture",
+      articles: [
+        {
+          id: "system-architecture",
+          title: "Website Workflow & System Architecture",
+          readTime: "12 min",
+        },
+      ],
+    },
   ];
 
   const popularArticles = [

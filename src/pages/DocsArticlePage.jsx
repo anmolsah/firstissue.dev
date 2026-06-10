@@ -417,6 +417,20 @@ const DocsArticlePage = () => {
                         </div>
                       );
 
+                    case "image":
+                      return (
+                        <div key={index} className="my-6 rounded-xl overflow-hidden border border-white/5 bg-[#12131a]/50 p-2">
+                          <img
+                            src={block.src}
+                            alt={block.alt || "Documentation Image"}
+                            className="w-full h-auto rounded-lg max-h-[500px] object-contain mx-auto"
+                          />
+                          {block.caption && (
+                            <p className="text-center text-xs text-gray-500 mt-2 font-sans">{block.caption}</p>
+                          )}
+                        </div>
+                      );
+
                     default:
                       return null;
                   }
