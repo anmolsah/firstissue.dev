@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Search,
@@ -32,6 +32,14 @@ const DocsPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+
+  useEffect(() => {
+    document.title = "Developer Documentation & Guides | FirstIssue.dev";
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute("content", "Access FirstIssue.dev developer documentation. Learn git workflows, GitHub labels, troubleshooting setup issues, and system architecture.");
+    }
+  }, []);
 
   const getLatestUpdateDate = () => {
     let minDays = Infinity;

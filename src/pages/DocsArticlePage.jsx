@@ -60,6 +60,17 @@ const DocsArticlePage = () => {
     if (savedVote) setVote(savedVote);
   }, [articleId]);
 
+  // Dynamically set page title and description for SEO
+  useEffect(() => {
+    if (currentArticle) {
+      document.title = `${currentArticle.title} | FirstIssue.dev Docs`;
+      const metaDesc = document.querySelector('meta[name="description"]');
+      if (metaDesc) {
+        metaDesc.setAttribute("content", currentArticle.description || `Read about ${currentArticle.title} on the FirstIssue.dev developer guides.`);
+      }
+    }
+  }, [currentArticle]);
+
   const fetchVotes = async () => {
     try {
       const { data, error } = await supabase

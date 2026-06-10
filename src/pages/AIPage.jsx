@@ -168,6 +168,15 @@ const AIPage = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Set page title and meta description for SEO
+  useEffect(() => {
+    document.title = "FirstMate AI Copilot | FirstIssue.dev - Your Open Source Assistant";
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute("content", "Meet FirstMate AI, your dedicated assistant for open-source contributions. Get answers about Git commands, codebase architecture, and verification workflows in real-time.");
+    }
+  }, []);
+
   // Auto-scroll chat
   useEffect(() => {
     if (messagesEndRef.current) {

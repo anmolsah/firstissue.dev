@@ -44,6 +44,15 @@ const ExplorePage = () => {
     }
   }, [user, authLoading, navigate]);
 
+  // Set SEO metadata
+  useEffect(() => {
+    document.title = "Explore Beginner-Friendly Open Source Issues | FirstIssue.dev";
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute("content", "Find open source issues labeled good first issue and help wanted. Filter by language and stars to start contributing today.");
+    }
+  }, []);
+
   const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
