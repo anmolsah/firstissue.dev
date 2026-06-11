@@ -6,6 +6,7 @@ AlertTriangle,
 Code,
 GitBranch,
 } from "lucide-react";
+import architectureDiagram from "../assets/architecture_diagram.png";
 
 export const docContent = {
 "getting-started": {
@@ -1599,7 +1600,7 @@ text: "The platform is built using a modern, serverless architecture that separa
 },
 {
 type: "image",
-src: "/architecture_diagram.png",
+src: architectureDiagram,
 alt: "FirstIssue.dev System Architecture Diagram",
 caption: "Figure 1: High-level visual representation of system modules, APIs, and data flow."
 },
