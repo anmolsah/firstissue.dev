@@ -11,6 +11,9 @@ import EliteContributorBadge from './badges/EliteContributorBadge';
 import MergeMasterBadge from './badges/MergeMasterBadge';
 import EarlyAdopterBadge from './badges/EarlyAdopterBadge';
 import MergeChampionBadge from './badges/MergeChampionBadge';
+import WeekWarriorBadge from './badges/WeekWarriorBadge';
+import MonthMasterBadge from './badges/MonthMasterBadge';
+import PerfectScoreBadge from './badges/PerfectScoreBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -153,6 +156,12 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
                         <EarlyAdopterBadge earned={earned} variant="raw" />
                       ) : badge.id === 'merge-master-10' ? (
                         <MergeChampionBadge earned={earned} variant="raw" />
+                      ) : badge.id === 'streak-7' ? (
+                        <WeekWarriorBadge earned={earned} variant="raw" />
+                      ) : badge.id === 'streak-30' ? (
+                        <MonthMasterBadge earned={earned} variant="raw" />
+                      ) : badge.id === 'perfect-score' ? (
+                        <PerfectScoreBadge earned={earned} variant="raw" />
                       ) : (
                         <BadgeIcon className={`w-12 h-12 sm:w-14 sm:h-14 ${rarityInfo.color}`} />
                       )

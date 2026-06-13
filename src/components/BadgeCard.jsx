@@ -9,6 +9,9 @@ import EliteContributorBadge from './badges/EliteContributorBadge';
 import MergeMasterBadge from './badges/MergeMasterBadge';
 import EarlyAdopterBadge from './badges/EarlyAdopterBadge';
 import MergeChampionBadge from './badges/MergeChampionBadge';
+import WeekWarriorBadge from './badges/WeekWarriorBadge';
+import MonthMasterBadge from './badges/MonthMasterBadge';
+import PerfectScoreBadge from './badges/PerfectScoreBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -53,6 +56,15 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
   }
   if (badge.id === 'merge-master-10') {
     return <MergeChampionBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'streak-7') {
+    return <WeekWarriorBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'streak-30') {
+    return <MonthMasterBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'perfect-score') {
+    return <PerfectScoreBadge earned={earned} onClick={onClick} />;
   }
 
   const rarityInfo = getBadgeRarityInfo(badge.rarity);

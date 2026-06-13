@@ -9,6 +9,9 @@ import EliteContributorBadge from './badges/EliteContributorBadge';
 import MergeMasterBadge from './badges/MergeMasterBadge';
 import EarlyAdopterBadge from './badges/EarlyAdopterBadge';
 import MergeChampionBadge from './badges/MergeChampionBadge';
+import WeekWarriorBadge from './badges/WeekWarriorBadge';
+import MonthMasterBadge from './badges/MonthMasterBadge';
+import PerfectScoreBadge from './badges/PerfectScoreBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -116,6 +119,18 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = f
         ) : badge.id === 'merge-master-10' ? (
           <div className="w-full h-full flex items-center justify-center scale-125">
             <MergeChampionBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'streak-7' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <WeekWarriorBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'streak-30' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <MonthMasterBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'perfect-score' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <PerfectScoreBadge earned={true} variant="raw" />
           </div>
         ) : (
           <div className={`relative w-full h-full rounded-full bg-gradient-to-br ${colors.bg} border-4 ${colors.border} shadow-2xl ${colors.glow} flex items-center justify-center overflow-hidden`}>
