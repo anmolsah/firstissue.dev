@@ -1,6 +1,6 @@
 # Contributing to FirstIssue.dev
 
-First off, thank you for considering contributing to FirstIssue.dev! 🎉
+First off, thank you for considering contributing to FirstIssue.dev! 
 
 This project is built to help students find their first open source contribution, and what better way to start than contributing here!
 
@@ -27,26 +27,26 @@ This project follows a Code of Conduct. By participating, you are expected to up
 
 ## How Can I Contribute?
 
-### 🐛 Reporting Bugs
+### Reporting Bugs
 
 - Check if the bug has already been reported in Issues
 - If not, create a new issue with a clear title and description
 - Include steps to reproduce the bug
 - Add screenshots if applicable
 
-### 💡 Suggesting Features
+### Suggesting Features
 
 - Check if the feature has already been suggested
 - Create a new issue with the `enhancement` label
 - Describe the feature and why it would be useful
 
-### 📝 Improving Documentation
+### Improving Documentation
 
 - Fix typos or unclear explanations
 - Add examples or tutorials
 - Translate documentation
 
-### 💻 Contributing Code
+### Contributing Code
 
 - Look for issues labeled `good first issue` or `help wanted`
 - Comment on the issue to let us know you're working on it
@@ -188,10 +188,10 @@ git push origin feature/your-feature-name
 
 Use a clear, descriptive title:
 
-- ✅ `feat: add dark mode toggle`
-- ✅ `fix: resolve login redirect issue`
-- ❌ `Update code`
-- ❌ `Fixed stuff`
+- `feat: add dark mode toggle`
+- `fix: resolve login redirect issue`
+- `Update code`
+- `Fixed stuff`
 
 ### PR Description
 
@@ -235,10 +235,10 @@ Include:
 
 ## Need Help?
 
-- 💬 Comment on the issue you're working on
-- 📧 Reach out to maintainers
-- 📖 Check the [docs](/docs) folder
+- Comment on the issue you're working on
+- Reach out to maintainers
+- Check the [docs](/docs) folder
 
 ---
 
-**Thank you for contributing! Every contribution, no matter how small, makes a difference. 🙏**
+**Thank you for contributing! Every contribution, no matter how small, makes a difference. **

@@ -1,25 +1,25 @@
-# 🎓 Student Guide: How to Contribute to Open Source
+# Student Guide: How to Contribute to Open Source
 
 **A Step-by-Step Guide for Students to Make Their First Open Source Contribution**
 
-Welcome, student! 👋 This guide will help you understand how to use FirstIssue.dev to find your first open source issue and make a successful contribution. Don't worry if you're new to this - we'll walk through everything step by step!
+Welcome, student! This guide will help you understand how to use FirstIssue.dev to find your first open source issue and make a successful contribution. Don't worry if you're new to this - we'll walk through everything step by step!
 
 ---
 
-## 📚 What is Open Source?
+## What is Open Source?
 
 **Open Source** means the code is freely available for anyone to see, use, and improve. Think of it like a recipe that everyone can read, try, and suggest improvements to make it better!
 
 **Why contribute to Open Source?**
-- 🌟 Learn from real projects used by thousands of people
-- 💼 Build your resume and portfolio
-- 🤝 Connect with developers worldwide
-- 🚀 Improve your coding skills
-- 🎯 Give back to the community
+- Learn from real projects used by thousands of people
+- Build your resume and portfolio
+- Connect with developers worldwide
+- Improve your coding skills
+- Give back to the community
 
 ---
 
-## 🔍 Step 1: Finding Your First Issue
+## Step 1: Finding Your First Issue
 
 ### Using FirstIssue.dev to Discover Issues
 
@@ -40,34 +40,34 @@ Welcome, student! 👋 This guide will help you understand how to use FirstIssue
 ### What Makes a Good First Issue?
 
 Look for issues that have these labels:
-- ✅ `good first issue` - Perfect for beginners
-- ✅ `help wanted` - Maintainers are looking for contributors
-- ✅ `beginner friendly` - Easy to understand and fix
-- ✅ `documentation` - Usually involves writing or fixing docs (great for beginners!)
+- `good first issue` - Perfect for beginners
+- `help wanted` - Maintainers are looking for contributors
+- `beginner friendly` - Easy to understand and fix
+- `documentation` - Usually involves writing or fixing docs (great for beginners!)
 
 ### Red Flags to Avoid:
-- ❌ Issues with no description or very vague descriptions
-- ❌ Issues that are very old (more than 6 months)
-- ❌ Issues with many comments but no clear solution
-- ❌ Issues labeled as "advanced" or "complex"
+- Issues with no description or very vague descriptions
+- Issues that are very old (more than 6 months)
+- Issues with many comments but no clear solution
+- Issues labeled as "advanced" or "complex"
 
 ---
 
-## 📌 Step 2: Bookmarking and Tracking Issues
+## Step 2: Bookmarking and Tracking Issues
 
 ### Save Issues You're Interested In
 
 1. **Bookmark the Issue**
-   - Click the bookmark icon (📌) next to any issue you find interesting
+   - Click the bookmark icon () next to any issue you find interesting
    - This saves it to your personal list
 
 2. **Manage Your Bookmarks**
    - Go to "Bookmarks" page to see all your saved issues
    - Update the status as you progress:
-     - **Saved** 📌 - Issues you want to work on later
-     - **Applied** 📝 - Issues you've commented on or shown interest
-     - **Working On** 🔨 - Issues you're actively working on
-     - **Done** ✅ - Issues you've successfully contributed to
+     - **Saved** - Issues you want to work on later
+     - **Applied** - Issues you've commented on or shown interest
+     - **Working On** - Issues you're actively working on
+     - **Done** - Issues you've successfully contributed to
 
 3. **Track Your Progress**
    - Visit the "Status" page to see your contribution journey
@@ -75,7 +75,7 @@ Look for issues that have these labels:
 
 ---
 
-## 🚀 Step 3: Making Your First Contribution
+## Step 3: Making Your First Contribution
 
 ### Before You Start Coding
 
@@ -127,7 +127,7 @@ Look for issues that have these labels:
 ### Making Your Changes
 
 1. **Update Status to "Working On"**
-   - Go back to FirstIssue.dev and update the issue status to "Working On" 🔨
+   - Go back to FirstIssue.dev and update the issue status to "Working On" 
 
 2. **Make Small, Focused Changes**
    - Only fix what the issue asks for
@@ -161,7 +161,7 @@ Look for issues that have these labels:
 
 ---
 
-## 📤 Step 4: Submitting Your Contribution
+## Step 4: Submitting Your Contribution
 
 ### Committing Your Changes
 
@@ -205,9 +205,9 @@ Look for issues that have these labels:
    Closes #123
    
    ## Testing
-   - Tested with valid email addresses ✅
-   - Tested with invalid email addresses ✅
-   - All existing tests pass ✅
+   - Tested with valid email addresses 
+   - Tested with invalid email addresses 
+   - All existing tests pass 
    ```
 
 3. **Submit the Pull Request**
@@ -224,13 +224,13 @@ Look for issues that have these labels:
    - Be polite and responsive
    - Make requested changes quickly
 
-3. **Celebrate When Merged! 🎉**
-   - Update your status to "Done" ✅
+3. **Celebrate When Merged! **
+   - Update your status to "Done" 
    - You've made your first open source contribution!
 
 ---
 
-## 💡 Tips for Success
+## Tips for Success
 
 ### Communication Tips
 - **Be Polite**: Always be respectful and professional
@@ -252,7 +252,7 @@ Look for issues that have these labels:
 
 ---
 
-## 🚨 Common Mistakes to Avoid
+## Common Mistakes to Avoid
 
 1. **Not Reading the Issue Properly**
    - Always understand what needs to be fixed before starting
@@ -274,7 +274,7 @@ Look for issues that have these labels:
 
 ---
 
-## 🎯 Your First Contribution Checklist
+## Your First Contribution Checklist
 
 Before submitting your pull request, make sure you've done all of these:
 
@@ -291,7 +291,7 @@ Before submitting your pull request, make sure you've done all of these:
 
 ---
 
-## 🌟 After Your First Contribution
+## After Your First Contribution
 
 ### Keep Contributing!
 - Look for more issues in the same project
@@ -310,7 +310,7 @@ Before submitting your pull request, make sure you've done all of these:
 
 ---
 
-## 🆘 Need Help?
+## Need Help?
 
 ### If You're Stuck:
 1. **Check the Project's Documentation**
@@ -338,7 +338,7 @@ Before submitting your pull request, make sure you've done all of these:
 
 ---
 
-## 🎉 Congratulations!
+## Congratulations!
 
 You now have everything you need to make your first open source contribution! Remember:
 
@@ -349,8 +349,8 @@ You now have everything you need to make your first open source contribution! Re
 
 Open source is about community, learning, and making the world a better place through code. You're now part of this amazing community!
 
-**Happy Contributing! 🚀**
+**Happy Contributing! **
 
 ---
 
-*Made with ❤️ for students starting their open source journey*
+*Made with  for students starting their open source journey*
