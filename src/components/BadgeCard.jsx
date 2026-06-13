@@ -1,6 +1,8 @@
 import { Lock, CheckCircle, Award, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 import FirstContributionBadge from './badges/FirstContributionBadge';
+import FirstMergeBadge from './badges/FirstMergeBadge';
+import ActiveContributorBadge from './badges/ActiveContributorBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -21,6 +23,12 @@ const BADGE_ICONS = {
 const BadgeCard = ({ badge, earned = false, onClick }) => {
   if (badge.id === 'first-contribution') {
     return <FirstContributionBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'first-merge') {
+    return <FirstMergeBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'contributor-5') {
+    return <ActiveContributorBadge earned={earned} onClick={onClick} />;
   }
 
   const rarityInfo = getBadgeRarityInfo(badge.rarity);
@@ -68,13 +76,6 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
             <Lock className="w-5 h-5 text-gray-600" />
           )}
         </div>
-
-        {/* Earned checkmark */}
-        {earned && (
-          <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#15161E]">
-            <CheckCircle className="w-3 h-3 text-white" />
-          </div>
-        )}
       </div>
 
       {/* Badge Info */}

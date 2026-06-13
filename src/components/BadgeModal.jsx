@@ -3,6 +3,8 @@ import { X, Calendar, CheckCircle, Lock, Share2, Award, Star, Zap, Trophy, Flame
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 import BadgeShareModal from './BadgeShareModal';
 import FirstContributionBadge from './badges/FirstContributionBadge';
+import FirstMergeBadge from './badges/FirstMergeBadge';
+import ActiveContributorBadge from './badges/ActiveContributorBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -129,6 +131,10 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
                     {earned ? (
                       badge.id === 'first-contribution' ? (
                         <FirstContributionBadge earned={earned} variant="raw" />
+                      ) : badge.id === 'first-merge' ? (
+                        <FirstMergeBadge earned={earned} variant="raw" />
+                      ) : badge.id === 'contributor-5' ? (
+                        <ActiveContributorBadge earned={earned} variant="raw" />
                       ) : (
                         <BadgeIcon className={`w-12 h-12 sm:w-14 sm:h-14 ${rarityInfo.color}`} />
                       )
@@ -139,12 +145,6 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
                 </div>
               </div>
 
-              {/* Earned checkmark */}
-              {earned && (
-                <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center border-3 border-[#12131a] shadow-lg">
-                  <CheckCircle className="w-4 h-4 text-white" />
-                </div>
-              )}
             </div>
 
             {/* Badge Name */}
