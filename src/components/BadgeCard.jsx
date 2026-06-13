@@ -7,6 +7,8 @@ import DedicatedContributorBadge from './badges/DedicatedContributorBadge';
 import ProlificContributorBadge from './badges/ProlificContributorBadge';
 import EliteContributorBadge from './badges/EliteContributorBadge';
 import MergeMasterBadge from './badges/MergeMasterBadge';
+import EarlyAdopterBadge from './badges/EarlyAdopterBadge';
+import MergeChampionBadge from './badges/MergeChampionBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -45,6 +47,12 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
   }
   if (badge.id === 'merge-master-5') {
     return <MergeMasterBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'early-adopter') {
+    return <EarlyAdopterBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'merge-master-10') {
+    return <MergeChampionBadge earned={earned} onClick={onClick} />;
   }
 
   const rarityInfo = getBadgeRarityInfo(badge.rarity);

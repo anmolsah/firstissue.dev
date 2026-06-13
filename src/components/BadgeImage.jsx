@@ -7,6 +7,8 @@ import DedicatedContributorBadge from './badges/DedicatedContributorBadge';
 import ProlificContributorBadge from './badges/ProlificContributorBadge';
 import EliteContributorBadge from './badges/EliteContributorBadge';
 import MergeMasterBadge from './badges/MergeMasterBadge';
+import EarlyAdopterBadge from './badges/EarlyAdopterBadge';
+import MergeChampionBadge from './badges/MergeChampionBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -106,6 +108,14 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = f
         ) : badge.id === 'merge-master-5' ? (
           <div className="w-full h-full flex items-center justify-center scale-125">
             <MergeMasterBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'early-adopter' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <EarlyAdopterBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'merge-master-10' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <MergeChampionBadge earned={true} variant="raw" />
           </div>
         ) : (
           <div className={`relative w-full h-full rounded-full bg-gradient-to-br ${colors.bg} border-4 ${colors.border} shadow-2xl ${colors.glow} flex items-center justify-center overflow-hidden`}>

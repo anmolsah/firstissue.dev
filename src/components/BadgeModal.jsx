@@ -9,6 +9,8 @@ import DedicatedContributorBadge from './badges/DedicatedContributorBadge';
 import ProlificContributorBadge from './badges/ProlificContributorBadge';
 import EliteContributorBadge from './badges/EliteContributorBadge';
 import MergeMasterBadge from './badges/MergeMasterBadge';
+import EarlyAdopterBadge from './badges/EarlyAdopterBadge';
+import MergeChampionBadge from './badges/MergeChampionBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -147,6 +149,10 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
                         <EliteContributorBadge earned={earned} variant="raw" />
                       ) : badge.id === 'merge-master-5' ? (
                         <MergeMasterBadge earned={earned} variant="raw" />
+                      ) : badge.id === 'early-adopter' ? (
+                        <EarlyAdopterBadge earned={earned} variant="raw" />
+                      ) : badge.id === 'merge-master-10' ? (
+                        <MergeChampionBadge earned={earned} variant="raw" />
                       ) : (
                         <BadgeIcon className={`w-12 h-12 sm:w-14 sm:h-14 ${rarityInfo.color}`} />
                       )
