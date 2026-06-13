@@ -171,21 +171,21 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
 
   useEffect(() => {
     if (isOpen && githubProfile) {
-      // Fetch existing tech_stack from profiles table
-      const fetchTechStack = async () => {
+      // Fetch existing profile data from profiles table
+      const fetchProfileData = async () => {
         try {
           const { data } = await supabase
             .from("profiles")
-            .select("tech_stack")
+            .select("name, bio, location, company, website, tech_stack")
             .eq("id", user.id)
             .single();
 
           setFormData({
-            name: githubProfile.name || "",
-            bio: githubProfile.bio || "",
-            location: githubProfile.location || "",
-            company: githubProfile.company || "",
-            website: githubProfile.blog || "",
+            name: data?.name || githubProfile.name || "",
+            bio: data?.bio || githubProfile.bio || "",
+            location: data?.location || githubProfile.location || "",
+            company: data?.company || githubProfile.company || "",
+            website: data?.website || githubProfile.blog || "",
             tech_stack: data?.tech_stack || [],
           });
         } catch {
@@ -199,7 +199,7 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
           });
         }
       };
-      fetchTechStack();
+      fetchProfileData();
     }
   }, [isOpen, githubProfile, user?.id]);
 
