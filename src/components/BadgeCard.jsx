@@ -1,6 +1,6 @@
-import React from 'react';
 import { Lock, CheckCircle, Award, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
+import FirstContributionBadge from './badges/FirstContributionBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -19,6 +19,10 @@ const BADGE_ICONS = {
 };
 
 const BadgeCard = ({ badge, earned = false, onClick }) => {
+  if (badge.id === 'first-contribution') {
+    return <FirstContributionBadge earned={earned} onClick={onClick} />;
+  }
+
   const rarityInfo = getBadgeRarityInfo(badge.rarity);
   const BadgeIcon = BADGE_ICONS[badge.id] || Award;
 

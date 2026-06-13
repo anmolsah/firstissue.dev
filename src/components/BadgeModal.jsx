@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { X, Calendar, CheckCircle, Lock, Share2, Award, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, ExternalLink } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 import BadgeShareModal from './BadgeShareModal';
+import FirstContributionBadge from './badges/FirstContributionBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -126,7 +127,11 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
                 <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${gradients.ring} p-[3px]`}>
                   <div className="w-full h-full rounded-full bg-[#12131a] flex items-center justify-center">
                     {earned ? (
-                      <BadgeIcon className={`w-12 h-12 sm:w-14 sm:h-14 ${rarityInfo.color}`} />
+                      badge.id === 'first-contribution' ? (
+                        <FirstContributionBadge earned={earned} variant="raw" />
+                      ) : (
+                        <BadgeIcon className={`w-12 h-12 sm:w-14 sm:h-14 ${rarityInfo.color}`} />
+                      )
                     ) : (
                       <Lock className="w-12 h-12 sm:w-14 sm:h-14 text-gray-600" />
                     )}
