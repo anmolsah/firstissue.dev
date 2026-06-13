@@ -21,38 +21,48 @@ const PrivacyPage = () => {
       <main className="py-16 px-6">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold text-white mb-4">Privacy Policy</h1>
-          <p className="text-gray-500 mb-12">Last updated: January 2024</p>
-
-          <div className="prose prose-invert max-w-none">
-            <section className="mb-12">
-              <h2 className="text-2xl font-semibold text-white mb-4">1. Introduction</h2>
-              <p className="text-gray-400 leading-relaxed mb-4">
-                At FirstIssue.dev, accessible from https://firstissue.dev, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by FirstIssue.dev and how we use it.
-              </p>
-              <p className="text-gray-400 leading-relaxed">
-                If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us. This Privacy Policy applies only to our online activities and is valid for visitors to our website with regards to the information that they shared and/or collect in FirstIssue.dev.
-              </p>
-            </section>
-
-            <section className="mb-12">
-              <h2 className="text-2xl font-semibold text-white mb-4">2. Consent</h2>
-              <p className="text-gray-400 leading-relaxed">
-                By using our website, you hereby consent to our Privacy Policy and agree to its terms.
-              </p>
-            </section>
-
-            <section className="mb-12">
-              <h2 className="text-2xl font-semibold text-white mb-4">3. Information We Collect</h2>
-              <p className="text-gray-400 leading-relaxed mb-4">
-                The personal information that you are asked to provide, and the reasons why you are asked to provide it, will be made clear to you at the point we ask you to provide your personal information.
-              </p>
-              <p className="text-gray-400 leading-relaxed mb-4">
-                If you contact us directly, we may receive additional information about you such as your name, email address, phone number, the contents of the message and/or attachments you may send us, and any other information you may choose to provide.
-              </p>
-              <p className="text-gray-400 leading-relaxed">
-                When you register for an Account, we may ask for your contact information, including items such as name, company name, address, email address, and telephone number. For GitHub authentication, we collect your GitHub profile information as permitted by your settings.
-              </p>
-            </section>
+          <p className="text-gray-500 mb-12">Last updated: June 2026</p>
+ 
+           <div className="prose prose-invert max-w-none">
+             <section className="mb-12">
+               <h2 className="text-2xl font-semibold text-white mb-4">1. Introduction</h2>
+               <p className="text-gray-400 leading-relaxed mb-4">
+                 At FirstIssue.dev, accessible from https://firstissue.dev, one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by FirstIssue.dev and how we use it.
+               </p>
+               <p className="text-gray-400 leading-relaxed">
+                 If you have additional questions or require more information about our Privacy Policy, do not hesitate to contact us. This Privacy Policy applies only to our online activities and is valid for visitors to our website with regards to the information that they shared and/or collect in FirstIssue.dev.
+               </p>
+             </section>
+ 
+             <section className="mb-12">
+               <h2 className="text-2xl font-semibold text-white mb-4">2. Consent</h2>
+               <p className="text-gray-400 leading-relaxed">
+                 By using our website, you hereby consent to our Privacy Policy and agree to its terms.
+               </p>
+             </section>
+ 
+             <section className="mb-12">
+               <h2 className="text-2xl font-semibold text-white mb-4">3. Information We Collect</h2>
+               <p className="text-gray-400 leading-relaxed mb-4">
+                 The personal information that you are asked to provide, and the reasons why you are asked to provide it, will be made clear to you at the point we ask you to provide your personal information.
+               </p>
+               <p className="text-gray-400 leading-relaxed mb-4">
+                 If you contact us directly, we may receive additional information about you such as your name, email address, phone number, the contents of the message and/or attachments you may send us, and any other information you may choose to provide.
+               </p>
+               <p className="text-gray-400 leading-relaxed mb-4">
+                 When you register for an Account, we may ask for your contact information, including items such as name, company name, address, email address, and telephone number.
+               </p>
+               <h3 className="text-xl font-medium text-white mt-6 mb-3">GitHub Integration & OAuth Scopes</h3>
+               <p className="text-gray-400 leading-relaxed mb-4">
+                 To link your open-source contributions, you can log in using your GitHub account. We strictly adhere to the principle of least privilege:
+               </p>
+               <ul className="list-disc list-inside text-gray-400 space-y-2 ml-4 mb-4">
+                 <li>We only request basic read-only profile access (<code className="text-blue-400 bg-white/5 px-1.5 py-0.5 rounded text-sm">read:user</code>) and email address verification (<code className="text-blue-400 bg-white/5 px-1.5 py-0.5 rounded text-sm">user:email</code>).</li>
+                 <li><strong>No Repository Access:</strong> We do NOT request permission to read or write to your repositories, and we have zero access to your private codebase, repository settings, or private data.</li>
+                 <li><strong>Public Data Verification:</strong> Any pull request or issue tracking features on FirstIssue.dev are verified solely using public GitHub APIs for public repositories. We do not perform write actions of any kind on your GitHub account.</li>
+                 <li>You can disconnect your GitHub account or revoke authorization at any time directly through your GitHub Account Settings.</li>
+               </ul>
+             </section>
 
             <section className="mb-12">
               <h2 className="text-2xl font-semibold text-white mb-4">4. How We Use Your Information</h2>

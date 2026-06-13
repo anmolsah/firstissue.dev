@@ -93,7 +93,7 @@ export const AuthProvider = ({ children }) => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        scopes: "read:user user:email public_repo",
+        scopes: "read:user user:email",
         redirectTo: `${window.location.origin}/status`,
       },
     });
