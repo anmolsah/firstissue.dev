@@ -6,10 +6,9 @@ FirstIssue.dev is a developer platform designed to help engineers start and trac
 
 Comprehensive guides are available in the `docs` directory:
 - [System Architecture](docs/ARCHITECTURE.md) - Details on workflow and sync architecture.
-- [GitHub Integration](docs/GITHUB_INTEGRATION.md) - Guide for configuring OAuth credentials.
 - [Contributing Guidelines](docs/CONTRIBUTING.md) - Project standards and PR processes.
 - [Student Onboarding](docs/STUDENT_GUIDE.md) - Introduction to finding your first issue.
-- [Setup Checklist](docs/SETUP_CHECKLIST.md) - Quick reference for developer environment setup.
+
 
 ## Contributing
 
