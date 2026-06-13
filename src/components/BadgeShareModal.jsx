@@ -108,7 +108,7 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
           {/* Badge Preview */}
           <div className="bg-[#0B0C10] rounded-xl p-8 mb-6 flex justify-center" id={`badge-share-${badge.id}`}>
             <div className="text-center">
-              <BadgeImage badge={badge} size="large" showDetails={true} disableBlur={isCapturing} />
+              <BadgeImage badge={badge} size="large" showDetails={true} disableBlur={isCapturing} showEarned={false} />
               <div className="mt-16 pt-4 border-t border-white/5">
                 <p className="text-gray-400 text-sm mb-1">Earned by</p>
                 <p className="text-white font-semibold">@{username}</p>

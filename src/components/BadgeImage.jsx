@@ -5,6 +5,8 @@ import FirstMergeBadge from './badges/FirstMergeBadge';
 import ActiveContributorBadge from './badges/ActiveContributorBadge';
 import DedicatedContributorBadge from './badges/DedicatedContributorBadge';
 import ProlificContributorBadge from './badges/ProlificContributorBadge';
+import EliteContributorBadge from './badges/EliteContributorBadge';
+import MergeMasterBadge from './badges/MergeMasterBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -51,7 +53,7 @@ const RARITY_COLORS = {
   }
 };
 
-const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = false }) => {
+const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = false, showEarned = true }) => {
   const BadgeIcon = BADGE_ICONS[badge.id] || Award;
   const colors = RARITY_COLORS[badge.rarity] || RARITY_COLORS.common;
   
@@ -97,6 +99,14 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = f
           <div className="w-full h-full flex items-center justify-center scale-125">
             <ProlificContributorBadge earned={true} variant="raw" />
           </div>
+        ) : badge.id === 'contributor-50' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <EliteContributorBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'merge-master-5' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <MergeMasterBadge earned={true} variant="raw" />
+          </div>
         ) : (
           <div className={`relative w-full h-full rounded-full bg-gradient-to-br ${colors.bg} border-4 ${colors.border} shadow-2xl ${colors.glow} flex items-center justify-center overflow-hidden`}>
             {/* Shine Effect */}
@@ -132,7 +142,7 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = f
       </div>
 
       {/* Earned Date Badge */}
-      {badge.earnedAt && (
+      {showEarned && badge.earnedAt && (
         <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-white">
           ✓ Earned
         </div>

@@ -106,7 +106,7 @@ const BadgeShowcasePage = () => {
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
               
               <div className="relative z-10 flex flex-col items-center">
-                <BadgeImage badge={badge} size="large" showDetails={true} disableBlur={isCapturing} />
+                <BadgeImage badge={badge} size="large" showDetails={true} disableBlur={isCapturing} showEarned={false} />
                 
                 <div className="mt-20 pt-6 border-t border-white/5 w-full text-center">
                   <p className="text-gray-500 text-xs uppercase tracking-widest mb-1">Authenticated by</p>
