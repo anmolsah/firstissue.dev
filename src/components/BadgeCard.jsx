@@ -3,6 +3,8 @@ import { getBadgeRarityInfo } from '../utils/badgeSystem';
 import FirstContributionBadge from './badges/FirstContributionBadge';
 import FirstMergeBadge from './badges/FirstMergeBadge';
 import ActiveContributorBadge from './badges/ActiveContributorBadge';
+import DedicatedContributorBadge from './badges/DedicatedContributorBadge';
+import ProlificContributorBadge from './badges/ProlificContributorBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -29,6 +31,12 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
   }
   if (badge.id === 'contributor-5') {
     return <ActiveContributorBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'contributor-10') {
+    return <DedicatedContributorBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'contributor-25') {
+    return <ProlificContributorBadge earned={earned} onClick={onClick} />;
   }
 
   const rarityInfo = getBadgeRarityInfo(badge.rarity);

@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { Lock } from "lucide-react";
 import BadgeContainer from "./BadgeContainer";
 
-const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) => {
+const DedicatedContributorBadge = ({ earned = false, onClick, variant = "card" }) => {
   const numberRef = useRef(null);
   const outerRingRef = useRef(null);
   const innerRingRef = useRef(null);
@@ -34,10 +34,10 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
       stagger: 0.15
     });
 
-    // Scale and bounce number "5"
+    // Scale and bounce number "10"
     tl.fromTo(numberRef.current,
       { scale: 0.2, opacity: 0, transformOrigin: "50% 50%" },
-      { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(2)" },
+      { scale: 1, opacity: 1, duration: 0.8, ease: "back.out(1.8)" },
       "-=0.5"
     );
 
@@ -45,7 +45,7 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
     gsap.to(outerRingRef.current, {
       rotation: 360,
       transformOrigin: "50% 50%",
-      duration: 28,
+      duration: 25,
       repeat: -1,
       ease: "none"
     });
@@ -53,7 +53,7 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
     gsap.to(innerRingRef.current, {
       rotation: -360,
       transformOrigin: "50% 50%",
-      duration: 18,
+      duration: 15,
       repeat: -1,
       ease: "none"
     });
@@ -62,9 +62,9 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
     particlesRef.current.forEach((p, idx) => {
       if (p) {
         gsap.to(p, {
-          y: "-=8",
-          opacity: 0.2,
-          duration: 1.2 + idx * 0.3,
+          y: "-=6",
+          opacity: 0.3,
+          duration: 1.0 + idx * 0.4,
           repeat: -1,
           yoyo: true,
           ease: "sine.inOut"
@@ -78,47 +78,47 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
       {earned ? (
         <svg
           viewBox="0 0 200 200"
-          className="w-full h-full drop-shadow-[0_0_15px_rgba(168,85,247,0.25)]"
+          className="w-full h-full drop-shadow-[0_0_15px_rgba(99,102,241,0.25)]"
         >
           <defs>
-            <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#C084FC" />
-              <stop offset="50%" stopColor="#A855F7" />
-              <stop offset="100%" stopColor="#7E22CE" />
+            <linearGradient id="indigoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#818CF8" />
+              <stop offset="50%" stopColor="#6366F1" />
+              <stop offset="100%" stopColor="#4338CA" />
             </linearGradient>
-            <linearGradient id="neonPurpleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#E9D5FF" />
-              <stop offset="100%" stopColor="#A855F7" />
+            <linearGradient id="neonIndigo" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#C7D2FE" />
+              <stop offset="100%" stopColor="#6366F1" />
             </linearGradient>
-            <radialGradient id="purpleGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#A855F7" stopOpacity="0.25" />
+            <radialGradient id="indigoGlow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#6366F1" stopOpacity="0.25" />
               <stop offset="100%" stopColor="#12131C" stopOpacity="0" />
             </radialGradient>
-            <filter id="purpleBlur">
+            <filter id="indigoBlur">
               <feGaussianBlur stdDeviation="3" result="blur" />
               <feComposite in="SourceGraphic" in2="blur" operator="over" />
             </filter>
           </defs>
 
           {/* Backdrop Glow */}
-          <circle cx="100" cy="100" r="80" fill="url(#purpleGlow)" />
+          <circle cx="100" cy="100" r="80" fill="url(#indigoGlow)" />
 
           {/* Rotating Outer Hexagonal Orbit */}
           <g ref={outerRingRef}>
             <polygon
               points="100,10 178,55 178,145 100,190 22,145 22,55"
               fill="none"
-              stroke="url(#purpleGradient)"
+              stroke="url(#indigoGradient)"
               strokeWidth="1.5"
-              strokeDasharray="10 12"
+              strokeDasharray="8 10"
               strokeOpacity="0.5"
             />
-            <circle cx="100" cy="10" r="3" fill="#C084FC" />
-            <circle cx="178" cy="55" r="3" fill="#C084FC" />
-            <circle cx="178" cy="145" r="3" fill="#C084FC" />
-            <circle cx="100" cy="190" r="3" fill="#C084FC" />
-            <circle cx="22" cy="145" r="3" fill="#C084FC" />
-            <circle cx="22" cy="55" r="3" fill="#C084FC" />
+            <circle cx="100" cy="10" r="3" fill="#818CF8" />
+            <circle cx="178" cy="55" r="3" fill="#818CF8" />
+            <circle cx="178" cy="145" r="3" fill="#818CF8" />
+            <circle cx="100" cy="190" r="3" fill="#818CF8" />
+            <circle cx="22" cy="145" r="3" fill="#818CF8" />
+            <circle cx="22" cy="55" r="3" fill="#818CF8" />
           </g>
 
           {/* Rotating Inner Orbit Ring */}
@@ -128,9 +128,9 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
               cy="100"
               r="72"
               fill="none"
-              stroke="url(#neonPurpleGrad)"
+              stroke="url(#neonIndigo)"
               strokeWidth="2"
-              strokeDasharray="40 30"
+              strokeDasharray="30 40"
               strokeOpacity="0.6"
             />
           </g>
@@ -138,24 +138,24 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
           {/* Shield Base */}
           <polygon
             points="100,35 155,65 155,135 100,165 45,135 45,65"
-            fill="#14111E"
+            fill="#11111E"
             stroke="#1E293B"
             strokeWidth="3"
           />
           <polygon
             points="100,42 148,68 148,132 100,158 52,132 52,68"
             fill="none"
-            stroke="url(#purpleGradient)"
+            stroke="url(#indigoGradient)"
             strokeWidth="1.5"
             strokeOpacity="0.8"
           />
 
           {/* Floating Sparkles */}
           <g>
-            <circle ref={el => particlesRef.current[0] = el} cx="70" cy="65" r="2.5" fill="#E9D5FF" opacity="0.6" />
-            <circle ref={el => particlesRef.current[1] = el} cx="130" cy="65" r="2" fill="#E9D5FF" opacity="0.4" />
-            <circle ref={el => particlesRef.current[2] = el} cx="75" cy="140" r="2" fill="#E9D5FF" opacity="0.5" />
-            <circle ref={el => particlesRef.current[3] = el} cx="125" cy="140" r="2.5" fill="#E9D5FF" opacity="0.6" />
+            <circle ref={el => particlesRef.current[0] = el} cx="68" cy="62" r="2" fill="#C7D2FE" opacity="0.6" />
+            <circle ref={el => particlesRef.current[1] = el} cx="132" cy="62" r="2.5" fill="#C7D2FE" opacity="0.4" />
+            <circle ref={el => particlesRef.current[2] = el} cx="72" cy="138" r="2.5" fill="#C7D2FE" opacity="0.5" />
+            <circle ref={el => particlesRef.current[3] = el} cx="128" cy="138" r="2" fill="#C7D2FE" opacity="0.6" />
           </g>
 
           {/* Code Brackets */}
@@ -163,7 +163,7 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
             ref={leftBracketRef}
             d="M 78 82 L 64 100 L 78 118"
             fill="none"
-            stroke="url(#neonPurpleGrad)"
+            stroke="url(#neonIndigo)"
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -172,36 +172,36 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
             ref={rightBracketRef}
             d="M 122 82 L 136 100 L 122 118"
             fill="none"
-            stroke="url(#neonPurpleGrad)"
+            stroke="url(#neonIndigo)"
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
 
-          {/* Big central achievement number "5" */}
+          {/* Big central achievement number "10" */}
           <g ref={numberRef}>
             <text
               x="100"
               y="114"
               fontFamily="system-ui, -apple-system, sans-serif"
-              fontSize="48"
+              fontSize="44"
               fontWeight="900"
-              fill="url(#purpleGradient)"
+              fill="url(#indigoGradient)"
               textAnchor="middle"
-              filter="url(#purpleBlur)"
+              filter="url(#indigoBlur)"
             >
-              5
+              10
             </text>
             <text
               x="100"
               y="114"
               fontFamily="system-ui, -apple-system, sans-serif"
-              fontSize="48"
+              fontSize="44"
               fontWeight="900"
-              fill="url(#neonPurpleGrad)"
+              fill="url(#neonIndigo)"
               textAnchor="middle"
             >
-              5
+              10
             </text>
           </g>
         </svg>
@@ -211,7 +211,7 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
           <svg viewBox="0 0 200 200" className="w-full h-full opacity-20 filter grayscale">
             <polygon points="100,35 155,65 155,135 100,165 45,135 45,65" fill="#1E293B" stroke="#475569" strokeWidth="3" />
             <path d="M 78 82 L 64 100 L 78 118 M 122 82 L 136 100 L 122 118" fill="none" stroke="#64748B" strokeWidth="3" strokeLinecap="round" />
-            <text x="100" y="114" fontFamily="sans-serif" fontSize="48" fontWeight="900" fill="#64748B" textAnchor="middle">5</text>
+            <text x="100" y="114" fontFamily="sans-serif" fontSize="44" fontWeight="900" fill="#64748B" textAnchor="middle">10</text>
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-10 h-10 rounded-full bg-[#0b0c10]/90 border border-white/5 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
@@ -228,10 +228,10 @@ const ActiveContributorBadge = ({ earned = false, onClick, variant = "card" }) =
   }
 
   return (
-    <BadgeContainer earned={earned} onClick={onClick} title="Active Contributor">
+    <BadgeContainer earned={earned} onClick={onClick} title="Dedicated Contributor">
       {renderContent()}
     </BadgeContainer>
   );
 };
 
-export default ActiveContributorBadge;
+export default DedicatedContributorBadge;

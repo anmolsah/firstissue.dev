@@ -59,7 +59,7 @@ const FirstMergeBadge = ({ earned = false, onClick, variant = "card" }) => {
   }, [earned]);
 
   const renderContent = () => (
-    <div className="relative w-28 h-28 flex items-center justify-center">
+    <div className={`relative ${variant === "raw" ? "w-full h-full" : "w-28 h-28"} flex items-center justify-center`}>
       {earned ? (
         <svg
           viewBox="0 0 200 200"

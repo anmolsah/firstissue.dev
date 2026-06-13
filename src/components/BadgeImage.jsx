@@ -1,5 +1,10 @@
 import React from 'react';
 import { Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, Award } from 'lucide-react';
+import FirstContributionBadge from './badges/FirstContributionBadge';
+import FirstMergeBadge from './badges/FirstMergeBadge';
+import ActiveContributorBadge from './badges/ActiveContributorBadge';
+import DedicatedContributorBadge from './badges/DedicatedContributorBadge';
+import ProlificContributorBadge from './badges/ProlificContributorBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -72,24 +77,46 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = f
         )}
         
         {/* Main Badge Circle */}
-        <div className={`relative w-full h-full rounded-full bg-gradient-to-br ${colors.bg} border-4 ${colors.border} shadow-2xl ${colors.glow} flex items-center justify-center overflow-hidden`}>
-          {/* Shine Effect */}
-          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent" />
-          
-          {/* Legendary Sparkles */}
-          {badge.rarity === 'legendary' && (
-            <>
-              <Sparkles className="absolute top-4 right-4 w-6 h-6 text-yellow-300 animate-pulse" />
-              <Sparkles className="absolute bottom-4 left-4 w-4 h-4 text-yellow-300 animate-pulse" style={{ animationDelay: '0.5s' }} />
-            </>
-          )}
-          
-          {/* Icon */}
-          <BadgeIcon className={`${iconSizes[size]} text-white drop-shadow-lg`} />
-          
-          {/* Rarity Ring */}
-          <div className={`absolute inset-0 rounded-full border-2 ${colors.border} opacity-50`} />
-        </div>
+        {badge.id === 'first-contribution' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <FirstContributionBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'first-merge' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <FirstMergeBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'contributor-5' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <ActiveContributorBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'contributor-10' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <DedicatedContributorBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'contributor-25' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <ProlificContributorBadge earned={true} variant="raw" />
+          </div>
+        ) : (
+          <div className={`relative w-full h-full rounded-full bg-gradient-to-br ${colors.bg} border-4 ${colors.border} shadow-2xl ${colors.glow} flex items-center justify-center overflow-hidden`}>
+            {/* Shine Effect */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent" />
+            
+            {/* Legendary Sparkles */}
+            {badge.rarity === 'legendary' && (
+              <>
+                <Sparkles className="absolute top-4 right-4 w-6 h-6 text-yellow-300 animate-pulse" />
+                <Sparkles className="absolute bottom-4 left-4 w-4 h-4 text-yellow-300 animate-pulse" style={{ animationDelay: '0.5s' }} />
+              </>
+            )}
+            
+            {/* Icon */}
+            <BadgeIcon className={`${iconSizes[size]} text-white drop-shadow-lg`} />
+            
+            {/* Rarity Ring */}
+            <div className={`absolute inset-0 rounded-full border-2 ${colors.border} opacity-50`} />
+          </div>
+        )}
 
         {/* Badge Details */}
         {showDetails && (
