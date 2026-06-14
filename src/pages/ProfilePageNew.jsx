@@ -14,6 +14,7 @@ import BadgeUnlockedNotification from "../components/BadgeUnlockedNotification";
 import AppSidebar from "../components/AppSidebar";
 import ProofOfWorkTab from "../components/ProofOfWorkTab";
 import { useBadges } from "../hooks/useBadges";
+import { useAttestations } from "../hooks/useProofOfWork";
 import {
   Bookmark,
   Star,
@@ -79,16 +80,18 @@ const ProfilePageNew = () => {
       true, // Enable auto-sync for real-time updates
     );
 
-  // Use badges hook for notifications
-  const { newlyUnlockedBadge, dismissNotification } = useBadges(
-    ghStats,
-    contributions
-  );
-
   // TanStack Query hooks for data
   const { data: bookmarks = [], isLoading: bookmarksLoading } = useBookmarks(user?.id);
   const { data: githubProfile = null } = useGitHubProfile(getGitHubUsername());
   const { data: customProfile = null } = useCustomProfile(user?.id);
+  const { data: attestations = [] } = useAttestations(user?.id);
+
+  // Use badges hook for notifications
+  const { newlyUnlockedBadge, dismissNotification } = useBadges(
+    ghStats,
+    contributions,
+    attestations
+  );
 
   const loading = syncLoading || bookmarksLoading;
 
@@ -480,6 +483,7 @@ const ProfilePageNew = () => {
             <BadgesSection
               stats={contributionStats}
               contributions={contributions}
+              attestations={attestations}
               username={getGitHubUsername()}
             />
           </div>

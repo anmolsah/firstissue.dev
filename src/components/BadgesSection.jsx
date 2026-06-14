@@ -10,7 +10,7 @@ const FILTER_TABS = [
   { key: 'locked', label: 'Locked' },
 ];
 
-const BadgesSection = ({ stats, contributions = [], username }) => {
+const BadgesSection = ({ stats, contributions = [], attestations = [], username }) => {
   const [earnedBadges, setEarnedBadges] = useState([]);
   const [selectedBadge, setSelectedBadge] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -18,10 +18,10 @@ const BadgesSection = ({ stats, contributions = [], username }) => {
 
   useEffect(() => {
     if (stats) {
-      const badges = checkEarnedBadges(stats, contributions);
+      const badges = checkEarnedBadges(stats, contributions, attestations);
       setEarnedBadges(badges);
     }
-  }, [stats, contributions]);
+  }, [stats, contributions, attestations]);
 
   const allBadges = useMemo(() => Object.values(BADGE_DEFINITIONS), []);
   const earnedBadgeIds = useMemo(() => earnedBadges.map(b => b.id), [earnedBadges]);
@@ -62,8 +62,8 @@ const BadgesSection = ({ stats, contributions = [], username }) => {
 
   // Next badge to unlock
   const nextBadge = useMemo(
-    () => stats ? getNextBadgeToUnlock(stats, contributions) : null,
-    [stats, contributions]
+    () => stats ? getNextBadgeToUnlock(stats, contributions, attestations) : null,
+    [stats, contributions, attestations]
   );
 
   return (

@@ -26,7 +26,7 @@ function saveAcknowledgedBadges(badgeIds) {
   }
 }
 
-export const useBadges = (stats, contributions = []) => {
+export const useBadges = (stats, contributions = [], attestations = []) => {
   const [earnedBadges, setEarnedBadges] = useState([]);
   const [newlyUnlockedBadge, setNewlyUnlockedBadge] = useState(null);
 
@@ -40,10 +40,14 @@ export const useBadges = (stats, contributions = []) => {
     return contributions.length + '-' + (contributions[0]?.id || '');
   }, [contributions]);
 
+  const attestationsKey = useMemo(() => {
+    return attestations.length + '-' + (attestations[0]?.id || '');
+  }, [attestations]);
+
   useEffect(() => {
     if (!stats) return;
 
-    const badges = checkEarnedBadges(stats, contributions);
+    const badges = checkEarnedBadges(stats, contributions, attestations);
     setEarnedBadges(badges);
 
     // Load previously acknowledged badges from localStorage
@@ -63,7 +67,8 @@ export const useBadges = (stats, contributions = []) => {
     // badges earned in earlier sessions are also covered.
     const allEarnedIds = new Set([...acknowledged, ...badges.map(b => b.id)]);
     saveAcknowledgedBadges(allEarnedIds);
-  }, [statsKey, contributionsKey]); // Use stable string keys instead of object references
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statsKey, contributionsKey, attestationsKey]); // Use stable string keys instead of object references
 
   const dismissNotification = useCallback(() => {
     if (newlyUnlockedBadge) {

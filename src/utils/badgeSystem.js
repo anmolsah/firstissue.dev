@@ -232,6 +232,63 @@ export const BADGE_DEFINITIONS = {
     requirement: (stats) => stats.signupIndex > 0 && stats.signupIndex <= 150,
     rarity: 'legendary',
     color: 'cyan'
+  },
+
+  PROOF_OF_WORK_1: {
+    id: 'pow-1',
+    name: 'Verified Contributor',
+    description: 'Verified your first Proof of Work',
+    image: '/badges/pow-1.svg',
+    criteria: {
+      narrative: 'User must verify at least one merged Pull Request as a Proof of Work credential'
+    },
+    issuer: {
+      name: 'FirstIssue.dev',
+      url: 'https://firstissue.dev',
+      email: 'badges@firstissue.dev'
+    },
+    type: 'BadgeClass',
+    requirement: (stats, contributions, attestations) => attestations && attestations.length >= 1,
+    rarity: 'common',
+    color: 'emerald'
+  },
+
+  PROOF_OF_WORK_10: {
+    id: 'pow-10',
+    name: 'Impact Maker',
+    description: 'Verified 10 Proof of Work credentials',
+    image: '/badges/pow-10.svg',
+    criteria: {
+      narrative: 'User must verify at least 10 merged Pull Requests as Proof of Work credentials'
+    },
+    issuer: {
+      name: 'FirstIssue.dev',
+      url: 'https://firstissue.dev',
+      email: 'badges@firstissue.dev'
+    },
+    type: 'BadgeClass',
+    requirement: (stats, contributions, attestations) => attestations && attestations.length >= 10,
+    rarity: 'rare',
+    color: 'cyan'
+  },
+
+  CURATOR_1: {
+    id: 'curator-1',
+    name: 'Curator',
+    description: 'Bookmarked your first open source issue',
+    image: '/badges/curator-1.svg',
+    criteria: {
+      narrative: 'User must bookmark at least one open source issue on FirstIssue.dev'
+    },
+    issuer: {
+      name: 'FirstIssue.dev',
+      url: 'https://firstissue.dev',
+      email: 'badges@firstissue.dev'
+    },
+    type: 'BadgeClass',
+    requirement: (stats) => stats.bookmarksCount >= 1 || stats.saved >= 1,
+    rarity: 'common',
+    color: 'blue'
   }
 };
 
@@ -266,7 +323,7 @@ function calculateStreak(contributions) {
 }
 
 // Check which badges a user has earned
-export function checkEarnedBadges(stats, contributions = []) {
+export function checkEarnedBadges(stats, contributions = [], attestations = []) {
   const earnedBadges = [];
 
   // Derive a stable "earned at" timestamp from the contributions data
@@ -279,7 +336,7 @@ export function checkEarnedBadges(stats, contributions = []) {
   const baseDate = sortedDates.length > 0 ? sortedDates[0] : new Date().toISOString();
 
   Object.entries(BADGE_DEFINITIONS).forEach(([key, badge]) => {
-    if (badge.requirement(stats, contributions)) {
+    if (badge.requirement(stats, contributions, attestations)) {
       // Use a stable earnedAt: the date of the Nth contribution that triggered this badge,
       // or the base date for badges that don't depend on contribution count
       let earnedAt = baseDate;
@@ -291,6 +348,15 @@ export function checkEarnedBadges(stats, contributions = []) {
           .sort((a, b) => new Date(a.pr_merged_at) - new Date(b.pr_merged_at));
         if (mergedContribs.length > 0) {
           earnedAt = mergedContribs[mergedContribs.length - 1].pr_merged_at;
+        }
+      } else if (key.includes('PROOF_OF_WORK') && attestations && attestations.length > 0) {
+        const sortedAttestations = [...attestations].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        if (key === 'PROOF_OF_WORK_1' && sortedAttestations[0]) {
+          earnedAt = sortedAttestations[0].created_at;
+        } else if (key === 'PROOF_OF_WORK_10' && sortedAttestations[9]) {
+          earnedAt = sortedAttestations[9].created_at;
+        } else {
+          earnedAt = sortedAttestations[sortedAttestations.length - 1].created_at;
         }
       } else if (sortedDates.length > 0) {
         // For other badges, use the most recent contribution date as the earned date
@@ -377,9 +443,9 @@ export function getBadgeRarityInfo(rarity) {
 }
 
 // Get next badge to unlock
-export function getNextBadgeToUnlock(stats, contributions = []) {
+export function getNextBadgeToUnlock(stats, contributions = [], attestations = []) {
   const allBadges = Object.values(BADGE_DEFINITIONS);
-  const unearnedBadges = allBadges.filter(badge => !badge.requirement(stats, contributions));
+  const unearnedBadges = allBadges.filter(badge => !badge.requirement(stats, contributions, attestations));
   
   // Sort by difficulty/requirement
   return unearnedBadges[0] || null;
