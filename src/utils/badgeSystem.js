@@ -270,25 +270,6 @@ export const BADGE_DEFINITIONS = {
     requirement: (stats, contributions, attestations) => attestations && attestations.length >= 10,
     rarity: 'rare',
     color: 'cyan'
-  },
-
-  CURATOR_1: {
-    id: 'curator-1',
-    name: 'Curator',
-    description: 'Bookmarked your first open source issue',
-    image: '/badges/curator-1.svg',
-    criteria: {
-      narrative: 'User must bookmark at least one open source issue on FirstIssue.dev'
-    },
-    issuer: {
-      name: 'FirstIssue.dev',
-      url: 'https://firstissue.dev',
-      email: 'badges@firstissue.dev'
-    },
-    type: 'BadgeClass',
-    requirement: (stats) => stats.bookmarksCount >= 1 || stats.saved >= 1,
-    rarity: 'common',
-    color: 'blue'
   }
 };
 

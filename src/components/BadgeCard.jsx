@@ -14,7 +14,6 @@ import MonthMasterBadge from './badges/MonthMasterBadge';
 import PerfectScoreBadge from './badges/PerfectScoreBadge';
 import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
-import CuratorBadge from './badges/CuratorBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -74,9 +73,6 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
   }
   if (badge.id === 'pow-10') {
     return <ImpactMakerBadge earned={earned} onClick={onClick} />;
-  }
-  if (badge.id === 'curator-1') {
-    return <CuratorBadge earned={earned} onClick={onClick} />;
   }
 
   const rarityInfo = getBadgeRarityInfo(badge.rarity);

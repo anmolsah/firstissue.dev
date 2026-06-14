@@ -16,7 +16,6 @@ import MonthMasterBadge from './badges/MonthMasterBadge';
 import PerfectScoreBadge from './badges/PerfectScoreBadge';
 import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
-import CuratorBadge from './badges/CuratorBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -169,8 +168,6 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
                         <VerifiedContributorBadge earned={earned} variant="raw" />
                       ) : badge.id === 'pow-10' ? (
                         <ImpactMakerBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'curator-1' ? (
-                        <CuratorBadge earned={earned} variant="raw" />
                       ) : (
                         <BadgeIcon className={`w-12 h-12 sm:w-14 sm:h-14 ${rarityInfo.color}`} />
                       )
