@@ -136,7 +136,7 @@ const DocsSectionPage = () => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full overflow-hidden">
             <div className="mb-8">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-6">
                 <BookOpen className="w-3.5 h-3.5 text-zinc-400" />

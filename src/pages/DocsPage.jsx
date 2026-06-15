@@ -374,7 +374,7 @@ const DocsPage = () => {
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full overflow-hidden">
             {/* Hero Section */}
             <div className="mb-8 sm:mb-12">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-4 sm:mb-6">

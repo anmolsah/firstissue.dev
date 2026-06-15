@@ -185,7 +185,7 @@ const DocsArticlePage = () => {
   }
 
   const CodeBlock = ({ children, language = "bash", id }) => (
-    <div className="relative border border-zinc-800/80 bg-[#12131a] rounded-lg overflow-hidden group my-6">
+    <div className="relative border border-zinc-800/80 bg-[#12131a] rounded-lg overflow-hidden group my-6 w-full max-w-full">
       <div className="flex items-center justify-between bg-zinc-950/30 px-4 py-1.5 border-b border-zinc-800/40">
         <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">
           {language}
@@ -207,8 +207,8 @@ const DocsArticlePage = () => {
           )}
         </button>
       </div>
-      <pre className="p-4 overflow-x-auto font-mono text-[13px] text-zinc-300 leading-relaxed bg-[#12131a]">
-        <code>{children}</code>
+      <pre className="p-4 overflow-x-auto font-mono text-[13px] text-zinc-300 leading-relaxed bg-[#12131a] w-full max-w-full">
+        <code className="block w-full overflow-x-auto">{children}</code>
       </pre>
     </div>
   );
@@ -337,7 +337,7 @@ const DocsArticlePage = () => {
           </div>
 
           {/* Main Article Container (Center Column) */}
-          <div className="flex-1 min-w-0 max-w-[760px] mx-auto lg:mx-0">
+          <div className="flex-1 min-w-0 max-w-[760px] mx-auto lg:mx-0 w-full overflow-hidden">
             <article>
               {/* Article Header */}
               <div className="mb-8">
@@ -381,10 +381,10 @@ const DocsArticlePage = () => {
               </div>
 
               {/* Article Content */}
-              <div className="prose prose-invert max-w-none">
+              <div className="prose prose-invert max-w-none w-full break-words">
                 {currentArticle.content.map((block, index) => {
                   switch (block.type) {
-                    case "heading":
+                    case "heading": {
                       const HeadingTag = `h${block.level}`;
                       const headingId = block.level === 2 
                         ? block.text.toLowerCase().replace(/[^a-z0-9]+/g, "-")
@@ -414,12 +414,13 @@ const DocsArticlePage = () => {
                           </HeadingTag>
                         </div>
                       );
+                    }
 
                     case "paragraph":
                       return (
                         <p
                           key={index}
-                          className="text-zinc-300 mb-4 leading-relaxed text-[15px]"
+                          className="text-zinc-300 mb-4 leading-relaxed text-[15px] break-words"
                         >
                           {block.text}
                         </p>
@@ -427,7 +428,7 @@ const DocsArticlePage = () => {
 
                     case "code":
                       return (
-                        <div key={index} className="mb-6">
+                        <div key={index} className="mb-6 w-full max-w-full overflow-hidden">
                           <CodeBlock
                             language={block.language}
                             id={`code-${index}`}
@@ -437,7 +438,7 @@ const DocsArticlePage = () => {
                         </div>
                       );
 
-                    case "list":
+                    case "list": {
                       const ListTag = block.ordered ? "ol" : "ul";
                       return (
                         <ListTag
@@ -445,14 +446,15 @@ const DocsArticlePage = () => {
                           className={`mb-4 space-y-2 ${block.ordered ? "list-decimal pl-5" : "list-disc pl-5"} text-[15px]`}
                         >
                           {block.items.map((item, itemIndex) => (
-                            <li key={itemIndex} className="text-zinc-300 pl-1">
+                            <li key={itemIndex} className="text-zinc-300 pl-1 break-words">
                               {item}
                             </li>
                           ))}
                         </ListTag>
                       );
+                    }
 
-                    case "callout":
+                    case "callout": {
                       const borderLeftColor = 
                         block.variant === "warning" ? "border-l-amber-500 bg-amber-500/5" :
                         block.variant === "error" ? "border-l-red-500 bg-red-500/5" :
@@ -463,10 +465,11 @@ const DocsArticlePage = () => {
                           key={index}
                           className={`p-4 rounded-r-lg border border-zinc-800/80 border-l-4 mb-6 ${borderLeftColor}`}
                         >
-                          <p className="font-semibold text-zinc-100 text-sm mb-1">{block.title}</p>
-                          <p className="text-sm text-zinc-300 leading-relaxed opacity-95">{block.text}</p>
+                          <p className="font-semibold text-zinc-100 text-sm mb-1 break-words">{block.title}</p>
+                          <p className="text-sm text-zinc-300 leading-relaxed opacity-95 break-words">{block.text}</p>
                         </div>
                       );
+                    }
 
                     case "image":
                       return (
