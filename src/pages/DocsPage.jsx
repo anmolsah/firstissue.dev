@@ -181,6 +181,11 @@ const DocsPage = () => {
           title: "Revert the Commit (Undo Feature Safely)",
           readTime: "6 min",
         },
+        {
+          id: "resolving-conflicts",
+          title: "Resolving Merge Conflicts",
+          readTime: "12 min",
+        },
       ],
     },
     {
@@ -218,6 +223,11 @@ const DocsPage = () => {
           id: "building-portfolio",
           title: "Building Your Portfolio",
           readTime: "6 min",
+        },
+        {
+          id: "conventional-commits",
+          title: "Conventional Commits",
+          readTime: "8 min",
         },
       ],
     },

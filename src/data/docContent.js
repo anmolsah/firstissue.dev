@@ -470,6 +470,70 @@ type: "callout",
 variant: "success",
 title: "Best Practice",
 text: "Always create a new branch for each contribution. Never work directly on the main branch!"
+},
+{
+type: "heading",
+level: 2,
+text: "Collaborative Development Models"
+},
+{
+type: "paragraph",
+text: "In professional software engineering, there are two primary methods for managing code contributions: the Fork and Pull model and the Shared Repository model."
+},
+{
+type: "heading",
+level: 3,
+text: "The Fork and Pull Model"
+},
+{
+type: "paragraph",
+text: "Used by default in open source projects. Since you do not have write access to the original codebase (the upstream repository), you create a personal copy (a fork) under your own GitHub account. You write code in your fork and submit a pull request, requesting that the upstream maintainers pull your changes into the main repository. This model protects public repositories from unauthorized or malicious changes."
+},
+{
+type: "heading",
+level: 3,
+text: "The Shared Repository Model"
+},
+{
+type: "paragraph",
+text: "Common in corporate settings and small startup teams. All contributors have write access to a single, shared repository. Instead of forking, developers clone the main repository directly, create feature branches, and submit pull requests. Access control is maintained using GitHub branch protection rules, which restrict direct pushes to main/master branches and require automated checks or code reviews before merging."
+},
+{
+type: "heading",
+level: 2,
+text: "Managing Remotes: Origin vs Upstream"
+},
+{
+type: "paragraph",
+text: "When working with a forked repository, Git needs to know about two different remote versions of the codebase. These are tracked using remotes, which are simply aliases for repository URLs."
+},
+{
+type: "list",
+ordered: false,
+items: [
+"origin: Points to your personal fork of the repository on GitHub. You have full write (push) access here.",
+"upstream: Points to the original repository owned by the organization or project creator. You only have read access here."
+]
+},
+{
+type: "heading",
+level: 3,
+text: "Syncing Your Fork with Upstream Changes"
+},
+{
+type: "paragraph",
+text: "As other developers merge changes into the upstream repository, your local clone and remote fork will fall behind. To keep your project up to date, you must sync your repository regularly."
+},
+{
+type: "code",
+language: "bash",
+code: "# 1. Add the upstream remote (only needed once after cloning)\ngit remote add upstream https://github.com/original-owner/original-repo.git\n\n# 2. Verify both remotes are registered\ngit remote -v\n\n# 3. Switch to your local main branch\ngit checkout main\n\n# 4. Fetch the latest changes from upstream\ngit fetch upstream\n\n# 5. Merge upstream changes into your local main branch\ngit merge upstream/main\n\n# 6. Push the updated main branch to your remote fork (origin)\ngit push origin main"
+},
+{
+type: "callout",
+variant: "info",
+title: "Rebasing Feature Branches",
+text: "If you have an active feature branch and main has updated, do not merge main into your branch. Instead, rebase your feature branch on top of upstream/main: git checkout feature-branch && git rebase upstream/main. This keeps Git history clean and linear."
 }
 ]
 },
@@ -545,6 +609,93 @@ type: "callout",
 variant: "info",
 title: "Pro Tip",
 text: "Use 'Closes #123' or 'Fixes #123' in your PR description to automatically close the related issue when your PR is merged."
+},
+{
+type: "heading",
+level: 2,
+text: "Writing a Detailed Description Body"
+},
+{
+type: "paragraph",
+text: "A pull request description is the primary source of context for code reviewers. While the code changes show what was modified, the description explains why the changes were necessary, the design choices made, and how to verify that the implementation is correct."
+},
+{
+type: "list",
+ordered: false,
+items: [
+"Context and Problem: Explain the root cause of the issue or the user need behind the feature. Why was this code written?",
+"Technical Approach: Describe your implementation strategy. Highlight non-obvious design choices or structural changes in the codebase.",
+"Verification Steps: Provide detailed instructions on how a reviewer can manually test your changes in their local environment.",
+"Impact and Risks: List potential edge cases or side effects that this pull request might introduce (e.g. migration requirements, performance impact)."
+]
+},
+{
+type: "heading",
+level: 2,
+text: "Linking Issues with Magic Keywords"
+},
+{
+type: "paragraph",
+text: "GitHub and other hosting providers support automatic issue closing when a pull request is merged. By linking pull requests to issues, you keep project boards organized and ensure clean traceability."
+},
+{
+type: "paragraph",
+text: "To close an issue automatically, use one of the supported keywords followed by the issue reference in your PR description:"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"Keywords: close, closes, closed, fix, fixes, fixed, resolve, resolves, resolved",
+"Local references (same repository): 'Closes #45'",
+"Cross-repository references (different repository in the same organization): 'Fixes owner/repo#82'"
+]
+},
+{
+type: "code",
+language: "markdown",
+code: "## Linked Issues\nThis pull request implements the requested feature and solves the bug.\n\nCloses #42"
+},
+{
+type: "heading",
+level: 2,
+text: "Handling CI/CD Failures"
+},
+{
+type: "paragraph",
+text: "Most professional and open source projects run automated validation pipelines (CI/CD) on every pull request. These checks compile the codebase, run styling checks (linters), and execute test suites. A red status check means your PR cannot be merged yet."
+},
+{
+type: "heading",
+level: 3,
+text: "Step 1: Read the Failure Logs"
+},
+{
+type: "paragraph",
+text: "Go to the bottom of the pull request page on GitHub. Locate the failing check, click 'Details', and view the console output to find the exact file name, line number, and error message."
+},
+{
+type: "heading",
+level: 3,
+text: "Step 2: Run Checks Locally"
+},
+{
+type: "paragraph",
+text: "Do not rely on the CI/CD pipeline to test your fixes. Run the verification commands on your local machine to speed up iteration."
+},
+{
+type: "code",
+language: "bash",
+code: "# Run syntax and code formatting checks\nnpm run lint\n\n# Run unit and integration tests\nnpm run test\n\n# Build the production bundle to check for transpilation errors\nnpm run build"
+},
+{
+type: "heading",
+level: 3,
+text: "Step 3: Commit and Push the Fix"
+},
+{
+type: "paragraph",
+text: "Once you have resolved the error locally, stage, commit, and push your changes to your feature branch. The pull request will automatically update and restart the CI/CD pipeline."
 }
 ]
 },
@@ -1490,6 +1641,136 @@ items: [
 ]
 }
 ]
+},
+
+"resolving-conflicts": {
+title: "Resolving Git Merge Conflicts",
+description: "A comprehensive, step-by-step guide to understanding conflict markers, choosing merge vs rebase, and using tools to resolve conflicts",
+readTime: "12 min read",
+updated: "today",
+difficulty: "Intermediate",
+content: [
+{
+type: "paragraph",
+text: "Merge conflicts occur when Git cannot automatically determine how to merge two sets of changes. This typically happens when two developers modify the same lines in the same file on different branches, or when one developer deletes a file that another developer is modifying. Resolving conflicts is a normal part of developer workflow."
+},
+{
+type: "heading",
+level: 2,
+text: "Understanding Git Conflict Markers"
+},
+{
+type: "paragraph",
+text: "When a conflict occurs during a merge or rebase, Git suspends the process and writes conflict markers directly into the affected files. You must open these files and manually decide which changes to keep."
+},
+{
+type: "code",
+language: "text",
+code: "<<<<<<< HEAD\nThis is the content on your current active branch (e.g. your feature branch).\n=======\nThis is the content on the incoming branch you are merging (e.g. main/master).\n>>>>>>> main"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"<<<<<<< HEAD - Marks the beginning of the conflicting changes on your current active branch (the HEAD branch).",
+"======= - The separator line dividing your local changes from the incoming changes.",
+">>>>>>> [branch-name] - Marks the end of the incoming changes, showing the name of the branch the changes came from."
+]
+},
+{
+type: "heading",
+level: 2,
+text: "Step-by-Step Resolution Process"
+},
+{
+type: "paragraph",
+text: "Follow this systematic workflow to resolve conflicts safely and verify that the application still works correctly."
+},
+{
+type: "list",
+ordered: true,
+items: [
+"Identify the conflicting files: Run 'git status' to see the list of files marked as 'both modified'.",
+"Open the conflicting files in your editor: Look for the conflict markers (<<<<<<<, =======, >>>>>>>).",
+"Analyze the changes: Decide whether to keep your branch's changes, keep the incoming changes, or combine both in a new way.",
+"Remove the markers: Edit the file to delete the conflict markers (<<<<<<<, =======, >>>>>>>) and leave only the desired code.",
+"Test the codebase: Run the compiler, linters, or test suite to ensure the resolution did not introduce syntax errors or broken functionality.",
+"Stage the resolved files: Run 'git add <filename>' to mark each resolved file as staged.",
+"Complete the merge or rebase operation: Run 'git commit' (for merges) or 'git rebase --continue' (for rebases)."
+]
+},
+{
+type: "heading",
+level: 3,
+text: "Resolution CLI Walkthrough"
+},
+{
+type: "code",
+language: "bash",
+code: "# 1. Check which files are in conflict\ngit status\n\n# 2. (Manual Edit in VS Code / Editor to resolve the code and remove markers)\n\n# 3. Stage the resolved file\ngit add src/components/Header.jsx\n\n# 4. Complete the merge\ngit commit -m \"Merge branch 'main' and resolve conflicts in Header\"\n\n# Alternatively, if you were rebasing:\n# git rebase --continue"
+},
+{
+type: "heading",
+level: 2,
+text: "Merge vs Rebase: Handling Conflicts"
+},
+{
+type: "paragraph",
+text: "The strategy you choose to update your branch determines how conflicts are presented and recorded in your repository history."
+},
+{
+type: "heading",
+level: 3,
+text: "Merging Main into Your Feature Branch"
+},
+{
+type: "paragraph",
+text: "Merging is non-destructive. It preserves history by creating a new 'merge commit' that connects your branch history with the main branch. Any conflicts are resolved in a single step during this merge commit."
+},
+{
+type: "code",
+language: "bash",
+code: "# Switch to your feature branch\ngit checkout feature-branch\n\n# Merge main into it\ngit merge main\n\n# Resolve conflicts, git add, then:\ngit commit -m \"Merge main into feature-branch\""
+},
+{
+type: "heading",
+level: 3,
+text: "Rebasing Your Feature Branch on Main"
+},
+{
+type: "paragraph",
+text: "Rebasing rewrites history by moving your feature branch commits on top of the target branch. If there are conflicts, Git pauses at each commit that has conflicts. You must resolve conflicts commit-by-commit, which can be repetitive but results in a clean, linear commit history without merge commits."
+},
+{
+type: "code",
+language: "bash",
+code: "# Switch to your feature branch\ngit checkout feature-branch\n\n# Rebase on top of main\ngit rebase main\n\n# For each conflict pause: resolve, stage, then:\ngit rebase --continue\n\n# If it gets too messy, abort the rebase:\ngit rebase --abort"
+},
+{
+type: "heading",
+level: 2,
+text: "Using Conflict Resolution Tools"
+},
+{
+type: "paragraph",
+text: "Resolving conflicts manually in raw text files can be error-prone. Modern development tools simplify this process."
+},
+{
+type: "list",
+ordered: false,
+items: [
+"Visual Studio Code: Offers a built-in interactive diff editor with 'Accept Current Change', 'Accept Incoming Change', and 'Compare Changes' buttons directly above the conflict markers.",
+"Git Mergetool: Launches external visual diff tools like KDiff3, Meld, or Beyond Compare. Configure Git to use a specific tool with: git config --global merge.tool meld.",
+"Three-Way Merges: Visualizes the base file (the last shared commit), the local changes, and the remote changes side-by-side to understand exactly how the codebase evolved."
+]
+},
+{
+type: "callout",
+variant: "warning",
+title: "Aborting in Case of Mistakes",
+text: "If you feel overwhelmed or make a mistake during conflict resolution, you can safely abort the process and return to the pre-conflict state: git merge --abort or git rebase --abort."
+}
+]
 }
 },
 
@@ -1652,6 +1933,117 @@ type: "callout",
 variant: "success",
 title: "Quality Over Quantity",
 text: "Focus on meaningful contributions rather than just the number of PRs. One well-documented, impactful contribution is worth more than dozens of trivial ones."
+}
+]
+},
+
+"conventional-commits": {
+title: "Conventional Commits Specification",
+description: "A detailed guide to the Conventional Commits specification, commit message formatting, standard types, and how to write clean histories",
+readTime: "8 min read",
+updated: "today",
+difficulty: "Beginner",
+content: [
+{
+type: "paragraph",
+text: "Conventional Commits is a lightweight convention on top of commit messages. It provides an easy set of rules for creating an explicit commit history, which makes it easier to write automated tools on top of. By structuring commit messages systematically, teams can automate release notes generation, semantic versioning (major, minor, patch), and build status tracking."
+},
+{
+type: "heading",
+level: 2,
+text: "Commit Message Format"
+},
+{
+type: "paragraph",
+text: "The commit message should be structured as follows:"
+},
+{
+type: "code",
+language: "text",
+code: "<type>[optional scope]: <description>\n\n[optional body]\n\n[optional footer(s)]"
+},
+{
+type: "heading",
+level: 2,
+text: "Standard Commit Types"
+},
+{
+type: "paragraph",
+text: "The type is mandatory and describes the nature of the change. Standard types include:"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"feat: A new feature is introduced to the codebase.",
+"fix: A bug fix is applied to the codebase.",
+"docs: Documentation-only changes (e.g. updating README, API docs).",
+"style: Changes that do not affect the meaning of the code (formatting, white-space, missing semi-colons).",
+"refactor: A code change that neither fixes a bug nor adds a feature, but improves internal structure.",
+"perf: A code change that improves performance.",
+"test: Adding missing tests or correcting existing tests.",
+"chore: Updates to build processes, auxiliary tools, or libraries (e.g. updating node modules)."
+]
+},
+{
+type: "heading",
+level: 2,
+text: "Adding Scopes and Descriptions"
+},
+{
+type: "paragraph",
+text: "The scope is an optional noun providing additional contextual information about where the change was made (e.g. feat(auth):, fix(parser):)."
+},
+{
+type: "paragraph",
+text: "The description is a short summary of the code changes. It should be written in the imperative mood (e.g., 'add login button' instead of 'added login button' or 'adds login button')."
+},
+{
+type: "code",
+language: "text",
+code: "feat(auth): implement GitHub OAuth authentication flow\nfix(landing-page): correct alignment of CTA buttons on mobile devices\ndocs(api): document query parameters for the search endpoint"
+},
+{
+type: "heading",
+level: 2,
+text: "Documenting Breaking Changes"
+},
+{
+type: "paragraph",
+text: "Breaking changes indicate that API compatibility has been broken, necessitating a major version bump in semantic versioning. You can specify a breaking change in two ways:"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"Add an exclamation mark (!) immediately after the type/scope (e.g., feat(auth)!: remove deprecated password field).",
+"Add a 'BREAKING CHANGE:' prefix at the beginning of the footer section."
+]
+},
+{
+type: "code",
+language: "text",
+code: "refactor(api)!: remove deprecated v1 search endpoint\n\nWe have migrated all clients to the v2 search engine, which provides structured responses.\n\nBREAKING CHANGE: The v1 search endpoint (/api/v1/search) has been completely removed."
+},
+{
+type: "heading",
+level: 2,
+text: "Benefits of Conventional Commits"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"Automated CHANGELOG generation: Tools like standard-version or release-please parse your commit history to build beautiful lists of changes automatically.",
+"Semantic Versioning: Automated build systems can automatically bump the package version (major for breaking changes, minor for feat, patch for fix).",
+"Better collaboration: Clear commit histories make it easy for other developers to scan what has changed and why."
+]
+},
+{
+type: "callout",
+variant: "info",
+title: "Git Commit Hooks",
+text: "You can enforce Conventional Commits in your local environment using tools like Husky and commitlint. These tools intercept your 'git commit' command and validate the message structure before letting the commit succeed."
 }
 ]
 }
