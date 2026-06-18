@@ -17,234 +17,71 @@ import {
 } from "lucide-react";
 
 // Individual Timeline Row Item Component
-const TimelineItem = ({ index, accent, title, description, icon: Icon, badge, visual, link, linkText, onClick }) => {
+const FeatureCard = ({ index, accent, title, description, icon: Icon, badge, visual, link, linkText, onClick, className = "" }) => {
   const containerRef = useRef(null);
-  const isInView = useInView(containerRef, {
-    once: false,
-    amount: 0.3, // Trigger when 30% of the item is in view
-  });
+  const isInView = useInView(containerRef, { once: true, amount: 0.1 });
 
-  // Style configs based on card accent color
-  const colors = {
-    blue: {
-      accent: "#3b82f6",
-      glow: "rgba(59, 130, 246, 0.25)",
-      borderActive: "border-blue-500/40",
-      borderHover: "hover:border-blue-500/30",
-      text: "text-blue-400",
-      bgGlow: "from-blue-500/10 via-indigo-500/5 to-transparent",
-    },
-    purple: {
-      accent: "#8b5cf6",
-      glow: "rgba(139, 92, 246, 0.25)",
-      borderActive: "border-purple-500/40",
-      borderHover: "hover:border-purple-500/30",
-      text: "text-purple-400",
-      bgGlow: "from-purple-500/10 via-pink-500/5 to-transparent",
-    },
-    pink: {
-      accent: "#ec4899",
-      glow: "rgba(236, 72, 153, 0.25)",
-      borderActive: "border-pink-500/40",
-      borderHover: "hover:border-pink-500/30",
-      text: "text-pink-400",
-      bgGlow: "from-pink-500/10 via-red-500/5 to-transparent",
-    },
-    emerald: {
-      accent: "#10b981",
-      glow: "rgba(16, 185, 129, 0.25)",
-      borderActive: "border-emerald-500/40",
-      borderHover: "hover:border-emerald-500/30",
-      text: "text-emerald-400",
-      bgGlow: "from-emerald-500/10 via-teal-500/5 to-transparent",
-    },
-    cyan: {
-      accent: "#00ADB5",
-      glow: "rgba(0, 173, 181, 0.25)",
-      borderActive: "border-[#00ADB5]/40",
-      borderHover: "hover:border-[#00ADB5]/30",
-      text: "text-[#00ADB5]",
-      bgGlow: "from-[#00ADB5]/10 via-blue-500/5 to-transparent",
-    },
-  }[accent];
-
-  const isLeft = index % 2 === 0;
+  const isPoW = index === 1; // index 1 is Proof of Work
 
   return (
-    <div
+    <motion.div
       ref={containerRef}
-      className="relative w-full flex flex-col md:flex-row items-start md:items-center justify-start md:justify-center my-8 md:my-24 first:mt-8 last:mb-8"
+      initial={{ opacity: 0, y: 15 }}
+      animate={isInView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+      className={`bg-white/[0.02] border border-zinc-800/60 hover:border-zinc-700/80 rounded-xl p-6 transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${isPoW ? 'min-h-[420px]' : 'min-h-[380px]'} group ${className}`}
     >
-      {/* 1. Connecting Nodes & Wires (Desktop only) */}
-      
-      {/* Center/Left Timeline Node Dot */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-20 hidden md:block">
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0.3 }}
-          animate={
-            isInView
-              ? {
-                  scale: [1, 1.25, 1],
-                  opacity: 1,
-                  boxShadow: `0 0 16px 4px ${colors.accent}`,
-                  borderColor: colors.accent,
-                }
-              : {
-                  scale: 0.8,
-                  opacity: 0.3,
-                  boxShadow: "none",
-                  borderColor: "rgba(255,255,255,0.1)",
-                }
-          }
-          transition={{ duration: 0.5 }}
-          className="w-5 h-5 rounded-full border bg-[#0B0C10] flex items-center justify-center cursor-default"
-        >
-          <motion.div
-            animate={isInView ? { scale: [1, 1.5, 1] } : { scale: 0.5 }}
-            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-            style={{ backgroundColor: colors.accent }}
-            className="w-2.5 h-2.5 rounded-full"
-          />
-        </motion.div>
+      {/* Decorative subtle background glow on hover */}
+      <div className="absolute -inset-px bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl" />
+
+      {/* Text Area */}
+      <div className="relative z-10 flex-shrink-0 mb-4 select-none">
+        <div className="flex items-center justify-between mb-3">
+          <div className="w-8 h-8 rounded-lg bg-white/[0.04] border border-zinc-800/80 flex items-center justify-center text-zinc-400 group-hover:text-white transition-colors duration-200">
+            <Icon className="w-4 h-4" />
+          </div>
+          {badge && (
+            <span className="bg-zinc-800 text-zinc-400 px-2 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wider border border-zinc-700/50">
+              {badge}
+            </span>
+          )}
+        </div>
+        <h3 className="text-lg font-bold text-white mb-2 tracking-tight">
+          {title}
+        </h3>
+        <p className="text-zinc-400 text-xs leading-relaxed">
+          {description}
+        </p>
       </div>
 
-      {/* Desktop Horizontal Wire (Center Node to Left Card) */}
-      {isLeft && (
-        <div className="absolute right-[50%] hidden md:block w-8 lg:w-16 top-1/2 -translate-y-1/2 h-[2px] pointer-events-none z-10 bg-zinc-800/40">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={isInView ? { width: "100%" } : { width: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-            style={{
-              background: `linear-gradient(to left, ${colors.accent}, transparent)`,
-              originX: 1,
-            }}
-            className="h-full ml-auto"
-          />
+      {/* Visualizer Container */}
+      <div className="relative w-full flex-grow flex items-center justify-center min-h-[160px] rounded-lg overflow-hidden bg-black/10 border border-zinc-900/60 p-2 mt-auto">
+        {React.cloneElement(visual, { active: isInView })}
+      </div>
+
+      {/* Action Link */}
+      {(link || onClick) && (
+        <div className="mt-4 relative z-10 text-left">
+          {onClick ? (
+            <button
+              onClick={onClick}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 outline-none"
+            >
+              {linkText || "Learn more"}
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            </button>
+          ) : (
+            <Link
+              to={link}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+            >
+              {linkText || "Learn more"}
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          )}
         </div>
       )}
-
-      {/* Desktop Horizontal Wire (Center Node to Right Card) */}
-      {!isLeft && (
-        <div className="absolute left-[50%] hidden md:block w-8 lg:w-16 top-1/2 -translate-y-1/2 h-[2px] pointer-events-none z-10 bg-zinc-800/40">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={isInView ? { width: "100%" } : { width: 0 }}
-            transition={{ duration: 0.6, ease: "easeOut", delay: 0.1 }}
-            style={{
-              background: `linear-gradient(to right, ${colors.accent}, transparent)`,
-              originX: 0,
-            }}
-            className="h-full"
-          />
-        </div>
-      )}
-
-      {/* 2. Card Container with Dark-to-Light Scroll Animation */}
-      <motion.div
-        initial={{
-          opacity: 0.2,
-          scale: 0.95,
-          filter: "blur(4px) grayscale(75%)",
-          y: 20,
-        }}
-        animate={
-          isInView
-            ? {
-                opacity: 1,
-                scale: 1,
-                filter: "blur(0px) grayscale(0%)",
-                y: 0,
-              }
-            : {
-                opacity: 0.2,
-                scale: 0.95,
-                filter: "blur(4px) grayscale(75%)",
-                y: 20,
-              }
-        }
-        transition={{ duration: 0.7, ease: "easeOut" }}
-        style={{
-          boxShadow: isInView ? `0 0 50px -12px ${colors.glow}` : "none",
-        }}
-        className={`w-full md:w-[calc(50%-2rem)] lg:w-[calc(50%-4rem)] ${
-          isLeft ? "md:mr-auto md:ml-0" : "md:ml-auto md:mr-0"
-        } bg-[#15161E] rounded-3xl p-5 sm:p-6 md:p-8 border border-white/5 ${
-          isInView ? colors.borderActive : "border-white/5"
-        } ${colors.borderHover} transition-colors duration-500 relative overflow-hidden flex flex-col justify-between min-h-[420px] sm:min-h-[460px] z-10 group`}
-      >
-        {/* Decorative background glow on active */}
-        <div
-          className={`absolute -inset-px bg-gradient-to-br ${colors.bgGlow} opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-3xl`}
-        />
-
-        {/* Text Area */}
-        <div className="relative z-10 flex-shrink-0 cursor-default">
-          <div className="flex items-center gap-3 mb-4">
-            <div
-              style={{ backgroundColor: `${colors.accent}15`, color: colors.accent }}
-              className="w-12 h-12 rounded-xl flex items-center justify-center"
-            >
-              <Icon className="w-6 h-6" />
-            </div>
-            
-            {/* Mobile Step Badge */}
-            <span
-              style={{ backgroundColor: `${colors.accent}15`, color: colors.accent, borderColor: `${colors.accent}30` }}
-              className="md:hidden px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border"
-            >
-              Step 0{index + 1}
-            </span>
-
-            {badge && (
-              <span
-                style={{ backgroundColor: `${colors.accent}15`, color: colors.accent, borderColor: `${colors.accent}30` }}
-                className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border"
-              >
-                {badge}
-              </span>
-            )}
-          </div>
-          <h3 className="text-2xl font-bold text-white mb-3 tracking-tight">
-            {title}
-          </h3>
-          <p className="text-gray-400 text-sm leading-relaxed mb-6">
-            {description}
-          </p>
-        </div>
-
-        {/* Visualizer Container */}
-        <div className="relative w-full flex-grow flex items-center justify-center min-h-[180px] sm:min-h-[220px] rounded-2xl overflow-hidden bg-black/20 border border-white/5 p-4 mt-auto">
-          {/* We pass the active status down to let visual know whether to run dynamic timelines */}
-          {React.cloneElement(visual, { active: isInView })}
-        </div>
-
-        {/* Action Link */}
-        {(link || onClick) && (
-          <div className="mt-6 relative z-10">
-            {onClick ? (
-              <button
-                onClick={onClick}
-                style={{ color: colors.accent }}
-                className="inline-flex items-center gap-2 text-sm font-medium hover:brightness-125 transition-all cursor-pointer bg-transparent border-none p-0 outline-none"
-              >
-                {linkText || "Learn more"}
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </button>
-            ) : (
-              <Link
-                to={link}
-                style={{ color: colors.accent }}
-                className="inline-flex items-center gap-2 text-sm font-medium hover:brightness-125 transition-all"
-              >
-                {linkText || "Learn more"}
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            )}
-          </div>
-        )}
-      </motion.div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -706,23 +543,8 @@ const AICopilotVisualizer = ({ active }) => {
   );
 };
 
-// --- MAIN TIMELINE FEATURES SECTION ---
+// --- MAIN FEATURES GRID SECTION ---
 const TimelineFeatures = () => {
-  const containerRef = useRef(null);
-
-  // Hook scroll progress of the entire section container
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start center", "end center"],
-  });
-
-  // Spring smooth the scroll progress to drive the drawing animation of the center line
-  const scaleY = useSpring(scrollYProgress, {
-    stiffness: 80,
-    damping: 25,
-    restDelta: 0.001,
-  });
-
   // Features list
   const features = [
     {
@@ -779,39 +601,25 @@ const TimelineFeatures = () => {
   ];
 
   return (
-    <section ref={containerRef} className="py-24 px-4 sm:px-6 lg:px-8 relative z-10">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-zinc-900/60">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
-        <div className="text-center mb-20">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-white mb-4">
-            Everything you need to{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-emerald-400">
-              scale your impact
-            </span>
+        <div className="text-center mb-16">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white mb-3">
+            Scale your impact.
           </h2>
-          <p className="text-gray-400 max-w-xl mx-auto text-sm sm:text-base">
-            A cohesive ecosystem built to match you with top-tier issues and prove your contribution credentials.
+          <p className="text-zinc-400 max-w-lg mx-auto text-xs sm:text-sm leading-relaxed">
+            A minimalist workspace built to match you with top-tier issues and prove your contribution credentials.
           </p>
         </div>
 
-        {/* Timeline Container */}
-        <div className="relative max-w-6xl mx-auto py-10">
-          {/* Vertical Wire Line - Background (Dim) (Desktop only) */}
-          <div className="absolute left-6 md:left-1/2 -translate-x-1/2 top-4 bottom-4 w-[2px] bg-zinc-800/40 rounded-full hidden md:block" />
-
-          {/* Vertical Wire Line - Active Glowing (Scroll Progress-driven) (Desktop only) */}
-          <motion.div
-            style={{
-              scaleY,
-              originY: 0,
-            }}
-            className="absolute left-6 md:left-1/2 -translate-x-1/2 top-4 bottom-4 w-[2px] bg-gradient-to-b from-blue-500 via-purple-500 via-pink-500 to-emerald-500 shadow-[0_0_8px_1px_rgba(139,92,246,0.3)] rounded-full z-10 hidden md:block"
-          />
-
-          {/* Timeline Rows */}
-          <div className="space-y-4">
-            {features.map((feature, idx) => (
-              <TimelineItem
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {features.map((feature, idx) => {
+            // Card 2 (index 1: Proof of Work) is our hero feature, spans 2 columns
+            const colSpan = idx === 1 ? "md:col-span-2" : "md:col-span-1";
+            return (
+              <FeatureCard
                 key={idx}
                 index={idx}
                 accent={feature.accent}
@@ -823,9 +631,10 @@ const TimelineFeatures = () => {
                 link={feature.link}
                 linkText={feature.linkText}
                 onClick={feature.onClick}
+                className={colSpan}
               />
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     </section>

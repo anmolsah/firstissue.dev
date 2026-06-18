@@ -67,96 +67,101 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] text-[#EEEEEE] overflow-hidden">
+    <div className="min-h-screen bg-[#0B0C10] text-[#EEEEEE] overflow-hidden relative">
+      {/* Vercel Grid Background */}
+      <div className="absolute inset-0 z-0 pointer-events-none vercel-grid" />
+      
       {/* Background Gradients */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/10 rounded-full blur-[120px]" />
-        <div className="absolute top-[20%] right-[-10%] w-[40%] h-[40%] bg-purple-600/10 rounded-full blur-[100px]" />
-        <div className="absolute bottom-[-10%] left-[20%] w-[30%] h-[30%] bg-indigo-600/10 rounded-full blur-[80px]" />
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-5%] left-[20%] w-[60%] h-[40%] bg-blue-600/10 rounded-full blur-[130px] opacity-75" />
+        <div className="absolute top-[10%] right-[10%] w-[35%] h-[35%] bg-purple-600/5 rounded-full blur-[110px] opacity-50" />
       </div>
 
       {/* Hero Section */}
-      <section className="relative z-10 pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+      <section className="relative z-10 pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          {/* New Feature Pill */}
-          
+          {/* Vercel Announcement Pill */}
+          <div className="inline-flex items-center gap-2 px-3 py-1 mb-8 text-xs font-medium text-zinc-400 bg-white/[0.03] border border-zinc-800/80 rounded-full hover:border-zinc-700 hover:text-white transition-all duration-350 cursor-pointer select-none">
+            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">NEW</span>
+            <span>Introducing Cryptographic Proof of Work Attestations</span>
+            <ArrowRight className="w-3.5 h-3.5 text-zinc-500" />
+          </div>
 
-          <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black mb-8 leading-tight tracking-tight">
+          <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6 leading-[1.12]">
             Ship your{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">
+            <span className="bg-clip-text text-transparent bg-gradient-to-b from-white via-zinc-200 to-zinc-500">
               first contribution
             </span>
             <br />
-            <span className="text-white">today.</span>
+            <span>today.</span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-sm sm:text-base text-zinc-400 mb-8 max-w-xl mx-auto leading-relaxed">
             The premium platform for developers to find, track, and conquer
             open-source issues at world-class companies.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
+          <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center mb-16">
             <Link
               to={user ? "/explore" : "/login"}
-              className="group px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-full font-semibold text-lg hover:shadow-[0_0_40px_-10px_rgba(79,70,229,0.5)] transition-all duration-300 transform hover:-translate-y-1"
+              className="w-full sm:w-auto px-6 py-2.5 bg-white text-black hover:bg-zinc-200 font-semibold text-xs rounded transition-all duration-200 text-center flex items-center justify-center gap-1.5"
             >
               Join the movement
-              <ArrowRight className="inline-block ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
             <Link
               to="/explore"
-              className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-full font-semibold text-lg hover:bg-white/10 transition-all duration-300"
+              className="w-full sm:w-auto px-6 py-2.5 bg-transparent border border-zinc-800 hover:bg-white/[0.04] text-white hover:border-zinc-700 font-semibold text-xs rounded transition-all duration-200 text-center"
             >
               Explore issues
             </Link>
           </div>
 
           {/* Trusted By */}
-          <div className="mb-24">
-            <p className="text-xs font-bold text-gray-500 tracking-widest uppercase mb-8">
-              TRUSTED BY CONTRIBUTORS AT
+          <div className="mb-20">
+            <p className="text-[9px] font-bold text-zinc-500 tracking-[0.2em] uppercase mb-6">
+              trusted by developers at
             </p>
-            <div className="flex flex-wrap justify-center gap-8 sm:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-              {/* Using text/icons placeholders for logos as per plan */}
-              <div className="flex items-center gap-2 text-xl font-bold font-mono hover:text-[#00ADB5] transition-colors">
-                <Github className="w-6 h-6" /> GitHub
+            <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 opacity-35 hover:opacity-75 transition-opacity duration-300">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-white tracking-tight">
+                <Github className="w-4 h-4" /> GitHub
               </div>
-              <div className="flex items-center gap-2 text-xl font-bold font-sans hover:text-[#00ADB5] transition-colors">
-                <Zap className="w-6 h-6" /> Vercel
+              <div className="flex items-center gap-1.5 text-xs font-bold text-white tracking-tight">
+                <Zap className="w-4 h-4" /> Vercel
               </div>
-              <div className="flex items-center gap-2 text-xl font-bold hover:text-[#00ADB5] transition-colors">
-                <Database className="w-6 h-6" /> Supabase
+              <div className="flex items-center gap-1.5 text-xs font-bold text-white tracking-tight">
+                <Database className="w-4 h-4" /> Supabase
               </div>
-              <div className="flex items-center gap-2 text-xl font-bold hover:text-[#00ADB5] transition-colors">
-                <Layout className="w-6 h-6" /> Linear
+              <div className="flex items-center gap-1.5 text-xs font-bold text-white tracking-tight">
+                <Layout className="w-4 h-4" /> Linear
               </div>
-              <div className="flex items-center gap-2 text-xl font-bold font-serif hover:text-[#00ADB5] transition-colors">
-                <Code2 className="w-6 h-6" /> Prisma
+              <div className="flex items-center gap-1.5 text-xs font-bold text-white tracking-tight">
+                <Code2 className="w-4 h-4" /> Prisma
               </div>
             </div>
           </div>
         </div>
 
         {/* Dashboard Preview */}
-        <div className="max-w-6xl mx-auto relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000"></div>
-          <div className="relative bg-[#1a1b26] rounded-xl border border-white/10 p-2 sm:p-4 shadow-2xl overflow-hidden">
+        <div className="max-w-5xl mx-auto relative group">
+          <div className="absolute -inset-px bg-gradient-to-b from-white/10 to-transparent rounded-lg blur opacity-15" />
+          <div className="relative bg-[#0d0e12] rounded-lg border border-zinc-800/80 p-1.5 shadow-[0_30px_60px_rgba(0,0,0,0.5)] overflow-hidden">
             {/* Window Controls */}
-            <div className="flex items-center gap-2 mb-4 px-2">
-              <div className="w-3 h-3 rounded-full bg-red-500/50" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-              <div className="w-3 h-3 rounded-full bg-green-500/50" />
-              <div className="ml-auto px-3 py-1 bg-white/5 rounded-full text-[10px] text-gray-400 font-mono">
-                dashboard.firstissue.dev
+            <div className="flex items-center gap-1.5 mb-2.5 px-3 py-1">
+              <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
+              <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
+              <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
+              <div className="ml-auto px-3 py-0.5 bg-white/[0.03] border border-zinc-800/60 rounded-full text-[9px] text-zinc-500 font-mono">
+                firstissue.dev
               </div>
             </div>
 
-            {/* Video/GIF Demo */}
-            <div className="rounded-lg overflow-hidden bg-[#0B0C10]">
+            {/* Video Demo */}
+            <div className="rounded border border-zinc-900 overflow-hidden bg-[#0B0C10]">
               <video
                 src="https://res.cloudinary.com/dl3czd3ib/video/upload/f_auto,q_auto/v1768837375/firstissue.dev_f8gqfj.mp4"
                 alt="FirstIssue.dev Dashboard Demo"
-                className="w-full h-auto object-cover"
+                className="w-full h-auto object-cover opacity-90 group-hover:opacity-100 transition-opacity duration-300"
                 autoPlay
                 loop
                 muted
@@ -167,21 +172,21 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Scroll-driven Connected Timeline Features */}
+      {/* Bento Grid Feature Showcase */}
       <TimelineFeatures />
 
       {/* User Count Section */}
-      <section id="user-count-section" className="py-16 px-4 sm:px-6 lg:px-8 relative z-10">
+      <section id="user-count-section" className="py-16 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-zinc-900/60">
         <div className="max-w-4xl mx-auto text-center">
-          <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-            <h3 className="text-6xl sm:text-7xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 mb-4">
+          <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+            <h3 className="text-5xl sm:text-6xl font-black text-white mb-2 tracking-tighter">
               {userCount}+
             </h3>
-            <p className="text-2xl sm:text-3xl font-bold text-white mb-3">
+            <p className="text-zinc-500 text-xs font-semibold tracking-wider uppercase mb-2">
               Active Developers
             </p>
-            <p className="text-lg text-gray-400 max-w-xl mx-auto">
-              Building their open source portfolio and making real impact
+            <p className="text-xs text-zinc-400 max-w-xs mx-auto leading-relaxed">
+              Building their open source portfolio and making real codebase impact.
             </p>
           </div>
         </div>
@@ -191,32 +196,26 @@ const LandingPage = () => {
       <ComparisonSection />
 
       {/* CTA Section */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="bg-gradient-to-b from-[#1a1b26] to-[#0B0C10] rounded-3xl p-12 sm:p-20 text-center border border-white/10 relative overflow-hidden">
+      <section className="py-20 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-zinc-900/60">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white/[0.01] border border-zinc-800/80 rounded-xl p-10 sm:p-16 text-center relative overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-blue-500/5 blur-3xl pointer-events-none" />
 
-            <h2 className="text-4xl sm:text-5xl font-bold text-white mb-6 relative z-10">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-3 relative z-10">
               Ready to build the future?
             </h2>
-            <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto relative z-10">
+            <p className="text-sm text-zinc-400 mb-8 max-w-lg mx-auto relative z-10 leading-relaxed">
               Join thousands of world-class developers making an impact on the
               projects that power the world.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center relative z-10">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center items-center relative z-10">
               <Link
                 to="/login"
-                className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-500 transition-colors shadow-lg hover:shadow-blue-500/25"
+                className="w-full sm:w-auto px-6 py-2.5 bg-white text-black rounded font-semibold text-xs hover:bg-zinc-200 transition-all duration-200"
               >
                 Get Started Now
               </Link>
-              {/* <a
-                    href="#"
-                    className="w-full sm:w-auto px-8 py-4 bg-transparent border border-white/20 text-white rounded-xl font-semibold hover:bg-white/5 transition-colors"
-                    >
-                    Talk to Sales
-                    </a> */}
             </div>
           </div>
         </div>
