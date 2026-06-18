@@ -81,11 +81,14 @@ const LandingPage = () => {
       <section className="relative z-10 pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           {/* Vercel Announcement Pill */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 mb-8 text-xs font-medium text-zinc-400 bg-white/[0.03] border border-zinc-800/80 rounded-full hover:border-zinc-700 hover:text-white transition-all duration-350 cursor-pointer select-none">
-            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-2 py-0.5 rounded-full border border-blue-500/20">NEW</span>
-            <span>Introducing Cryptographic Proof of Work Attestations</span>
-            <ArrowRight className="w-3.5 h-3.5 text-zinc-500" />
-          </div>
+          <Link
+            to="/docs/getting-started/platform-guide#proof-of-work-pow-attestations"
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 mb-8 text-[11px] sm:text-xs font-medium text-zinc-400 bg-white/[0.03] border border-zinc-800/80 rounded-full hover:border-zinc-700 hover:text-white transition-all duration-300 select-none max-w-[95%] sm:max-w-none mx-auto"
+          >
+            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-1.5 py-0.5 rounded-full border border-blue-500/20 flex-shrink-0">NEW</span>
+            <span className="truncate sm:whitespace-normal text-left">Introducing Cryptographic Proof of Work Attestations</span>
+            <ArrowRight className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0" />
+          </Link>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6 leading-[1.12]">
             Ship your{" "}

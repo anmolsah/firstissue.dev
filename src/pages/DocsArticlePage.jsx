@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import {
   Home,
   ChevronRight,
@@ -24,6 +24,7 @@ import { supabase } from "../lib/supabase";
 
 const DocsArticlePage = () => {
   const { section, article } = useParams();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(null);
   const [activeId, setActiveId] = useState("");
@@ -71,6 +72,20 @@ const DocsArticlePage = () => {
       }
     }
   }, [currentArticle]);
+
+  // Scroll to hash element if it exists in the URL (e.g. for linking directly to section)
+  useEffect(() => {
+    if (location.hash && currentArticle) {
+      const timer = setTimeout(() => {
+        const id = decodeURIComponent(location.hash.replace("#", ""));
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 400); // 400ms delay to allow DOM & markdown to fully render and lay out
+      return () => clearTimeout(timer);
+    }
+  }, [location.hash, currentArticle]);
 
   // Set up intersection observer for scroll spy
   useEffect(() => {
