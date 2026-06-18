@@ -186,20 +186,6 @@ const ComparisonSection = () => {
             </div>
           ))}
         </div>
-
-        {/* Bottom CTA */}
-        <div className="text-center">
-          <p className="text-xs text-zinc-500 mb-6 max-w-sm mx-auto leading-relaxed">
-            FirstIssue.dev combines discovery, tracking, and personal growth in one place.
-          </p>
-          <Link
-            to="/login"
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-white text-black hover:bg-zinc-200 font-semibold text-xs rounded transition-all duration-200"
-          >
-            Start Your Journey
-            <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
-        </div>
       </div>
     </section>
   );

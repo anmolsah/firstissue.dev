@@ -29,6 +29,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import Navbar from "../components/Navbar";
 
 const SupportPage = () => {
   const { user } = useAuth();
@@ -212,37 +213,28 @@ const SupportPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] text-[#F3F4F6] relative overflow-x-hidden font-sans selection:bg-zinc-800 selection:text-white">
-      {/* Background radial glow - minimized to subtle dark zinc accents */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute top-[-10%] left-[20%] w-[60%] h-[80%] bg-zinc-800/[0.03] rounded-full blur-[130px]" />
-        <div className="absolute top-[10%] right-[10%] w-[50%] h-[70%] bg-zinc-900/[0.02] rounded-full blur-[130px]" />
+    <div className="min-h-screen bg-[#0B0C10] text-[#F3F4F6] relative overflow-x-hidden font-sans selection:bg-zinc-800 selection:text-white pt-16">
+      {/* Background Grid & Soothing Radial Glow */}
+      <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
+        {/* Soothing central soft radial glow */}
+        <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-zinc-800/10 rounded-full blur-[120px] opacity-60" />
+        {/* Elegant grid overlay */}
+        <div 
+          className="absolute inset-0 opacity-70"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px)
+            `,
+            backgroundSize: '32px 32px',
+            maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, #000 60%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, #000 60%, transparent 100%)',
+          }}
+        />
       </div>
 
-      {/* Navigation */}
-      <header className="relative z-50 border-b border-zinc-800/60 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <span className="text-lg font-bold text-white tracking-tight">
-              FirstIssue.dev
-            </span>
-          </Link>
-          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold font-mono uppercase tracking-wider">
-            <Link to="/explore" className="text-zinc-400 hover:text-white transition-colors">Explore</Link>
-            <Link to="/docs" className="text-zinc-400 hover:text-white transition-colors">Docs</Link>
-            <Link to="/support" className="text-white">Support</Link>
-          </nav>
-          {user ? (
-            <Link to="/profile" className="px-4 py-1.5 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white rounded text-xs font-semibold font-mono transition-all shadow-sm">
-              Dashboard
-            </Link>
-          ) : (
-            <Link to="/login" className="px-4 py-1.5 text-xs font-semibold text-black bg-white hover:bg-zinc-200 rounded transition-all duration-200 shadow-sm font-mono">
-              Get Started
-            </Link>
-          )}
-        </div>
-      </header>
+      {/* Responsive Global Navigation */}
+      <Navbar />
 
       {/* Hero Section */}
       <section className="relative z-10 pt-16 pb-12 px-6">
@@ -278,12 +270,12 @@ const SupportPage = () => {
               </button>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col items-center gap-4 w-full px-4">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-xs sm:max-w-none">
                 <button
                   onClick={handleCheckout}
                   disabled={checkoutLoading}
-                  className="group px-6 py-3 bg-white hover:bg-zinc-200 text-black rounded-lg font-semibold text-sm transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-2 shadow-xl"
+                  className="group w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 bg-white hover:bg-zinc-200 text-black rounded-lg font-semibold text-xs sm:text-sm transition-all disabled:opacity-30 disabled:pointer-events-none cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2 shadow-xl"
                 >
                   {checkoutLoading ? (
                     <Loader2 className="w-4 h-4 text-black animate-spin" />
