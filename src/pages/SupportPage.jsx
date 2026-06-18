@@ -38,6 +38,19 @@ const SupportPage = () => {
   const [searchParams] = useSearchParams();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [openFaq, setOpenFaq] = useState(null);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setMousePos({ x: window.innerWidth / 2, y: window.innerHeight / 2 });
+    setIsVisible(true);
+
+    const handleMouseMove = (e) => {
+      setMousePos({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
+  }, []);
 
   // Handle return from successful payment
   useEffect(() => {
@@ -214,23 +227,32 @@ const SupportPage = () => {
 
   return (
     <div className="min-h-screen bg-[#0B0C10] text-[#F3F4F6] relative overflow-x-hidden font-sans selection:bg-zinc-800 selection:text-white pt-16">
-      {/* Background Grid & Soothing Radial Glow */}
-      <div className="absolute inset-0 pointer-events-none -z-10 overflow-hidden">
-        {/* Soothing central soft radial glow */}
-        <div className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-zinc-800/10 rounded-full blur-[120px] opacity-60" />
-        {/* Elegant grid overlay */}
-        <div 
-          className="absolute inset-0 opacity-70"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px)
-            `,
-            backgroundSize: '32px 32px',
-            maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, #000 60%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, #000 60%, transparent 100%)',
-          }}
-        />
+      {/* Background Grid & Soothing Torchlight Mouse-Tracking Animation */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden bg-[#0B0C10]">
+        {/* Soothing moving torchlight glow */}
+        {isVisible && (
+          <div
+            className="absolute inset-0 transition-opacity duration-500"
+            style={{
+              background: `radial-gradient(circle 320px at ${mousePos.x}px ${mousePos.y}px, rgba(255, 255, 255, 0.035), transparent 80%)`,
+            }}
+          />
+        )}
+        {/* Torch illuminated grid */}
+        {isVisible && (
+          <div 
+            className="absolute inset-0 opacity-80"
+            style={{
+              backgroundImage: `
+                linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px)
+              `,
+              backgroundSize: '40px 40px',
+              maskImage: `radial-gradient(circle 300px at ${mousePos.x}px ${mousePos.y}px, black 30%, transparent 100%)`,
+              WebkitMaskImage: `radial-gradient(circle 300px at ${mousePos.x}px ${mousePos.y}px, black 30%, transparent 100%)`,
+            }}
+          />
+        )}
       </div>
 
       {/* Responsive Global Navigation */}
