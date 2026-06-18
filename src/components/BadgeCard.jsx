@@ -98,26 +98,26 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
   return (
     <button
       onClick={onClick}
-      className={`relative flex flex-col items-center p-4 rounded-xl border transition-all duration-200 cursor-pointer group text-left w-full ${
+      className={`relative flex flex-col items-center p-4 rounded-lg border transition-all duration-200 cursor-pointer group text-left w-full ${
         earned
-          ? `bg-[#15161E] ${rarityInfo.borderColor} hover:border-white/20 ${rarityGlow[badge.rarity] || ''}`
-          : 'bg-[#0e0f15] border-white/[0.03] hover:border-white/10'
+          ? `bg-zinc-950/20 ${rarityInfo.borderColor || 'border-zinc-800/60'} hover:border-zinc-700/80 ${rarityGlow[badge.rarity] || ''}`
+          : 'bg-zinc-950/10 border-zinc-900/60 hover:border-zinc-850/60'
       }`}
       aria-label={`${badge.name} badge — ${earned ? 'Earned' : 'Locked'}`}
     >
       {/* Badge Icon Container */}
       <div className="relative mb-3">
         <div
-          className={`w-14 h-14 rounded-full flex items-center justify-center ring-2 transition-transform duration-200 group-hover:scale-105 ${
+          className={`w-12 h-12 rounded-full flex items-center justify-center ring-1 transition-transform duration-200 group-hover:scale-105 ${
             earned
               ? `${rarityInfo.bgColor} ${rarityAccent[badge.rarity] || 'ring-gray-500/30'}`
-              : 'bg-white/[0.03] ring-white/[0.05]'
+              : 'bg-zinc-900/50 ring-zinc-800/40'
           }`}
         >
           {earned ? (
-            <BadgeIcon className={`w-6 h-6 ${rarityInfo.color}`} />
+            <BadgeIcon className={`w-5 h-5 ${rarityInfo.color}`} />
           ) : (
-            <Lock className="w-5 h-5 text-gray-600" />
+            <Lock className="w-4 h-4 text-zinc-550" />
           )}
         </div>
       </div>
@@ -125,23 +125,23 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
       {/* Badge Info */}
       <div className="text-center w-full min-w-0">
         <h3
-          className={`text-xs font-semibold mb-0.5 truncate ${
-            earned ? 'text-white' : 'text-gray-500'
+          className={`text-[11px] font-bold mb-0.5 truncate uppercase tracking-wider ${
+            earned ? 'text-white' : 'text-zinc-500'
           }`}
         >
           {badge.name}
         </h3>
 
         {/* Rarity dot */}
-        <div className="flex items-center justify-center gap-1.5">
+        <div className="flex items-center justify-center gap-1.5 mt-0.5">
           <span
-            className={`w-1.5 h-1.5 rounded-full ${
+            className={`w-1 h-1 rounded-full ${
               earned
                 ? rarityInfo.color.replace('text-', 'bg-')
-                : 'bg-gray-700'
+                : 'bg-zinc-750'
             }`}
           />
-          <span className={`text-[10px] ${earned ? rarityInfo.color : 'text-gray-600'}`}>
+          <span className={`text-[9px] font-semibold uppercase tracking-wider ${earned ? rarityInfo.color : 'text-zinc-600'}`}>
             {rarityInfo.label}
           </span>
         </div>

@@ -67,41 +67,49 @@ const BadgesSection = ({ stats, contributions = [], attestations = [], username 
   );
 
   return (
-    <div className="bg-[#15161E] rounded-xl border border-white/5 overflow-hidden">
+    <div className="bg-zinc-950/25 rounded-lg border border-zinc-800/60 overflow-hidden">
       {/* Header */}
-      <div className="p-5 sm:p-6 border-b border-white/5">
+      <div className="p-5 border-b border-zinc-800/60">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-amber-500/10 flex items-center justify-center">
-              <Award className="w-5 h-5 text-amber-400" />
+            <div className="w-10 h-10 rounded bg-zinc-900 border border-zinc-800/60 flex items-center justify-center text-zinc-400">
+              <Award className="w-5 h-5 text-amber-400/90" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white">Achievements</h3>
-              <p className="text-sm text-gray-500">
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Achievements</h3>
+              <p className="text-xs text-zinc-500 mt-0.5">
                 {earnedCount} of {totalCount} badges earned
               </p>
             </div>
           </div>
 
           {/* Progress Ring */}
-          <div className="relative w-14 h-14 flex-shrink-0">
-            <svg className="w-14 h-14 transform -rotate-90" viewBox="0 0 56 56">
+          <div className="relative w-12 h-12 flex-shrink-0">
+            <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 56 56">
               <circle
-                cx="28" cy="28" r="24"
-                stroke="currentColor" strokeWidth="3" fill="none"
-                className="text-white/5"
+                cx="28"
+                cy="28"
+                r="24"
+                stroke="currentColor"
+                strokeWidth="3.5"
+                fill="none"
+                className="text-zinc-900"
               />
               <circle
-                cx="28" cy="28" r="24"
-                stroke="currentColor" strokeWidth="3" fill="none"
+                cx="28"
+                cy="28"
+                r="24"
+                stroke="currentColor"
+                strokeWidth="3.5"
+                fill="none"
                 strokeDasharray={`${2 * Math.PI * 24}`}
                 strokeDashoffset={`${2 * Math.PI * 24 * (1 - completionPercentage / 100)}`}
-                className="text-amber-400 transition-all duration-1000"
+                className="text-amber-500/80 transition-all duration-1000"
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-xs font-bold text-white">{completionPercentage}%</span>
+              <span className="text-[10px] font-mono font-bold text-white">{completionPercentage}%</span>
             </div>
           </div>
         </div>
@@ -110,41 +118,42 @@ const BadgesSection = ({ stats, contributions = [], attestations = [], username 
         {nextBadge && earnedCount < totalCount && (
           <button
             onClick={() => handleBadgeClick({ ...nextBadge, earned: false })}
-            className="mt-4 w-full flex items-center gap-3 p-3 bg-[#0B0C10] rounded-lg border border-white/5 hover:border-white/10 transition-colors group cursor-pointer"
+            className="mt-4 w-full flex items-center gap-3 p-3 bg-zinc-950/40 rounded border border-zinc-800/80 hover:border-zinc-700 transition-colors group cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center flex-shrink-0">
-              <Lock className="w-4 h-4 text-gray-500" />
+            <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-850 flex items-center justify-center flex-shrink-0">
+              <Lock className="w-4 h-4 text-zinc-500" />
             </div>
             <div className="flex-1 text-left min-w-0">
-              <p className="text-xs text-gray-500">Next badge</p>
-              <p className="text-sm text-gray-300 font-medium truncate">{nextBadge.name}</p>
+              <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold">Next badge</p>
+              <p className="text-xs text-zinc-300 font-semibold truncate mt-0.5">{nextBadge.name}</p>
             </div>
-            <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-gray-400 transition-colors flex-shrink-0" />
+            <ChevronRight className="w-4 h-4 text-zinc-650 group-hover:text-white transition-colors flex-shrink-0" />
           </button>
         )}
       </div>
 
       {/* Filter Tabs */}
-      <div className="px-5 sm:px-6 pt-4 pb-2 flex gap-1">
+      <div className="px-5 pt-3.5 pb-1 flex gap-1 border-b border-zinc-800/40">
         {FILTER_TABS.map(tab => {
           const count = tab.key === 'all'
             ? totalCount
             : tab.key === 'earned'
               ? earnedCount
               : totalCount - earnedCount;
+          const isActive = activeFilter === tab.key;
 
           return (
             <button
               key={tab.key}
               onClick={() => setActiveFilter(tab.key)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                activeFilter === tab.key
-                  ? 'bg-white/10 text-white'
-                  : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'
+              className={`px-2.5 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                isActive
+                  ? 'bg-white/[0.04] text-white border border-zinc-800/80'
+                  : 'text-zinc-500 hover:text-zinc-200 border border-transparent'
               }`}
             >
               {tab.label}
-              <span className={`ml-1.5 ${activeFilter === tab.key ? 'text-gray-300' : 'text-gray-600'}`}>
+              <span className={`ml-1.5 font-mono ${isActive ? 'text-zinc-300' : 'text-zinc-600'}`}>
                 {count}
               </span>
             </button>
@@ -153,7 +162,7 @@ const BadgesSection = ({ stats, contributions = [], attestations = [], username 
       </div>
 
       {/* Badge Grid */}
-      <div className="p-5 sm:p-6 pt-3">
+      <div className="p-5 pt-3">
         {filteredBadges.length > 0 ? (
           <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
             {filteredBadges.map((badge) => (
@@ -167,14 +176,14 @@ const BadgesSection = ({ stats, contributions = [], attestations = [], username 
           </div>
         ) : (
           <div className="py-8 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">
+            <div className="w-10 h-10 mx-auto mb-3 rounded bg-zinc-900 border border-zinc-850 flex items-center justify-center">
               {activeFilter === 'earned' ? (
-                <Award className="w-6 h-6 text-gray-600" />
+                <Award className="w-5 h-5 text-zinc-650" />
               ) : (
-                <Lock className="w-6 h-6 text-gray-600" />
+                <Lock className="w-5 h-5 text-zinc-650" />
               )}
             </div>
-            <p className="text-sm text-gray-500">
+            <p className="text-xs text-zinc-550">
               {activeFilter === 'earned'
                 ? 'No badges earned yet. Start contributing!'
                 : 'All badges have been unlocked! 🎉'}
@@ -185,11 +194,11 @@ const BadgesSection = ({ stats, contributions = [], attestations = [], username 
 
       {/* Empty State for no contributions */}
       {earnedCount === 0 && activeFilter === 'all' && (
-        <div className="px-5 sm:px-6 pb-5 sm:pb-6">
-          <div className="p-5 bg-gradient-to-br from-amber-500/5 to-transparent rounded-xl border border-amber-500/10 text-center">
-            <Award className="w-8 h-8 text-amber-400/60 mx-auto mb-3" />
-            <h4 className="text-white font-semibold mb-1 text-sm">Start Your Journey</h4>
-            <p className="text-xs text-gray-500">
+        <div className="px-5 pb-5">
+          <div className="p-4 bg-zinc-950/20 rounded border border-zinc-800/60 text-center">
+            <Award className="w-6 h-6 text-amber-500/60 mx-auto mb-2" />
+            <h4 className="text-white font-bold mb-0.5 text-xs uppercase tracking-wider">Start Your Journey</h4>
+            <p className="text-[10px] text-zinc-500">
               Make your first contribution to unlock your first badge!
             </p>
           </div>

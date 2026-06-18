@@ -110,7 +110,7 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
       >
         {/* Modal Content */}
         <div
-          className={`relative w-full max-w-md bg-[#12131a] rounded-2xl border border-white/10 overflow-hidden max-h-[90vh] overflow-y-auto shadow-2xl ${
+          className={`relative w-full max-w-md bg-zinc-950 rounded-lg border border-zinc-800/80 overflow-hidden max-h-[90vh] overflow-y-auto shadow-2xl ${
             isClosing ? 'animate-badge-modal-out' : 'animate-badge-modal-in'
           }`}
           onClick={(e) => e.stopPropagation()}
@@ -118,10 +118,10 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
           {/* Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-colors z-10"
+            className="absolute top-4 right-4 p-1.5 text-zinc-500 hover:text-white hover:bg-white/5 rounded transition-colors z-10"
             aria-label="Close modal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
 
           {/* ── Badge Showcase Area ── */}
@@ -135,10 +135,10 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
               <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${gradients.ring} blur-xl opacity-30 animate-badge-glow`} />
 
               {/* Main icon circle */}
-              <div className={`relative w-28 h-28 sm:w-32 sm:h-32 rounded-full flex items-center justify-center ${gradients.glow}`}>
+              <div className={`relative w-28 h-28 sm:w-30 sm:h-30 rounded-full flex items-center justify-center ${gradients.glow}`}>
                 {/* Gradient border ring */}
-                <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${gradients.ring} p-[3px]`}>
-                  <div className="w-full h-full rounded-full bg-[#12131a] flex items-center justify-center">
+                <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${gradients.ring} p-[2px]`}>
+                  <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center">
                     {earned ? (
                       badge.id === 'first-contribution' ? (
                         <FirstContributionBadge earned={earned} variant="raw" />
@@ -169,10 +169,10 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
                       ) : badge.id === 'pow-10' ? (
                         <ImpactMakerBadge earned={earned} variant="raw" />
                       ) : (
-                        <BadgeIcon className={`w-12 h-12 sm:w-14 sm:h-14 ${rarityInfo.color}`} />
+                        <BadgeIcon className={`w-11 h-11 ${rarityInfo.color}`} />
                       )
                     ) : (
-                      <Lock className="w-12 h-12 sm:w-14 sm:h-14 text-gray-600" />
+                      <Lock className="w-10 h-10 text-zinc-600" />
                     )}
                   </div>
                 </div>
@@ -181,15 +181,15 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
             </div>
 
             {/* Badge Name */}
-            <h2 className={`relative z-10 mt-5 text-2xl sm:text-3xl font-bold text-center ${
-              earned ? 'text-white' : 'text-gray-400'
+            <h2 className={`relative z-10 mt-5 text-xl sm:text-2xl font-bold text-center tracking-tight ${
+              earned ? 'text-white' : 'text-zinc-500'
             }`}>
               {badge.name}
             </h2>
 
             {/* Rarity Pill */}
-            <div className={`relative z-10 mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold ${rarityInfo.bgColor} ${rarityInfo.color} border ${rarityInfo.borderColor}`}>
-              <span className={`w-2 h-2 rounded-full bg-current ${earned ? 'animate-badge-glow' : ''}`} />
+            <div className={`relative z-10 mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${rarityInfo.bgColor} ${rarityInfo.color} border ${rarityInfo.borderColor}`}>
+              <span className={`w-1.5 h-1.5 rounded-full bg-current ${earned ? 'animate-badge-glow' : ''}`} />
               {rarityInfo.label}
             </div>
           </div>
@@ -197,26 +197,26 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
           {/* ── Content Area ── */}
           <div className="px-6 pb-6 space-y-4">
             {/* Description */}
-            <p className="text-sm text-gray-400 text-center leading-relaxed">
+            <p className="text-xs text-zinc-400 text-center leading-relaxed">
               {badge.description}
             </p>
 
             {/* How to Earn */}
-            <div className="bg-[#0B0C10] rounded-xl p-4 border border-white/5">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            <div className="bg-zinc-900/30 rounded border border-zinc-800/60 p-4">
+              <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
                 How to Earn
               </h3>
               <div className="flex items-start gap-3">
-                <div className={`w-5 h-5 rounded-full flex-shrink-0 mt-0.5 flex items-center justify-center ${
-                  earned ? 'bg-emerald-500/20' : 'bg-white/5'
+                <div className={`w-4 h-4 rounded-full flex-shrink-0 mt-0.5 flex items-center justify-center ${
+                  earned ? 'bg-emerald-500/20' : 'bg-zinc-800'
                 }`}>
                   {earned ? (
-                    <CheckCircle className="w-3 h-3 text-emerald-400" />
+                    <CheckCircle className="w-2.5 h-2.5 text-emerald-400" />
                   ) : (
-                    <div className="w-2 h-2 rounded-full bg-gray-600" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
                   )}
                 </div>
-                <p className={`text-sm ${earned ? 'text-gray-300' : 'text-gray-500'}`}>
+                <p className={`text-xs ${earned ? 'text-zinc-300' : 'text-zinc-500'}`}>
                   {badge.criteria.narrative}
                 </p>
               </div>
@@ -224,11 +224,11 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
 
             {/* Earned Date */}
             {earned && badge.earnedAt && (
-              <div className="flex items-center gap-3 p-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl">
-                <Calendar className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+              <div className="flex items-center gap-3 p-3 bg-emerald-950/10 border border-emerald-900/30 rounded">
+                <Calendar className="w-4 h-4 text-emerald-450 flex-shrink-0" />
                 <div>
-                  <p className="text-xs text-emerald-400 font-medium">Earned</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-[10px] text-emerald-450 font-bold uppercase tracking-wider">Earned</p>
+                  <p className="text-xs text-zinc-450 mt-0.5">
                     {new Date(badge.earnedAt).toLocaleDateString('en-US', {
                       year: 'numeric', month: 'long', day: 'numeric'
                     })}
@@ -239,9 +239,9 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
 
             {/* Not earned hint */}
             {!earned && (
-              <div className="flex items-center gap-3 p-3 bg-white/[0.02] border border-white/5 rounded-xl">
-                <Lock className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                <p className="text-xs text-gray-500">
+              <div className="flex items-center gap-3 p-3 bg-zinc-950/20 border border-zinc-850/60 rounded">
+                <Lock className="w-3.5 h-3.5 text-zinc-600 flex-shrink-0" />
+                <p className="text-xs text-zinc-550">
                   Keep contributing to unlock this badge!
                 </p>
               </div>
@@ -249,22 +249,22 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
 
             {/* Action Buttons */}
             {earned && (
-              <div className="flex gap-3 pt-2">
+              <div className="flex gap-3 pt-1">
                 <button
                   onClick={() => setShowShareModal(true)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors text-sm font-medium"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-zinc-200 text-black rounded text-xs font-semibold transition-colors"
                 >
-                  <Share2 className="w-4 h-4" />
-                  Share
+                  <Share2 className="w-3.5 h-3.5" />
+                  Share Badge
                 </button>
               </div>
             )}
 
             {/* Footer */}
-            <div className="pt-3 border-t border-white/5 flex items-center justify-between">
+            <div className="pt-3 border-t border-zinc-800/60 flex items-center justify-between">
               <div>
-                <p className="text-[10px] text-gray-600">Issued by</p>
-                <p className="text-xs text-gray-400">{badge.issuer.name}</p>
+                <p className="text-[9px] text-zinc-650 uppercase font-bold tracking-wider">Issued by</p>
+                <p className="text-xs text-zinc-500 font-medium">{badge.issuer.name}</p>
               </div>
             </div>
           </div>

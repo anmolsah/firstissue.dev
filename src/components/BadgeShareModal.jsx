@@ -77,59 +77,57 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
     navigator.clipboard.writeText(markdown);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  return (
+  };  return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-[#15161E] rounded-2xl border border-white/10 overflow-hidden my-auto max-h-[90vh] overflow-y-auto shadow-2xl">
+      <div className="relative w-full max-w-xl bg-zinc-950 rounded-lg border border-zinc-800/80 overflow-hidden my-auto max-h-[90vh] overflow-y-auto shadow-2xl">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white transition-colors z-10"
+          className="absolute top-4 right-4 p-1.5 text-zinc-500 hover:text-white hover:bg-white/5 rounded transition-colors z-10"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
         </button>
 
         {/* Header */}
-        <div className="p-6 border-b border-white/5">
+        <div className="p-5 border-b border-zinc-800/60 bg-zinc-950">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
-              <Share2 className="w-5 h-5 text-blue-400" />
+            <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-805 flex items-center justify-center text-zinc-400">
+              <Share2 className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Share Your Achievement</h2>
-              <p className="text-sm text-gray-400">Show off your {badge.name} badge!</p>
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider">Share Your Achievement</h2>
+              <p className="text-[11px] text-zinc-400 mt-0.5">Show off your {badge.name} badge!</p>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-5">
           {/* Badge Preview */}
-          <div className="bg-[#0B0C10] rounded-xl p-8 mb-6 flex justify-center" id={`badge-share-${badge.id}`}>
+          <div className="bg-[#0B0C10] rounded border border-zinc-800/60 p-6 mb-5 flex justify-center" id={`badge-share-${badge.id}`}>
             <div className="text-center">
               <BadgeImage badge={badge} size="large" showDetails={true} disableBlur={isCapturing} showEarned={false} />
-              <div className="mt-16 pt-4 border-t border-white/5">
-                <p className="text-gray-400 text-sm mb-1">Earned by</p>
-                <p className="text-white font-semibold">@{username}</p>
-                <p className="text-gray-500 text-xs mt-2">FirstIssue.dev</p>
+              <div className="mt-12 pt-3 border-t border-zinc-800/40">
+                <p className="text-zinc-500 text-[10px] uppercase font-bold tracking-wider mb-0.5">Earned by</p>
+                <p className="text-sm font-semibold text-white">@{username}</p>
+                <p className="text-zinc-650 text-[10px] uppercase font-bold tracking-wider mt-1.5">FirstIssue.dev</p>
               </div>
             </div>
           </div>
 
           {/* Social Share Buttons */}
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold text-white mb-3">Share on Social Media</h3>
-            <div className="grid grid-cols-2 xs:grid-cols-3 gap-3">
+          <div className="mb-5">
+            <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2.5">Share on Social Media</h3>
+            <div className="grid grid-cols-2 xs:grid-cols-3 gap-2">
               <TwitterShareButton
                 url={shareUrl}
                 title={shareTitle}
                 hashtags={['OpenSource', 'FirstIssueDev', 'Coding']}
                 className="w-full"
               >
-                <div className="flex items-center justify-center gap-2 p-3 bg-[#1DA1F2]/10 border border-[#1DA1F2]/20 rounded-lg hover:bg-[#1DA1F2]/20 transition-colors cursor-pointer">
-                  <Twitter className="w-5 h-5 text-[#1DA1F2]" />
-                  <span className="text-sm font-medium text-white">Twitter</span>
+                <div className="flex items-center justify-center gap-2 py-2 bg-zinc-900 hover:bg-zinc-855 border border-zinc-800/80 rounded transition-colors cursor-pointer text-xs font-semibold text-zinc-300 hover:text-white">
+                  <Twitter className="w-4 h-4 text-[#1DA1F2]" />
+                  <span>Twitter</span>
                 </div>
               </TwitterShareButton>
 
@@ -140,9 +138,9 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
                 source="FirstIssue.dev"
                 className="w-full"
               >
-                <div className="flex items-center justify-center gap-2 p-3 bg-[#0A66C2]/10 border border-[#0A66C2]/20 rounded-lg hover:bg-[#0A66C2]/20 transition-colors cursor-pointer">
-                  <Linkedin className="w-5 h-5 text-[#0A66C2]" />
-                  <span className="text-sm font-medium text-white">LinkedIn</span>
+                <div className="flex items-center justify-center gap-2 py-2 bg-zinc-900 hover:bg-zinc-855 border border-zinc-800/80 rounded transition-colors cursor-pointer text-xs font-semibold text-zinc-300 hover:text-white">
+                  <Linkedin className="w-4 h-4 text-[#0A66C2]" />
+                  <span>LinkedIn</span>
                 </div>
               </LinkedinShareButton>
 
@@ -152,32 +150,32 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
                 hashtag="#OpenSource"
                 className="w-full"
               >
-                <div className="flex items-center justify-center gap-2 p-3 bg-[#1877F2]/10 border border-[#1877F2]/20 rounded-lg hover:bg-[#1877F2]/20 transition-colors cursor-pointer">
-                  <Facebook className="w-5 h-5 text-[#1877F2]" />
-                  <span className="text-sm font-medium text-white">Facebook</span>
+                <div className="flex items-center justify-center gap-2 py-2 bg-zinc-900 hover:bg-zinc-855 border border-zinc-800/80 rounded transition-colors cursor-pointer text-xs font-semibold text-zinc-300 hover:text-white">
+                  <Facebook className="w-4 h-4 text-[#1877F2]" />
+                  <span>Facebook</span>
                 </div>
               </FacebookShareButton>
             </div>
           </div>
 
           {/* Shields.io Badge */}
-          <div className="mb-6">
-            <h3 className="text-sm font-semibold text-white mb-3">Add to GitHub README</h3>
-            <div className="bg-[#0B0C10] rounded-lg p-4 border border-white/5">
+          <div className="mb-5">
+            <h3 className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider mb-2.5">Add to GitHub README</h3>
+            <div className="bg-[#0B0C10] rounded border border-zinc-800/60 p-3 flex flex-col items-start gap-2.5">
               <img 
                 src={getShieldsIOBadge()} 
                 alt={badge.name}
-                className="mb-3"
+                className="h-5"
               />
-              <div className="flex items-center gap-2">
-                <code className="flex-1 text-xs text-gray-400 bg-black/30 p-2 rounded overflow-x-auto">
+              <div className="flex items-center gap-2 w-full">
+                <code className="flex-1 text-[10px] text-zinc-400 bg-black/30 px-2 py-1.5 rounded overflow-x-auto font-mono">
                   {`[![${badge.name}](${getShieldsIOBadge()})](https://firstissue.dev)`}
                 </code>
                 <button
                   onClick={copyShieldsMarkdown}
-                  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
+                  className="p-1.5 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 hover:text-white rounded transition-colors"
                 >
-                  {copied ? <Check className="w-4 h-4" /> : <LinkIcon className="w-4 h-4" />}
+                  {copied ? <Check className="w-3.5 h-3.5" /> : <LinkIcon className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
@@ -188,24 +186,24 @@ const BadgeShareModal = ({ badge, onClose, username }) => {
             <button
               onClick={downloadBadge}
               disabled={downloading}
-              className="flex items-center justify-center gap-2 p-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-500 transition-colors disabled:opacity-50"
+              className="flex items-center justify-center gap-1.5 py-2 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 hover:text-white rounded text-xs font-semibold disabled:opacity-50 transition-colors"
             >
-              <Download className="w-5 h-5" />
+              <Download className="w-3.5 h-3.5" />
               {downloading ? 'Downloading...' : 'Download Image'}
             </button>
 
             <button
               onClick={copyLink}
-              className="flex items-center justify-center gap-2 p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
+              className="flex items-center justify-center gap-1.5 py-2 bg-white hover:bg-zinc-200 text-black rounded text-xs font-semibold transition-colors animate-fade-in"
             >
               {copied ? (
                 <>
-                  <Check className="w-5 h-5" />
+                  <Check className="w-3.5 h-3.5" />
                   Copied!
                 </>
               ) : (
                 <>
-                  <LinkIcon className="w-5 h-5" />
+                  <LinkIcon className="w-3.5 h-3.5" />
                   Copy Link
                 </>
               )}

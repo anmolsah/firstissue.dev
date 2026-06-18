@@ -191,8 +191,8 @@ const ProfilePageNew = () => {
   if (loading && !githubProfile && bookmarks.length === 0) {
     return (
       <div className="flex bg-[#0B0C10] min-h-screen items-center justify-center">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-        <span className="ml-3 text-gray-400">Loading profile...</span>
+        <Loader2 className="w-8 h-8 text-white animate-spin" />
+        <span className="ml-3 text-zinc-400 text-sm">Loading profile...</span>
       </div>
     );
   }
@@ -202,8 +202,8 @@ const ProfilePageNew = () => {
       {/* ── Left Sidebar (Desktop only) ── */}
       <AppSidebar>
         {/* Profile Card */}
-        <div className="bg-[#15161E] rounded-xl p-5 border border-white/5 mb-6">
-          <div className="w-16 h-16 rounded-lg overflow-hidden mb-4">
+        <div className="bg-zinc-950/25 rounded-lg p-4 border border-zinc-800/60 mb-5">
+          <div className="w-16 h-16 rounded-lg overflow-hidden mb-3.5 border border-zinc-800/60">
             <img
               src={
                 githubProfile?.avatar_url ||
@@ -214,40 +214,40 @@ const ProfilePageNew = () => {
               className="w-full h-full object-cover"
             />
           </div>
-          <h2 className="text-lg font-bold text-white mb-1 truncate flex items-center gap-1.5">
+          <h2 className="text-sm font-bold text-white mb-0.5 truncate flex items-center gap-1.5">
             {displayName}
             {isSupporter && (
-              <BadgeCheck className="w-5 h-5 text-blue-400 fill-blue-400/20 flex-shrink-0" title="FirstIssue.dev Supporter" />
+              <BadgeCheck className="w-4 h-4 text-white fill-white/10 flex-shrink-0" title="FirstIssue.dev Supporter" />
             )}
           </h2>
-          <p className="text-sm text-gray-400 mb-4 leading-relaxed line-clamp-2">
+          <p className="text-xs text-zinc-400 mb-3 leading-relaxed line-clamp-2">
             {displayBio}
           </p>
 
           <button
             onClick={() => setIsEditModalOpen(true)}
-            className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm cursor-pointer"
+            className="w-full py-1.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 hover:text-white transition-all text-xs font-semibold rounded-md text-zinc-300 cursor-pointer"
           >
             Edit Profile
           </button>
         </div>
 
         {/* GitHub Stats Cards */}
-        <div className="space-y-3">
-          <SidebarStatCard label="Merged PRs" value={stats.merged} color="emerald" icon={GitMerge} />
-          <SidebarStatCard label="In Progress" value={stats.inProgress} color="purple" icon={GitPullRequest} />
-          <SidebarStatCard label="Bookmarks" value={stats.bookmarksCount} color="blue" icon={Bookmark} />
+        <div className="space-y-2">
+          <SidebarStatCard label="Merged PRs" value={stats.merged} icon={GitMerge} />
+          <SidebarStatCard label="In Progress" value={stats.inProgress} icon={GitPullRequest} />
+          <SidebarStatCard label="Bookmarks" value={stats.bookmarksCount} icon={Bookmark} />
         </div>
       </AppSidebar>
 
       {/* ── Main Content ── */}
       <main className="flex-1 lg:ml-64 min-w-0 pb-20 lg:pb-0">
         {/* Top Header */}
-        <header className="h-14 sm:h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6">
+        <header className="h-14 sm:h-16 border-b border-zinc-800/60 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-3">
             {/* Mobile hamburger */}
             <button
-              className="lg:hidden p-2 -ml-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
+              className="lg:hidden p-2 -ml-2 text-zinc-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -261,15 +261,15 @@ const ProfilePageNew = () => {
             </Link>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-white/5">
+            <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-zinc-800/60">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-white truncate max-w-[120px] flex items-center gap-1 justify-end">
-                  {isSupporter && <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-400/20" title="FirstIssue.dev Supporter" />}
+                <p className="text-xs font-semibold text-white truncate max-w-[120px] flex items-center gap-1 justify-end">
+                  {isSupporter && <BadgeCheck className="w-3.5 h-3.5 text-white fill-white/10" title="FirstIssue.dev Supporter" />}
                   {githubProfile?.name || getGitHubUsername()}
                 </p>
-                <p className="text-xs text-gray-500">@{getGitHubUsername()}</p>
+                <p className="text-[10px] text-zinc-500 font-mono">@{getGitHubUsername()}</p>
               </div>
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden flex-shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full border border-zinc-800 overflow-hidden flex-shrink-0">
                 <img
                   src={
                     githubProfile?.avatar_url || user?.user_metadata?.avatar_url
@@ -281,20 +281,20 @@ const ProfilePageNew = () => {
             </div>
             <button
               onClick={handleSignOut}
-              className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+              className="p-2 text-zinc-400 hover:text-red-400 transition-colors"
               title="Sign Out"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </header>
 
         {/* Mobile Slide-down Menu */}
         {mobileMenuOpen && (
-          <div className="lg:hidden bg-[#0B0C10] border-b border-white/5 px-4 py-4 space-y-2 animate-badge-modal-backdrop">
+          <div className="lg:hidden bg-[#0B0C10] border-b border-zinc-800/60 px-4 py-4 space-y-2 animate-badge-modal-backdrop">
             {/* Mobile Profile Summary */}
-            <div className="flex items-center gap-3 p-3 bg-[#15161E] rounded-xl border border-white/5 mb-3">
-              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0">
+            <div className="flex items-center gap-3 p-3 bg-zinc-950/25 rounded-lg border border-zinc-800/60 mb-3">
+              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 border border-zinc-800/60">
                 <img
                   src={githubProfile?.avatar_url || user?.user_metadata?.avatar_url}
                   alt="Avatar"
@@ -302,15 +302,15 @@ const ProfilePageNew = () => {
                 />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate flex items-center gap-1.5">
+                <p className="text-xs font-bold text-white truncate flex items-center gap-1.5">
                   {displayName}
-                  {isSupporter && <BadgeCheck className="w-4 h-4 text-blue-400 fill-blue-400/20 flex-shrink-0" title="FirstIssue.dev Supporter" />}
+                  {isSupporter && <BadgeCheck className="w-3.5 h-3.5 text-white fill-white/10 flex-shrink-0" title="FirstIssue.dev Supporter" />}
                 </p>
-                <p className="text-xs text-gray-500 truncate">{displayBio}</p>
+                <p className="text-[11px] text-zinc-500 truncate leading-relaxed">{displayBio}</p>
               </div>
               <button
                 onClick={() => { setIsEditModalOpen(true); setMobileMenuOpen(false); }}
-                className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors flex-shrink-0"
+                className="px-2.5 py-1.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-850 hover:text-white transition-all text-[11px] font-semibold rounded text-zinc-300 flex-shrink-0"
               >
                 Edit
               </button>
@@ -318,17 +318,17 @@ const ProfilePageNew = () => {
 
             {/* Mobile stat pills */}
             <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="bg-[#15161E] rounded-lg p-2.5 text-center border border-white/5">
-                <p className="text-lg font-bold text-emerald-400">{stats.merged}</p>
-                <p className="text-[10px] text-gray-500">Merged</p>
+              <div className="bg-zinc-950/25 rounded-lg p-2 text-center border border-zinc-800/60">
+                <p className="text-base font-bold text-white font-mono">{stats.merged}</p>
+                <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold">Merged</p>
               </div>
-              <div className="bg-[#15161E] rounded-lg p-2.5 text-center border border-white/5">
-                <p className="text-lg font-bold text-purple-400">{stats.inProgress}</p>
-                <p className="text-[10px] text-gray-500">In Progress</p>
+              <div className="bg-zinc-950/25 rounded-lg p-2 text-center border border-zinc-800/60">
+                <p className="text-base font-bold text-white font-mono">{stats.inProgress}</p>
+                <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold">In Progress</p>
               </div>
-              <div className="bg-[#15161E] rounded-lg p-2.5 text-center border border-white/5">
-                <p className="text-lg font-bold text-blue-400">{stats.bookmarksCount}</p>
-                <p className="text-[10px] text-gray-500">Bookmarks</p>
+              <div className="bg-zinc-950/25 rounded-lg p-2 text-center border border-zinc-800/60">
+                <p className="text-base font-bold text-white font-mono">{stats.bookmarksCount}</p>
+                <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold">Bookmarks</p>
               </div>
             </div>
 
@@ -345,10 +345,10 @@ const ProfilePageNew = () => {
           {/* Dashboard Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                 Developer Dashboard
               </h1>
-              <p className="text-sm sm:text-base text-gray-400">
+              <p className="text-xs sm:text-sm text-zinc-400 mt-1">
                 Welcome back,{" "}
                 {customProfile?.name?.split(" ")[0] ||
                   githubProfile?.name?.split(" ")[0] ||
@@ -363,42 +363,42 @@ const ProfilePageNew = () => {
                 href={githubProfile?.html_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-[#15161E] border border-white/10 text-gray-300 rounded-lg hover:text-white hover:border-white/20 transition-colors text-sm"
+                className="flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-zinc-950/40 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 hover:bg-zinc-900/50 rounded transition-all text-xs font-semibold"
               >
-                <Github className="w-4 h-4" />
+                <Github className="w-3.5 h-3.5" />
                 <span className="hidden xs:inline">View GitHub</span>
               </a>
               <button
                 onClick={() => navigate("/explore")}
-                className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
+                className="flex items-center gap-2 px-3 sm:px-4 py-1.5 bg-white hover:bg-zinc-200 text-black rounded font-semibold transition-all text-xs"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-3.5 h-3.5" />
                 <span className="hidden xs:inline">Find Issues</span>
               </button>
             </div>
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex space-x-4 border-b border-white/10 mb-6">
+          <div className="flex space-x-4 border-b border-zinc-800/60 mb-6">
             <button
               onClick={() => setActiveTab('overview')}
-              className={`px-1 py-3 text-sm font-medium transition-colors border-b-2 ${
+              className={`px-1 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 ${
                 activeTab === 'overview'
-                  ? 'border-blue-500 text-blue-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
+                  ? 'border-white text-white'
+                  : 'border-transparent text-zinc-450 hover:text-zinc-200 hover:border-zinc-800'
               }`}
             >
               Overview
             </button>
             <button
               onClick={() => setActiveTab('proof-of-work')}
-              className={`px-1 py-3 text-sm font-medium transition-colors border-b-2 flex items-center gap-1.5 ${
+              className={`px-1 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors border-b-2 flex items-center gap-1.5 ${
                 activeTab === 'proof-of-work'
-                  ? 'border-emerald-500 text-emerald-400'
-                  : 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-500'
+                  ? 'border-white text-white'
+                  : 'border-transparent text-zinc-450 hover:text-zinc-200 hover:border-zinc-800'
               }`}
             >
-              <ShieldCheck className="w-4 h-4" /> Proof of Work
+              <ShieldCheck className="w-3.5 h-3.5" /> Proof of Work
             </button>
           </div>
 
@@ -406,17 +406,17 @@ const ProfilePageNew = () => {
             <>
           {/* GitHub Info Card */}
           {(githubProfile || customProfile) && (
-            <div className="bg-[#15161E] rounded-xl p-4 sm:p-6 border border-white/5 mb-6 sm:mb-8">
-              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-sm text-gray-400">
+            <div className="bg-zinc-950/25 rounded-lg p-4 sm:p-5 border border-zinc-800/60 mb-6 sm:mb-8">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-zinc-400">
                 {(customProfile?.location || githubProfile?.location) && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 flex-shrink-0" />
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500" />
                     <span className="truncate">{customProfile?.location || githubProfile?.location}</span>
                   </div>
                 )}
                 {(customProfile?.company || githubProfile?.company) && (
-                  <div className="flex items-center gap-2">
-                    <Building className="w-4 h-4 flex-shrink-0" />
+                  <div className="flex items-center gap-1.5">
+                    <Building className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500" />
                     <span className="truncate">{customProfile?.company || githubProfile?.company}</span>
                   </div>
                 )}
@@ -430,25 +430,27 @@ const ProfilePageNew = () => {
                     }
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2 hover:text-blue-400"
+                    className="flex items-center gap-1.5 hover:text-white transition-colors"
                   >
-                    <LinkIcon className="w-4 h-4 flex-shrink-0" />
+                    <LinkIcon className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500" />
                     <span className="truncate">{customProfile?.website || githubProfile?.blog}</span>
                   </a>
                 )}
                 {githubProfile?.created_at && (
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 flex-shrink-0" />
-                    Joined{" "}
-                    {new Date(githubProfile.created_at).toLocaleDateString(
-                      "en-US",
-                      { month: "long", year: "numeric" },
-                    )}
+                  <div className="flex items-center gap-1.5">
+                    <Calendar className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500" />
+                    <span>
+                      Joined{" "}
+                      {new Date(githubProfile.created_at).toLocaleDateString(
+                        "en-US",
+                        { month: "long", year: "numeric" },
+                      )}
+                    </span>
                   </div>
                 )}
               </div>
               {githubProfile && (
-                <div className="flex gap-4 sm:gap-6 mt-4 pt-4 border-t border-white/5">
+                <div className="flex gap-4 sm:gap-6 mt-4 pt-4 border-t border-zinc-800/60">
                   <GitHubCounter label="Repositories" value={stats.publicRepos} />
                   <GitHubCounter label="Followers" value={stats.followers} />
                   <GitHubCounter label="Following" value={stats.following} />
@@ -458,12 +460,12 @@ const ProfilePageNew = () => {
           )}
 
           {/* Contribution Heatmap */}
-          <div className="bg-[#15161E] rounded-xl p-4 sm:p-6 border border-white/5 mb-6 sm:mb-8">
+          <div className="bg-zinc-950/25 rounded-lg p-4 sm:p-5 border border-zinc-800/60 mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider">
+              <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
                 Contribution Activity
               </h3>
-              <div className="flex items-center gap-2 text-[10px] text-gray-500">
+              <div className="flex items-center gap-2 text-[10px] text-zinc-500">
                 <span>Less</span>
                 <div className="flex gap-0.5">
                   <div className="w-3 h-3 rounded-sm bg-[#161b22]" />
@@ -489,7 +491,7 @@ const ProfilePageNew = () => {
           </div>
 
           {/* Contribution Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
             <StatCard
               icon={GitMerge}
               label="Merged PRs"
@@ -523,46 +525,46 @@ const ProfilePageNew = () => {
           {/* Two Column Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
             {/* Contribution Breakdown */}
-            <div className="bg-[#15161E] rounded-xl p-5 sm:p-6 border border-white/5">
-              <h3 className="text-lg font-semibold text-white mb-6">
+            <div className="bg-zinc-950/25 rounded-lg p-5 border border-zinc-800/60">
+              <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-6">
                 Contribution Breakdown
               </h3>
               <div className="space-y-4">
-                <ContributionBar label="Merged" count={stats.merged} total={stats.totalContributions} color="bg-emerald-500" icon={<GitMerge className="w-4 h-4" />} />
-                <ContributionBar label="In Progress" count={stats.inProgress} total={stats.totalContributions} color="bg-purple-500" icon={<GitPullRequest className="w-4 h-4" />} />
-                <ContributionBar label="Applied" count={stats.applied} total={stats.totalContributions} color="bg-amber-500" icon={<AlertCircle className="w-4 h-4" />} />
-                <ContributionBar label="Closed" count={stats.closed} total={stats.totalContributions} color="bg-red-500" icon={<XCircle className="w-4 h-4" />} />
+                <ContributionBar label="Merged" count={stats.merged} total={stats.totalContributions} color="bg-emerald-500" icon={<GitMerge className="w-3.5 h-3.5" />} />
+                <ContributionBar label="In Progress" count={stats.inProgress} total={stats.totalContributions} color="bg-purple-500" icon={<GitPullRequest className="w-3.5 h-3.5" />} />
+                <ContributionBar label="Applied" count={stats.applied} total={stats.totalContributions} color="bg-amber-500" icon={<AlertCircle className="w-3.5 h-3.5" />} />
+                <ContributionBar label="Closed" count={stats.closed} total={stats.totalContributions} color="bg-red-500" icon={<XCircle className="w-3.5 h-3.5" />} />
               </div>
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-[#15161E] rounded-xl p-5 sm:p-6 border border-white/5">
-              <h3 className="text-lg font-semibold text-white mb-6">
+            <div className="bg-zinc-950/25 rounded-lg p-5 border border-zinc-800/60">
+              <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-6">
                 Quick Actions
               </h3>
               <div className="space-y-3">
-                <QuickActionButton icon={<Compass className="w-5 h-5" />} label="Explore Issues" description="Find new open source issues" onClick={() => navigate("/explore")} />
-                <QuickActionButton icon={<Bookmark className="w-5 h-5" />} label="View Bookmarks" description={`${stats.bookmarksCount} saved issues`} onClick={() => navigate("/bookmarks")} />
-                <QuickActionButton icon={<TrendingUp className="w-5 h-5" />} label="Check Status" description="Track your contributions" onClick={() => navigate("/status")} />
-                <QuickActionButton icon={<Github className="w-5 h-5" />} label="GitHub Profile" description="View your GitHub profile" onClick={() => window.open(githubProfile?.html_url, "_blank")} />
+                <QuickActionButton icon={<Compass className="w-4 h-4" />} label="Explore Issues" description="Find new open source issues" onClick={() => navigate("/explore")} />
+                <QuickActionButton icon={<Bookmark className="w-4 h-4" />} label="View Bookmarks" description={`${stats.bookmarksCount} saved issues`} onClick={() => navigate("/bookmarks")} />
+                <QuickActionButton icon={<TrendingUp className="w-4 h-4" />} label="Check Status" description="Track your contributions" onClick={() => navigate("/status")} />
+                <QuickActionButton icon={<Github className="w-4 h-4" />} label="GitHub Profile" description="View your GitHub profile" onClick={() => window.open(githubProfile?.html_url, "_blank")} />
               </div>
             </div>
           </div>
 
           {/* Subscription Card */}
           {supporterData && (
-            <div className="bg-[#15161E] rounded-xl p-5 sm:p-6 border border-white/5 mt-4 sm:mt-6">
+            <div className="bg-zinc-950/25 rounded-lg p-5 border border-zinc-800/60 mt-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                    <CreditCard className="w-6 h-6 text-blue-400" />
+                  <div className="w-10 h-10 rounded bg-zinc-900 border border-zinc-800/60 flex items-center justify-center text-zinc-400 flex-shrink-0">
+                    <CreditCard className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-1.5 uppercase tracking-wide">
                       FirstIssue.dev Supporter
-                      <BadgeCheck className="w-5 h-5 text-blue-400 fill-blue-400/20" />
+                      <BadgeCheck className="w-4 h-4 text-white fill-white/10" />
                     </h3>
-                    <p className="text-sm text-gray-400">
+                    <p className="text-xs text-zinc-400 mt-0.5">
                       {supporterData.status === "active"
                         ? `Renews on ${new Date(supporterData.expires_at).toLocaleDateString()}`
                         : `Access until ${new Date(supporterData.expires_at).toLocaleDateString()} (Cancelled)`}
@@ -572,7 +574,7 @@ const ProfilePageNew = () => {
                 {supporterData.status === "active" && (
                   <button
                     onClick={() => setShowCancelModal(true)}
-                    className="px-4 py-2 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-lg text-sm font-medium transition-colors cursor-pointer"
+                    className="px-3 py-1.5 border border-red-950/30 hover:border-red-500/20 text-red-400/90 hover:bg-red-500/5 rounded text-xs font-semibold transition-all cursor-pointer"
                   >
                     Cancel Subscription
                   </button>
@@ -580,16 +582,16 @@ const ProfilePageNew = () => {
               </div>
 
               {/* Billing History & Invoices Accordion */}
-              <div className="mt-6 pt-6 border-t border-white/5">
+              <div className="mt-6 pt-6 border-t border-zinc-800/60">
                 <button
                   onClick={() => setShowInvoices(!showInvoices)}
-                  className="w-full flex items-center justify-between text-xs font-bold text-gray-400 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
+                  className="w-full flex items-center justify-between text-[10px] font-bold text-zinc-450 uppercase tracking-wider cursor-pointer hover:text-white transition-colors"
                 >
                   <span className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-blue-400" />
+                    <FileText className="w-4 h-4 text-zinc-450" />
                     Billing History & Invoices
                   </span>
-                  <span className="p-1 rounded-md bg-zinc-950 border border-white/5 text-gray-400">
+                  <span className="p-1 rounded bg-zinc-900 border border-zinc-800/60 text-zinc-400">
                     {showInvoices ? (
                       <ChevronUp className="w-3.5 h-3.5 text-zinc-300" />
                     ) : (
@@ -602,42 +604,42 @@ const ProfilePageNew = () => {
                   <div className="mt-4 animate-in fade-in slide-in-from-top-1 duration-200">
                     {loadingInvoices ? (
                       <div className="flex items-center justify-center py-6">
-                        <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
-                        <span className="ml-2.5 text-xs text-gray-500">Loading invoices...</span>
+                        <Loader2 className="w-5 h-5 text-white animate-spin" />
+                        <span className="ml-2.5 text-xs text-zinc-555">Loading invoices...</span>
                       </div>
                     ) : invoices.length > 0 ? (
                       <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs border-collapse">
                           <thead>
-                            <tr className="border-b border-white/5 text-gray-500 font-medium">
-                              <th className="pb-2 text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Date</th>
-                              <th className="pb-2 text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Invoice ID</th>
-                              <th className="pb-2 text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Amount</th>
-                              <th className="pb-2 text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Status</th>
-                              <th className="pb-2 text-right text-gray-400 font-semibold uppercase tracking-wider text-[10px]">Invoice</th>
+                            <tr className="border-b border-zinc-800/60 text-zinc-500 font-semibold uppercase tracking-wider text-[9px]">
+                              <th className="pb-2">Date</th>
+                              <th className="pb-2">Invoice ID</th>
+                              <th className="pb-2">Amount</th>
+                              <th className="pb-2">Status</th>
+                              <th className="pb-2 text-right">Invoice</th>
                             </tr>
                           </thead>
                           <tbody>
                             {invoices.map((invoice) => (
-                              <tr key={invoice.payment_id} className="border-b border-white/5 last:border-0 hover:bg-white/[0.02] transition-colors">
-                                <td className="py-3 text-gray-300 font-sans">
+                              <tr key={invoice.payment_id} className="border-b border-zinc-850/40 last:border-0 hover:bg-white/[0.01] transition-colors">
+                                <td className="py-2.5 text-zinc-300 font-sans">
                                   {new Date(invoice.created_at).toLocaleDateString(undefined, {
                                     year: "numeric",
                                     month: "short",
                                     day: "numeric",
                                   })}
                                 </td>
-                                <td className="py-3 text-gray-400 font-mono truncate max-w-[120px]" title={invoice.invoice_id || invoice.payment_id}>
+                                <td className="py-2.5 text-zinc-450 font-mono truncate max-w-[120px]" title={invoice.invoice_id || invoice.payment_id}>
                                   {invoice.invoice_id || invoice.payment_id}
                                 </td>
-                                <td className="py-3 text-white font-medium">
+                                <td className="py-2.5 text-white font-medium">
                                   {(invoice.amount / 100).toLocaleString(undefined, {
                                     style: "currency",
                                     currency: invoice.currency || "USD",
                                   })}
                                 </td>
-                                <td className="py-3">
-                                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium ${
+                                <td className="py-2.5">
+                                  <span className={`inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide ${
                                     invoice.status === "succeeded" || invoice.status === "completed"
                                       ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
                                       : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
@@ -645,19 +647,19 @@ const ProfilePageNew = () => {
                                     {invoice.status}
                                   </span>
                                 </td>
-                                <td className="py-3 text-right">
+                                <td className="py-2.5 text-right">
                                   {invoice.invoice_url ? (
                                     <a
                                       href={invoice.invoice_url}
                                       target="_blank"
                                       rel="noopener noreferrer"
-                                      className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors font-medium hover:underline"
+                                      className="inline-flex items-center gap-1 text-zinc-400 hover:text-white transition-colors font-medium hover:underline"
                                     >
                                       <FileText className="w-3.5 h-3.5" />
                                       Download
                                     </a>
                                   ) : (
-                                    <span className="text-gray-600">Pending</span>
+                                    <span className="text-zinc-600">Pending</span>
                                   )}
                                 </td>
                               </tr>
@@ -666,7 +668,7 @@ const ProfilePageNew = () => {
                         </table>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-500 py-3 text-center bg-zinc-950/20 border border-dashed border-white/5 rounded-lg">
+                      <p className="text-xs text-zinc-500 py-3 text-center bg-zinc-950/20 border border-dashed border-zinc-800/60 rounded-lg">
                         No payment history or invoices found.
                       </p>
                     )}
@@ -712,16 +714,16 @@ const ProfilePageNew = () => {
 
       {/* Cancel Subscription Modal */}
       {showCancelModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-[#15161E] border border-white/10 rounded-2xl w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-zinc-950 border border-zinc-800 w-full max-w-md p-5 rounded-lg relative shadow-2xl">
             <button
               onClick={() => setShowCancelModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
-            <h3 className="text-xl font-bold text-white mb-2">Cancel Subscription?</h3>
-            <p className="text-gray-400 mb-6 text-sm leading-relaxed">
+            <h3 className="text-base font-bold text-white mb-2 uppercase tracking-wide">Cancel Subscription?</h3>
+            <p className="text-zinc-450 mb-6 text-xs leading-relaxed">
               Are you sure you want to cancel your FirstIssue.dev Supporter subscription? 
               You'll continue to have full access until the end of your current billing period on 
               {" "}<span className="text-white font-medium">{new Date(supporterData?.expires_at).toLocaleDateString()}</span>.
@@ -729,16 +731,16 @@ const ProfilePageNew = () => {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowCancelModal(false)}
-                className="px-4 py-2 bg-transparent text-gray-300 hover:text-white rounded-lg text-sm font-medium transition-colors"
+                className="px-3.5 py-1.5 text-zinc-450 hover:text-white text-xs font-semibold transition-colors"
               >
                 Keep Subscription
               </button>
               <button
                 onClick={handleCancelSubscription}
                 disabled={isCancelling}
-                className="px-4 py-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="px-3.5 py-1.5 bg-red-950/20 hover:bg-red-950/40 border border-red-900/40 text-red-400 rounded text-xs font-semibold transition-colors disabled:opacity-50 flex items-center gap-2"
               >
-                {isCancelling ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                {isCancelling ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
                 {isCancelling ? "Cancelling..." : "Confirm Cancellation"}
               </button>
             </div>
@@ -759,13 +761,13 @@ const SidebarLink = ({ icon: Icon, label, to, onClick }) => {
     <Link
       to={to}
       onClick={onClick}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer ${
+      className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded border text-xs font-semibold transition-all cursor-pointer ${
         active
-          ? "bg-blue-600/10 text-blue-400"
-          : "text-gray-400 hover:text-white hover:bg-white/5"
+          ? "bg-white/[0.04] text-white border-zinc-800/80"
+          : "text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.02] border-transparent"
       }`}
     >
-      <Icon className={`w-5 h-5 flex-shrink-0 ${active ? "text-blue-400" : "text-gray-500"}`} />
+      <Icon className={`w-4 h-4 transition-colors ${active ? "text-white" : "text-zinc-500"}`} />
       {label}
     </Link>
   );
@@ -774,31 +776,24 @@ const SidebarLink = ({ icon: Icon, label, to, onClick }) => {
 const MobileNavItem = ({ icon: Icon, label, active, onClick }) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-lg transition-colors cursor-pointer min-w-0 ${
-      active ? "text-blue-400" : "text-gray-500 hover:text-gray-300"
+    className={`flex flex-col items-center gap-0.5 px-2.5 py-1 rounded transition-colors cursor-pointer min-w-0 ${
+      active ? "text-white" : "text-zinc-500 hover:text-zinc-300"
     }`}
   >
-    <Icon className="w-5 h-5" />
-    <span className="text-[10px] font-medium">{label}</span>
+    <Icon className="w-4 h-4" />
+    <span className="text-[9px] font-semibold uppercase tracking-wider">{label}</span>
   </button>
 );
 
-const SidebarStatCard = ({ label, value, color, icon: Icon }) => {
-  const colors = {
-    emerald: { text: "text-emerald-400", bg: "bg-emerald-500/10" },
-    purple: { text: "text-purple-400", bg: "bg-purple-500/10" },
-    blue: { text: "text-blue-400", bg: "bg-blue-500/10" },
-  };
-  const c = colors[color] || colors.blue;
-
+const SidebarStatCard = ({ label, value, icon: Icon }) => {
   return (
-    <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 flex items-center justify-between">
+    <div className="bg-zinc-950/25 rounded-lg p-3 border border-zinc-800/60 flex items-center justify-between">
       <div>
-        <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1">{label}</p>
-        <p className={`text-2xl font-bold ${c.text}`}>{value}</p>
+        <p className="text-[10px] text-zinc-550 uppercase tracking-wider font-semibold mb-0.5">{label}</p>
+        <p className="text-xl font-bold text-white font-mono">{value}</p>
       </div>
-      <div className={`w-10 h-10 rounded-lg ${c.bg} flex items-center justify-center`}>
-        <Icon className={`w-5 h-5 ${c.text}`} />
+      <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-800/60 flex items-center justify-center text-zinc-400">
+        <Icon className="w-4 h-4" />
       </div>
     </div>
   );
@@ -806,29 +801,20 @@ const SidebarStatCard = ({ label, value, color, icon: Icon }) => {
 
 const GitHubCounter = ({ label, value }) => (
   <div>
-    <span className="text-lg sm:text-xl font-bold text-white">{value}</span>
-    <span className="text-xs sm:text-sm text-gray-500 ml-1.5 sm:ml-2">{label}</span>
+    <span className="text-base sm:text-lg font-bold text-white font-mono">{value}</span>
+    <span className="text-[11px] text-zinc-500 font-semibold ml-1.5 tracking-wide uppercase">{label}</span>
   </div>
 );
 
-const StatCard = ({ icon: Icon, label, value, color, subtitle }) => {
-  const colorClasses = {
-    emerald: "bg-emerald-500/10 text-emerald-400",
-    purple: "bg-purple-500/10 text-purple-400",
-    amber: "bg-amber-500/10 text-amber-400",
-    cyan: "bg-cyan-500/10 text-cyan-400",
-  };
-
+const StatCard = ({ icon: Icon, label, value, subtitle }) => {
   return (
-    <div className="bg-[#15161E] rounded-xl p-4 sm:p-6 border border-white/5">
-      <div
-        className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg ${colorClasses[color]} flex items-center justify-center mb-3 sm:mb-4`}
-      >
-        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+    <div className="bg-zinc-950/25 rounded-lg p-4 sm:p-5 border border-zinc-800/60 hover:border-zinc-700/80 transition-all group">
+      <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-800/60 flex items-center justify-center mb-3 text-zinc-400 group-hover:text-white transition-colors">
+        <Icon className="w-4 h-4" />
       </div>
-      <p className="text-2xl sm:text-3xl font-bold text-white mb-0.5 sm:mb-1">{value}</p>
-      <p className="text-xs sm:text-sm font-medium text-gray-300 mb-0.5 sm:mb-1">{label}</p>
-      <p className="text-[10px] sm:text-xs text-gray-500 hidden xs:block">{subtitle}</p>
+      <p className="text-xl sm:text-2xl font-bold text-white font-mono mb-1">{value}</p>
+      <p className="text-[10px] sm:text-[11px] font-bold text-zinc-450 uppercase tracking-wider mb-0.5">{label}</p>
+      <p className="text-[10px] text-zinc-650 hidden xs:block">{subtitle}</p>
     </div>
   );
 };
@@ -839,15 +825,15 @@ const ContributionBar = ({ label, count, total, color, icon }) => {
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-2 text-white font-medium">
-          {icon}
-          <span className="text-sm">{label}</span>
+        <div className="flex items-center gap-2 text-zinc-350 font-medium">
+          <span className="text-zinc-500">{icon}</span>
+          <span className="text-[11px] font-semibold tracking-wide uppercase text-zinc-300">{label}</span>
         </div>
-        <span className="text-sm text-gray-400">{count}</span>
+        <span className="text-xs font-mono text-zinc-400">{count}</span>
       </div>
-      <div className="w-full h-2 bg-[#222831] rounded-full overflow-hidden">
+      <div className="w-full h-1.5 bg-zinc-900 border border-zinc-800/40 rounded-full overflow-hidden">
         <div
-          className={`h-full ${color} transition-all duration-500`}
+          className={`h-full ${color} transition-all duration-500 rounded-full`}
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -858,16 +844,16 @@ const ContributionBar = ({ label, count, total, color, icon }) => {
 const QuickActionButton = ({ icon, label, description, onClick }) => (
   <button
     onClick={onClick}
-    className="w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-[#0B0C10] border border-white/5 rounded-lg hover:border-white/10 hover:bg-[#12131a] transition-all group cursor-pointer"
+    className="w-full flex items-center gap-3 sm:gap-4 p-3 bg-zinc-950/30 border border-zinc-800/60 rounded-lg hover:border-zinc-700/80 hover:bg-white/[0.01] transition-all group cursor-pointer"
   >
-    <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors flex-shrink-0">
+    <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-850 text-zinc-400 flex items-center justify-center group-hover:bg-zinc-850 transition-colors flex-shrink-0">
       {icon}
     </div>
     <div className="flex-1 text-left min-w-0">
-      <p className="text-white font-medium text-sm">{label}</p>
-      <p className="text-xs text-gray-500 truncate">{description}</p>
+      <p className="text-zinc-200 font-semibold text-xs uppercase tracking-wider">{label}</p>
+      <p className="text-xs text-zinc-500 truncate mt-0.5">{description}</p>
     </div>
-    <div className="text-gray-600 group-hover:text-white transition-colors flex-shrink-0">
+    <div className="text-zinc-600 group-hover:text-white transition-colors flex-shrink-0 text-sm">
       →
     </div>
   </button>
