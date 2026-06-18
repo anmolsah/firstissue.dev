@@ -33,78 +33,74 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0f] px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0B0C10] px-4">
       {/* Logo and Branding */}
       <div className="text-center mb-8">
-        {/* <div className="inline-flex items-center justify-center w-14 h-14 bg-[#1a1b2e] border border-[#2a2b4e] rounded-xl mb-6">
-          <Command className="w-7 h-7 text-blue-400" />
-        </div> */}
-        <Link to="/" className="flex items-center justify-center space-x-2 group mb-3">
-          <span className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
+        <Link to="/" className="flex items-center justify-center space-x-2 group mb-2">
+          <span className="text-3xl font-bold tracking-tight text-white transition-all duration-300">
             FirstIssue.dev
           </span>
         </Link>
-        <p className="text-gray-500">The premier portal for open-source excellence</p>
+        <p className="text-xs text-zinc-550 font-mono uppercase tracking-wider">The premier portal for open-source excellence</p>
       </div>
 
       {/* Login Card */}
-      <div className="w-full max-w-md bg-[#12131a] border border-[#1e1f2e] rounded-2xl p-8">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-semibold text-white mb-2">Welcome back</h2>
-          <p className="text-gray-500">Connect your GitHub to start contributing</p>
+      <div className="w-full max-w-sm bg-zinc-950/25 border border-zinc-800/80 rounded-lg p-6">
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-bold tracking-tight text-white mb-1">Welcome back</h2>
+          <p className="text-xs text-zinc-400">Connect your GitHub to start contributing</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
-            <span className="text-red-400 text-sm">{error}</span>
+          <div className="mb-4 p-3 bg-red-950/20 border border-red-900/40 rounded flex items-center gap-2.5">
+            <AlertCircle className="h-4 w-4 text-red-400 flex-shrink-0" />
+            <span className="text-red-400 text-xs">{error}</span>
           </div>
         )}
 
         {isRateLimited && (
-          <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-3">
-            <ShieldAlert className="h-5 w-5 text-amber-400 flex-shrink-0" />
-            <span className="text-amber-400 text-sm">Too many attempts. Try again in {remainingCooldown}s</span>
+          <div className="mb-4 p-3 bg-amber-950/20 border border-amber-900/40 rounded flex items-center gap-2.5">
+            <ShieldAlert className="h-4 w-4 text-amber-400 flex-shrink-0" />
+            <span className="text-amber-400 text-xs">Too many attempts. Try again in {remainingCooldown}s</span>
           </div>
         )}
 
         <button
           onClick={handleGitHubSignIn}
           disabled={loading || isRateLimited}
-          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-[#1a1b2e] border border-[#2a2b4e] text-white rounded-xl font-medium hover:bg-[#22233a] hover:border-[#3a3b5e] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-zinc-200 text-black text-xs font-semibold rounded transition-all disabled:opacity-30 disabled:pointer-events-none"
         >
           {loading ? (
             <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Connecting...
+              <Loader2 className="h-4 w-4 text-black animate-spin" />
+              <span>Connecting...</span>
             </>
           ) : isRateLimited ? (
             <>
-              <ShieldAlert className="h-5 w-5 text-amber-400" />
-              Wait {remainingCooldown}s...
+              <ShieldAlert className="h-4 w-4 text-amber-500" />
+              <span>Wait {remainingCooldown}s...</span>
             </>
           ) : (
             <>
-              <Github className="h-5 w-5" />
-              Sign in with GitHub
+              <Github className="h-4 w-4 text-black fill-black" />
+              <span>Sign in with GitHub</span>
             </>
           )}
         </button>
 
-        <div className="mt-6 text-center">
-          <p className="text-xs text-gray-600">
+        <div className="mt-5 text-center">
+          <p className="text-[10px] text-zinc-500 leading-relaxed">
             By signing in, you agree to our{" "}
-            <Link to="/terms" className="text-gray-400 underline hover:text-white">Terms</Link>
+            <Link to="/terms" className="text-zinc-400 hover:text-white underline font-mono transition-colors">Terms</Link>
             {" "}and{" "}
-            <Link to="/privacy" className="text-gray-400 underline hover:text-white">Privacy Policy</Link>.
+            <Link to="/privacy" className="text-zinc-400 hover:text-white underline font-mono transition-colors">Privacy Policy</Link>.
           </p>
         </div>
       </div>
 
       {/* Footer Links */}
-      <div className="mt-12 flex items-center gap-8 text-xs text-gray-600 uppercase tracking-wider">
-        <Link to="/docs" className="hover:text-gray-400 transition-colors">Docs</Link>
-       
+      <div className="mt-12 flex items-center gap-6 text-[10px] font-semibold text-zinc-550 font-mono uppercase tracking-widest">
+        <Link to="/docs" className="hover:text-zinc-400 transition-colors">Docs</Link>
       </div>
     </div>
   );
