@@ -14,6 +14,7 @@ import {
   Layout,
   Globe,
   Sparkles,
+  Trophy,
 } from "lucide-react";
 
 // Individual Timeline Row Item Component
@@ -321,77 +322,116 @@ const ProofOfWorkVisualizer = ({ active }) => {
   );
 };
 
-// Visualizer 3: Real-time Collab Terminal
-const CollabVisualizer = ({ active }) => {
-  const codeLines = [
-    'const collabSession = async () => {',
-    '  await pairProgram(issueId);',
-    '  // active session with @sarah',
+// Visualizer 3: Open Source Hackathons Card Deck
+const HackathonVisualizer = ({ active }) => {
+  const hackathons = [
+    {
+      title: "GitAI Builders 2026",
+      organizer: "GitHub & OpenAI",
+      prize: "$15,000",
+      daysLeft: "Starts in 3 days",
+      badgeColor: "bg-emerald-500/10 text-emerald-450 border-emerald-500/20",
+    },
+    {
+      title: "SustainOS Hack",
+      organizer: "OS Foundation",
+      prize: "$8,000",
+      daysLeft: "Starts in 12 days",
+      badgeColor: "bg-blue-500/10 text-blue-450 border-blue-500/20",
+    },
+    {
+      title: "OpenWeb Global 2026",
+      organizer: "Mozilla",
+      prize: "$10,000",
+      daysLeft: "Starts in 24 days",
+      badgeColor: "bg-purple-500/10 text-purple-450 border-purple-500/20",
+    },
   ];
 
-  // Simply animate lines typing in sequence using simple Framer Motion configurations
-  const containerVariants = {
-    hidden: {},
-    visible: {
-      transition: {
-        staggerChildren: 0.8,
-      },
-    },
-  };
+  const [activeIndex, setActiveIndex] = React.useState(0);
 
-  const lineVariants = {
-    hidden: { opacity: 0, x: -5 },
-    visible: { opacity: 1, x: 0, transition: { duration: 0.4 } },
-  };
+  React.useEffect(() => {
+    if (!active) return;
+    const interval = setInterval(() => {
+      setActiveIndex((prev) => (prev + 1) % hackathons.length);
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [active]);
 
   return (
-    <div className="w-full h-full p-4 font-mono text-[10px] text-zinc-400 flex flex-col justify-between min-h-[190px] bg-black/40 rounded-2xl border border-white/5 relative">
-      {/* Terminal Title Bar */}
+    <div className="w-full h-full p-4 flex flex-col justify-between min-h-[190px] bg-black/40 rounded-2xl border border-white/5 relative overflow-hidden select-none">
+      {/* Title bar */}
       <div className="flex items-center justify-between pb-2 border-b border-white/5">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-red-500/40" />
-          <div className="w-2 h-2 rounded-full bg-yellow-500/40" />
-          <div className="w-2 h-2 rounded-full bg-green-500/40" />
-        </div>
-        <span className="text-[7.5px] text-zinc-500 font-bold uppercase tracking-wider">collab-workspace.js</span>
+        <span className="text-[10px] text-zinc-450 font-bold uppercase tracking-wider font-mono">OS Hackathons</span>
+        <span className="text-[9px] text-zinc-550 font-bold flex items-center gap-1 font-mono">
+          <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping" />
+          UPCOMING
+        </span>
       </div>
 
-      {/* Editor Body */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate={active ? "visible" : "hidden"}
-        className="flex-grow py-3 space-y-1.5 text-zinc-300 text-left"
-      >
-        <motion.div variants={lineVariants} className="flex items-center">
-          <span className="text-pink-400">const</span>&nbsp;
-          <span className="text-blue-400">collabSession</span>&nbsp;=&nbsp;
-          <span className="text-yellow-400">async</span>&nbsp;() =&gt; &#123;
-        </motion.div>
-        <motion.div variants={lineVariants} className="pl-4 flex items-center">
-          <span className="text-pink-400">await</span>&nbsp;
-          <span className="text-emerald-400">pairProgram</span>(issueId);
-        </motion.div>
-        <motion.div variants={lineVariants} className="pl-4 flex items-center gap-1">
-          <span className="text-zinc-500">// active session with </span>
-          <span className="px-1 py-0.2 rounded bg-pink-500/20 text-pink-400 text-[8px] font-bold">@sarah</span>
-          <span className="w-1 h-3.5 bg-pink-400 animate-pulse" />
-        </motion.div>
-      </motion.div>
+      {/* Cards Deck Container */}
+      <div className="relative flex-grow flex items-center justify-center py-4">
+        {hackathons.map((hack, idx) => {
+          const position = (idx - activeIndex + hackathons.length) % hackathons.length;
+          
+          let cardStyle = {};
+          if (position === 0) {
+            cardStyle = {
+              transform: "scale(1) translateY(0px) translateZ(0)",
+              opacity: 1,
+              zIndex: 3,
+            };
+          } else if (position === 1) {
+            cardStyle = {
+              transform: "scale(0.85) translateY(-10px) translateZ(-10px)",
+              opacity: 0.35,
+              zIndex: 2,
+            };
+          } else {
+            cardStyle = {
+              transform: "scale(0.7) translateY(-20px) translateZ(-20px)",
+              opacity: 0,
+              zIndex: 1,
+              pointerEvents: "none",
+            };
+          }
 
-      {/* Bottom Status bar */}
-      <div className="pt-2 border-t border-white/5 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <div className="flex -space-x-1">
-            <img className="w-4 h-4 rounded-full border border-black" src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=30" alt="" />
-            <img className="w-4 h-4 rounded-full border border-black" src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=30" alt="" />
-          </div>
-          <span className="text-[7.5px] text-zinc-500 font-bold">2 active devs</span>
-        </div>
-        <span className="text-emerald-400 font-mono text-[7.5px] font-bold flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-          CONNECTED
-        </span>
+          return (
+            <motion.div
+              key={idx}
+              animate={cardStyle}
+              transition={{ duration: 0.5, ease: "easeInOut" }}
+              className="absolute w-44 bg-zinc-950/95 border border-zinc-800 rounded-lg p-3 shadow-2xl flex flex-col justify-between h-28"
+            >
+              <div>
+                <div className="flex justify-between items-start mb-1.5">
+                  <span className="text-[8px] text-zinc-500 font-bold font-mono truncate max-w-[90px]">{hack.organizer}</span>
+                  <span className={`text-[8px] px-1.5 py-0.2 rounded border font-mono font-bold scale-90 ${hack.badgeColor}`}>
+                    {hack.prize}
+                  </span>
+                </div>
+                <h4 className="text-[10px] font-bold text-white leading-tight mb-1 truncate text-left">{hack.title}</h4>
+              </div>
+
+              <div className="flex justify-between items-center text-[8px] text-zinc-400 border-t border-zinc-900 pt-2 font-mono">
+                <span>{hack.daysLeft}</span>
+                <span className="text-zinc-500 hover:text-white transition-colors cursor-pointer">Register &gt;</span>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+
+      {/* Pagination indicators */}
+      <div className="flex justify-center gap-1.5 pt-2 border-t border-white/5">
+        {hackathons.map((_, idx) => (
+          <div
+            key={idx}
+            className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+              activeIndex === idx ? "bg-pink-500 w-3" : "bg-zinc-850"
+            }`}
+          />
+        ))}
       </div>
     </div>
   );
@@ -569,14 +609,14 @@ const TimelineFeatures = () => {
     },
     {
       accent: "pink",
-      title: "Real-time Collab",
+      title: "Open Source Hackathons",
       description:
-        "Live pair programming sessions with maintainers and teammates, built directly into your issues workspace.",
-      icon: Users,
+        "Find upcoming open source hackathons, form teams, build high-impact projects, and compete to win prizes.",
+      icon: Trophy,
       badge: "Upcoming",
-      visual: <CollabVisualizer />,
-      link: "/support",
-      linkText: "Get early access",
+      visual: <HackathonVisualizer />,
+      link: "/explore",
+      linkText: "Find upcoming events",
     },
     {
       accent: "emerald",
