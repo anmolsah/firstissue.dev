@@ -122,19 +122,19 @@ const LabelPreferences = ({ selectedLabels, onToggle }) => {
       {LABEL_OPTIONS.map((opt) => {
         const isSelected = selectedLabels.includes(opt.id);
         const colorMap = {
-          emerald: isSelected ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-white/5 text-gray-500 border-white/10',
-          blue: isSelected ? 'bg-blue-500/15 text-blue-300 border-blue-500/30' : 'bg-white/5 text-gray-500 border-white/10',
-          purple: isSelected ? 'bg-purple-500/15 text-purple-300 border-purple-500/30' : 'bg-white/5 text-gray-500 border-white/10',
-          green: isSelected ? 'bg-green-500/15 text-green-300 border-green-500/30' : 'bg-white/5 text-gray-500 border-white/10',
-          cyan: isSelected ? 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' : 'bg-white/5 text-gray-500 border-white/10',
-          yellow: isSelected ? 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30' : 'bg-white/5 text-gray-500 border-white/10',
+          emerald: isSelected ? 'bg-emerald-500/5 text-emerald-400 border-emerald-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
+          blue: isSelected ? 'bg-blue-500/5 text-blue-400 border-blue-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
+          purple: isSelected ? 'bg-purple-500/5 text-purple-300 border-purple-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
+          green: isSelected ? 'bg-green-500/5 text-green-300 border-green-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
+          cyan: isSelected ? 'bg-cyan-500/5 text-cyan-300 border-cyan-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
+          yellow: isSelected ? 'bg-yellow-500/5 text-yellow-300 border-yellow-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
         };
 
         return (
           <button
             key={opt.id}
             onClick={() => onToggle(opt.id)}
-            className={`text-[11px] font-medium px-2.5 py-1 rounded-lg border transition-all cursor-pointer hover:scale-[1.02] ${colorMap[opt.color]}`}
+            className={`text-[10px] font-medium px-2 py-0.5 rounded border transition-all cursor-pointer ${colorMap[opt.color]}`}
           >
             {opt.label}
           </button>
@@ -213,13 +213,13 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
         <div className="filter blur-sm pointer-events-none opacity-40">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-[#15161E] border border-white/5 rounded-xl p-6 h-[200px]">
-                <div className="w-3/4 h-5 bg-white/5 rounded mb-3" />
-                <div className="w-full h-3 bg-white/5 rounded mb-2" />
-                <div className="w-2/3 h-3 bg-white/5 rounded mb-6" />
+              <div key={i} className="bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-6 h-[200px]">
+                <div className="w-3/4 h-4 bg-white/5 rounded mb-3" />
+                <div className="w-full h-2.5 bg-white/5 rounded mb-2" />
+                <div className="w-2/3 h-2.5 bg-white/5 rounded mb-6" />
                 <div className="flex gap-2">
-                  <div className="w-16 h-5 bg-purple-500/10 rounded-full" />
-                  <div className="w-20 h-5 bg-blue-500/10 rounded-full" />
+                  <div className="w-16 h-4 bg-purple-500/10 rounded-full" />
+                  <div className="w-20 h-4 bg-blue-500/10 rounded-full" />
                 </div>
               </div>
             ))}
@@ -228,28 +228,28 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
 
         {/* Lock overlay */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-[#12131a]/95 backdrop-blur-md border border-white/10 rounded-2xl p-8 max-w-md text-center shadow-2xl">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-purple-500/20">
-              <Lock className="w-8 h-8 text-purple-400" />
+          <div className="bg-[#0B0C10]/95 backdrop-blur-md border border-zinc-800/80 rounded-xl p-8 max-w-sm text-center shadow-2xl">
+            <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-purple-950/25 flex items-center justify-center border border-purple-500/30 text-purple-400">
+              <Lock className="w-5 h-5" />
             </div>
 
-            <h3 className="text-xl font-bold text-white mb-2">
+            <h3 className="text-lg font-bold text-white mb-2 tracking-tight">
               AI Smart Matching
             </h3>
-            <p className="text-sm text-gray-400 mb-6 leading-relaxed">
+            <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
               Get personalized issue recommendations powered by AI that analyzes your GitHub profile,
               tech stack, and experience level.
             </p>
 
-            <div className="space-y-3 mb-6 text-left">
+            <div className="space-y-2.5 mb-6 text-left">
               {[
                 'AI-analyzed tech stack matching',
                 'Personalized difficulty scoring',
                 'Smart issue recommendations',
                 'Priority support',
               ].map((feature, i) => (
-                <div key={i} className="flex items-center gap-2.5 text-sm text-gray-300">
-                  <Zap className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                <div key={i} className="flex items-center gap-2 text-xs text-zinc-300">
+                  <Zap className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
                   {feature}
                 </div>
               ))}
@@ -257,9 +257,9 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
 
             <button
               onClick={() => navigate('/support')}
-              className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-500 hover:to-blue-500 transition-all shadow-lg shadow-purple-500/20 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-black rounded font-semibold hover:bg-zinc-200 transition-all text-xs cursor-pointer"
             >
-              <Crown className="w-5 h-5" />
+              <Crown className="w-4 h-4" />
               Become a Supporter — $9/mo
             </button>
           </div>
@@ -330,20 +330,20 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
     <div>
       {/* Profile Summary + Label Preferences + Re-analyze */}
       {userProfile && (
-        <div className="bg-gradient-to-r from-purple-500/5 to-blue-500/5 border border-purple-500/10 rounded-xl p-4 mb-6">
+        <div className="bg-zinc-950/30 border border-zinc-800/60 rounded-xl p-4 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                <Target className="w-5 h-5 text-purple-400" />
+              <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800/60 flex items-center justify-center flex-shrink-0 text-purple-400">
+                <Target className="w-4.5 h-4.5" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-white">Your Tech Profile</h3>
+                <h3 className="text-xs font-semibold text-white">Your Tech Profile</h3>
                 <div className="flex flex-wrap gap-1.5 mt-1">
                   {userProfile.techStack && userProfile.techStack.length > 0 ? (
                     userProfile.techStack.map((tech) => (
                       <span
                         key={tech}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-350 border border-zinc-800"
                       >
                         {tech}
                       </span>
@@ -352,30 +352,30 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
                     userProfile.topLanguages.map((lang) => (
                       <span
                         key={lang.language}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                        className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-350 border border-zinc-800"
                       >
                         {lang.language}
                       </span>
                     ))
                   )}
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-350 border border-zinc-800">
                     {userProfile.experienceLevel}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t border-white/5 sm:border-0">
+            <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t border-zinc-800/60 sm:border-0">
               {/* Cache info */}
               {lastAnalyzedAt && (
-                <span className="flex items-center gap-1 text-[11px] text-gray-500">
+                <span className="flex items-center gap-1 text-[11px] font-mono text-zinc-550">
                   <Clock className="w-3 h-3" />
                   {getTimeAgo(lastAnalyzedAt)}
                 </span>
               )}
               {/* Re-analyze button */}
               {isRateLimited ? (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20 rounded-lg">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-900 text-amber-500 border border-amber-500/20 rounded">
                   <ShieldAlert className="w-3.5 h-3.5" />
                   Wait {remainingCooldown}s
                 </div>
@@ -383,10 +383,10 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
                 <button
                   onClick={handleRefresh}
                   disabled={loading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20 rounded-lg hover:bg-purple-500/20 hover:text-purple-200 transition-colors cursor-pointer disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white text-black hover:bg-zinc-200 border border-zinc-800 rounded transition-colors cursor-pointer disabled:opacity-50"
                   title="Re-analyze your profile and find new matches"
                 >
-                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+                  <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
                   {loading ? 'Analyzing...' : 'Re-analyze'}
                 </button>
               )}
@@ -394,10 +394,10 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
           </div>
 
           {/* Label Preferences */}
-          <div className="mt-3 pt-3 border-t border-white/5">
-            <div className="flex items-center gap-2 mb-2">
-              <Tag className="w-3 h-3 text-gray-500" />
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Issue Labels</span>
+          <div className="mt-3 pt-3 border-t border-zinc-800/60">
+            <div className="flex items-center gap-2 mb-2 select-none">
+              <Tag className="w-3 h-3 text-zinc-500" />
+              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Issue Labels</span>
             </div>
             <LabelPreferences
               selectedLabels={preferredLabels}
@@ -456,9 +456,9 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
 
   // Color-code match scores
   const getScoreColor = (pct) => {
-    if (pct >= 80) return { text: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/20' };
-    if (pct >= 50) return { text: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/20' };
-    return { text: 'text-gray-400', bg: 'bg-white/5', border: 'border-white/10' };
+    if (pct >= 80) return { text: 'text-emerald-400', bg: 'bg-emerald-500/5', border: 'border-emerald-500/25' };
+    if (pct >= 50) return { text: 'text-amber-400', bg: 'bg-amber-500/5', border: 'border-amber-500/25' };
+    return { text: 'text-zinc-400', bg: 'bg-white/5', border: 'border-zinc-800' };
   };
 
   const scoreColor = getScoreColor(matchPercentage);
@@ -482,15 +482,15 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   const freshness = getFreshness();
 
   return (
-    <div className="group flex flex-col h-full bg-[#0B0C10] border border-white/5 rounded-2xl p-6 transition-all duration-300 hover:border-white/20 hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+    <div className="group flex flex-col h-full bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-6 transition-all duration-300 hover:border-zinc-750 hover:bg-white/[0.01]">
       {/* Card Header: AI Match & Bookmark */}
       <div className="flex items-start justify-between mb-6">
         <div className="flex flex-col gap-1.5">
-          <div className={`flex items-center gap-2 px-2.5 py-1 rounded-md ${scoreColor.bg} border ${scoreColor.border} w-fit`}>
+          <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded ${scoreColor.bg} border ${scoreColor.border} w-fit`}>
             <BrainCircuit className={`w-3.5 h-3.5 ${scoreColor.text}`} />
-            <span className="text-[11px] font-bold text-white tracking-wide uppercase">AI Match</span>
+            <span className="text-[10px] font-bold text-white tracking-wider uppercase">AI Match</span>
             <span className="w-1 h-1 rounded-full bg-white/20" />
-            <span className={`text-[11px] font-bold ${scoreColor.text}`}>{matchPercentage}%</span>
+            <span className={`text-[10px] font-bold font-mono ${scoreColor.text}`}>{matchPercentage}%</span>
           </div>
         </div>
         
@@ -499,19 +499,19 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
             e.preventDefault();
             onToggleBookmark?.();
           }}
-          className={`p-2 rounded-xl transition-all duration-200 ${
+          className={`p-1.5 rounded transition-all duration-200 ${
             isBookmarked
               ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-              : 'text-gray-500 hover:text-white hover:bg-white/5 border border-transparent'
+              : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'
           }`}
         >
-          {isBookmarked ? <BookmarkCheck className="w-5 h-5" /> : <Bookmark className="w-5 h-5" />}
+          {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
         </button>
       </div>
 
       {/* Repo Metadata */}
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-5 h-5 rounded bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+        <div className="w-5 h-5 rounded bg-zinc-900 border border-zinc-800/60 flex items-center justify-center overflow-hidden">
           <img 
             src={`https://github.com/${issue.repo.split('/')[0]}.png`} 
             alt="" 
@@ -519,17 +519,17 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
             onError={(e) => { e.target.style.display = 'none'; }}
           />
         </div>
-        <span className="text-xs font-medium text-gray-500 truncate">{issue.repo}</span>
+        <span className="text-xs font-mono font-medium text-zinc-400 truncate hover:text-white transition-colors">{issue.repo}</span>
         {/* Repo stars */}
         {issue.repo_stars != null && (
-          <span className="flex items-center gap-0.5 text-[10px] text-gray-600 ml-auto">
-            <Star className="w-3 h-3 text-amber-500/60" />
+          <span className="flex items-center gap-0.5 text-[10px] font-mono text-zinc-550 ml-auto">
+            <Star className="w-3 h-3 text-zinc-650" />
             {issue.repo_stars >= 1000 ? `${(issue.repo_stars / 1000).toFixed(1)}k` : issue.repo_stars}
           </span>
         )}
         {/* Freshness */}
         {freshness && (
-          <span className="flex items-center gap-0.5 text-[10px] text-gray-600">
+          <span className="flex items-center gap-0.5 text-[10px] font-mono text-zinc-550">
             <Clock className="w-3 h-3" />
             {freshness}
           </span>
@@ -537,7 +537,7 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
       </div>
 
       {/* Title */}
-      <h3 className="text-lg font-semibold text-white mb-4 leading-tight line-clamp-2 min-h-[3rem] group-hover:text-purple-400 transition-colors">
+      <h3 className="text-base font-semibold text-white mb-3 leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-purple-400 transition-colors">
         <a href={issue.url} target="_blank" rel="noopener noreferrer">
           {issue.title}
         </a>
@@ -545,29 +545,29 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
 
       {/* AI Insight Section */}
       {issue.matchReason && (
-        <div className="mb-6 p-4 rounded-xl bg-white/[0.02] border border-white/5 relative overflow-hidden">
-          <div className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+        <div className="mb-6 p-4 rounded-lg bg-white/[0.01] border border-zinc-800/60 relative overflow-hidden">
+          <div className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
             <Sparkles className="w-3 h-3" />
             Why this match?
           </div>
-          <p className="text-xs text-gray-400 leading-relaxed font-medium">
+          <p className="text-xs text-zinc-400 leading-relaxed">
             {issue.matchReason}
           </p>
           {/* Subtle gradient accent — color matches score */}
           <div className={`absolute top-0 left-0 w-1 h-full ${
             matchPercentage >= 80 ? 'bg-emerald-500/30' :
-            matchPercentage >= 50 ? 'bg-amber-500/30' : 'bg-gray-500/30'
+            matchPercentage >= 50 ? 'bg-amber-500/30' : 'bg-zinc-550/30'
           }`} />
         </div>
       )}
 
       {/* Tags & Actions */}
-      <div className="flex items-center justify-between mt-auto pt-5 border-t border-white/5">
-        <div className="flex flex-wrap gap-2">
+      <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-800/60">
+        <div className="flex flex-wrap gap-1.5">
           {issue.labels?.slice(0, 2).map((label, i) => (
             <span
               key={i}
-              className="text-[10px] font-semibold px-2.5 py-1 rounded-md bg-white/5 text-gray-400 border border-white/10 uppercase tracking-tighter"
+              className="text-[9px] px-2 py-0.5 rounded-full bg-white/[0.02] text-zinc-400 border border-zinc-800 uppercase tracking-wider font-semibold"
             >
               {label}
             </span>
@@ -578,10 +578,10 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
           href={issue.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 text-xs font-bold text-white hover:text-purple-400 transition-colors group/link"
+          className="flex items-center gap-1.5 text-xs font-bold text-white hover:text-purple-400 transition-colors group/link"
         >
           View Issue
-          <ArrowRight className="w-3.5 h-3.5 transform group-hover/link:translate-x-1 transition-transform" />
+          <ArrowRight className="w-3.5 h-3.5 transform group-hover/link:translate-x-0.5 transition-transform" />
         </a>
       </div>
     </div>

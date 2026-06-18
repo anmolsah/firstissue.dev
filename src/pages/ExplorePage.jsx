@@ -300,10 +300,10 @@ const ExplorePage = () => {
       <AppSidebar>
         {/* Explore-specific filters */}
         <div className="mt-4">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
+          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 select-none">
             Languages
           </p>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {languages.map((lang) => (
               <button
                 key={lang.name}
@@ -316,14 +316,14 @@ const ExplorePage = () => {
                         : lang.name.toLowerCase(),
                   }))
                 }
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
+                className={`flex items-center gap-1.5 px-2.5 py-1 rounded border text-[11px] font-medium transition-all ${
                   filters.language === lang.name.toLowerCase()
-                    ? "bg-white/10 border-white/20 text-white"
-                    : "bg-transparent border-white/5 text-gray-400 hover:border-white/10 hover:text-gray-300"
+                    ? "bg-white/[0.04] border-zinc-700/85 text-white"
+                    : "bg-transparent border-zinc-800/80 text-zinc-400 hover:border-zinc-700/60 hover:text-zinc-200"
                 }`}
               >
                 <div
-                  className={`w-1.5 h-1.5 rounded-full bg-${lang.color}-500`}
+                  className={`w-1 h-1 rounded-full bg-${lang.color}-500`}
                 />
                 {lang.name}
               </button>
@@ -332,20 +332,24 @@ const ExplorePage = () => {
         </div>
 
         <div className="mt-6">
-          <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">
+          <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-3 select-none">
             Labels
           </p>
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {labelOptions.map((opt) => (
               <label
                 key={opt.id}
-                className="flex items-center gap-3 text-sm text-gray-400 cursor-pointer hover:text-gray-300"
+                className="flex items-center gap-2.5 text-xs text-zinc-400 cursor-pointer hover:text-zinc-200 select-none"
               >
                 <div
-                  className={`w-4 h-4 rounded-full border border-gray-600 flex items-center justify-center ${filters.labels.includes(opt.id) ? "border-blue-500" : ""}`}
+                  className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-all ${
+                    filters.labels.includes(opt.id)
+                      ? "border-zinc-700 bg-white/[0.08] text-white"
+                      : "border-zinc-800 bg-zinc-950/50 text-transparent"
+                  }`}
                 >
                   {filters.labels.includes(opt.id) && (
-                    <div className="w-2 h-2 rounded-full bg-blue-500" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-white" />
                   )}
                 </div>
                 <input
@@ -369,11 +373,11 @@ const ExplorePage = () => {
 
         {/* Project Stars Slider */}
         <div className="mt-6">
-          <div className="flex justify-between items-center mb-4">
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+          <div className="flex justify-between items-center mb-3">
+            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest select-none">
               Project Stars
             </p>
-            <span className="text-xs font-bold text-blue-400">
+            <span className="text-xs font-bold text-white font-mono">
               {parseInt(filters.minStars) >= 10000
                 ? "10k+"
                 : parseInt(filters.minStars).toLocaleString()}
@@ -388,9 +392,9 @@ const ExplorePage = () => {
             onChange={(e) =>
               setFilters((prev) => ({ ...prev, minStars: e.target.value }))
             }
-            className="w-full h-1 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            className="w-full h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-white"
           />
-          <div className="flex justify-between text-[10px] text-gray-500 mt-2">
+          <div className="flex justify-between text-[9px] font-mono text-zinc-600 mt-2">
             <span>0</span>
             <span>10k+</span>
           </div>
@@ -400,40 +404,40 @@ const ExplorePage = () => {
       {/* Main Content Area */}
       <main className="flex-1 lg:ml-64 min-w-0">
         {/* Top Header */}
-        <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
+        <header className="h-16 border-b border-zinc-800/60 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
           <div className="flex flex-1 items-center max-w-xl relative">
-            <Search className="absolute left-3 w-4 h-4 text-gray-500" />
+            <Search className="absolute left-3 w-3.5 h-3.5 text-zinc-500" />
             <input
               type="text"
               placeholder="Search repositories, issues or topics..."
-              className="w-full bg-[#15161E] border border-white/5 rounded-lg py-2 pl-10 pr-12 text-sm text-gray-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
+              className="w-full bg-zinc-950/40 border border-zinc-800/80 rounded-md py-1.5 pl-9 pr-12 text-xs text-zinc-300 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 transition-all placeholder:text-zinc-650"
               value={filters.keywords}
               onChange={(e) =>
                 setFilters((prev) => ({ ...prev, keywords: e.target.value }))
               }
             />
-            <div className="absolute right-3 flex items-center gap-1 border border-white/10 rounded px-1.5 py-0.5">
-              <Command className="w-3 h-3 text-gray-500" />
-              <span className="text-[10px] text-gray-500">K</span>
+            <div className="absolute right-3 flex items-center gap-0.5 border border-zinc-800/85 bg-white/[0.01] rounded px-1.5 py-0.5 select-none pointer-events-none">
+              <Command className="w-2.5 h-2.5 text-zinc-600" />
+              <span className="text-[9px] text-zinc-500 font-bold font-mono">K</span>
             </div>
           </div>
 
           <div className="flex items-center gap-4 ml-4">
-            <div className="flex items-center gap-3 pl-4 border-l border-white/5">
+            <div className="flex items-center gap-3 pl-4 border-l border-zinc-800/60">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-medium text-white">
+                <p className="text-xs font-semibold text-white leading-tight">
                   {user ? user.user_metadata?.full_name || "User" : "Guest"}
                 </p>
-                <p className="text-xs text-gray-500">Lvl 4 Contributor</p>
+                <p className="text-[10px] font-bold text-zinc-500 mt-0.5 uppercase tracking-wider">Lvl 4 Contributor</p>
               </div>
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[1px]">
+              <div className="w-8 h-8 rounded-full border border-zinc-800 p-[1px] bg-zinc-900 overflow-hidden flex items-center justify-center">
                 <img
                   src={
                     user?.user_metadata?.avatar_url ||
                     `https://ui-avatars.com/api/?name=${user?.email || "Guest"}`
                   }
                   alt="Avatar"
-                  className="w-full h-full rounded-full bg-[#0B0C10]"
+                  className="w-full h-full rounded-full object-cover"
                 />
               </div>
             </div>
@@ -453,7 +457,7 @@ const ExplorePage = () => {
 
           {/* Filters Bar Row */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-            <div className="bg-[#15161E] p-1 rounded-lg flex border border-white/5 overflow-x-auto scrollbar-hide">
+            <div className="bg-zinc-950/30 p-0.5 rounded-lg flex border border-zinc-800/60 overflow-x-auto scrollbar-hide">
               <TabButton
                 label="All Issues"
                 active={selectedTab === "all"}
@@ -484,27 +488,27 @@ const ExplorePage = () => {
                 <div className="relative" ref={sortDropdownRef}>
                   <button
                     onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-                    className="flex items-center gap-2 px-3 py-2 bg-[#15161E] border border-white/5 rounded-lg text-sm text-gray-300 hover:text-white hover:border-white/10 transition-colors"
+                    className="flex items-center gap-2 px-3 py-1.5 bg-zinc-950/30 border border-zinc-800/80 rounded-md text-xs text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors"
                   >
                     {filters.sort === "updated"
                       ? "Recently Updated"
                       : "Recently Created"}
                     <ChevronDown
-                      className={`w-4 h-4 transition-transform ${sortDropdownOpen ? "rotate-180" : ""}`}
+                      className={`w-3.5 h-3.5 transition-transform ${sortDropdownOpen ? "rotate-180" : ""}`}
                     />
                   </button>
 
                   {sortDropdownOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-[#15161E] border border-white/10 rounded-lg shadow-xl z-50 overflow-hidden">
+                    <div className="absolute right-0 mt-1.5 w-44 bg-zinc-950 border border-zinc-800/80 rounded-md shadow-2xl z-50 overflow-hidden p-1 space-y-0.5">
                       <button
                         onClick={() => {
                           setFilters((prev) => ({ ...prev, sort: "updated" }));
                           setSortDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                        className={`w-full text-left px-3 py-1.5 rounded text-xs transition-colors ${
                           filters.sort === "updated"
-                            ? "bg-blue-600/20 text-blue-400"
-                            : "text-gray-300 hover:bg-white/5 hover:text-white"
+                            ? "bg-white/[0.04] text-white font-medium"
+                            : "text-zinc-400 hover:bg-white/[0.02] hover:text-white"
                         }`}
                       >
                         Recently Updated
@@ -514,10 +518,10 @@ const ExplorePage = () => {
                           setFilters((prev) => ({ ...prev, sort: "created" }));
                           setSortDropdownOpen(false);
                         }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
+                        className={`w-full text-left px-3 py-1.5 rounded text-xs transition-colors ${
                           filters.sort === "created"
-                            ? "bg-blue-600/20 text-blue-400"
-                            : "text-gray-300 hover:bg-white/5 hover:text-white"
+                            ? "bg-white/[0.04] text-white font-medium"
+                            : "text-zinc-400 hover:bg-white/[0.02] hover:text-white"
                         }`}
                       >
                         Recently Created
@@ -625,7 +629,7 @@ const ExplorePage = () => {
                       </p>
                       <button
                         onClick={resetAndFetch}
-                        className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors"
+                        className="mt-6 px-4 py-2 border border-zinc-800 bg-white text-black hover:bg-zinc-200 rounded text-xs font-semibold transition-colors"
                       >
                         Clear Filters
                       </button>
@@ -637,12 +641,12 @@ const ExplorePage = () => {
                       <button
                         onClick={loadMore}
                         disabled={loadingMore}
-                        className="flex items-center gap-2 px-6 py-3 bg-[#15161E] border border-white/10 text-white rounded-full hover:bg-white/5 transition-all disabled:opacity-50"
+                        className="flex items-center gap-2 px-5 py-2 bg-zinc-950/20 border border-zinc-800/80 text-zinc-350 rounded hover:bg-white/[0.02] hover:text-white transition-all disabled:opacity-50 text-xs font-semibold"
                       >
                         {loadingMore ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <Loader2 className="w-4 h-4 animate-spin" />
                         ) : (
-                          <RefreshCw className="w-5 h-5" />
+                          <RefreshCw className="w-4 h-4" />
                         )}
                         {loadingMore ? "Loading..." : "Load More Issues"}
                       </button>
@@ -663,22 +667,22 @@ const ExplorePage = () => {
 const TabButton = ({ label, active, onClick, icon: Icon, isPremium }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all flex items-center gap-1.5 whitespace-nowrap ${
+    className={`px-3 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap border ${
       active
         ? isPremium
-          ? "bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-purple-300 shadow-sm border border-purple-500/20"
-          : "bg-[#222831] text-white shadow-sm"
+          ? "bg-purple-950/20 text-purple-300 border-purple-500/30 shadow-[0_1px_2px_rgba(147,51,234,0.1)] font-semibold"
+          : "bg-white/[0.04] text-white border-zinc-850/80 shadow-[0_1px_2px_rgba(0,0,0,0.5)] font-semibold"
         : isPremium
-          ? "text-purple-400/60 hover:text-purple-300"
-          : "text-gray-400 hover:text-gray-200"
+          ? "text-purple-400/60 hover:text-purple-300 border-transparent hover:bg-white/[0.01]"
+          : "text-zinc-400 hover:text-zinc-100 border-transparent hover:bg-white/[0.01]"
     }`}
   >
     {Icon && (
       <Icon
         className={`w-3.5 h-3.5 ${
           active
-            ? isPremium ? "text-purple-400" : "text-emerald-400"
-            : isPremium ? "text-purple-500/50" : "text-gray-500"
+            ? isPremium ? "text-purple-400" : "text-white"
+            : isPremium ? "text-purple-500/40" : "text-zinc-500"
         }`}
       />
     )}
@@ -691,14 +695,14 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   const timeAgo = formatTimeAgo(issue.created_at);
 
   return (
-    <div className="bg-[#15161E] border border-white/5 rounded-xl p-6 hover:border-gray-500/30 transition-all duration-300 group flex flex-col h-full relative">
+    <div className="bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-6 hover:border-zinc-750 hover:bg-white/[0.01] transition-all duration-300 group flex flex-col h-full relative">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded bg-[#222831] flex items-center justify-center border border-white/5">
+          <div className="w-9 h-9 rounded bg-zinc-900 flex items-center justify-center border border-zinc-800/60 overflow-hidden">
             <img
               src={issue.user.avatar_url}
               alt="Repo"
-              className="w-6 h-6 rounded-sm opacity-80"
+              className="w-5 h-5 rounded-sm opacity-80"
             />
           </div>
           <div>
@@ -706,48 +710,48 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
               href={issue.html_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-gray-400 hover:text-blue-400 font-mono transition-colors"
+              className="text-xs text-zinc-400 hover:text-white font-mono font-medium transition-colors"
             >
               {repoName}
             </a>
-            <div className="flex items-center gap-1 text-[10px] text-gray-500 mt-0.5">
-              <Star className="w-3 h-3 text-gray-600" />
+            <div className="flex items-center gap-1 text-[10px] text-zinc-500 font-mono mt-0.5">
+              <Star className="w-3 h-3 text-zinc-650" />
               <span>{issue.score ? Math.floor(issue.score) : "—"}</span>
             </div>
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <div className="text-[10px] text-gray-500">{timeAgo}</div>
+          <div className="text-[10px] text-zinc-500 font-mono">{timeAgo}</div>
           <button
             onClick={(e) => {
               e.preventDefault();
               onToggleBookmark();
             }}
-            className={`p-1.5 rounded-full transition-all ${isBookmarked ? "bg-amber-500/20 text-amber-400" : "bg-transparent text-gray-600 hover:text-gray-300 hover:bg-white/5"}`}
+            className={`p-1.5 rounded transition-all ${isBookmarked ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : "bg-transparent text-zinc-500 hover:text-zinc-200 hover:bg-white/5 border border-transparent"}`}
           >
             {isBookmarked ? (
-              <BookmarkCheck className="w-4 h-4" />
+              <BookmarkCheck className="w-3.5 h-3.5" />
             ) : (
-              <Bookmark className="w-4 h-4" />
+              <Bookmark className="w-3.5 h-3.5" />
             )}
           </button>
         </div>
       </div>
 
-      <h3 className="text-lg font-bold text-gray-100 mb-3 leading-snug group-hover:text-blue-400 transition-colors line-clamp-2">
+      <h3 className="text-base font-semibold text-white mb-2 leading-snug group-hover:text-blue-400 transition-colors line-clamp-2">
         <a href={issue.html_url} target="_blank" rel="noopener noreferrer">
           {issue.title}
         </a>
       </h3>
 
-      <p className="text-sm text-gray-500 mb-6 line-clamp-3 flex-1">
+      <p className="text-xs text-zinc-400 leading-relaxed mb-6 line-clamp-3 flex-1">
         {issue.body
           ? issue.body.substring(0, 150) + "..."
           : "No description provided."}
       </p>
 
-      <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/5">
-        <div className="flex flex-wrap gap-2">
+      <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-800/60">
+        <div className="flex flex-wrap gap-1.5">
           {issue.labels.slice(0, 2).map((label) => (
             <Badge
               key={label.id}
@@ -760,9 +764,9 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
           href={issue.html_url}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-500 hover:text-blue-400 transition-colors"
+          className="text-zinc-500 hover:text-zinc-250 transition-colors"
         >
-          <ExternalLink className="w-4 h-4" />
+          <ExternalLink className="w-3.5 h-3.5" />
         </a>
       </div>
     </div>
@@ -772,14 +776,14 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
 const Badge = ({ label, color }) => {
   return (
     <span
-      className="text-[10px] font-bold px-2 py-1 rounded border"
+      className="text-[9px] font-bold px-2 py-0.5 rounded-full border tracking-wide select-none"
       style={{
-        backgroundColor: color ? `#${color}20` : "rgba(107, 114, 128, 0.1)",
-        color: color ? `#${color}` : "#9ca3af",
-        borderColor: color ? `#${color}30` : "rgba(107, 114, 128, 0.2)",
+        backgroundColor: color ? `#${color}10` : "rgba(244, 244, 245, 0.03)",
+        color: color ? `#${color}` : "#a1a1aa",
+        borderColor: color ? `#${color}20` : "rgba(244, 244, 245, 0.08)",
       }}
     >
-      {label.length > 15 ? label.substring(0, 15) + "..." : label}
+      {label.length > 15 ? label.substring(0, 15) + "..." : label.toLowerCase()}
     </span>
   );
 };
@@ -787,17 +791,17 @@ const Badge = ({ label, color }) => {
 const TrustedRepoCard = ({ repo }) => {
   const difficultyColors = {
     beginner: {
-      bg: "bg-emerald-500/10",
+      bg: "bg-emerald-500/5",
       text: "text-emerald-400",
       border: "border-emerald-500/20",
     },
     intermediate: {
-      bg: "bg-amber-500/10",
+      bg: "bg-amber-500/5",
       text: "text-amber-400",
       border: "border-amber-500/20",
     },
     advanced: {
-      bg: "bg-red-500/10",
+      bg: "bg-red-500/5",
       text: "text-red-400",
       border: "border-red-500/20",
     },
@@ -810,48 +814,48 @@ const TrustedRepoCard = ({ repo }) => {
       href={repo.github_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="bg-[#15161E] border border-white/5 rounded-xl p-5 hover:border-emerald-500/30 hover:bg-[#151620] transition-all duration-300 group flex flex-col"
+      className="bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-5 hover:border-zinc-750 hover:bg-white/[0.01] transition-all duration-300 group flex flex-col"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center border border-white/10 group-hover:border-emerald-500/30 transition-colors">
-            <Shield className="w-5 h-5 text-emerald-400" />
+          <div className="w-9 h-9 rounded bg-zinc-900 flex items-center justify-center border border-zinc-800/60 group-hover:border-zinc-750 transition-colors">
+            <Shield className="w-4 h-4 text-emerald-400" />
           </div>
           <div>
-            <h3 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors line-clamp-1">
+            <h3 className="text-xs font-semibold text-white group-hover:text-emerald-350 transition-colors line-clamp-1">
               {repo.title}
             </h3>
-            <p className="text-xs text-gray-500 font-mono">{repo.name}</p>
+            <p className="text-[10px] text-zinc-500 font-mono mt-0.5">{repo.name}</p>
           </div>
         </div>
         <span
-          className={`text-[10px] font-bold uppercase px-2 py-1 rounded border ${colors.bg} ${colors.text} ${colors.border}`}
+          className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${colors.bg} ${colors.text} ${colors.border}`}
         >
           {repo.difficulty}
         </span>
       </div>
 
-      <p className="text-sm text-gray-400 mb-4 line-clamp-2 flex-1">
+      <p className="text-xs text-zinc-400 leading-relaxed mb-4 line-clamp-2 flex-1">
         {repo.description}
       </p>
 
-      <div className="flex items-center justify-between pt-3 border-t border-white/5">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <Star className="w-3.5 h-3.5 text-amber-400" />
+      <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60">
+        <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-550">
+            <Star className="w-3 h-3 text-zinc-650" />
             <span>{repo.stars?.toLocaleString() || 0}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-gray-500">
-            <div className="w-2 h-2 rounded-full bg-blue-400" />
+          <div className="flex items-center gap-1.5 text-[11px] font-mono text-zinc-550">
+            <div className="w-1.5 h-1.5 rounded-full bg-blue-500/80" />
             <span>{repo.language}</span>
           </div>
         </div>
         {repo.tags && repo.tags.length > 0 && (
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {repo.tags.slice(0, 2).map((tag, idx) => (
               <span
                 key={idx}
-                className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/5"
+                className="text-[9px] px-2 py-0.5 rounded-full bg-white/[0.02] text-zinc-400 border border-zinc-800 uppercase tracking-wider font-semibold"
               >
                 {tag}
               </span>
@@ -864,40 +868,40 @@ const TrustedRepoCard = ({ repo }) => {
 };
 
 const TrustedRepoSkeleton = () => (
-  <div className="bg-[#15161E] border border-white/5 rounded-xl p-5 h-[180px] animate-pulse">
+  <div className="bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-5 h-[180px] animate-pulse">
     <div className="flex items-center gap-3 mb-4">
-      <div className="w-10 h-10 rounded-lg bg-white/5" />
+      <div className="w-9 h-9 rounded bg-white/5" />
       <div className="space-y-2 flex-1">
-        <div className="w-3/4 h-4 bg-white/5 rounded" />
-        <div className="w-1/2 h-3 bg-white/5 rounded" />
+        <div className="w-3/4 h-3 bg-white/5 rounded" />
+        <div className="w-1/2 h-2.5 bg-white/5 rounded" />
       </div>
     </div>
     <div className="space-y-2 mb-4">
-      <div className="w-full h-3 bg-white/5 rounded" />
-      <div className="w-2/3 h-3 bg-white/5 rounded" />
+      <div className="w-full h-2.5 bg-white/5 rounded" />
+      <div className="w-2/3 h-2.5 bg-white/5 rounded" />
     </div>
-    <div className="flex gap-4 pt-3 border-t border-white/5">
-      <div className="w-16 h-3 bg-white/5 rounded" />
-      <div className="w-16 h-3 bg-white/5 rounded" />
+    <div className="flex gap-4 pt-3 border-t border-zinc-800/60">
+      <div className="w-16 h-2.5 bg-white/5 rounded" />
+      <div className="w-16 h-2.5 bg-white/5 rounded" />
     </div>
   </div>
 );
 
 const IssueSkeleton = () => (
-  <div className="bg-[#15161E] border border-white/5 rounded-xl p-6 h-[300px] animate-pulse">
+  <div className="bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-6 h-[300px] animate-pulse">
     <div className="flex items-center gap-3 mb-6">
-      <div className="w-10 h-10 rounded bg-white/5" />
-      <div className="space-y-2">
+      <div className="w-9 h-9 rounded bg-white/5" />
+      <div className="space-y-2 flex-1">
         <div className="w-24 h-3 bg-white/5 rounded" />
-        <div className="w-12 h-2 bg-white/5 rounded" />
+        <div className="w-12 h-2.5 bg-white/5 rounded" />
       </div>
     </div>
-    <div className="w-full h-6 bg-white/5 rounded mb-4" />
-    <div className="w-2/3 h-6 bg-white/5 rounded mb-8" />
+    <div className="w-full h-5 bg-white/5 rounded mb-4" />
+    <div className="w-2/3 h-5 bg-white/5 rounded mb-8" />
     <div className="space-y-2">
-      <div className="w-full h-3 bg-white/5 rounded" />
-      <div className="w-full h-3 bg-white/5 rounded" />
-      <div className="w-3/4 h-3 bg-white/5 rounded" />
+      <div className="w-full h-2.5 bg-white/5 rounded" />
+      <div className="w-full h-2.5 bg-white/5 rounded" />
+      <div className="w-3/4 h-2.5 bg-white/5 rounded" />
     </div>
   </div>
 );

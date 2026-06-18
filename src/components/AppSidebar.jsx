@@ -69,7 +69,7 @@ const AppSidebar = ({ children, className = "" }) => {
   ];
 
   return (
-    <aside className={`w-64 border-r border-white/5 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto ${className}`}>
+    <aside className={`w-64 border-r border-zinc-800/60 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto ${className}`}>
       <div className="p-6">
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2 group mb-8">
@@ -101,14 +101,14 @@ const AppSidebar = ({ children, className = "" }) => {
 const NavItem = ({ icon: Icon, label, active, to }) => (
   <Link
     to={to}
-    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+    className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded border text-xs font-medium transition-all ${
       active
-        ? "bg-blue-600/10 text-blue-400"
-        : "text-gray-400 hover:text-white hover:bg-white/5"
+        ? "bg-white/[0.04] text-white border-zinc-800/80 font-semibold"
+        : "text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.02] border-transparent"
     }`}
   >
     <Icon
-      className={`w-5 h-5 ${active ? "text-blue-400" : "text-gray-500"}`}
+      className={`w-4 h-4 transition-colors ${active ? "text-white" : "text-zinc-500"}`}
     />
     {label}
   </Link>

@@ -222,36 +222,39 @@ const StatusPage = () => {
       {/* Main Content */}
       <main className="flex-1 lg:ml-64 min-w-0">
         {/* Top Header */}
-        <header className="h-16 border-b border-white/5 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
+        <header className="h-16 border-b border-zinc-800/60 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
           <div className="flex flex-1 items-center max-w-xl relative">
-            <Search className="absolute left-3 w-4 h-4 text-gray-500" />
+            <Search className="absolute left-3 w-3.5 h-3.5 text-zinc-500" />
             <input
               type="text"
               placeholder="Search contributions..."
-              className="w-full bg-[#15161E] border border-white/5 rounded-lg py-2 pl-10 pr-4 text-sm text-gray-300 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all placeholder:text-gray-600"
+              className="w-full bg-zinc-950/40 border border-zinc-800/80 rounded-md py-1.5 pl-9 pr-4 text-xs text-zinc-300 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 transition-all placeholder:text-zinc-650"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
           <div className="flex items-center gap-4 ml-4">
-            <button className="text-gray-400 hover:text-white transition-colors relative">
-              <Bell className="w-5 h-5" />
+            <button className="text-zinc-500 hover:text-white transition-colors relative">
+              <Bell className="w-4 h-4" />
             </button>
-            <div className="flex items-center gap-3 pl-4 border-l border-white/5">
-              <span className="text-sm text-gray-400">
-                {user?.user_metadata?.user_name ||
-                  user?.email?.split("@")[0] ||
-                  "User"}
-              </span>
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-purple-500 p-[1px]">
+            <div className="flex items-center gap-3 pl-4 border-l border-zinc-800/60">
+              <div className="text-right hidden sm:block">
+                <p className="text-xs font-semibold text-white leading-tight">
+                  {user?.user_metadata?.user_name ||
+                    user?.email?.split("@")[0] ||
+                    "User"}
+                </p>
+                <p className="text-[10px] font-bold text-zinc-500 mt-0.5 uppercase tracking-wider">Contributor</p>
+              </div>
+              <div className="w-8 h-8 rounded-full border border-zinc-800 p-[1px] bg-zinc-900 overflow-hidden flex items-center justify-center">
                 <img
                   src={
                     user?.user_metadata?.avatar_url ||
                     `https://ui-avatars.com/api/?name=${user?.email || "User"}`
                   }
                   alt="Avatar"
-                  className="w-full h-full rounded-full bg-[#0B0C10]"
+                  className="w-full h-full rounded-full object-cover"
                 />
               </div>
             </div>
@@ -261,12 +264,14 @@ const StatusPage = () => {
         {/* Content Body */}
         <div className="p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
           {/* Sync Status Bar */}
-          <div className="bg-[#15161E] rounded-xl p-4 border border-white/5 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="bg-zinc-950/20 rounded-xl p-4 border border-zinc-800/60 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <Github className="w-5 h-5 text-gray-400" />
+              <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800/60 flex items-center justify-center text-zinc-400 flex-shrink-0">
+                <Github className="w-4 h-4" />
+              </div>
               <div>
-                <p className="text-white font-medium">GitHub Contributions</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs font-bold text-white uppercase tracking-wider">GitHub Contributions</p>
+                <p className="text-[11px] text-zinc-500 font-mono mt-0.5">
                   {lastSynced
                     ? `Last synced ${formatDate(lastSynced)}`
                     : "Not synced yet"}
@@ -276,25 +281,24 @@ const StatusPage = () => {
             <button
               onClick={handleSync}
               disabled={syncing}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              className="flex items-center justify-center gap-1.5 px-4 py-1.5 bg-white hover:bg-zinc-200 text-black rounded font-semibold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             >
               <RefreshCw
-                className={`w-4 h-4 ${syncing ? "animate-spin" : ""}`}
+                className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`}
               />
               {syncing ? "Syncing..." : "Sync Now"}
             </button>
           </div>
 
           {syncError && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 mb-6">
+            <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 mb-6">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <p className="font-medium text-red-400 mb-1">Sync Error</p>
-                  <p className="text-sm text-red-300">{syncError}</p>
+                  <p className="font-semibold text-red-400 text-sm mb-1">Sync Error</p>
+                  <p className="text-xs text-red-300/95 leading-relaxed">{syncError}</p>
                   {syncError.includes("token") && (
-                    <p className="text-xs text-red-400/70 mt-2">
-                      Your GitHub connection may have expired or lacks required
-                      permissions.
+                    <p className="text-[10px] text-red-400/50 mt-1 leading-normal">
+                      Your GitHub connection may have expired or lacks required permissions.
                     </p>
                   )}
                 </div>
@@ -304,9 +308,9 @@ const StatusPage = () => {
                       // Trigger GitHub reconnection
                       window.location.href = `${window.location.origin}/login`;
                     }}
-                    className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-500 transition-colors whitespace-nowrap"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-950/20 hover:bg-red-950/40 border border-red-500/35 text-red-400 rounded text-xs font-semibold transition-colors whitespace-nowrap"
                   >
-                    <Github className="w-4 h-4" />
+                    <Github className="w-3.5 h-3.5" />
                     Reconnect GitHub
                   </button>
                 )}
@@ -315,29 +319,29 @@ const StatusPage = () => {
           )}
 
           {/* Progress Card */}
-          <div className="bg-[#15161E] rounded-xl p-6 border border-white/5 mb-6">
+          <div className="bg-zinc-950/20 rounded-xl p-6 border border-zinc-800/60 mb-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-1">
+                <h2 className="text-lg font-bold text-white mb-1 tracking-tight">
                   Your Progress
                 </h2>
-                <p className="text-gray-500">
+                <p className="text-xs text-zinc-400">
                   {stats.merged || 0} merged out of {stats.total} contributions
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-4xl font-bold text-cyan-400">
+                <div className="text-3xl font-bold text-white font-mono leading-none mb-1">
                   {successRate}%
                 </div>
-                <div className="flex items-center justify-end text-gray-500 text-sm gap-1">
-                  <TrendingUp className="w-4 h-4" />
+                <div className="flex items-center justify-end text-zinc-500 text-[10px] uppercase font-bold tracking-wider gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-zinc-555" />
                   Success Rate
                 </div>
               </div>
             </div>
-            <div className="w-full bg-[#222831] rounded-full h-2">
+            <div className="w-full bg-zinc-900 rounded-full h-1.5 border border-zinc-800/60 overflow-hidden">
               <div
-                className="bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full h-2 transition-all duration-500"
+                className="bg-white rounded-full h-1.5 transition-all duration-500"
                 style={{ width: `${successRate}%` }}
               />
             </div>
@@ -349,11 +353,12 @@ const StatusPage = () => {
               .slice(1)
               .map(({ value, label, icon: Icon, color, bg }) => {
                 const count = stats[value] || 0;
+                const isActive = selectedStatus === value;
                 return (
                   <div
                     key={value}
-                    className={`bg-[#15161E] rounded-xl p-3 sm:p-4 border border-white/5 cursor-pointer hover:border-white/10 transition-colors ${
-                      selectedStatus === value ? "ring-2 ring-blue-500" : ""
+                    className={`bg-zinc-950/25 rounded-xl p-4 border transition-all duration-200 cursor-pointer ${
+                      isActive ? "border-zinc-500 bg-white/[0.01]" : "border-zinc-800/60 hover:border-zinc-700/80 hover:bg-white/[0.005]"
                     }`}
                     onClick={() =>
                       setSelectedStatus(
@@ -362,12 +367,12 @@ const StatusPage = () => {
                     }
                   >
                     <div
-                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg ${bg} flex items-center justify-center mb-2 sm:mb-3`}
+                      className={`w-7 h-7 rounded bg-zinc-900 border border-zinc-800/60 flex items-center justify-center mb-3`}
                     >
-                      <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${color}`} />
+                      <Icon className={`w-3.5 h-3.5 ${color}`} />
                     </div>
-                    <p className="text-gray-500 text-[10px] sm:text-sm mb-0.5 sm:mb-1 truncate">{label}</p>
-                    <span className="text-xl sm:text-2xl font-bold text-white">
+                    <p className="text-zinc-550 text-[10px] font-bold uppercase tracking-wider mb-1 truncate">{label}</p>
+                    <span className="text-2xl font-bold text-white font-mono leading-none">
                       {count}
                     </span>
                   </div>
@@ -376,7 +381,7 @@ const StatusPage = () => {
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-4 scrollbar-hide mask-fade-right -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex items-center gap-1.5 mb-6 overflow-x-auto pb-3 scrollbar-hide mask-fade-right -mx-4 px-4 sm:mx-0 sm:px-0">
             {statusOptions.map(({ value, label, icon: Icon, color }) => {
               const count = value === "all" ? stats.total : stats[value] || 0;
               const isActive = selectedStatus === value;
@@ -384,17 +389,17 @@ const StatusPage = () => {
                 <button
                   key={value}
                   onClick={() => setSelectedStatus(value)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-all whitespace-nowrap flex-shrink-0 ${
+                  className={`flex items-center gap-2 px-3 py-1 rounded-md text-xs font-medium transition-all border whitespace-nowrap flex-shrink-0 ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-[0_0_20px_-5px_rgba(37,99,235,0.4)]"
-                      : "bg-[#15161E] text-gray-400 hover:text-white border border-white/5"
+                      ? "bg-white/[0.04] text-white border-zinc-700/80 shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
+                      : "bg-zinc-950/20 text-zinc-400 hover:text-zinc-150 border-zinc-850/60 hover:bg-white/[0.01]"
                   }`}
                 >
-                  {Icon && <Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isActive ? "text-white" : color}`} />}
+                  {Icon && <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : color}`} />}
                   {label}
                   <span
-                    className={`px-1.5 py-0.5 rounded-md text-[10px] sm:text-xs font-bold ${
-                      isActive ? "bg-white/20 text-white" : "bg-white/5 text-gray-500"
+                    className={`px-1.5 py-0.2 rounded font-mono text-[9px] font-bold border ${
+                      isActive ? "bg-white/10 text-white border-white/10" : "bg-zinc-900 text-zinc-550 border-zinc-850"
                     }`}
                   >
                     {count}
@@ -406,21 +411,21 @@ const StatusPage = () => {
 
           {/* Contributions List */}
           {filteredContributions.length === 0 ? (
-            <div className="text-center py-12 sm:py-16 bg-[#15161E] rounded-xl border border-white/5 px-4">
-              <Github className="w-10 h-10 sm:w-12 sm:h-12 text-gray-600 mx-auto mb-4" />
-              <h3 className="text-base sm:text-lg font-medium text-white mb-2">
+            <div className="text-center py-12 sm:py-16 bg-zinc-950/20 rounded-xl border border-zinc-800/60 px-4">
+              <Github className="w-9 h-9 text-zinc-550 mx-auto mb-4 animate-pulse" />
+              <h3 className="text-sm font-semibold text-white mb-2">
                 {selectedStatus === "all"
                   ? "No contributions yet"
                   : `No ${selectedStatus.replace("_", " ")} contributions`}
               </h3>
-              <p className="text-sm text-gray-500 mb-6 max-w-xs mx-auto">
+              <p className="text-xs text-zinc-400 mb-6 max-w-xs mx-auto leading-relaxed">
                 {selectedStatus === "all"
                   ? "Start contributing to open source projects and they'll appear here automatically."
                   : `You don't have any ${selectedStatus.replace("_", " ")} contributions yet.`}
               </p>
               <button
                 onClick={() => navigate("/explore")}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-500 transition-colors text-sm"
+                className="px-4 py-2 border border-zinc-800 bg-white text-black hover:bg-zinc-200 rounded text-xs font-semibold transition-colors"
               >
                 Explore Issues
               </button>
@@ -469,74 +474,75 @@ const ContributionCard = ({
             : XCircle;
 
   return (
-    <div className="bg-[#15161E] rounded-xl p-4 sm:p-5 border border-white/5 hover:border-white/10 transition-colors">
+    <div className="bg-zinc-950/25 rounded-xl p-4 sm:p-5 border border-zinc-800/60 hover:border-zinc-750 hover:bg-white/[0.005] transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-start gap-4">
         {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="text-[10px] sm:text-sm font-bold text-cyan-400 uppercase tracking-wider truncate max-w-[150px] sm:max-w-none">
+            <span className="text-xs font-mono font-bold text-zinc-400 hover:text-white transition-colors truncate max-w-[150px] sm:max-w-none">
               {contribution.github_repo_owner}/{contribution.github_repo_name}
             </span>
             {contribution.language && (
-              <span className="px-1.5 py-0.5 text-[9px] sm:text-[10px] font-medium bg-[#222831] text-gray-400 rounded border border-white/5">
+              <span className="px-1.5 py-0.5 text-[9px] font-medium bg-zinc-900 text-zinc-500 rounded border border-zinc-850/80">
                 {contribution.language}
               </span>
             )}
             <div
-              className={`flex items-center gap-1 px-1.5 py-0.5 text-[9px] sm:text-[10px] font-medium rounded ${statusConfig.bg} ${statusConfig.color}`}
+              className={`flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded border ${statusConfig.bg} ${statusConfig.color}`}
+              style={{ borderColor: 'rgba(255,255,255,0.03)' }}
             >
-              <StatusIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              <StatusIcon className="w-3 h-3" />
               {statusConfig.label}
             </div>
           </div>
 
-          <h3 className="text-sm sm:text-base text-white font-medium mb-2 line-clamp-2">
+          <h3 className="text-sm sm:text-base text-white font-semibold mb-2 line-clamp-2">
             {contribution.issue_title}
           </h3>
 
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[10px] sm:text-xs text-gray-500">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[10px] sm:text-xs text-zinc-500 font-mono">
             {contribution.is_assigned && (
-              <div className="flex items-center gap-1">
-                <AlertCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                Assigned {formatDate(contribution.assigned_at)}
+              <div className="flex items-center gap-1.5">
+                <AlertCircle className="w-3 h-3 text-zinc-600" />
+                <span>Assigned {formatDate(contribution.assigned_at)}</span>
               </div>
             )}
             {contribution.pr_created_at && (
-              <div className="flex items-center gap-1">
-                <GitPullRequest className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                PR opened {formatDate(contribution.pr_created_at)}
+              <div className="flex items-center gap-1.5">
+                <GitPullRequest className="w-3 h-3 text-zinc-600" />
+                <span>PR opened {formatDate(contribution.pr_created_at)}</span>
               </div>
             )}
             {contribution.pr_merged_at && (
-              <div className="flex items-center gap-1 text-emerald-400">
-                <GitMerge className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                Merged {formatDate(contribution.pr_merged_at)}
+              <div className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                <GitMerge className="w-3 h-3 text-emerald-500/80" />
+                <span>Merged {formatDate(contribution.pr_merged_at)}</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2 self-end sm:self-auto pt-2 sm:pt-0 border-t border-white/5 sm:border-0 w-full sm:w-auto justify-end">
+        <div className="flex items-center gap-1.5 self-end sm:self-auto pt-2 sm:pt-0 border-t border-zinc-800/60 sm:border-0 w-full sm:w-auto justify-end">
           {contribution.pr_url && (
             <a
               href={contribution.pr_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 sm:p-2 text-gray-500 hover:text-emerald-400 transition-colors rounded-lg hover:bg-white/5"
+              className="p-1.5 text-zinc-500 hover:text-zinc-200 transition-colors rounded hover:bg-white/5 border border-transparent"
               title="View Pull Request"
             >
-              <GitPullRequest className="w-4 h-4 sm:w-5 sm:h-5" />
+              <GitPullRequest className="w-4 h-4" />
             </a>
           )}
           <a
             href={contribution.issue_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 sm:p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/5"
+            className="p-1.5 text-zinc-500 hover:text-white transition-colors rounded hover:bg-white/5 border border-transparent"
             title="View Issue"
           >
-            <ExternalLink className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ExternalLink className="w-4 h-4" />
           </a>
         </div>
       </div>
