@@ -23,6 +23,19 @@ const FeatureCard = ({ index, accent, title, description, icon: Icon, badge, vis
   const isInView = useInView(containerRef, { once: true, amount: 0.1 });
 
   const isPoW = index === 1; // index 1 is Proof of Work
+  const isExternal = link && link.startsWith("http");
+
+  const handleCardClick = (e) => {
+    // If the click was on an anchor tag or button inside the card, let it propagate naturally
+    if (e.target.closest("a") || e.target.closest("button")) {
+      return;
+    }
+    if (isExternal) {
+      window.open(link, "_blank", "noopener,noreferrer");
+    } else if (onClick) {
+      onClick();
+    }
+  };
 
   return (
     <motion.div
@@ -30,7 +43,8 @@ const FeatureCard = ({ index, accent, title, description, icon: Icon, badge, vis
       initial={{ opacity: 0, y: 15 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      className={`bg-white/[0.02] border border-zinc-800/60 hover:border-zinc-700/80 rounded-xl p-6 transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${isPoW ? 'min-h-[420px]' : 'min-h-[380px]'} group ${className}`}
+      onClick={handleCardClick}
+      className={`bg-white/[0.02] border border-zinc-800/60 hover:border-zinc-700/80 rounded-xl p-6 transition-all duration-300 relative overflow-hidden flex flex-col justify-between ${isPoW ? 'min-h-[420px]' : 'min-h-[380px]'} group ${className} ${isExternal || onClick ? "cursor-pointer" : ""}`}
     >
       {/* Decorative subtle background glow on hover */}
       <div className="absolute -inset-px bg-gradient-to-b from-white/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-xl" />
@@ -71,6 +85,16 @@ const FeatureCard = ({ index, accent, title, description, icon: Icon, badge, vis
               {linkText || "Learn more"}
               <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
             </button>
+          ) : isExternal ? (
+            <a
+              href={link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition-colors"
+            >
+              {linkText || "Learn more"}
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            </a>
           ) : (
             <Link
               to={link}
@@ -363,10 +387,6 @@ const HackathonVisualizer = ({ active }) => {
       {/* Title bar */}
       <div className="flex items-center justify-between pb-2 border-b border-white/5">
         <span className="text-[10px] text-zinc-450 font-bold uppercase tracking-wider font-mono">OS Hackathons</span>
-        <span className="text-[9px] text-zinc-550 font-bold flex items-center gap-1 font-mono">
-          <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-ping" />
-          UPCOMING
-        </span>
       </div>
 
       {/* Cards Deck Container */}
@@ -613,10 +633,9 @@ const TimelineFeatures = () => {
       description:
         "Find upcoming open source hackathons, form teams, build high-impact projects, and compete to win prizes.",
       icon: Trophy,
-      badge: "Upcoming",
       visual: <HackathonVisualizer />,
-      link: "/explore",
-      linkText: "Find upcoming events",
+      link: "https://contribly.firstissue.dev/",
+      linkText: "Browse hackathons",
     },
     {
       accent: "emerald",
