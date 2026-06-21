@@ -1,13 +1,52 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink } from "lucide-react";
+import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink, Copy, Check } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import AppSidebar from "../components/AppSidebar";
 const logo = "/officialLogo.png";
 
+// Code block component with copy feedback
+const CodeBlock = ({ language, code }) => {
+  const [copied, setCopied] = useState(false);
 
-// Helper to parse simple markdown to React elements
+  const handleCopy = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="my-3 font-mono text-[11px] bg-zinc-950 text-zinc-350 rounded-lg border border-zinc-850 overflow-hidden">
+      <div className="flex justify-between items-center bg-zinc-900 px-3 py-1.5 border-b border-zinc-850/80">
+        <span className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">{language || 'code'}</span>
+        <button
+          onClick={handleCopy}
+          className={`flex items-center gap-1 text-[10px] transition-all duration-200 ${
+            copied
+              ? "text-emerald-400"
+              : "text-zinc-400 hover:text-white"
+          }`}
+        >
+          {copied ? (
+            <>
+              <Check className="w-3 h-3" />
+              <span>Copied!</span>
+            </>
+          ) : (
+            <>
+              <Copy className="w-3 h-3" />
+              <span>Copy</span>
+            </>
+          )}
+        </button>
+      </div>
+      <pre className="p-3 overflow-x-auto select-text">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+};
 const parseInlineElements = (text) => {
   if (typeof text !== "string") return text;
 
@@ -55,23 +94,11 @@ const renderMarkdown = (text) => {
       const codeContent = match ? match[2] : part.slice(3, -3);
       
       return (
-        <div
+        <CodeBlock
           key={`code-block-${index}`}
-          className="my-3 font-mono text-[11px] bg-zinc-950 text-zinc-350 rounded-lg border border-zinc-850 overflow-hidden"
-        >
-          <div className="flex justify-between items-center bg-zinc-900 px-3 py-1.5 border-b border-zinc-850/80">
-            <span className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider">{language || 'code'}</span>
-            <button
-              onClick={() => navigator.clipboard.writeText(codeContent)}
-              className="text-[10px] text-zinc-400 hover:text-white transition-colors"
-            >
-              Copy
-            </button>
-          </div>
-          <pre className="p-3 overflow-x-auto select-text">
-            <code>{codeContent}</code>
-          </pre>
-        </div>
+          language={language}
+          code={codeContent}
+        />
       );
     }
     
