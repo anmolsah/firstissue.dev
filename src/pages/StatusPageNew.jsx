@@ -27,6 +27,8 @@ import {
   Github,
   Calendar,
   Activity,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 const StatusPage = () => {
@@ -35,6 +37,8 @@ const StatusPage = () => {
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [activeNav, setActiveNav] = useState("status");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   // GitHub sync hook
   const {
@@ -187,6 +191,7 @@ const StatusPage = () => {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
+    if (diffMins < 1) return "just now";
     if (diffMins < 60) return `${diffMins} min${diffMins !== 1 ? "s" : ""} ago`;
     if (diffHours < 24)
       return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
@@ -214,6 +219,30 @@ const StatusPage = () => {
 
   const successRate = getSuccessRate();
   const filteredContributions = getFilteredContributions();
+
+  // Pagination logic
+  const totalPages = Math.max(1, Math.ceil(filteredContributions.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+  const paginatedContributions = filteredContributions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  // Reset to page 1 when filters or search change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatus, searchQuery]);
+
+  // Generate visible page numbers (show max 5 pages around current)
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, safePage - Math.floor(maxVisible / 2));
+    let end = Math.min(totalPages, start + maxVisible - 1);
+    start = Math.max(1, end - maxVisible + 1);
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
 
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
@@ -431,22 +460,101 @@ const StatusPage = () => {
               </button>
             </div>
           ) : (
-            <div className="space-y-3">
-              {filteredContributions.map((item) => {
-                const status = item.is_bookmark ? item.status : getContributionStatus(item);
-                const statusConfig = getStatusConfig(status);
+            <>
+              {/* Results count */}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-[11px] text-zinc-500 font-mono">
+                  Showing {startIndex + 1}–{Math.min(startIndex + ITEMS_PER_PAGE, filteredContributions.length)} of {filteredContributions.length}
+                </p>
+              </div>
 
-                return (
-                  <ContributionCard
-                    key={item.id}
-                    contribution={item}
-                    status={status}
-                    statusConfig={statusConfig}
-                    formatDate={formatDate}
-                  />
-                );
-              })}
-            </div>
+              <div className="space-y-3">
+                {paginatedContributions.map((item) => {
+                  const status = item.is_bookmark ? item.status : getContributionStatus(item);
+                  const statusConfig = getStatusConfig(status);
+
+                  return (
+                    <ContributionCard
+                      key={item.id}
+                      contribution={item}
+                      status={status}
+                      statusConfig={statusConfig}
+                      formatDate={formatDate}
+                    />
+                  );
+                })}
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-1.5 mt-6 pt-6 border-t border-zinc-800/60">
+                  {/* Previous */}
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                    disabled={safePage === 1}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all border border-zinc-800/60 bg-zinc-950/25 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-white/[0.02] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-zinc-400 disabled:hover:border-zinc-800/60 disabled:hover:bg-zinc-950/25"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Prev</span>
+                  </button>
+
+                  {/* First page + ellipsis */}
+                  {getPageNumbers()[0] > 1 && (
+                    <>
+                      <button
+                        onClick={() => setCurrentPage(1)}
+                        className="w-8 h-8 flex items-center justify-center rounded-md text-xs font-mono font-bold transition-all border border-zinc-800/60 bg-zinc-950/25 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-white/[0.02]"
+                      >
+                        1
+                      </button>
+                      {getPageNumbers()[0] > 2 && (
+                        <span className="w-8 h-8 flex items-center justify-center text-xs text-zinc-600 font-mono">…</span>
+                      )}
+                    </>
+                  )}
+
+                  {/* Page numbers */}
+                  {getPageNumbers().map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-8 h-8 flex items-center justify-center rounded-md text-xs font-mono font-bold transition-all border ${
+                        page === safePage
+                          ? "bg-white text-black border-white shadow-[0_0_12px_rgba(255,255,255,0.08)]"
+                          : "border-zinc-800/60 bg-zinc-950/25 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-white/[0.02]"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+
+                  {/* Last page + ellipsis */}
+                  {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
+                    <>
+                      {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
+                        <span className="w-8 h-8 flex items-center justify-center text-xs text-zinc-600 font-mono">…</span>
+                      )}
+                      <button
+                        onClick={() => setCurrentPage(totalPages)}
+                        className="w-8 h-8 flex items-center justify-center rounded-md text-xs font-mono font-bold transition-all border border-zinc-800/60 bg-zinc-950/25 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-white/[0.02]"
+                      >
+                        {totalPages}
+                      </button>
+                    </>
+                  )}
+
+                  {/* Next */}
+                  <button
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    disabled={safePage === totalPages}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all border border-zinc-800/60 bg-zinc-950/25 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-white/[0.02] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-zinc-400 disabled:hover:border-zinc-800/60 disabled:hover:bg-zinc-950/25"
+                  >
+                    <span className="hidden sm:inline">Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>

@@ -1,23 +1,59 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { syncGitHubContributions } from '../../services/githubSync';
 import { contributionKeys } from './useContributions';
 
+const LAST_SYNCED_KEY = 'firstissue_last_synced';
+
+function getStoredLastSynced(userId) {
+  try {
+    const stored = localStorage.getItem(`${LAST_SYNCED_KEY}_${userId}`);
+    return stored || null;
+  } catch {
+    return null;
+  }
+}
+
+function setStoredLastSynced(userId, isoString) {
+  try {
+    localStorage.setItem(`${LAST_SYNCED_KEY}_${userId}`, isoString);
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 /**
  * Hook to trigger a GitHub sync and automatically invalidate the contributions cache.
+ * Tracks the actual last successful sync timestamp.
  */
 export function useGitHubSyncMutation(userId) {
   const queryClient = useQueryClient();
+  const [lastSyncedAt, setLastSyncedAt] = useState(() => getStoredLastSynced(userId));
 
-  return useMutation({
+  // Update stored value when userId changes
+  useEffect(() => {
+    if (userId) {
+      setLastSyncedAt(getStoredLastSynced(userId));
+    }
+  }, [userId]);
+
+  const mutation = useMutation({
     mutationFn: () => syncGitHubContributions(userId),
     onSuccess: (result) => {
       if (result.success) {
+        const now = new Date().toISOString();
+        setLastSyncedAt(now);
+        setStoredLastSynced(userId, now);
         // Invalidate contributions so they refetch with new data
         queryClient.invalidateQueries({ queryKey: contributionKeys.all(userId) });
       }
     },
   });
+
+  // Attach lastSyncedAt to the mutation return
+  mutation.lastSyncedAt = lastSyncedAt;
+
+  return mutation;
 }
 
 /**

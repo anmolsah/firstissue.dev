@@ -12,7 +12,6 @@ export const useGitHubSync = (userId, autoSync = true) => {
     const {
         data: contributions = [],
         isLoading: loading,
-        dataUpdatedAt,
     } = useContributions(userId);
 
     // Signup index from TanStack Query
@@ -69,9 +68,10 @@ export const useGitHubSync = (userId, autoSync = true) => {
     }, [contributions]);
 
     /**
-     * Last synced time derived from query cache
+     * Last synced time — actual sync completion timestamp from the mutation,
+     * not cache update time (which would always show "0 mins ago").
      */
-    const lastSynced = dataUpdatedAt ? new Date(dataUpdatedAt).toISOString() : null;
+    const lastSynced = syncMutation.lastSyncedAt || null;
 
     return {
         contributions,
@@ -87,3 +87,4 @@ export const useGitHubSync = (userId, autoSync = true) => {
         fetchContributions: () => {}, // No-op — TanStack Query handles refetching
     };
 };
+
