@@ -208,6 +208,13 @@ const StatusPage = () => {
     await sync();
   };
 
+  // Reset to page 1 when filters or search change
+  // NOTE: This useEffect MUST be before the early return to maintain
+  // consistent hook call order across renders (React rules of hooks).
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStatus, searchQuery]);
+
   if (loading) {
     return (
       <div className="flex bg-[#0B0C10] min-h-screen items-center justify-center">
@@ -225,11 +232,6 @@ const StatusPage = () => {
   const safePage = Math.min(currentPage, totalPages);
   const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
   const paginatedContributions = filteredContributions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
-  // Reset to page 1 when filters or search change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedStatus, searchQuery]);
 
   // Generate visible page numbers (show max 5 pages around current)
   const getPageNumbers = () => {
