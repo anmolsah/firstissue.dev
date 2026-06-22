@@ -46,7 +46,7 @@ function buildWelcomeEmail(username?: string): string {
 
               <!-- Welcome Message -->
               <h2 style="margin:0 0 16px;font-size:24px;font-weight:600;color:#ffffff;">
-                Welcome aboard, ${displayName}! 🎉
+                Welcome aboard, ${displayName}!
               </h2>
               <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#a0a0b8;">
                 Thank you for joining <strong style="color:#ffffff;">firstissue.dev</strong> — the platform that helps developers find their first open-source contribution.
@@ -66,7 +66,9 @@ function buildWelcomeEmail(username?: string): string {
                     <table role="presentation" cellpadding="0" cellspacing="0">
                       <tr>
                         <td style="vertical-align:top;padding-right:12px;">
-                          <span style="display:inline-block;width:28px;height:28px;background:rgba(167,139,250,0.15);border-radius:8px;text-align:center;line-height:28px;font-size:14px;">🔍</span>
+                          <div style="display:inline-block;width:36px;height:36px;background:rgba(167,139,250,0.15);border-radius:10px;text-align:center;line-height:36px;">
+                            <img src="https://img.icons8.com/fluency-systems-regular/24/a78bfa/search--v1.png" alt="Search" width="18" height="18" style="vertical-align:middle;" />
+                          </div>
                         </td>
                         <td>
                           <p style="margin:0;font-size:15px;color:#ffffff;font-weight:500;">Discover Issues</p>
@@ -81,7 +83,9 @@ function buildWelcomeEmail(username?: string): string {
                     <table role="presentation" cellpadding="0" cellspacing="0">
                       <tr>
                         <td style="vertical-align:top;padding-right:12px;">
-                          <span style="display:inline-block;width:28px;height:28px;background:rgba(96,165,250,0.15);border-radius:8px;text-align:center;line-height:28px;font-size:14px;">🤖</span>
+                          <div style="display:inline-block;width:36px;height:36px;background:rgba(96,165,250,0.15);border-radius:10px;text-align:center;line-height:36px;">
+                            <img src="https://img.icons8.com/fluency-systems-regular/24/60a5fa/artificial-intelligence.png" alt="AI" width="18" height="18" style="vertical-align:middle;" />
+                          </div>
                         </td>
                         <td>
                           <p style="margin:0;font-size:15px;color:#ffffff;font-weight:500;">AI-Powered Matching</p>
@@ -96,7 +100,9 @@ function buildWelcomeEmail(username?: string): string {
                     <table role="presentation" cellpadding="0" cellspacing="0">
                       <tr>
                         <td style="vertical-align:top;padding-right:12px;">
-                          <span style="display:inline-block;width:28px;height:28px;background:rgba(52,211,153,0.15);border-radius:8px;text-align:center;line-height:28px;font-size:14px;">🏆</span>
+                          <div style="display:inline-block;width:36px;height:36px;background:rgba(52,211,153,0.15);border-radius:10px;text-align:center;line-height:36px;">
+                            <img src="https://img.icons8.com/fluency-systems-regular/24/34d399/trophy.png" alt="Trophy" width="18" height="18" style="vertical-align:middle;" />
+                          </div>
                         </td>
                         <td>
                           <p style="margin:0;font-size:15px;color:#ffffff;font-weight:500;">Track Contributions</p>
@@ -152,20 +158,20 @@ function buildWelcomeEmail(username?: string): string {
 function buildWelcomeText(username?: string): string {
   const displayName = username || "there";
   return [
-    `Welcome to firstissue.dev, ${displayName}! 🎉`,
+    `Welcome to firstissue.dev, ${displayName}!`,
     "",
     "Thank you for joining firstissue.dev — the platform that helps developers",
     "find their first open-source contribution.",
     "",
     "Here's what you can do now:",
     "",
-    "🔍 Discover Issues",
+    "* Discover Issues",
     "   Browse curated beginner-friendly issues across popular open-source projects.",
     "",
-    "🤖 AI-Powered Matching",
+    "* AI-Powered Matching",
     "   Get personalized issue recommendations based on your GitHub profile and skills.",
     "",
-    "🏆 Track Contributions",
+    "* Track Contributions",
     "   Log your merged PRs, earn badges, and build your open-source portfolio.",
     "",
     "Start exploring: https://firstissue.dev",
@@ -260,7 +266,7 @@ serve(async (req: Request) => {
     const emailPayload = {
       from: `firstissue.dev <${fromEmail}>`,
       to: [userEmail],
-      subject: "Welcome to firstissue.dev — Your Open Source Journey Starts Here 🚀",
+      subject: "Welcome to firstissue.dev — Your Open Source Journey Starts Here",
       html: buildWelcomeEmail(githubUsername),
       text: buildWelcomeText(githubUsername),
     };
