@@ -23,10 +23,10 @@ function buildWelcomeEmail(username?: string): string {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to firstissue.dev</title>
+  <title>Welcome to FirstIssue.dev</title>
 </head>
-<body style="margin:0;padding:0;background-color:#0a0a0f;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0f;">
+<body style="margin:0;padding:0;background-color:#222831;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#222831;">
     <tr>
       <td align="center" style="padding:40px 20px;">
         <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
@@ -34,29 +34,29 @@ function buildWelcomeEmail(username?: string): string {
           <!-- Logo & Header -->
           <tr>
             <td align="center" style="padding-bottom:32px;">
-              <h1 style="margin:0;font-size:28px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">
-                <span style="color:#a78bfa;">first</span><span style="color:#ffffff;">issue</span><span style="color:#60a5fa;">.dev</span>
-              </h1>
+              <span style="font-size:20px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;font-family:'Inter',system-ui,-apple-system,sans-serif;text-decoration:none;">
+                FirstIssue.dev
+              </span>
             </td>
           </tr>
 
           <!-- Main Card -->
           <tr>
-            <td style="background:linear-gradient(135deg,#1a1a2e 0%,#16162a 100%);border:1px solid rgba(167,139,250,0.2);border-radius:16px;padding:48px 40px;">
+            <td style="background-color:#393e46;border:1px solid rgba(0, 173, 181, 0.25);border-radius:16px;padding:48px 40px;box-shadow:0 10px 30px rgba(0,0,0,0.25);">
 
               <!-- Welcome Message -->
-              <h2 style="margin:0 0 16px;font-size:24px;font-weight:600;color:#ffffff;">
+              <h2 style="margin:0 0 16px;font-size:24px;font-weight:600;color:#eeeeee;">
                 Welcome aboard, ${displayName}!
               </h2>
-              <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#a0a0b8;">
-                Thank you for joining <strong style="color:#ffffff;">firstissue.dev</strong> — the platform that helps developers find their first open-source contribution.
+              <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#b8b8b8;">
+                Thank you for joining <strong style="color:#00adb5;">FirstIssue.dev</strong> — the platform that helps developers find their first open-source contribution.
               </p>
 
               <!-- Divider -->
-              <hr style="border:none;border-top:1px solid rgba(167,139,250,0.15);margin:24px 0;" />
+              <hr style="border:none;border-top:1px solid rgba(0, 173, 181, 0.15);margin:24px 0;" />
 
               <!-- What You Can Do -->
-              <h3 style="margin:0 0 16px;font-size:18px;font-weight:600;color:#ffffff;">
+              <h3 style="margin:0 0 16px;font-size:18px;font-weight:600;color:#eeeeee;">
                 Here's what you can do now:
               </h3>
 
@@ -65,14 +65,14 @@ function buildWelcomeEmail(username?: string): string {
                   <td style="padding:12px 0;">
                     <table role="presentation" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="vertical-align:top;padding-right:12px;">
-                          <div style="display:inline-block;width:36px;height:36px;background:rgba(167,139,250,0.15);border-radius:10px;text-align:center;line-height:36px;">
-                            <img src="https://img.icons8.com/fluency-systems-regular/24/a78bfa/search--v1.png" alt="Search" width="18" height="18" style="vertical-align:middle;" />
+                        <td style="vertical-align:top;padding-right:16px;">
+                          <div style="display:inline-block;width:38px;height:38px;background:rgba(0, 173, 181, 0.12);border-radius:10px;text-align:center;line-height:38px;border:1px solid rgba(0, 173, 181, 0.15);">
+                            <img src="https://img.icons8.com/fluency-systems-regular/24/00adb5/search--v1.png" alt="Search" width="18" height="18" style="vertical-align:middle;" />
                           </div>
                         </td>
                         <td>
-                          <p style="margin:0;font-size:15px;color:#ffffff;font-weight:500;">Discover Issues</p>
-                          <p style="margin:4px 0 0;font-size:14px;color:#a0a0b8;line-height:1.5;">Browse curated beginner-friendly issues across popular open-source projects.</p>
+                          <p style="margin:0;font-size:15px;color:#eeeeee;font-weight:600;">Discover Issues</p>
+                          <p style="margin:4px 0 0;font-size:14px;color:#b8b8b8;line-height:1.5;">Browse curated beginner-friendly issues across popular open-source projects.</p>
                         </td>
                       </tr>
                     </table>
@@ -82,14 +82,14 @@ function buildWelcomeEmail(username?: string): string {
                   <td style="padding:12px 0;">
                     <table role="presentation" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="vertical-align:top;padding-right:12px;">
-                          <div style="display:inline-block;width:36px;height:36px;background:rgba(96,165,250,0.15);border-radius:10px;text-align:center;line-height:36px;">
-                            <img src="https://img.icons8.com/fluency-systems-regular/24/60a5fa/artificial-intelligence.png" alt="AI" width="18" height="18" style="vertical-align:middle;" />
+                        <td style="vertical-align:top;padding-right:16px;">
+                          <div style="display:inline-block;width:38px;height:38px;background:rgba(0, 173, 181, 0.12);border-radius:10px;text-align:center;line-height:38px;border:1px solid rgba(0, 173, 181, 0.15);">
+                            <img src="https://img.icons8.com/fluency-systems-regular/24/00adb5/artificial-intelligence.png" alt="AI" width="18" height="18" style="vertical-align:middle;" />
                           </div>
                         </td>
                         <td>
-                          <p style="margin:0;font-size:15px;color:#ffffff;font-weight:500;">AI-Powered Matching</p>
-                          <p style="margin:4px 0 0;font-size:14px;color:#a0a0b8;line-height:1.5;">Get personalized issue recommendations based on your GitHub profile and skills.</p>
+                          <p style="margin:0;font-size:15px;color:#eeeeee;font-weight:600;">AI-Powered Matching</p>
+                          <p style="margin:4px 0 0;font-size:14px;color:#b8b8b8;line-height:1.5;">Get personalized issue recommendations based on your GitHub profile and skills.</p>
                         </td>
                       </tr>
                     </table>
@@ -99,14 +99,14 @@ function buildWelcomeEmail(username?: string): string {
                   <td style="padding:12px 0;">
                     <table role="presentation" cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="vertical-align:top;padding-right:12px;">
-                          <div style="display:inline-block;width:36px;height:36px;background:rgba(52,211,153,0.15);border-radius:10px;text-align:center;line-height:36px;">
-                            <img src="https://img.icons8.com/fluency-systems-regular/24/34d399/trophy.png" alt="Trophy" width="18" height="18" style="vertical-align:middle;" />
+                        <td style="vertical-align:top;padding-right:16px;">
+                          <div style="display:inline-block;width:38px;height:38px;background:rgba(0, 173, 181, 0.12);border-radius:10px;text-align:center;line-height:38px;border:1px solid rgba(0, 173, 181, 0.15);">
+                            <img src="https://img.icons8.com/fluency-systems-regular/24/00adb5/trophy.png" alt="Trophy" width="18" height="18" style="vertical-align:middle;" />
                           </div>
                         </td>
                         <td>
-                          <p style="margin:0;font-size:15px;color:#ffffff;font-weight:500;">Track Contributions</p>
-                          <p style="margin:4px 0 0;font-size:14px;color:#a0a0b8;line-height:1.5;">Log your merged PRs, earn badges, and build your open-source portfolio.</p>
+                          <p style="margin:0;font-size:15px;color:#eeeeee;font-weight:600;">Track Contributions</p>
+                          <p style="margin:4px 0 0;font-size:14px;color:#b8b8b8;line-height:1.5;">Log your merged PRs, earn badges, and build your open-source portfolio.</p>
                         </td>
                       </tr>
                     </table>
@@ -115,15 +115,15 @@ function buildWelcomeEmail(username?: string): string {
               </table>
 
               <!-- Divider -->
-              <hr style="border:none;border-top:1px solid rgba(167,139,250,0.15);margin:24px 0;" />
+              <hr style="border:none;border-top:1px solid rgba(0, 173, 181, 0.15);margin:24px 0;" />
 
               <!-- CTA Button -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center" style="padding:8px 0 0;">
                     <a href="https://firstissue.dev"
-                       style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#a78bfa 0%,#60a5fa 100%);color:#ffffff;font-size:16px;font-weight:600;text-decoration:none;border-radius:10px;letter-spacing:0.3px;">
-                      Start Exploring Issues →
+                       style="display:inline-block;padding:14px 32px;background:linear-gradient(135deg,#00adb5 0%,#00969e 100%);color:#222831;font-size:15px;font-weight:700;text-decoration:none;border-radius:8px;letter-spacing:0.3px;box-shadow:0 4px 12px rgba(0, 173, 181, 0.25);">
+                      Start Exploring Issues
                     </a>
                   </td>
                 </tr>
@@ -134,12 +134,12 @@ function buildWelcomeEmail(username?: string): string {
           <!-- Footer -->
           <tr>
             <td align="center" style="padding:32px 20px 0;">
-              <p style="margin:0 0 8px;font-size:13px;color:#6b6b80;">
+              <p style="margin:0 0 8px;font-size:13px;color:#b8b8b8;opacity:0.75;">
                 You're receiving this because you signed up at
-                <a href="https://firstissue.dev" style="color:#a78bfa;text-decoration:none;">firstissue.dev</a>
+                <a href="https://firstissue.dev" style="color:#00adb5;text-decoration:none;font-weight:600;">FirstIssue.dev</a>
               </p>
-              <p style="margin:0;font-size:13px;color:#6b6b80;">
-                © ${new Date().getFullYear()} firstissue.dev — Built for the open-source community
+              <p style="margin:0;font-size:13px;color:#b8b8b8;opacity:0.6;">
+                © ${new Date().getFullYear()} FirstIssue.dev — Built for the open-source community
               </p>
             </td>
           </tr>
@@ -158,9 +158,9 @@ function buildWelcomeEmail(username?: string): string {
 function buildWelcomeText(username?: string): string {
   const displayName = username || "there";
   return [
-    `Welcome to firstissue.dev, ${displayName}!`,
+    `Welcome to FirstIssue.dev, ${displayName}!`,
     "",
-    "Thank you for joining firstissue.dev — the platform that helps developers",
+    "Thank you for joining FirstIssue.dev — the platform that helps developers",
     "find their first open-source contribution.",
     "",
     "Here's what you can do now:",
@@ -177,7 +177,7 @@ function buildWelcomeText(username?: string): string {
     "Start exploring: https://firstissue.dev",
     "",
     "---",
-    `© ${new Date().getFullYear()} firstissue.dev — Built for the open-source community`,
+    `© ${new Date().getFullYear()} FirstIssue.dev — Built for the open-source community`,
   ].join("\n");
 }
 
