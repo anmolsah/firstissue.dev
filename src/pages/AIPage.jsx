@@ -220,7 +220,7 @@ const AIPage = () => {
     setMessages([
       {
         role: "assistant",
-        content: "Hi! I am **FirstMate**, your AI Copilot. 🌟\n\nAsk me anything about git commands, codebase architecture, open-source workflow steps, or platform features! I search our vector knowledge base to find exact documentation references."
+        content: "Hi! I am **FirstMate**, your AI Copilot. 🌟\n\nAsk me anything about git commands, codebase architecture, open-source workflow steps, or platform features!"
       }
     ]);
   };
