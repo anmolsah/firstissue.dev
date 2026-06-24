@@ -116,8 +116,11 @@ serve(async (req: Request) => {
     const items = rawItems.map((item: any) => ({
       payment_id: item.payment_id || item.id,
       created_at: item.created_at,
-      amount: item.amount,
-      currency: item.currency,
+      // Dodo's payments API returns the charged value under `total_amount`
+      // (smallest currency unit). Fall back to other known keys defensively so
+      // the client never receives `undefined` (which renders as "NaN").
+      amount: item.total_amount ?? item.amount ?? item.settlement_amount ?? null,
+      currency: item.currency || item.settlement_currency || null,
       status: item.status,
       invoice_url: item.invoice_url || null,
       invoice_id: item.invoice_id || null,

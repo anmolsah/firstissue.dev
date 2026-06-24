@@ -1,0 +1,57 @@
+# Supabase project configuration.
+#
+# The important setting in this file is per-function `verify_jwt`.
+#
+# Supabase's API gateway rejects any request WITHOUT a valid Supabase JWT before
+# it ever reaches the function code when verify_jwt = true. Functions invoked from
+# the app via `supabase.functions.invoke` always carry at least the anon JWT (and
+# the user's session token when signed in), so they keep verify_jwt = true.
+#
+# Functions that receive EXTERNAL traffic carrying no Supabase JWT — payment/DB
+# webhooks and the public (logged-out) docs assistant — MUST set verify_jwt =
+# false. Otherwise every request 401s at the gateway and the function never runs
+# (no logs, no invocation), which is exactly what broke the Dodo webhook.
+#
+# Every function is declared explicitly so a future `supabase functions deploy`
+# can't silently fall back to the default (true) and re-break these endpoints.
+
+project_id = "xkbyhokikbzhdxdshvqh"
+
+# ── Public / external-traffic functions: NO Supabase JWT is present ──
+
+# Dodo Payments delivers events authenticated by its own `webhook-signature`
+# header (verified in code via _shared/verifyWebhook.ts), not a Supabase JWT.
+[functions.dodo-webhook]
+verify_jwt = false
+
+# Triggered by a Supabase Database Webhook on INSERT into auth.users.
+[functions.send-welcome-email]
+verify_jwt = false
+
+# Public docs assistant — called by logged-out visitors with no Authorization header.
+[functions.kb-query]
+verify_jwt = false
+
+# ── Authenticated functions: always reached via supabase.functions.invoke,
+#    which attaches at least the anon JWT (plus the user session when present) ──
+
+[functions.create-checkout]
+verify_jwt = true
+
+[functions.cancel-subscription]
+verify_jwt = true
+
+[functions.list-invoices]
+verify_jwt = true
+
+[functions.verify-contribution]
+verify_jwt = true
+
+[functions.smart-match]
+verify_jwt = true
+
+[functions.github-data]
+verify_jwt = true
+
+[functions.github-sync]
+verify_jwt = true

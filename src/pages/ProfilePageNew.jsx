@@ -633,10 +633,12 @@ const ProfilePageNew = () => {
                                   {invoice.invoice_id || invoice.payment_id}
                                 </td>
                                 <td className="py-2.5 text-white font-medium">
-                                  {(invoice.amount / 100).toLocaleString(undefined, {
-                                    style: "currency",
-                                    currency: invoice.currency || "USD",
-                                  })}
+                                  {Number.isFinite(invoice.amount)
+                                    ? (invoice.amount / 100).toLocaleString(undefined, {
+                                        style: "currency",
+                                        currency: invoice.currency || "USD",
+                                      })
+                                    : "—"}
                                 </td>
                                 <td className="py-2.5">
                                   <span className={`inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold uppercase tracking-wide ${
