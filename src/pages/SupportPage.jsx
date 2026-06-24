@@ -381,33 +381,70 @@ const SupportPage = () => {
             </div>
 
             <div className="lg:col-span-2 flex justify-center">
-              {/* Mock metal card preview */}
-              <div className="relative group/card w-60 h-72 rounded-lg bg-zinc-950 p-5 border border-zinc-855 shadow-2xl transition-all duration-300 flex flex-col justify-between hover:scale-[1.02]">
-                <div className="absolute top-4 right-4 bg-emerald-950/20 border border-emerald-800/40 rounded p-1 text-emerald-450">
-                  <ShieldCheck className="w-4 h-4" />
-                </div>
-                
-                <div className="h-full flex flex-col justify-between">
-                  <div className="space-y-3">
-                    <span className="text-[9px] uppercase tracking-widest text-zinc-550 font-bold font-mono">Proof of Work</span>
-                    <div className="space-y-1">
-                      <h4 className="text-xs font-bold text-white tracking-tight leading-tight">feat: implement authentication logic</h4>
-                      <p className="text-[10px] text-zinc-500 font-mono">anmolsah/firstissue.dev</p>
+              {/* Mock Proof of Work card — mirrors the premium MetalCard (gold tier) */}
+              <div
+                className="relative w-60 h-72 rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-amber-200/[0.12] via-zinc-900 to-black transition-transform duration-300 hover:scale-[1.02]"
+                style={{ boxShadow: "0 12px 32px -16px rgba(0,0,0,0.6), 0 0 0 1px rgba(251,191,36,0.45)" }}
+              >
+                {/* Holographic foil */}
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-[0.14]"
+                  style={{ background: "conic-gradient(from 130deg at 52% 48%, #ff0080, #7928ca, #00d4ff, #34d399, #fbbf24, #ff0080)" }}
+                />
+                {/* Engraved guilloché texture */}
+                <div
+                  className="absolute inset-0 pointer-events-none opacity-[0.05]"
+                  style={{ backgroundImage: "repeating-radial-gradient(circle at 28% -10%, #fff 0, #fff 0.5px, transparent 1.5px, transparent 7px)" }}
+                />
+                {/* Top glossy specular highlight */}
+                <div className="absolute inset-x-0 top-0 h-1/3 pointer-events-none bg-gradient-to-b from-white/[0.14] to-transparent" />
+
+                {/* Content */}
+                <div className="relative z-10 p-5 flex flex-col h-full text-white">
+                  {/* Header */}
+                  <div className="mb-4">
+                    <span className="text-base font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-200 to-zinc-400">
+                      FirstIssue.dev
+                    </span>
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="w-6 h-6 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
+                        <Code2 className="w-3 h-3 text-white/80" />
+                      </div>
+                      <span className="text-[11px] font-semibold text-white/70 truncate max-w-[150px]">anmolsah/firstissue.dev</span>
                     </div>
                   </div>
 
-                  <div className="space-y-2.5 border-t border-zinc-900 pt-3">
-                    <div className="flex justify-between items-center text-[9px] text-zinc-500 font-mono">
-                      <span>VERIFIED IMPACT</span>
-                      <span className="text-emerald-400 font-bold font-mono">98/100</span>
+                  {/* Body */}
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-sm leading-snug text-white">
+                      <span className="opacity-50 mr-1.5 font-mono">#128</span>
+                      feat: implement authentication logic
+                    </h4>
+
+                    {/* Impact meter */}
+                    <div className="mt-3">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-white/45 flex items-center gap-1">
+                          <Star className="w-3 h-3" /> Verified Impact
+                        </span>
+                        <span className="text-xs font-bold font-mono text-amber-400">98<span className="text-white/35">/100</span></span>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden border border-white/5">
+                        <div
+                          className="h-full rounded-full"
+                          style={{ width: "98%", background: "linear-gradient(90deg, #FBBF2499, #FBBF24)", boxShadow: "0 0 8px rgba(251,191,36,0.18)" }}
+                        />
+                      </div>
                     </div>
-                    <div className="w-full bg-zinc-900 border border-zinc-800/60 h-1 rounded-full overflow-hidden">
-                      <div className="bg-emerald-400 h-full w-[90%]" />
-                    </div>
-                    <div className="flex justify-between items-center text-[9px] text-zinc-650 font-mono">
-                      <span>ID: att_8f2a99...</span>
-                      <span>MINTED ON-CHAIN</span>
-                    </div>
+                  </div>
+
+                  {/* Footer — cryptographic stamp */}
+                  <div className="mt-auto pt-3 border-t border-white/10 flex flex-col gap-2 bg-black/25 -mx-5 -mb-5 p-4 rounded-b-2xl">
+                    <span className="text-[9px] font-mono opacity-45 uppercase tracking-[0.2em]">Attestation Hash</span>
+                    <span className="text-[11px] font-mono font-medium tracking-wider flex items-center gap-1.5 text-white/85">
+                      <Github className="w-3 h-3 opacity-50" />
+                      att_8f2a99...c4d1
+                    </span>
                   </div>
                 </div>
               </div>
