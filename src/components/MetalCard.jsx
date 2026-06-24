@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle, ExternalLink, Code, Star, Github, Download } from 'lucide-react';
+import { ExternalLink, Code, Star, Github, Download } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 const getLanguageIcon = () => Code;
@@ -189,38 +189,15 @@ const MetalCard = ({ attestation, showActions = true }) => {
         {/* Card Content */}
         <div className="relative z-30 p-5 flex flex-col h-full transform-gpu translate-z-10 text-white">
           {/* Header */}
-          <div className="flex justify-between items-start mb-4">
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <div
-                  className="w-5 h-5 rounded-md flex items-center justify-center border border-white/15 bg-white/5 text-[11px] font-black leading-none"
-                  style={{ color: tier.accent }}
-                >
-                  ◆
-                </div>
-                <span className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-200 to-zinc-400">
-                  FirstIssue.dev
-                </span>
+          <div className="mb-4">
+            <span className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-200 to-zinc-400">
+              FirstIssue.dev
+            </span>
+            <div className="flex items-center gap-2 mt-2">
+              <div className="w-6 h-6 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
+                <LangIcon className="w-3 h-3 text-white/80" />
               </div>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="w-6 h-6 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
-                  <LangIcon className="w-3 h-3 text-white/80" />
-                </div>
-                <span className="text-xs font-semibold text-white/70 truncate max-w-[150px]">{attestation.repo_name}</span>
-              </div>
-            </div>
-
-            <div className="flex flex-col items-end gap-1.5">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-300">
-                <CheckCircle className="w-3.5 h-3.5" />
-                <span className="text-[11px] font-semibold tracking-wide">VERIFIED</span>
-              </div>
-              <span
-                className="text-[9px] font-bold uppercase tracking-[0.15em] px-2 py-0.5 rounded-full border"
-                style={{ color: tier.accent, borderColor: tier.ring, backgroundColor: tier.accentSoft }}
-              >
-                {tier.label}
-              </span>
+              <span className="text-xs font-semibold text-white/70 truncate max-w-[150px]">{attestation.repo_name}</span>
             </div>
           </div>
 
