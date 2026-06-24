@@ -33,7 +33,7 @@ import Navbar from "../components/Navbar";
 
 const SupportPage = () => {
   const { user } = useAuth();
-  const { isSupporter, loading: supporterLoading, refreshStatus } = useSupporter();
+  const { isSupporter, supporterData, loading: supporterLoading, refreshStatus } = useSupporter();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
@@ -85,35 +85,17 @@ const SupportPage = () => {
             }
           }
 
-          // Fallback: if the webhook hasn't arrived after polling,
-          // create a minimal record so the user gets access immediately.
-          // The webhook will later fill in dodo_subscription_id and dodo_customer_id
-          // via upsert on the user_id conflict.
-          console.warn("Webhook record not found after polling, creating fallback supporter record");
-          const expiresAt = new Date();
-          expiresAt.setMonth(expiresAt.getMonth() + 1);
-
-          const { error } = await supabase.from("supporters").upsert(
-            {
-              user_id: user.id,
-              email: user.email,
-              plan: "supporter",
-              status: "active",
-              amount_cents: 900,
-              currency: "USD",
-              started_at: new Date().toISOString(),
-              expires_at: expiresAt.toISOString(),
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: "user_id" }
+          // The webhook is the single source of truth for activation — the
+          // client must never write an 'active' record itself (that would be a
+          // paywall bypass, and RLS now forbids it). If the webhook is just
+          // slow, let the user know it's processing; realtime + refreshStatus
+          // will flip them to Supporter as soon as the record lands.
+          console.warn("Webhook record not found after polling; awaiting webhook activation");
+          toast.success(
+            "Payment received! We're activating your Supporter benefits — this can take a moment. They'll appear automatically.",
+            { duration: 8000 }
           );
-
-          if (error) {
-            console.error("Error activating supporter (fallback):", error);
-          } else {
-            toast.success("🎉 Welcome, Supporter! Smart Match and Unlimited Proof of Work are now unlocked.");
-            refreshStatus();
-          }
+          refreshStatus();
         } catch (err) {
           console.error("Error in post-payment activation:", err);
         }
@@ -131,26 +113,20 @@ const SupportPage = () => {
 
     setCheckoutLoading(true);
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const response = await fetch(`${supabaseUrl}/functions/v1/create-checkout`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          email: user.email,
+      // Use invoke so the user's session JWT is sent — the edge function
+      // derives identity from the token, not from request-body fields.
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: {
           returnUrl: window.location.origin + "/support?success=true",
-        }),
+        },
       });
 
-      const data = await response.json();
+      if (error) throw error;
 
-      if (data.checkoutUrl) {
+      if (data?.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
-        throw new Error(data.error || "Failed to create checkout session");
+        throw new Error(data?.error || "Failed to create checkout session");
       }
     } catch (error) {
       console.error("Checkout error:", error);
@@ -279,10 +255,29 @@ const SupportPage = () => {
 
           {isSupporter ? (
             <div className="inline-flex flex-col items-center gap-3 bg-zinc-950/20 border border-zinc-800 rounded-lg p-5">
-              <div className="flex items-center gap-2 text-emerald-450 text-xs font-bold font-mono uppercase tracking-wider">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Active Supporter Subscription</span>
-              </div>
+              {supporterData?.status === "cancelled" ? (
+                <>
+                  <div className="flex items-center gap-2 text-amber-400 text-xs font-bold font-mono uppercase tracking-wider">
+                    <AlertCircle className="w-4 h-4 text-amber-400" />
+                    <span>Subscription Ending</span>
+                  </div>
+                  {supporterData?.expires_at && (
+                    <p className="text-[11px] text-zinc-450 font-mono">
+                      Won't renew · Access until{" "}
+                      {new Date(supporterData.expires_at).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div className="flex items-center gap-2 text-emerald-450 text-xs font-bold font-mono uppercase tracking-wider">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>Active Supporter Subscription</span>
+                </div>
+              )}
               <button
                 onClick={() => navigate("/explore")}
                 className="flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-zinc-200 text-black rounded text-xs font-semibold transition-all shadow-sm cursor-pointer"

@@ -3,6 +3,8 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { createUserClient, createAdminClient } from "../_shared/supabaseClient.ts";
+import { isActiveSupporter } from "../_shared/supporter.ts";
 
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -11,6 +13,34 @@ serve(async (req: Request) => {
   }
 
   try {
+    // ── Authenticate the caller and enforce Supporter-only access ──
+    // Smart Match is a paid feature and calls a billed AI provider, so it must
+    // be gated server-side rather than relying on the client UI.
+    let userClient;
+    try {
+      userClient = createUserClient(req);
+    } catch {
+      return new Response(
+        JSON.stringify({ error: "Missing Authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!(await isActiveSupporter(createAdminClient(), user.id))) {
+      return new Response(
+        JSON.stringify({ error: "Smart Match is available to Supporters only" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { userProfile, candidateIssues } = await req.json();
 
     if (!userProfile || !candidateIssues?.length) {

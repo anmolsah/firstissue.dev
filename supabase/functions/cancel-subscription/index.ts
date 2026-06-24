@@ -57,42 +57,63 @@ serve(async (req: Request) => {
 
     const subscriptionId = supporter.dodo_subscription_id;
 
-    if (subscriptionId && DODO_API_KEY) {
-      // Determine environment from key prefix
-      const isTestMode = DODO_API_KEY.includes("test");
-      const baseUrl = isTestMode
-        ? "https://test.dodopayments.com"
-        : "https://live.dodopayments.com";
-
-      try {
-        // Cancel the subscription via Dodo Payments API
-        // Dodo requires cancel_at_next_billing_date: true to schedule cancellation
-        // at the end of the current billing period (not a direct status change)
-        const dodoResponse = await fetch(`${baseUrl}/subscriptions/${subscriptionId}`, {
-          method: "PATCH",
-          headers: {
-            "Authorization": `Bearer ${DODO_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            cancel_at_next_billing_date: true,
-          }),
-        });
-
-        if (!dodoResponse.ok) {
-          const errorText = await dodoResponse.text();
-          console.error("Dodo API error:", dodoResponse.status, errorText);
-          // Don't fail the whole request, proceed to cancel locally
-        } else {
-          const dodoData = await dodoResponse.json();
-          console.log("Dodo subscription cancelled:", JSON.stringify(dodoData));
-        }
-      } catch (err) {
-        console.error("Failed to reach Dodo Payments API:", err);
-      }
-    } else {
-      console.log("No Dodo subscription ID found or API key missing, proceeding with local cancellation only.");
+    // Guard against cancelling locally while Dodo keeps billing. If we have no
+    // subscription ID, the activation webhook likely hasn't finished binding it
+    // yet. Marking the row "cancelled" here would show "cancelled" in the UI
+    // while the card is still charged — a real billing mismatch. Refuse and ask
+    // the user to retry shortly instead.
+    if (!subscriptionId) {
+      console.warn("Cancellation requested but no Dodo subscription ID is bound yet for user:", userId);
+      return new Response(
+        JSON.stringify({
+          error: "Your subscription is still being set up. Please try cancelling again in a minute.",
+        }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
+
+    // Determine environment from key prefix
+    const isTestMode = DODO_API_KEY.includes("test");
+    const baseUrl = isTestMode
+      ? "https://test.dodopayments.com"
+      : "https://live.dodopayments.com";
+
+    // Cancel the subscription via Dodo Payments API.
+    // Dodo requires cancel_at_next_billing_date: true to schedule cancellation
+    // at the end of the current billing period (not a direct status change).
+    // If this call fails we must NOT cancel locally, otherwise the UI and the
+    // provider fall out of sync and the user keeps getting billed.
+    let dodoResponse: Response;
+    try {
+      dodoResponse = await fetch(`${baseUrl}/subscriptions/${subscriptionId}`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${DODO_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cancel_at_next_billing_date: true,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to reach Dodo Payments API:", err);
+      return new Response(
+        JSON.stringify({ error: "Could not reach the payment provider. Please try again." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!dodoResponse.ok) {
+      const errorText = await dodoResponse.text();
+      console.error("Dodo API error:", dodoResponse.status, errorText);
+      return new Response(
+        JSON.stringify({ error: "Failed to cancel the subscription with the payment provider. Please try again." }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const dodoData = await dodoResponse.json();
+    console.log("Dodo subscription cancelled:", JSON.stringify(dodoData));
 
     // Proactively update it locally for faster UI feedback.
     const { error: updateError } = await supabase

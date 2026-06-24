@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createAdminClient } from "../_shared/supabaseClient.ts";
+import { createAdminClient, createUserClient } from "../_shared/supabaseClient.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { isActiveSupporter, FREE_ATTESTATION_LIMIT } from "../_shared/supporter.ts";
 
 const GITHUB_API_BASE = 'https://api.github.com';
 
@@ -11,12 +12,57 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { prUrl, userId, githubUsername } = await req.json();
+    const { prUrl, githubUsername } = await req.json();
 
-    if (!prUrl || !userId || !githubUsername) {
-      return new Response(JSON.stringify({ error: "Missing prUrl, userId, or githubUsername" }), { 
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } 
+    if (!prUrl || !githubUsername) {
+      return new Response(JSON.stringify({ error: "Missing prUrl or githubUsername" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
+    }
+
+    // ── Authenticate the caller; derive userId from the JWT, never the body ──
+    let userClient;
+    try {
+      userClient = createUserClient(req);
+    } catch {
+      return new Response(JSON.stringify({ error: "Missing Authorization header" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+    const userId = user.id;
+
+    // Service-role client for entitlement checks and the privileged insert.
+    const supabaseAdmin = createAdminClient();
+
+    // ── Enforce the freemium limit server-side ──
+    // Free accounts may mint up to FREE_ATTESTATION_LIMIT proofs; supporters unlimited.
+    if (!(await isActiveSupporter(supabaseAdmin, userId))) {
+      const { count, error: countError } = await supabaseAdmin
+        .from("user_attestations")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      if (countError) {
+        console.error("Failed to count existing attestations:", countError);
+        return new Response(JSON.stringify({ error: "Could not verify attestation quota" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
+
+      if ((count ?? 0) >= FREE_ATTESTATION_LIMIT) {
+        return new Response(JSON.stringify({
+          error: `Free accounts are limited to ${FREE_ATTESTATION_LIMIT} Proofs of Work. Become a supporter for unlimited attestations.`,
+        }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
+        });
+      }
     }
 
     // Parse PR URL (e.g., https://github.com/vercel/next.js/pull/123)
@@ -111,9 +157,7 @@ serve(async (req: Request) => {
     
     const attestationId = 'att_' + txHash.substring(2, 18);
 
-    // Insert into database using Service Role key (via shared pooling-optimized factory)
-    const supabaseAdmin = createAdminClient();
-
+    // Insert into database using the Service Role client created above.
     const attestationData = {
       user_id: userId,
       repo_name: repoName,

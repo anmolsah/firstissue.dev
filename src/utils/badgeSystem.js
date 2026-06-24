@@ -277,10 +277,19 @@ export const BADGE_DEFINITIONS = {
 function calculateStreak(contributions) {
   if (!contributions || contributions.length === 0) return 0;
 
-  const dates = contributions.map(c => {
-    const date = new Date(c.created_at || c.pr_created_at || c.assigned_at);
-    return date.toISOString().split('T')[0];
-  });
+  const dates = contributions
+    .map(c => {
+      // Use the actual GitHub activity date, NOT the row's DB `created_at`
+      // (which is the sync/insert time — every contribution synced in one batch
+      // would share it, collapsing real multi-day streaks down to 1).
+      const source = c.pr_merged_at || c.pr_created_at || c.assigned_at || c.created_at;
+      if (!source) return null;
+      const date = new Date(source);
+      return isNaN(date.getTime()) ? null : date.toISOString().split('T')[0];
+    })
+    .filter(Boolean);
+
+  if (dates.length === 0) return 0;
 
   const uniqueDates = [...new Set(dates)].sort();
   
@@ -323,7 +332,7 @@ export function checkEarnedBadges(stats, contributions = [], attestations = []) 
       let earnedAt = baseDate;
 
       // For count-based badges, use the date of the contribution that triggered it
-      if (stats.merged > 0 && key.includes('merge')) {
+      if (stats.merged > 0 && key.toLowerCase().includes('merge')) {
         const mergedContribs = contributions
           .filter(c => c.pr_status === 'merged' && c.pr_merged_at)
           .sort((a, b) => new Date(a.pr_merged_at) - new Date(b.pr_merged_at));

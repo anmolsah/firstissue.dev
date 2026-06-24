@@ -5,6 +5,7 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createAdminClient } from "../_shared/supabaseClient.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { verifyStandardWebhook } from "../_shared/verifyWebhook.ts";
 
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -14,25 +15,31 @@ serve(async (req: Request) => {
 
   try {
     const rawBody = await req.text();
-    console.log("=== DODO WEBHOOK RAW PAYLOAD ===");
-    console.log(rawBody);
-    console.log("=== END RAW PAYLOAD ===");
+
+    // ── Verify the webhook signature BEFORE trusting any of the payload ──
+    // This endpoint grants paid entitlements based on the body, so an
+    // unsigned/forged request must never be processed.
+    const webhookSecret = Deno.env.get("DODO_WEBHOOK_SECRET");
+    if (!webhookSecret) {
+      // Fail closed: refuse to process if the verification secret is missing.
+      console.error("DODO_WEBHOOK_SECRET is not configured — rejecting webhook.");
+      return new Response(
+        JSON.stringify({ error: "Webhook secret not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const verification = await verifyStandardWebhook(webhookSecret, req.headers, rawBody);
+    if (!verification.valid) {
+      console.error("⛔ Webhook signature verification failed:", verification.reason);
+      return new Response(
+        JSON.stringify({ error: "Invalid webhook signature" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    console.log("✅ Webhook signature verified");
 
     const payload = JSON.parse(rawBody);
-
-    const webhookSecret = Deno.env.get("DODO_WEBHOOK_SECRET");
-
-    // Log all headers for debugging
-    console.log("Webhook headers:");
-    req.headers.forEach((value, key) => {
-      console.log(`  ${key}: ${value}`);
-    });
-
-    // Optional: Verify webhook signature
-    const signature = req.headers.get("webhook-signature");
-    if (webhookSecret && signature) {
-      console.log("Webhook signature present:", !!signature);
-    }
 
     // Initialize Supabase admin client (via shared pooling-optimized factory)
     const supabase = createAdminClient();
@@ -151,10 +158,6 @@ serve(async (req: Request) => {
         );
       }
 
-      // Calculate expiry (1 month from now)
-      const expiresAt = new Date();
-      expiresAt.setMonth(expiresAt.getMonth() + 1);
-
       const supporterRecord = {
         user_id: userId,
         email: customerEmail,
@@ -162,10 +165,10 @@ serve(async (req: Request) => {
         dodo_subscription_id: subscriptionId || null,
         plan: "supporter",
         status: "active",
-        amount_cents: 900,
-        currency: "USD",
+        amount_cents: extractAmountCents(data),
+        currency: extractCurrency(data),
         started_at: new Date().toISOString(),
-        expires_at: expiresAt.toISOString(),
+        expires_at: computeExpiry(data),
         updated_at: new Date().toISOString(),
       };
 
@@ -216,14 +219,11 @@ serve(async (req: Request) => {
 
       // Subscription is still active, extend the expiry
       if (supporter) {
-        const expiresAt = new Date();
-        expiresAt.setMonth(expiresAt.getMonth() + 1);
-
         const { error } = await supabase
           .from("supporters")
           .update({
             status: "active",
-            expires_at: expiresAt.toISOString(),
+            expires_at: computeExpiry(data),
             updated_at: new Date().toISOString(),
             // Update IDs in case they were missing before
             ...(subscriptionId && { dodo_subscription_id: subscriptionId }),
@@ -285,6 +285,54 @@ serve(async (req: Request) => {
     );
   }
 });
+
+// ── Payload extraction helpers ──
+// Dodo's payloads vary slightly by event type, so read defensively and fall
+// back to the historical defaults ($9 USD / 1 month) when a field is absent.
+
+function addMonths(date: Date, months: number): Date {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+/**
+ * Compute the local entitlement expiry.
+ * Prefer the subscription's actual next billing date from the provider so a
+ * paying user never loses access early. A small grace period absorbs any
+ * delay in the renewal webhook arriving.
+ */
+function computeExpiry(data: any): string {
+  const GRACE_DAYS = 3;
+  const candidate =
+    data?.next_billing_date ||
+    data?.current_period_end ||
+    data?.subscription?.next_billing_date;
+
+  let base: Date;
+  if (candidate) {
+    const parsed = new Date(candidate);
+    base = isNaN(parsed.getTime()) ? addMonths(new Date(), 1) : parsed;
+  } else {
+    base = addMonths(new Date(), 1);
+  }
+
+  base.setDate(base.getDate() + GRACE_DAYS);
+  return base.toISOString();
+}
+
+function extractAmountCents(data: any): number {
+  const amount =
+    data?.total_amount ??
+    data?.amount ??
+    data?.recurring_pre_tax_amount ??
+    data?.payment?.total_amount;
+  return typeof amount === "number" && amount > 0 ? amount : 900;
+}
+
+function extractCurrency(data: any): string {
+  return data?.currency || data?.payment?.currency || "USD";
+}
 
 /**
  * Handle cancellation from Dodo webhooks.

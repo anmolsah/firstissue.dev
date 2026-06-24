@@ -26,18 +26,11 @@ CREATE POLICY "Users can view own supporter status"
   ON supporters FOR SELECT
   USING (auth.uid() = user_id);
 
--- Policy: Users can insert their own supporter record (for post-payment fallback)
-CREATE POLICY "Users can insert own supporter record"
-  ON supporters FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
--- Policy: Users can update their own supporter record
-CREATE POLICY "Users can update own supporter record"
-  ON supporters FOR UPDATE
-  USING (auth.uid() = user_id);
-
--- Policy: Service role can do everything (for webhook)
--- Note: Service role bypasses RLS by default, so no explicit policy needed
+-- IMPORTANT: Users must NOT be able to INSERT or UPDATE their own supporter
+-- record from the client — that would let anyone grant themselves premium by
+-- writing status = 'active'. Entitlements are written exclusively by the
+-- service role inside the verified Dodo webhook / billing edge functions, which
+-- bypass RLS. (No user-facing INSERT/UPDATE policies on purpose.)
 
 -- Create index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_supporters_user_id ON supporters(user_id);

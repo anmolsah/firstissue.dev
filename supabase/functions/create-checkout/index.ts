@@ -3,6 +3,7 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { createUserClient } from "../_shared/supabaseClient.ts";
 
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -12,11 +13,35 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { userId, email, returnUrl } = await req.json();
+    const { returnUrl } = await req.json().catch(() => ({}));
 
-    if (!userId || !email) {
+    // ── Authenticate the caller; derive identity from the JWT, not the body ──
+    // The user_id placed in checkout metadata becomes the activation target in
+    // the webhook, so it must come from a verified session — never from
+    // attacker-controlled request fields.
+    let userClient;
+    try {
+      userClient = createUserClient(req);
+    } catch {
       return new Response(
-        JSON.stringify({ error: "Missing userId or email" }),
+        JSON.stringify({ error: "Missing Authorization header" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: "Unauthorized" }),
+        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const userId = user.id;
+    const email = user.email;
+    if (!email) {
+      return new Response(
+        JSON.stringify({ error: "Authenticated user has no email address" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -25,6 +50,17 @@ serve(async (req: Request) => {
     if (!DODO_API_KEY) {
       return new Response(
         JSON.stringify({ error: "Dodo API key not configured" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Fail loudly if the product isn't configured rather than sending a
+    // placeholder that produces a confusing downstream Dodo error.
+    const productId = Deno.env.get("DODO_PRODUCT_ID");
+    if (!productId) {
+      console.error("DODO_PRODUCT_ID is not configured.");
+      return new Response(
+        JSON.stringify({ error: "Checkout is not configured. Please contact support." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -47,7 +83,7 @@ serve(async (req: Request) => {
       body: JSON.stringify({
         product_cart: [
           {
-            product_id: Deno.env.get("DODO_PRODUCT_ID") || "YOUR_PRODUCT_ID",
+            product_id: productId,
             quantity: 1,
           },
         ],
