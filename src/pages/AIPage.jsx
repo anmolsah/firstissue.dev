@@ -169,16 +169,63 @@ const renderMarkdown = (text) => {
 const AIPage = () => {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState([
-    {
-      role: "assistant",
-      content: "Hi! I am **FirstMate**, your AI Copilot. 🌟\n\nAsk me anything about git commands, codebase architecture, open-source workflow steps, or platform features! I search our vector knowledge base to find exact documentation references."
-    }
-  ]);
+  
+  const initialMessage = {
+    role: "assistant",
+    content: "Hi! I am **FirstMate**, your AI Copilot. 🌟\n\nAsk me anything about git commands, codebase architecture, open-source workflow steps, or platform features! I search our vector knowledge base to find exact documentation references."
+  };
+
+  const [chatHistory, setChatHistory] = useState([]);
+  const [currentChatId, setCurrentChatId] = useState(null);
+  const [messages, setMessages] = useState([initialMessage]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const messagesEndRef = useRef(null);
+
+  // Load chat history from local storage
+  useEffect(() => {
+    const saved = localStorage.getItem("firstmate_chat_history");
+    if (saved) {
+      try {
+        setChatHistory(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse chat history", e);
+      }
+    }
+  }, []);
+
+  const updateChatHistory = (id, title, msgs) => {
+    setChatHistory(prev => {
+      const existing = prev.find(c => c.id === id);
+      let updated;
+      if (existing) {
+        updated = prev.map(c => c.id === id ? { ...c, messages: msgs, updatedAt: Date.now() } : c);
+      } else {
+        updated = [{ id, title, messages: msgs, updatedAt: Date.now() }, ...prev];
+      }
+      localStorage.setItem("firstmate_chat_history", JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const loadChat = (id) => {
+    const chat = chatHistory.find(c => c.id === id);
+    if (chat) {
+      setCurrentChatId(id);
+      setMessages(chat.messages);
+    }
+  };
+
+  const deleteChat = (id, e) => {
+    e.stopPropagation();
+    const updated = chatHistory.filter(c => c.id !== id);
+    setChatHistory(updated);
+    localStorage.setItem("firstmate_chat_history", JSON.stringify(updated));
+    if (currentChatId === id) {
+      handleNewChat();
+    }
+  };
 
   // Suggestions for fast prompting
   const suggestions = [
@@ -217,12 +264,8 @@ const AIPage = () => {
   };
 
   const handleNewChat = () => {
-    setMessages([
-      {
-        role: "assistant",
-        content: "Hi! I am **FirstMate**, your AI Copilot. 🌟\n\nAsk me anything about git commands, codebase architecture, open-source workflow steps, or platform features!"
-      }
-    ]);
+    setCurrentChatId(null);
+    setMessages([initialMessage]);
   };
 
   const handleSubmit = (e) => {
@@ -237,7 +280,21 @@ const AIPage = () => {
     
     // Add user message
     const userMessage = { role: "user", content: text };
-    setMessages(prev => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+
+    let chatId = currentChatId;
+    let title = "";
+    if (!chatId) {
+      chatId = Date.now().toString();
+      setCurrentChatId(chatId);
+      title = text.slice(0, 30) + (text.length > 30 ? "..." : "");
+    } else {
+      const existing = chatHistory.find(c => c.id === chatId);
+      title = existing ? existing.title : text.slice(0, 30);
+    }
+    
+    updateChatHistory(chatId, title, newMessages);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -265,18 +322,24 @@ const AIPage = () => {
 
       const data = await response.json();
       
-      setMessages(prev => [...prev, {
+      const assistantMessage = {
         role: "assistant",
         content: data.answer,
         sources: data.sources || []
-      }]);
+      };
+
+      const finalMessages = [...newMessages, assistantMessage];
+      setMessages(finalMessages);
+      updateChatHistory(chatId, title, finalMessages);
 
     } catch (error) {
-      console.error("AI Copilot query error:", error);
-      setMessages(prev => [...prev, {
+      const errorMessage = {
         role: "assistant",
         content: `⚠️ **Error querying AI Copilot:** ${error.message || "Failed to reach server. Please check your connection."}`
-      }]);
+      };
+      const finalMessages = [...newMessages, errorMessage];
+      setMessages(finalMessages);
+      updateChatHistory(chatId, title, finalMessages);
     } finally {
       setIsLoading(false);
     }
@@ -296,7 +359,36 @@ const AIPage = () => {
   return (
     <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
       {/* Sidebar Navigation */}
-      <AppSidebar />
+      <AppSidebar>
+        {chatHistory.length > 0 && (
+          <div className="mt-2 mb-4">
+            <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 px-1">Recent Chats</h3>
+            <div className="space-y-0.5 max-h-[35vh] overflow-y-auto pr-1">
+              {chatHistory.map(chat => (
+                <div key={chat.id} className="relative group">
+                  <button
+                    onClick={() => loadChat(chat.id)}
+                    className={`w-full text-left px-2 py-1.5 text-[11px] rounded truncate transition-all pr-8 ${
+                      currentChatId === chat.id
+                        ? "bg-white/[0.08] text-white font-medium"
+                        : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
+                    }`}
+                  >
+                    {chat.title || "New Chat"}
+                  </button>
+                  <button
+                    onClick={(e) => deleteChat(chat.id, e)}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-red-500/10"
+                    title="Delete Chat"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </AppSidebar>
 
       {/* Main Container */}
       <main className="flex-1 lg:ml-64 flex flex-col min-h-screen bg-[#0B0C10] relative">
