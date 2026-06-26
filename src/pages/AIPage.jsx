@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink, Copy, Check } from "lucide-react";
+import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink, Copy, Check, Pencil } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import AppSidebar from "../components/AppSidebar";
@@ -180,6 +180,8 @@ const AIPage = () => {
   const [messages, setMessages] = useState([initialMessage]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [renamingChatId, setRenamingChatId] = useState(null);
+  const [renameInput, setRenameInput] = useState("");
 
   const messagesEndRef = useRef(null);
 
@@ -225,6 +227,27 @@ const AIPage = () => {
     if (currentChatId === id) {
       handleNewChat();
     }
+  };
+
+  const handleRenameStart = (id, currentTitle, e) => {
+    e.stopPropagation();
+    setRenamingChatId(id);
+    setRenameInput(currentTitle || "New Chat");
+  };
+
+  const handleRenameSubmit = (id, e) => {
+    e.stopPropagation();
+    if (!renameInput.trim()) {
+      setRenamingChatId(null);
+      return;
+    }
+    
+    setChatHistory(prev => {
+      const updated = prev.map(c => c.id === id ? { ...c, title: renameInput.trim() } : c);
+      localStorage.setItem("firstmate_chat_history", JSON.stringify(updated));
+      return updated;
+    });
+    setRenamingChatId(null);
   };
 
   // Suggestions for fast prompting
@@ -365,24 +388,54 @@ const AIPage = () => {
             <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2 px-1">Recent Chats</h3>
             <div className="space-y-0.5 max-h-[35vh] overflow-y-auto pr-1">
               {chatHistory.map(chat => (
-                <div key={chat.id} className="relative group">
-                  <button
-                    onClick={() => loadChat(chat.id)}
-                    className={`w-full text-left px-2 py-1.5 text-[11px] rounded truncate transition-all pr-8 ${
-                      currentChatId === chat.id
-                        ? "bg-white/[0.08] text-white font-medium"
-                        : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
-                    }`}
-                  >
-                    {chat.title || "New Chat"}
-                  </button>
-                  <button
-                    onClick={(e) => deleteChat(chat.id, e)}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-red-500/10"
-                    title="Delete Chat"
-                  >
-                    <Trash2 className="w-3 h-3" />
-                  </button>
+                <div key={chat.id} className="relative group flex items-center">
+                  {renamingChatId === chat.id ? (
+                    <div className="flex items-center w-full px-2 py-1.5 bg-zinc-900 rounded border border-zinc-700 mx-1">
+                      <input
+                        type="text"
+                        value={renameInput}
+                        onChange={(e) => setRenameInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleRenameSubmit(chat.id, e);
+                          if (e.key === 'Escape') setRenamingChatId(null);
+                        }}
+                        className="flex-1 bg-transparent text-[11px] text-white focus:outline-none"
+                        autoFocus
+                      />
+                      <button onClick={(e) => handleRenameSubmit(chat.id, e)} className="ml-1 text-emerald-400 hover:text-emerald-300 p-0.5">
+                        <Check className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => loadChat(chat.id)}
+                        className={`w-full text-left px-2 py-1.5 text-[11px] rounded truncate transition-all pr-12 ${
+                          currentChatId === chat.id
+                            ? "bg-white/[0.08] text-white font-medium"
+                            : "text-zinc-400 hover:bg-white/[0.04] hover:text-zinc-200"
+                        }`}
+                      >
+                        {chat.title || "New Chat"}
+                      </button>
+                      <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center opacity-0 group-hover:opacity-100 transition-opacity bg-[#0B0C10]/80 pr-1 rounded">
+                        <button
+                          onClick={(e) => handleRenameStart(chat.id, chat.title, e)}
+                          className="p-1 text-zinc-500 hover:text-white transition-colors rounded hover:bg-white/10"
+                          title="Rename Chat"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => deleteChat(chat.id, e)}
+                          className="p-1 text-zinc-500 hover:text-red-400 transition-colors rounded hover:bg-red-500/10"
+                          title="Delete Chat"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
