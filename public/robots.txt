@@ -6,14 +6,16 @@ Allow: /explore
 Allow: /status
 Allow: /docs
 Allow: /getting-started
+Allow: /good-first-issues
 Disallow: /api/
 Disallow: /admin/
 
 # Crawl-delay for all bots
 Crawl-delay: 1
 
-# Sitemap location
+# Sitemap locations
 Sitemap: https://firstissue.dev/sitemap.xml
+Sitemap: https://firstissue.dev/sitemap-good-first-issues.xml
 
 # Additional information
 # This site helps developers find and track open source contributions

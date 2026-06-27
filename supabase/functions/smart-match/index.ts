@@ -6,6 +6,13 @@ import { getCorsHeaders } from "../_shared/cors.ts";
 import { createUserClient, createAdminClient } from "../_shared/supabaseClient.ts";
 import { isActiveSupporter } from "../_shared/supporter.ts";
 
+// Free (non-supporter) users get a taste of Smart Match: the top N AI-ranked
+// matches are revealed, the rest are locked behind an upgrade. To contain the
+// cost of the billed AI provider for free traffic, we also cap how many
+// candidate issues the AI scores for them.
+const FREE_PREVIEW_MATCHES = 2;
+const FREE_PREVIEW_CANDIDATES = 12;
+
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
@@ -34,12 +41,9 @@ serve(async (req: Request) => {
       );
     }
 
-    if (!(await isActiveSupporter(createAdminClient(), user.id))) {
-      return new Response(
-        JSON.stringify({ error: "Smart Match is available to Supporters only" }),
-        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    // Supporters get the full ranked list; everyone else gets a free preview
+    // (top FREE_PREVIEW_MATCHES). We no longer hard-block non-supporters here.
+    const supporter = await isActiveSupporter(createAdminClient(), user.id);
 
     const { userProfile, candidateIssues } = await req.json();
 
@@ -49,6 +53,11 @@ serve(async (req: Request) => {
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Limit how many issues the AI scores for free users to contain cost.
+    const scoredCandidates = supporter
+      ? candidateIssues
+      : candidateIssues.slice(0, FREE_PREVIEW_CANDIDATES);
 
     const XAI_API_KEY = Deno.env.get("XAI_API_KEY");
     if (!XAI_API_KEY) {
@@ -104,7 +113,7 @@ ${frameworksDisplay}
 - Total Stars: ${userProfile.totalStars}
 
 ## Candidate Issues (score each one)
-${candidateIssues.map((issue: any, i: number) => {
+${scoredCandidates.map((issue: any, i: number) => {
   const stars = issue.repo_stars ? `⭐${issue.repo_stars}` : '';
   const age = issue.created_days_ago != null ? `${issue.created_days_ago}d old` : '';
   const comments = issue.comments != null ? `${issue.comments} comments` : '';
@@ -112,7 +121,7 @@ ${candidateIssues.map((issue: any, i: number) => {
   return `${i + 1}. [ID: ${issue.id}] "${issue.title}" in ${issue.repo} (${meta}) | Labels: ${issue.labels.join(", ")} | ${issue.body?.substring(0, 200) || "no description"}`;
 }).join("\n")}`;
 
-    console.log("[SmartMatch] Sending", candidateIssues.length, "issues to AI");
+    console.log("[SmartMatch] Sending", scoredCandidates.length, "issues to AI (supporter:", supporter, ")");
     console.log("[SmartMatch] User tech stack:", userProfile.techStack || "not set");
 
     // Call xAI
@@ -179,11 +188,22 @@ ${candidateIssues.map((issue: any, i: number) => {
 
     console.log("Parsed matches count:", parsed.matches?.length);
     if (parsed.matches?.length > 0) {
-      console.log("Score range:", 
+      console.log("Score range:",
         Math.min(...parsed.matches.map((m: any) => m.matchScore)),
         "to",
         Math.max(...parsed.matches.map((m: any) => m.matchScore))
       );
+    }
+
+    // For free users, reveal only the top matches and tell the client how many
+    // more are available so it can show an upgrade prompt. The full set never
+    // leaves the server, so the gate can't be bypassed from the browser.
+    if (!supporter && Array.isArray(parsed.matches)) {
+      const ranked = [...parsed.matches].sort((a: any, b: any) => b.matchScore - a.matchScore);
+      parsed.totalAvailable = ranked.length;
+      parsed.matches = ranked.slice(0, FREE_PREVIEW_MATCHES);
+      parsed.limited = true;
+      console.log(`[SmartMatch] Free preview: revealing ${parsed.matches.length} of ${ranked.length} matches`);
     }
 
     return new Response(

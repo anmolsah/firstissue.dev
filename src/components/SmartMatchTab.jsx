@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSupporter } from '../contexts/SupporterContext';
 import { useSmartMatch } from '../hooks/useSmartMatch';
@@ -149,7 +149,7 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
   const { isSupporter, loading: supporterLoading } = useSupporter();
   const [preferredLabels, setPreferredLabels] = useState(getStoredLabels);
   
-  const { matches, userProfile, loading, error, fetchMatches, refresh, lastAnalyzedAt, isCached } = useSmartMatch(
+  const { matches, userProfile, loading, error, fetchMatches, refresh, lastAnalyzedAt, isCached, limited, totalAvailable } = useSmartMatch(
     username,
     token,
     { userId, preferredLabels }
@@ -205,64 +205,62 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
     return `${hours}h ago`;
   };
 
-  // ── Locked State for non-supporters ──
-  if (!supporterLoading && !isSupporter) {
+  // ── Free preview intro for non-supporters (before their first run) ──
+  // Everyone gets a taste of Smart Match: we run the AI and reveal their top 2
+  // matches free. Supporters skip this (they auto-load the full list); free
+  // users who already ran fall through to the results + upgrade card below.
+  if (!supporterLoading && !isSupporter && (!matches || matches.length === 0) && !loading) {
     return (
-      <div className="relative">
-        {/* Blurred preview */}
-        <div className="filter blur-sm pointer-events-none opacity-40">
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-6 h-[200px]">
-                <div className="w-3/4 h-4 bg-white/5 rounded mb-3" />
-                <div className="w-full h-2.5 bg-white/5 rounded mb-2" />
-                <div className="w-2/3 h-2.5 bg-white/5 rounded mb-6" />
-                <div className="flex gap-2">
-                  <div className="w-16 h-4 bg-purple-500/10 rounded-full" />
-                  <div className="w-20 h-4 bg-blue-500/10 rounded-full" />
-                </div>
+      <div className="relative py-8">
+        <div className="bg-zinc-950/30 border border-zinc-800/60 rounded-xl p-8 max-w-md mx-auto text-center">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-purple-950/25 flex items-center justify-center border border-purple-500/30 text-purple-400">
+            <Sparkles className="w-5 h-5" />
+          </div>
+
+          <h3 className="text-lg font-bold text-white mb-2 tracking-tight">
+            Try AI Smart Matching — Free
+          </h3>
+          <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
+            We'll analyze your GitHub profile, tech stack, and experience level and surface your{' '}
+            <span className="text-white font-semibold">top 2 matched issues</span> — on us.
+            Supporters unlock the full AI-ranked list and unlimited re-analysis.
+          </p>
+
+          <div className="space-y-2.5 mb-6 text-left">
+            {[
+              'AI-analyzed tech stack matching',
+              'Personalized difficulty scoring',
+              'Specific "why this match" reasoning',
+            ].map((feature, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs text-zinc-300">
+                <Zap className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+                {feature}
               </div>
             ))}
           </div>
-        </div>
 
-        {/* Lock overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="bg-[#0B0C10]/95 backdrop-blur-md border border-zinc-800/80 rounded-xl p-8 max-w-sm text-center shadow-2xl">
-            <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-purple-950/25 flex items-center justify-center border border-purple-500/30 text-purple-400">
-              <Lock className="w-5 h-5" />
+          {isRateLimited ? (
+            <div className="inline-flex items-center gap-2 text-amber-400 text-sm mb-1">
+              <ShieldAlert className="w-4 h-4" />
+              Try again in {remainingCooldown}s
             </div>
-
-            <h3 className="text-lg font-bold text-white mb-2 tracking-tight">
-              AI Smart Matching
-            </h3>
-            <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
-              Get personalized issue recommendations powered by AI that analyzes your GitHub profile,
-              tech stack, and experience level.
-            </p>
-
-            <div className="space-y-2.5 mb-6 text-left">
-              {[
-                'AI-analyzed tech stack matching',
-                'Personalized difficulty scoring',
-                'Smart issue recommendations',
-                'Priority support',
-              ].map((feature, i) => (
-                <div key={i} className="flex items-center gap-2 text-xs text-zinc-300">
-                  <Zap className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-                  {feature}
-                </div>
-              ))}
-            </div>
-
+          ) : (
             <button
-              onClick={() => navigate('/support')}
-              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-black rounded font-semibold hover:bg-zinc-200 transition-all text-xs cursor-pointer"
+              onClick={handleAnalyze}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-500 hover:to-blue-500 transition-all shadow-lg shadow-purple-500/20 cursor-pointer disabled:opacity-50 text-sm"
             >
-              <Crown className="w-4 h-4" />
-              Become a Supporter — $9/mo
+              <Sparkles className="w-4 h-4" />
+              Get my 2 free matches
             </button>
-          </div>
+          )}
+
+          <button
+            onClick={() => navigate('/support')}
+            className="mt-3 block w-full text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+          >
+            or unlock unlimited matches — $9/mo
+          </button>
         </div>
       </div>
     );
@@ -418,6 +416,13 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
               onToggleBookmark={() => onToggleBookmark?.(issue)}
             />
           ))}
+          {/* Free preview: lock the remaining matches behind an upgrade. */}
+          {limited && (
+            <UpgradeMatchCard
+              moreCount={totalAvailable ? Math.max(totalAvailable - matches.length, 0) : null}
+              onUpgrade={() => navigate('/support')}
+            />
+          )}
         </div>
       ) : (
         <div className="text-center py-20">
@@ -587,5 +592,30 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
     </div>
   );
 };
+
+// ── Upgrade card shown after the free preview matches ──
+const UpgradeMatchCard = ({ moreCount, onUpgrade }) => (
+  <div className="relative flex flex-col items-center justify-center text-center h-full min-h-[280px] bg-zinc-950/25 border border-purple-500/20 rounded-xl p-6 overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-blue-600/5 pointer-events-none" />
+    <div className="relative z-10 flex flex-col items-center">
+      <div className="w-11 h-11 mb-4 rounded-xl bg-purple-950/40 flex items-center justify-center border border-purple-500/30 text-purple-300">
+        <Lock className="w-5 h-5" />
+      </div>
+      <h3 className="text-base font-bold text-white mb-1.5">
+        {moreCount ? `${moreCount}+ more matches` : 'More matches'} locked
+      </h3>
+      <p className="text-xs text-zinc-400 mb-5 leading-relaxed max-w-[210px]">
+        You're seeing your top 2 free matches. Unlock the full AI-ranked list and unlimited re-analysis.
+      </p>
+      <button
+        onClick={onUpgrade}
+        className="inline-flex items-center gap-2 px-4 py-2 bg-white text-black rounded font-semibold hover:bg-zinc-200 transition-all text-xs cursor-pointer"
+      >
+        <Crown className="w-4 h-4" />
+        Become a Supporter — $9/mo
+      </button>
+    </div>
+  </div>
+);
 
 export default SmartMatchTab;

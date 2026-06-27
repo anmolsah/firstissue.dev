@@ -92,10 +92,14 @@ export async function getAIMatchedIssues(userProfile, candidateIssues) {
     }
     if (data?.error) throw new Error(data.error);
 
-    return data?.matches || [];
+    return {
+      matches: data?.matches || [],
+      limited: !!data?.limited,
+      totalAvailable: data?.totalAvailable ?? null,
+    };
   } catch (error) {
     console.error('Error getting AI matches:', error);
-    return [];
+    return { matches: [], limited: false, totalAvailable: null };
   }
 }
 
@@ -125,15 +129,16 @@ export async function runSmartMatch(username, token, supabaseUrl, { userId, pref
 
   console.log('[SmartMatch] Candidates fetched:', candidates.length);
 
-  // Step 4: Get AI rankings for ALL candidates
-  const matches = await getAIMatchedIssues(userProfile, candidates);
+  // Step 4: Get AI rankings. Free users receive only the top matches plus a
+  // `limited` flag and the total count available behind the paywall.
+  const { matches, limited, totalAvailable } = await getAIMatchedIssues(userProfile, candidates);
 
-  console.log('[SmartMatch] AI returned', matches.length, 'matches');
+  console.log('[SmartMatch] AI returned', matches.length, 'matches', limited ? `(free preview of ${totalAvailable})` : '');
 
   // Step 5: Merge AI scores back into full issue data
   const matchMap = new Map(matches.map((m) => [String(m.issueId), m]));
 
-  const rankedIssues = candidates
+  let rankedIssues = candidates
     .map((issue) => {
       const match = matchMap.get(String(issue.id));
       return {
@@ -147,6 +152,12 @@ export async function runSmartMatch(username, token, supabaseUrl, { userId, pref
     // Cap at top 25 results
     .slice(0, 25);
 
+  // In a free preview the server only scored/returned the top few matches, so
+  // keep only the AI-ranked issues — never pad the grid with 0%-scored ones.
+  if (limited) {
+    rankedIssues = rankedIssues.filter((issue) => issue.isAIRanked);
+  }
+
   console.log('[SmartMatch] Final results:', rankedIssues.length);
   if (rankedIssues.length > 0) {
     console.log('[SmartMatch] Score range:', rankedIssues[0]?.matchScore, 'to', rankedIssues[rankedIssues.length - 1]?.matchScore);
@@ -156,5 +167,7 @@ export async function runSmartMatch(username, token, supabaseUrl, { userId, pref
     issues: rankedIssues,
     userProfile,
     generatedAt: new Date().toISOString(),
+    limited,
+    totalAvailable,
   };
 }

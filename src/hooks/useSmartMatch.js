@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { runSmartMatch } from '../services/smartMatch';
 
@@ -61,5 +61,8 @@ export const useSmartMatch = (username, token, { userId, preferredLabels } = {})
     refresh,
     lastAnalyzedAt: dataUpdatedAt || null,
     isCached,
+    // Free preview: true when the server revealed only the top N matches.
+    limited: data?.limited ?? false,
+    totalAvailable: data?.totalAvailable ?? null,
   };
 };
