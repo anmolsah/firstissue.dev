@@ -115,12 +115,38 @@ serve(async (req: Request) => {
     const dodoData = await dodoResponse.json();
     console.log("Dodo subscription cancelled:", JSON.stringify(dodoData));
 
-    // Proactively update it locally for faster UI feedback.
+    // Pin access-end to the provider's period end so the UI's "access until …"
+    // is accurate. Dodo keeps the sub active until next_billing_date when
+    // cancel_at_next_billing_date is set; fall back to leaving the existing
+    // expiry untouched if the response doesn't carry the date.
+    const periodEnd = dodoData?.next_billing_date || dodoData?.cancelled_at || null;
+
+    // Proactively update it locally for faster UI feedback. The webhook
+    // (subscription.updated / subscription.cancelled) remains the source of
+    // truth and will reconcile this shortly.
     const { error: updateError } = await supabase
       .from("supporters")
-      .update({ status: "cancelled", updated_at: new Date().toISOString() })
+      .update({
+        status: "cancelled",
+        ...(periodEnd && { expires_at: new Date(periodEnd).toISOString() }),
+        updated_at: new Date().toISOString(),
+      })
       .eq("user_id", userId);
-      
+
+    // Best-effort audit trail (mirrors the webhook). Never block cancellation
+    // on this; the table may not exist until the migration is applied.
+    try {
+      await supabase.from("supporter_events").insert({
+        user_id: userId,
+        dodo_subscription_id: subscriptionId,
+        event_type: "cancel-subscription.api",
+        dodo_status: dodoData?.status || null,
+        cancel_reason: "cancelled_by_customer",
+      });
+    } catch (_e) {
+      // ignore audit failures
+    }
+
     if (updateError) {
         console.error("Failed to update status locally:", updateError);
         return new Response(

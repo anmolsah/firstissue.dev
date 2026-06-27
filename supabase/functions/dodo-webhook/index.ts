@@ -94,14 +94,36 @@ serve(async (req: Request) => {
       "subscription_updated",
     ].includes(event.toLowerCase());
 
-    // Cancellation events
+    // Cancellation events — the subscription was cancelled (by the user, the
+    // merchant, or Dodo). The user keeps access until the end of the period
+    // they already paid for. NOTE: "expired" is deliberately NOT here — see
+    // isExpiry below. Conflating the two caused expired subs to show as
+    // "cancelled" while wrongly retaining access (stale future expires_at).
     const isCancellation = [
       "subscription.cancelled",
       "subscription_cancelled",
       "subscription.canceled",
       "subscription_canceled",
+    ].includes(event.toLowerCase());
+
+    // Expiry events — the subscription reached the end of its term and is over.
+    // Access must end now (unlike a scheduled cancellation).
+    const isExpiry = [
       "subscription.expired",
       "subscription_expired",
+    ].includes(event.toLowerCase());
+
+    // Renewal trouble: a renewal payment failed and Dodo put the sub on hold,
+    // or the initial mandate could not be created. These are NOT terminal — we
+    // record them for visibility but do not revoke access automatically (Dodo
+    // retries; a terminal cancelled/expired event will follow if it gives up).
+    const isOnHold = [
+      "subscription.on_hold",
+      "subscription_on_hold",
+    ].includes(event.toLowerCase());
+    const isFailed = [
+      "subscription.failed",
+      "subscription_failed",
     ].includes(event.toLowerCase());
 
     // Payment failure events
@@ -187,6 +209,14 @@ serve(async (req: Request) => {
       } else {
         console.log("✅ Supporter activated for user:", userId);
       }
+
+      await recordSupporterEvent(supabase, {
+        userId,
+        subscriptionId,
+        customerId,
+        eventType: event,
+        status: data?.status,
+      });
     } else if (isRenewal) {
       console.log(">>> Processing RENEWAL event");
 
@@ -237,20 +267,34 @@ serve(async (req: Request) => {
 
         if (error) console.error("Error renewing supporter:", error);
         else console.log("✅ Supporter renewed for user:", supporter.user_id);
+
+        await recordSupporterEvent(supabase, {
+          userId: supporter.user_id,
+          subscriptionId,
+          customerId,
+          eventType: event,
+          status: data?.status,
+        });
       } else {
         console.log("⚠️ Renewal event but no matching supporter found. subscriptionId:", subscriptionId, "userId:", userId);
       }
     } else if (isSubscriptionUpdated) {
       console.log(">>> Processing SUBSCRIPTION UPDATED event");
 
-      // Dodo fires subscription.updated when fields change.
-      // Check if the status in the payload indicates cancellation scheduled.
-      const newStatus = data.status;
+      // Dodo fires subscription.updated whenever any field changes. Inspect the
+      // payload to decide whether this update is a (scheduled) cancellation, an
+      // expiry, or just a benign field change.
+      const newStatus = (data.status || "").toLowerCase();
+      const scheduledToCancel = data.cancel_at_next_billing_date === true;
 
-      if (newStatus === "cancelled" || newStatus === "canceled") {
-        // Treat as a cancellation event
-        console.log(">>> Subscription updated to cancelled status");
-        await handleCancellation(supabase, userId, subscriptionId, customerId);
+      if (newStatus === "cancelled" || newStatus === "canceled" || scheduledToCancel) {
+        // Catches cancellations made through Dodo's own customer portal, where
+        // the status stays "active" but cancel_at_next_billing_date flips true.
+        console.log(">>> Subscription update indicates cancellation (scheduled:", scheduledToCancel, ")");
+        await handleCancellation(supabase, userId, subscriptionId, customerId, data, event);
+      } else if (newStatus === "expired") {
+        console.log(">>> Subscription update indicates expiry");
+        await handleExpiry(supabase, userId, subscriptionId, customerId, data, event);
       } else {
         // Generic update — update IDs if we have them
         if (subscriptionId && userId) {
@@ -269,9 +313,30 @@ serve(async (req: Request) => {
       }
     } else if (isCancellation) {
       console.log(">>> Processing CANCELLATION event");
-      await handleCancellation(supabase, userId, subscriptionId, customerId);
+      await handleCancellation(supabase, userId, subscriptionId, customerId, data, event);
+    } else if (isExpiry) {
+      console.log(">>> Processing EXPIRY event");
+      await handleExpiry(supabase, userId, subscriptionId, customerId, data, event);
+    } else if (isOnHold || isFailed) {
+      // Non-terminal renewal/mandate trouble. Record it but keep access — Dodo
+      // retries, and a terminal cancelled/expired event will arrive if it ends.
+      console.log(`>>> Processing ${isOnHold ? "ON_HOLD" : "FAILED"} event (recording only, access unchanged)`);
+      await recordSupporterEvent(supabase, {
+        userId,
+        subscriptionId,
+        customerId,
+        eventType: event,
+        status: data.status,
+      });
     } else if (isPaymentFailed) {
       console.log(">>> Payment failed for subscription:", subscriptionId);
+      await recordSupporterEvent(supabase, {
+        userId,
+        subscriptionId,
+        customerId,
+        eventType: event,
+        status: data.status,
+      });
     } else {
       console.log(">>> Unhandled webhook event:", event);
       console.log(">>> Full payload:", JSON.stringify(payload));
@@ -339,57 +404,168 @@ function extractCurrency(data: any): string {
 }
 
 /**
- * Handle cancellation from Dodo webhooks.
- * Looks up the supporter by user_id (from metadata) OR by dodo_subscription_id
- * since Dodo cancellation events may not carry user_id in metadata.
+ * Resolve the local supporter's user_id from whatever identifiers a Dodo event
+ * carries. Cancellation/expiry events often omit user_id from metadata, so we
+ * fall back to the bound subscription_id and then the customer_id.
+ */
+async function resolveTargetUserId(
+  supabase: any,
+  userId: string | undefined,
+  subscriptionId: string | undefined,
+  customerId: string | undefined,
+): Promise<string | undefined> {
+  if (userId) return userId;
+
+  if (subscriptionId) {
+    const { data: match } = await supabase
+      .from("supporters")
+      .select("user_id")
+      .eq("dodo_subscription_id", subscriptionId)
+      .maybeSingle();
+    if (match) {
+      console.log("Found supporter by subscription_id:", subscriptionId, "-> user:", match.user_id);
+      return match.user_id;
+    }
+  }
+
+  if (customerId) {
+    const { data: match } = await supabase
+      .from("supporters")
+      .select("user_id")
+      .eq("dodo_customer_id", customerId)
+      .maybeSingle();
+    if (match) {
+      console.log("Found supporter by customer_id:", customerId, "-> user:", match.user_id);
+      return match.user_id;
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * Best-effort audit log. Records every meaningful lifecycle event into the
+ * `supporter_events` table so that, even when edge-function logs have rolled
+ * off, you can always answer "what changed this row and why?". Wrapped so a
+ * missing table (migration not yet applied) never breaks webhook processing.
+ */
+async function recordSupporterEvent(
+  supabase: any,
+  e: {
+    userId: string | undefined;
+    subscriptionId: string | undefined;
+    customerId: string | undefined;
+    eventType: string;
+    status?: string;
+    cancelReason?: string;
+  },
+) {
+  try {
+    const { error } = await supabase.from("supporter_events").insert({
+      user_id: e.userId || null,
+      dodo_subscription_id: e.subscriptionId || null,
+      dodo_customer_id: e.customerId || null,
+      event_type: e.eventType || null,
+      dodo_status: e.status || null,
+      cancel_reason: e.cancelReason || null,
+    });
+    if (error) console.warn("Could not write supporter_events audit row:", error.message);
+  } catch (err) {
+    console.warn("supporter_events audit insert threw (table may not exist yet):", err);
+  }
+}
+
+/**
+ * Handle a (scheduled) cancellation. The subscription was cancelled but the
+ * user keeps access until the end of the period they already paid for, so we
+ * set status="cancelled" and pin expires_at to the period end (next_billing_date).
  */
 async function handleCancellation(
   supabase: any,
   userId: string | undefined,
   subscriptionId: string | undefined,
-  customerId: string | undefined
+  customerId: string | undefined,
+  data: any = {},
+  eventType = "subscription.cancelled",
 ) {
-  // Try to find the supporter record — first by user_id, then by subscription_id
-  let targetUserId = userId;
+  const targetUserId = await resolveTargetUserId(supabase, userId, subscriptionId, customerId);
 
-  if (!targetUserId && subscriptionId) {
-    const { data: match } = await supabase
-      .from("supporters")
-      .select("user_id")
-      .eq("dodo_subscription_id", subscriptionId)
-      .single();
-
-    if (match) {
-      targetUserId = match.user_id;
-      console.log("Found supporter by subscription_id:", subscriptionId, "-> user:", targetUserId);
-    }
-  }
-
-  if (!targetUserId && customerId) {
-    const { data: match } = await supabase
-      .from("supporters")
-      .select("user_id")
-      .eq("dodo_customer_id", customerId)
-      .single();
-
-    if (match) {
-      targetUserId = match.user_id;
-      console.log("Found supporter by customer_id:", customerId, "-> user:", targetUserId);
-    }
-  }
-
-  if (targetUserId) {
-    const { error } = await supabase
-      .from("supporters")
-      .update({
-        status: "cancelled",
-        updated_at: new Date().toISOString(),
-      })
-      .eq("user_id", targetUserId);
-
-    if (error) console.error("Error cancelling supporter:", error);
-    else console.log("✅ Supporter cancelled for user:", targetUserId);
-  } else {
+  if (!targetUserId) {
     console.error("⚠️ Could not find supporter to cancel. userId:", userId, "subscriptionId:", subscriptionId, "customerId:", customerId);
+    await recordSupporterEvent(supabase, { userId, subscriptionId, customerId, eventType, status: data?.status, cancelReason: data?.cancel_reason });
+    return;
   }
+
+  // Decide when access should actually end:
+  //  - Scheduled cancellation (cancel_at_next_billing_date = true, status still
+  //    "active"): the user keeps what they paid for, so access runs until the
+  //    period end (next_billing_date).
+  //  - Terminal cancellation (status already "cancelled", cancelled_at present):
+  //    the subscription is over now, so access ends at cancelled_at.
+  const scheduled = data?.cancel_at_next_billing_date === true;
+  const accessEnds = scheduled
+    ? (data?.next_billing_date || null)
+    : (data?.cancelled_at || new Date().toISOString());
+
+  const { error } = await supabase
+    .from("supporters")
+    .update({
+      status: "cancelled",
+      ...(accessEnds && { expires_at: new Date(accessEnds).toISOString() }),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", targetUserId);
+
+  if (error) console.error("Error cancelling supporter:", error);
+  else console.log(`✅ Supporter cancelled (${scheduled ? "scheduled" : "terminal"}) for user:`, targetUserId, "access until:", accessEnds || "(unchanged)");
+
+  await recordSupporterEvent(supabase, {
+    userId: targetUserId,
+    subscriptionId,
+    customerId,
+    eventType,
+    status: data?.status,
+    cancelReason: data?.cancel_reason,
+  });
+}
+
+/**
+ * Handle expiry. Unlike a cancellation, the subscription's term is fully over,
+ * so access ends now: status="expired" and expires_at is set to the present.
+ */
+async function handleExpiry(
+  supabase: any,
+  userId: string | undefined,
+  subscriptionId: string | undefined,
+  customerId: string | undefined,
+  data: any = {},
+  eventType = "subscription.expired",
+) {
+  const targetUserId = await resolveTargetUserId(supabase, userId, subscriptionId, customerId);
+
+  if (!targetUserId) {
+    console.error("⚠️ Could not find supporter to expire. userId:", userId, "subscriptionId:", subscriptionId, "customerId:", customerId);
+    await recordSupporterEvent(supabase, { userId, subscriptionId, customerId, eventType, status: data?.status });
+    return;
+  }
+
+  const { error } = await supabase
+    .from("supporters")
+    .update({
+      status: "expired",
+      expires_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", targetUserId);
+
+  if (error) console.error("Error expiring supporter:", error);
+  else console.log("✅ Supporter expired (access revoked) for user:", targetUserId);
+
+  await recordSupporterEvent(supabase, {
+    userId: targetUserId,
+    subscriptionId,
+    customerId,
+    eventType,
+    status: data?.status,
+  });
 }

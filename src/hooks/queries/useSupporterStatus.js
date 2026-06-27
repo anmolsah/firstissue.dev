@@ -1,5 +1,4 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 
 /**
@@ -39,7 +38,14 @@ async function fetchSupporterStatus(userId) {
 
 /**
  * Hook to fetch and cache supporter status with TanStack Query.
- * Also sets up a Supabase realtime subscription to auto-invalidate on changes.
+ *
+ * NOTE: Supabase Realtime is intentionally disabled app-wide
+ * (`eventsPerSecond: 0` in lib/supabase.js) to conserve Supavisor connection
+ * slots, so there is NO live postgres_changes subscription here — it would
+ * never fire. Freshness instead comes from:
+ *   - explicit `refreshStatus()` after checkout/cancel (callers already do this)
+ *   - a short staleTime + refetch on window focus, so returning to the tab
+ *     (e.g. after the webhook activates/cancels) reconciles the UI.
  */
 export function useSupporterStatus(userId) {
   const queryClient = useQueryClient();
@@ -48,33 +54,9 @@ export function useSupporterStatus(userId) {
     queryKey: supporterKeys.status(userId),
     queryFn: () => fetchSupporterStatus(userId),
     enabled: !!userId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 60 * 1000, // 1 minute — billing state should reflect changes quickly
+    refetchOnWindowFocus: true,
   });
-
-  // Set up realtime subscription for auto-invalidation
-  useEffect(() => {
-    if (!userId) return;
-
-    const channel = supabase
-      .channel(`supporter-status-${userId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'supporters',
-          filter: `user_id=eq.${userId}`,
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: supporterKeys.status(userId) });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [userId, queryClient]);
 
   return {
     isSupporter: query.data?.isSupporter ?? false,
