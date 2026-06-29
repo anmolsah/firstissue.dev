@@ -21,6 +21,10 @@ import {
   Shield,
   GitFork,
   Sparkles,
+  Rocket,
+  Globe,
+  Calendar,
+  Building2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -65,6 +69,10 @@ const ExplorePage = () => {
   // Trusted Repos State
   const [trustedRepos, setTrustedRepos] = useState([]);
   const [loadingTrustedRepos, setLoadingTrustedRepos] = useState(true);
+
+  // Startup Orgs State
+  const [startupOrgs, setStartupOrgs] = useState([]);
+  const [loadingStartupOrgs, setLoadingStartupOrgs] = useState(true);
 
   // Sidebar State
   const [activeSidebarItem, setActiveSidebarItem] = useState("explore");
@@ -139,6 +147,11 @@ const ExplorePage = () => {
     fetchTrustedRepos();
   }, []);
 
+  // Fetch Startup Orgs from Supabase
+  useEffect(() => {
+    fetchStartupOrgs();
+  }, []);
+
   const fetchTrustedRepos = async () => {
     try {
       setLoadingTrustedRepos(true);
@@ -155,6 +168,26 @@ const ExplorePage = () => {
       console.error("Error fetching trusted repos:", error);
     } finally {
       setLoadingTrustedRepos(false);
+    }
+  };
+
+  const fetchStartupOrgs = async () => {
+    try {
+      setLoadingStartupOrgs(true);
+      const { data, error } = await supabase
+        .from("startup_orgs")
+        .select("*")
+        .eq("is_active", true)
+        .eq("is_startup", true)
+        .order("stars", { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+      setStartupOrgs(data || []);
+    } catch (error) {
+      console.error("Error fetching startup orgs:", error);
+    } finally {
+      setLoadingStartupOrgs(false);
     }
   };
 
@@ -475,6 +508,12 @@ const ExplorePage = () => {
                 icon={Shield}
               />
               <TabButton
+                label="Startup Orgs"
+                active={selectedTab === "startups"}
+                onClick={() => setSelectedTab("startups")}
+                icon={Rocket}
+              />
+              <TabButton
                 label="Smart Match"
                 active={selectedTab === "smart"}
                 onClick={() => setSelectedTab("smart")}
@@ -483,7 +522,7 @@ const ExplorePage = () => {
               />
             </div>
 
-            {selectedTab !== "trusted" && selectedTab !== "smart" && (
+            {selectedTab !== "trusted" && selectedTab !== "smart" && selectedTab !== "startups" && (
               <div className="flex items-center gap-2">
                 <div className="relative" ref={sortDropdownRef}>
                   <button
@@ -590,6 +629,49 @@ const ExplorePage = () => {
                   </h3>
                   <p className="text-gray-500">
                     Curated repositories will appear here soon.
+                  </p>
+                </div>
+              )}
+            </div>
+          ) : selectedTab === "startups" ? (
+            /* Startup Orgs Tab Content */
+            <div>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-fuchsia-600/10 flex items-center justify-center border border-violet-500/20">
+                  <Rocket className="w-5 h-5 text-violet-400" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-white">
+                    Startup Orgs
+                  </h2>
+                  <p className="text-sm text-gray-500">
+                    Contribute to open-source projects from innovative startups
+                  </p>
+                </div>
+              </div>
+
+              {loadingStartupOrgs ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {[1, 2, 3, 4, 5, 6].map((i) => (
+                    <StartupOrgSkeleton key={i} />
+                  ))}
+                </div>
+              ) : startupOrgs.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {startupOrgs.map((org) => (
+                    <StartupOrgCard key={org.id} org={org} />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-violet-500/10 mb-4">
+                    <Rocket className="w-8 h-8 text-violet-400" />
+                  </div>
+                  <h3 className="text-xl font-medium text-white mb-2">
+                    No startup orgs yet
+                  </h3>
+                  <p className="text-gray-500">
+                    Startup organizations will appear here soon.
                   </p>
                 </div>
               )}
@@ -866,6 +948,108 @@ const TrustedRepoCard = ({ repo }) => {
     </a>
   );
 };
+
+const StartupOrgCard = ({ org }) => {
+  const categoryColors = {
+    "AI/ML": { bg: "bg-violet-500/5", text: "text-violet-400", border: "border-violet-500/20" },
+    "DevTools": { bg: "bg-sky-500/5", text: "text-sky-400", border: "border-sky-500/20" },
+    "Infrastructure": { bg: "bg-orange-500/5", text: "text-orange-400", border: "border-orange-500/20" },
+    "Security": { bg: "bg-red-500/5", text: "text-red-400", border: "border-red-500/20" },
+    "Data": { bg: "bg-emerald-500/5", text: "text-emerald-400", border: "border-emerald-500/20" },
+    "Cloud": { bg: "bg-cyan-500/5", text: "text-cyan-400", border: "border-cyan-500/20" },
+    "FinTech": { bg: "bg-amber-500/5", text: "text-amber-400", border: "border-amber-500/20" },
+  };
+
+  const defaultColor = { bg: "bg-fuchsia-500/5", text: "text-fuchsia-400", border: "border-fuchsia-500/20" };
+  const colors = categoryColors[org.category] || defaultColor;
+
+  return (
+    <a
+      href={org.github_url || `https://github.com/${org.github_name}`}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-5 hover:border-violet-500/30 hover:bg-white/[0.01] transition-all duration-300 group flex flex-col"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded bg-zinc-900 flex items-center justify-center border border-zinc-800/60 group-hover:border-violet-500/30 transition-colors overflow-hidden">
+            <img
+              src={`https://github.com/${org.github_name}.png?size=40`}
+              alt={org.display_name || org.github_name}
+              className="w-full h-full rounded object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.parentElement.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-violet-400"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>';
+              }}
+            />
+          </div>
+          <div>
+            <h3 className="text-xs font-semibold text-white group-hover:text-violet-350 transition-colors line-clamp-1">
+              {org.display_name || org.github_name}
+            </h3>
+            <p className="text-[10px] text-zinc-500 font-mono mt-0.5">{org.github_name}</p>
+          </div>
+        </div>
+        {org.category && (
+          <span
+            className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${colors.bg} ${colors.text} ${colors.border}`}
+          >
+            {org.category}
+          </span>
+        )}
+      </div>
+
+      <p className="text-xs text-zinc-400 leading-relaxed mb-4 line-clamp-2 flex-1">
+        {org.description || "Open-source startup organization"}
+      </p>
+
+      <div className="flex items-center justify-between pt-3 border-t border-zinc-800/60">
+        <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-550">
+            <Star className="w-3 h-3 text-zinc-650" />
+            <span>{org.stars?.toLocaleString() || 0}</span>
+          </div>
+          {org.country && (
+            <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-550">
+              <Globe className="w-3 h-3 text-zinc-650" />
+              <span>{org.country}</span>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {org.founded_year && (
+            <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/[0.02] text-zinc-400 border border-zinc-800 font-semibold font-mono">
+              Est. {org.founded_year}
+            </span>
+          )}
+          {org.website && (
+            <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-violet-400 transition-colors" />
+          )}
+        </div>
+      </div>
+    </a>
+  );
+};
+
+const StartupOrgSkeleton = () => (
+  <div className="bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-5 h-[180px] animate-pulse">
+    <div className="flex items-center gap-3 mb-4">
+      <div className="w-9 h-9 rounded bg-white/5" />
+      <div className="space-y-2 flex-1">
+        <div className="w-3/4 h-3 bg-white/5 rounded" />
+        <div className="w-1/2 h-2.5 bg-white/5 rounded" />
+      </div>
+    </div>
+    <div className="space-y-2 mb-4">
+      <div className="w-full h-2.5 bg-white/5 rounded" />
+      <div className="w-2/3 h-2.5 bg-white/5 rounded" />
+    </div>
+    <div className="flex gap-4 pt-3 border-t border-zinc-800/60">
+      <div className="w-16 h-2.5 bg-white/5 rounded" />
+      <div className="w-16 h-2.5 bg-white/5 rounded" />
+    </div>
+  </div>
+);
 
 const TrustedRepoSkeleton = () => (
   <div className="bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-5 h-[180px] animate-pulse">
