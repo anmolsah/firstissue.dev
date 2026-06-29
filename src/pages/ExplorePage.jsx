@@ -160,7 +160,7 @@ const ExplorePage = () => {
         .select("*")
         .eq("is_active", true)
         .order("stars", { ascending: false })
-        .limit(20);
+        .limit(69);
 
       if (error) throw error;
       setTrustedRepos(data || []);
@@ -954,11 +954,6 @@ const TrustedRepoCard = ({ repo }) => {
           >
             {repo.difficulty}
           </span>
-          {repo.contributor_friendly && (
-            <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              Friendly
-            </span>
-          )}
         </div>
       </div>
 
