@@ -180,7 +180,7 @@ const ExplorePage = () => {
         .eq("is_active", true)
         .eq("is_startup", true)
         .order("stars", { ascending: false })
-        .limit(20);
+        .limit(63);
 
       if (error) throw error;
       setStartupOrgs(data || []);
