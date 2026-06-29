@@ -871,6 +871,8 @@ const Badge = ({ label, color }) => {
 };
 
 const TrustedRepoCard = ({ repo }) => {
+  const [imgError, setImgError] = useState(false);
+  
   const difficultyColors = {
     beginner: {
       bg: "bg-emerald-500/5",
@@ -891,6 +893,25 @@ const TrustedRepoCard = ({ repo }) => {
 
   const colors = difficultyColors[repo.difficulty] || difficultyColors.beginner;
 
+  const getOwner = () => {
+    if (repo.github_url) {
+      try {
+        const urlParts = repo.github_url.replace(/\/$/, "").split("/");
+        if (urlParts.length >= 4) {
+          return urlParts[3];
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    if (repo.name && repo.name.includes("/")) {
+      return repo.name.split("/")[0];
+    }
+    return null;
+  };
+
+  const owner = getOwner();
+
   return (
     <a
       href={repo.github_url}
@@ -900,8 +921,17 @@ const TrustedRepoCard = ({ repo }) => {
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded bg-zinc-900 flex items-center justify-center border border-zinc-800/60 group-hover:border-zinc-750 transition-colors">
-            <Shield className="w-4 h-4 text-emerald-400" />
+          <div className="w-9 h-9 rounded bg-zinc-900 flex items-center justify-center border border-zinc-800/60 group-hover:border-zinc-750 transition-colors overflow-hidden">
+            {owner && !imgError ? (
+              <img
+                src={`https://github.com/${owner}.png?size=40`}
+                alt={repo.title}
+                className="w-full h-full rounded object-cover"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <Shield className="w-4 h-4 text-emerald-400" />
+            )}
           </div>
           <div>
             <h3 className="text-xs font-semibold text-white group-hover:text-emerald-350 transition-colors line-clamp-1">
