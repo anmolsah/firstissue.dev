@@ -911,6 +911,7 @@ const TrustedRepoCard = ({ repo }) => {
   };
 
   const owner = getOwner();
+  const logoSrc = repo.logo_url || (owner ? `https://github.com/${owner}.png?size=40` : null);
 
   return (
     <a
@@ -922,9 +923,9 @@ const TrustedRepoCard = ({ repo }) => {
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded bg-zinc-900 flex items-center justify-center border border-zinc-800/60 group-hover:border-zinc-750 transition-colors overflow-hidden">
-            {owner && !imgError ? (
+            {logoSrc && !imgError ? (
               <img
-                src={`https://github.com/${owner}.png?size=40`}
+                src={logoSrc}
                 alt={repo.title}
                 className="w-full h-full rounded object-cover"
                 onError={() => setImgError(true)}
@@ -934,17 +935,31 @@ const TrustedRepoCard = ({ repo }) => {
             )}
           </div>
           <div>
-            <h3 className="text-xs font-semibold text-white group-hover:text-emerald-350 transition-colors line-clamp-1">
+            <h3 className="text-xs font-semibold text-white group-hover:text-emerald-350 transition-colors line-clamp-1 flex items-center gap-1">
               {repo.title}
+              {repo.verified && (
+                <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-[9px] font-bold">
+                  ✓
+                </span>
+              )}
             </h3>
-            <p className="text-[10px] text-zinc-500 font-mono mt-0.5">{repo.name}</p>
+            <p className="text-[10px] text-zinc-500 font-mono mt-0.5">
+              {repo.organization ? `${repo.organization} / ${repo.name}` : repo.name}
+            </p>
           </div>
         </div>
-        <span
-          className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${colors.bg} ${colors.text} ${colors.border}`}
-        >
-          {repo.difficulty}
-        </span>
+        <div className="flex flex-col items-end gap-1.5">
+          <span
+            className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${colors.bg} ${colors.text} ${colors.border}`}
+          >
+            {repo.difficulty}
+          </span>
+          {repo.contributor_friendly && (
+            <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              Friendly
+            </span>
+          )}
+        </div>
       </div>
 
       <p className="text-xs text-zinc-400 leading-relaxed mb-4 line-clamp-2 flex-1">
@@ -962,18 +977,31 @@ const TrustedRepoCard = ({ repo }) => {
             <span>{repo.language}</span>
           </div>
         </div>
-        {repo.tags && repo.tags.length > 0 && (
-          <div className="flex gap-1.5">
-            {repo.tags.slice(0, 2).map((tag, idx) => (
-              <span
-                key={idx}
-                className="text-[9px] px-2 py-0.5 rounded-full bg-white/[0.02] text-zinc-400 border border-zinc-800 uppercase tracking-wider font-semibold"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {repo.tags && repo.tags.length > 0 && (
+            <div className="flex gap-1.5">
+              {repo.tags.slice(0, 1).map((tag, idx) => (
+                <span
+                  key={idx}
+                  className="text-[9px] px-2 py-0.5 rounded-full bg-white/[0.02] text-zinc-400 border border-zinc-800 uppercase tracking-wider font-semibold"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          {repo.website && (
+            <a
+              href={repo.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="text-zinc-650 hover:text-emerald-400 transition-colors"
+            >
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          )}
+        </div>
       </div>
     </a>
   );
