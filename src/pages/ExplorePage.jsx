@@ -1060,7 +1060,13 @@ const StartupOrgCard = ({ org }) => {
         <div className="flex items-center gap-3.5">
           <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-550">
             <Star className="w-3 h-3 text-zinc-650" />
-            <span>{org.stars?.toLocaleString() || 0}</span>
+            <span>
+              {org.stars == null
+                ? "—"
+                : org.stars >= 1000
+                ? `${(org.stars / 1000).toFixed(1)}k`
+                : org.stars.toLocaleString()}
+            </span>
           </div>
           {org.country && (
             <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-550">
