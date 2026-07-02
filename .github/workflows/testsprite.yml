@@ -19,13 +19,10 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install TestSprite CLI
-        run: npm install -g testsprite
-
       - name: Run TestSprite Tests
         env:
           TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
         run: |
           # Runs all backend tests in the TestSprite project
           # --wait ensures the CI blocks until tests pass or fail
-          npx testsprite test run --all --project b18d4e86-2161-400a-acce-344f225de108 --wait
+          npx --yes testsprite test run --all --project b18d4e86-2161-400a-acce-344f225de108 --wait
