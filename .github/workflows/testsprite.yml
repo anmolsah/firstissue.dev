@@ -28,4 +28,4 @@ jobs:
         run: |
           # Runs all backend tests in the TestSprite project
           # --wait ensures the CI blocks until tests pass or fail
-          testsprite test run --all --project b18d4e86-2161-400a-acce-344f225de108 --wait
+          npx testsprite test run --all --project b18d4e86-2161-400a-acce-344f225de108 --wait
