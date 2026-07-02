@@ -1,0 +1,12 @@
+{
+  "projectId": "b18d4e86-2161-400a-acce-344f225de108",
+  "type": "frontend",
+  "name": "Login page renders GitHub OAuth button and handles unauthenticated access",
+  "description": "The login page shows a GitHub sign-in button as the primary authentication method, with branding elements and a redirect to the platform after successful authentication.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://firstissue.dev/login" },
+    { "type": "assertion", "description": "Verify the login page displays a 'Sign in with GitHub' button prominently centered on the page, with the FirstIssue.dev branding visible and a dark themed background" },
+    { "type": "assertion", "description": "Verify there is a link or option to go back to the homepage, and the page does not show any navigation sidebar (the login page uses a standalone layout without the app sidebar)" }
+  ]
+}

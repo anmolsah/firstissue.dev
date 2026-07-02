@@ -1,0 +1,18 @@
+{
+  "testId": "e506c02b-38fe-4b7a-9fc8-08ca932b768e",
+  "status": "failed",
+  "startedAt": null,
+  "finishedAt": "2026-07-02T15:03:14.590Z",
+  "videoUrl": null,
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_d118436ef335d096",
+  "runIdIfAvailable": "f2ed968f-66be-4f95-9c4f-4fb4b4781786",
+  "codeVersion": "v1",
+  "targetUrl": null,
+  "targetUrlSource": "project-default",
+  "failedStepIndex": 1,
+  "failureKind": "unknown",
+  "verdict": "failed",
+  "executionStatus": "completed",
+  "summary": "Test failed."
+}

@@ -1,0 +1,12 @@
+{
+  "projectId": "b18d4e86-2161-400a-acce-344f225de108",
+  "type": "frontend",
+  "name": "Privacy policy page loads with complete content and proper heading structure",
+  "description": "The privacy policy page renders fully with all required sections, proper heading hierarchy, and a back-to-home navigation link.",
+  "priority": "p2",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://firstissue.dev/privacy" },
+    { "type": "assertion", "description": "Verify the privacy policy page loads with a main heading containing 'Privacy Policy', and the page body contains multiple sections with sub-headings covering topics like data collection, usage, and contact information" },
+    { "type": "assertion", "description": "Verify the page header contains a 'Back to Home' navigation link that allows users to return to the main site" }
+  ]
+}

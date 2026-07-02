@@ -1,0 +1,18 @@
+{
+  "testId": "0f7ca3d6-805c-40ae-8d85-f59552b409d1",
+  "status": "blocked",
+  "startedAt": null,
+  "finishedAt": "2026-07-02T15:03:55.392Z",
+  "videoUrl": null,
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_159db52737cf582a",
+  "runIdIfAvailable": "8df8ee6d-05e8-4c57-a50d-ee21f1c94242",
+  "codeVersion": "v1",
+  "targetUrl": null,
+  "targetUrlSource": "project-default",
+  "failedStepIndex": 1,
+  "failureKind": null,
+  "verdict": "blocked",
+  "executionStatus": "completed",
+  "summary": "Blocked before a verdict could be produced: Expected 200, got 401: {\"code\":\"UNAUTHORIZED_NO_AUTH_HEADER\",\"message\":\"Missing authorization header\"}"
+}

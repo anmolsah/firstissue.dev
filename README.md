@@ -1,5 +1,13 @@
 # FirstIssue.dev
 
+> **TestSprite Hackathon Submission**
+> - **App:** FirstIssue.dev
+> - **Live URL:** https://www.firstissue.dev
+> - **What the loop covered:** 
+>   - **Frontend:** 10 end-to-end visual/flow test plans covering all public-facing pages (Landing, Login, 404, Docs, Support, Features, Terms, Privacy, Navbar, CTA to Login).
+>   - **Backend:** 11 negative test scripts targeting every Supabase Edge Function to enforce gateway-level JWT authorization handling and validate proper 401 HTTP responses.
+>   - **Process:** Autonomously written, executed, fixed upon failure, and continuously verified using the TestSprite CLI. See `LOOP.md` for the full audit log.
+
 FirstIssue.dev is a developer platform designed to help engineers start and track their open source contribution journey. It simplifies finding beginner-friendly issues, tracks contribution progress directly through GitHub integration, and aggregates merged work into verified developer portfolios.
 
 ## Documentation

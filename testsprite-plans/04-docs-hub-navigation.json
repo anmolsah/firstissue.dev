@@ -1,0 +1,13 @@
+{
+  "projectId": "b18d4e86-2161-400a-acce-344f225de108",
+  "type": "frontend",
+  "name": "Docs page renders documentation hub with section cards and article navigation",
+  "description": "The docs page at /docs displays a documentation hub with a search input, categorized section cards that list clickable article links inside them, and a sidebar navigation.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://firstissue.dev/docs" },
+    { "type": "assertion", "description": "Verify the documentation hub page loads with a heading containing 'Documentation' or 'Docs', a search input field, and multiple category section cards displayed in a grid layout" },
+    { "type": "action", "description": "Inside the 'Getting Started' section card, click on the first article link (e.g. 'Your First Open Source Contribution')" },
+    { "type": "assertion", "description": "Verify the page navigates to the specific article page and displays the article content with a main heading matching the article title" }
+  ]
+}

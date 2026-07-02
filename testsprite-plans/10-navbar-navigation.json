@@ -1,0 +1,13 @@
+{
+  "projectId": "b18d4e86-2161-400a-acce-344f225de108",
+  "type": "frontend",
+  "name": "Navbar renders on public pages with responsive navigation links",
+  "description": "The global Navbar component renders on public pages (landing, support) with the FirstIssue.dev logo, navigation links, and a sign-in CTA.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://firstissue.dev" },
+    { "type": "assertion", "description": "Verify the top navigation bar is visible with the FirstIssue.dev logo on the left, navigation links in the middle or right area, and a sign-in or get-started button on the right end" },
+    { "type": "action", "description": "Click the 'Explore issues' link in the hero or navigation area" },
+    { "type": "assertion", "description": "Verify the page navigates to /explore or /login (since unauthenticated users are redirected to login when accessing protected routes)" }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "testId": "68f4942d-9c20-48c5-a87a-0aa89f8ee222",
+  "status": "blocked",
+  "startedAt": null,
+  "finishedAt": "2026-07-02T15:03:57.326Z",
+  "videoUrl": null,
+  "failureAnalysisUrl": null,
+  "snapshotId": "snap_032b409bbcf255bb",
+  "runIdIfAvailable": "5dc11701-3f56-48d7-86de-adb4fb2af2f2",
+  "codeVersion": "v1",
+  "targetUrl": null,
+  "targetUrlSource": "project-default",
+  "failedStepIndex": 1,
+  "failureKind": null,
+  "verdict": "blocked",
+  "executionStatus": "completed",
+  "summary": "Blocked before a verdict could be produced — the test environment rejected the run."
+}

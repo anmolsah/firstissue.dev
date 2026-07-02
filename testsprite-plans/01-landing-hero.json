@@ -1,0 +1,15 @@
+{
+  "projectId": "b18d4e86-2161-400a-acce-344f225de108",
+  "type": "frontend",
+  "name": "Landing page renders hero section with CTA buttons and dashboard preview",
+  "description": "The landing page at firstissue.dev loads with a hero headline, two CTA buttons (Join the movement, Explore issues), a trusted-by logos section, and a dashboard preview inside a browser-chrome frame.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the homepage at https://firstissue.dev" },
+    { "type": "assertion", "description": "Verify the hero section displays a heading containing 'first contribution' and a subheading mentioning 'premium platform', with two CTA buttons visible below — one white filled button reading 'Join the movement' and one bordered button reading 'Explore issues'" },
+    { "type": "action", "description": "Scroll down to the trusted-by section below the CTA buttons" },
+    { "type": "assertion", "description": "Verify the trusted-by section shows company names including GitHub, Vercel, Supabase, Linear, and Prisma arranged horizontally with their icons" },
+    { "type": "action", "description": "Scroll to the dashboard preview section containing a browser-chrome styled frame with window control dots" },
+    { "type": "assertion", "description": "Verify a browser-chrome styled container is visible with three window control dots at the top-left and a URL bar showing 'firstissue.dev', containing a media element or image displaying the dashboard interface" }
+  ]
+}

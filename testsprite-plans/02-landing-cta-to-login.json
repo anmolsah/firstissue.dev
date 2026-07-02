@@ -1,0 +1,12 @@
+{
+  "projectId": "b18d4e86-2161-400a-acce-344f225de108",
+  "type": "frontend",
+  "name": "Landing page CTA navigates unauthenticated user to login page",
+  "description": "When an unauthenticated user clicks the 'Join the movement' CTA on the landing page, they are redirected to the login page which shows a GitHub sign-in option.",
+  "priority": "p0",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to the homepage at https://firstissue.dev" },
+    { "type": "action", "description": "Click the 'Join the movement' button in the hero section" },
+    { "type": "assertion", "description": "Verify the page navigates to the /login route and displays a login form with a 'Sign in with GitHub' button prominently visible" }
+  ]
+}

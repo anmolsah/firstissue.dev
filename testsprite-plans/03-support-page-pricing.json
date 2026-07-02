@@ -1,0 +1,17 @@
+{
+  "projectId": "b18d4e86-2161-400a-acce-344f225de108",
+  "type": "frontend",
+  "name": "Support page displays pricing tiers, feature comparison, and FAQ accordion",
+  "description": "The Support page loads with a hero section, feature cards for AI Smart Matching and Proof of Work, a Free vs Supporter comparison table, and an expandable FAQ section where clicking a question reveals its answer.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://firstissue.dev/support" },
+    { "type": "assertion", "description": "Verify the page displays a hero section with a heading about supporting the project and a prominent 'Become a Supporter' or pricing button showing a monthly price" },
+    { "type": "action", "description": "Scroll down to the feature showcase section" },
+    { "type": "assertion", "description": "Verify at least four feature cards are displayed in a grid layout, including cards titled 'AI Smart Matching', 'Unlimited Proof of Work', 'Smart Difficulty Match', and 'Priority Access', each with a description and an icon" },
+    { "type": "action", "description": "Scroll down to the comparison table section" },
+    { "type": "assertion", "description": "Verify a comparison table is visible with two columns labeled 'Free' and 'Supporter', containing rows for features like 'Browse beginner issues', 'AI Smart Matching', and 'Verified Proof of Work limit' with values showing 'Yes/No' or 'Max 5/Unlimited'" },
+    { "type": "action", "description": "Scroll down to the FAQ section and click on the first question" },
+    { "type": "assertion", "description": "Verify the clicked FAQ question expands to reveal its answer text, and the expand/collapse icon toggles to an up-chevron state" }
+  ]
+}

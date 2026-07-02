@@ -1,0 +1,16 @@
+{
+  "projectId": "b18d4e86-2161-400a-acce-344f225de108",
+  "type": "frontend",
+  "name": "Landing page feature timeline section displays feature showcase cards",
+  "description": "Below the hero and dashboard preview on the landing page, a timeline/bento-grid feature showcase section renders multiple feature cards describing the platform's capabilities with icons and descriptions.",
+  "priority": "p1",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://firstissue.dev" },
+    { "type": "action", "description": "Scroll down past the dashboard preview video section to the feature showcase area" },
+    { "type": "assertion", "description": "Verify a feature showcase section is visible with multiple feature cards arranged in a layout, each card containing an icon, a heading, and descriptive text about a platform capability" },
+    { "type": "action", "description": "Continue scrolling to the user count section" },
+    { "type": "assertion", "description": "Verify an animated counter section is visible showing a number followed by a plus sign, with text reading 'Active Developers' and a subheading about building open source portfolios" },
+    { "type": "action", "description": "Scroll to the comparison section further down" },
+    { "type": "assertion", "description": "Verify a feature comparison section is visible showing how FirstIssue.dev compares to alternative approaches, laid out in a structured format with checkmarks or comparison indicators" }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "projectId": "b18d4e86-2161-400a-acce-344f225de108",
+  "type": "frontend",
+  "name": "Terms of service page loads with complete legal content",
+  "description": "The terms page renders with all sections of terms of service content and uses the app sidebar layout.",
+  "priority": "p2",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://firstissue.dev/terms" },
+    { "type": "assertion", "description": "Verify the terms page loads with a main heading containing 'Terms' and includes multiple sections of legal content with proper sub-headings, and the app sidebar is visible on the left side" }
+  ]
+}

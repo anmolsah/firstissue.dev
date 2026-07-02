@@ -1,0 +1,31 @@
+name: TestSprite E2E
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  testsprite-verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install TestSprite CLI
+        run: npm install -g testsprite
+
+      - name: Run TestSprite Tests
+        env:
+          TESTSPRITE_API_KEY: ${{ secrets.TESTSPRITE_API_KEY }}
+        run: |
+          # Runs all backend tests in the TestSprite project
+          # --wait ensures the CI blocks until tests pass or fail
+          testsprite test run --all --project b18d4e86-2161-400a-acce-344f225de108 --wait

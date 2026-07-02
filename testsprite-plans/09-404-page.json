@@ -1,0 +1,11 @@
+{
+  "projectId": "b18d4e86-2161-400a-acce-344f225de108",
+  "type": "frontend",
+  "name": "404 page renders for unknown routes with back-to-home navigation",
+  "description": "Navigating to a non-existent route shows a custom 404 error page with messaging and a link to return to the homepage.",
+  "priority": "p2",
+  "planSteps": [
+    { "type": "action", "description": "Navigate to https://firstissue.dev/this-page-does-not-exist-xyz" },
+    { "type": "assertion", "description": "Verify a 404 or 'page not found' message is displayed with a link or button to return to the homepage, and the page does not show a browser-level error or blank screen" }
+  ]
+}
