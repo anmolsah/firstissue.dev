@@ -3,6 +3,13 @@ import { useNavigate } from "react-router-dom";
 import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink, Copy, Check, Pencil } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
+import {
+  fetchChatHistory,
+  createChat as createChatDB,
+  updateChatMessages,
+  renameChat as renameChatDB,
+  deleteChat as deleteChatDB,
+} from "../services/chatHistoryService";
 import AppSidebar from "../components/AppSidebar";
 const logo = "/officialLogo.png";
 
@@ -185,31 +192,15 @@ const AIPage = () => {
 
   const messagesEndRef = useRef(null);
 
-  // Load chat history from local storage
+  // Load chat history from Supabase on mount
   useEffect(() => {
-    const saved = localStorage.getItem("firstmate_chat_history");
-    if (saved) {
-      try {
-        setChatHistory(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse chat history", e);
-      }
-    }
-  }, []);
-
-  const updateChatHistory = (id, title, msgs) => {
-    setChatHistory(prev => {
-      const existing = prev.find(c => c.id === id);
-      let updated;
-      if (existing) {
-        updated = prev.map(c => c.id === id ? { ...c, messages: msgs, updatedAt: Date.now() } : c);
-      } else {
-        updated = [{ id, title, messages: msgs, updatedAt: Date.now() }, ...prev];
-      }
-      localStorage.setItem("firstmate_chat_history", JSON.stringify(updated));
-      return updated;
-    });
-  };
+    if (!user) return;
+    const loadHistory = async () => {
+      const data = await fetchChatHistory(user.id);
+      setChatHistory(data);
+    };
+    loadHistory();
+  }, [user]);
 
   const loadChat = (id) => {
     const chat = chatHistory.find(c => c.id === id);
@@ -219,14 +210,13 @@ const AIPage = () => {
     }
   };
 
-  const deleteChat = (id, e) => {
+  const handleDeleteChat = async (id, e) => {
     e.stopPropagation();
-    const updated = chatHistory.filter(c => c.id !== id);
-    setChatHistory(updated);
-    localStorage.setItem("firstmate_chat_history", JSON.stringify(updated));
+    setChatHistory(prev => prev.filter(c => c.id !== id));
     if (currentChatId === id) {
       handleNewChat();
     }
+    await deleteChatDB(id);
   };
 
   const handleRenameStart = (id, currentTitle, e) => {
@@ -235,19 +225,18 @@ const AIPage = () => {
     setRenameInput(currentTitle || "New Chat");
   };
 
-  const handleRenameSubmit = (id, e) => {
+  const handleRenameSubmit = async (id, e) => {
     e.stopPropagation();
     if (!renameInput.trim()) {
       setRenamingChatId(null);
       return;
     }
-    
-    setChatHistory(prev => {
-      const updated = prev.map(c => c.id === id ? { ...c, title: renameInput.trim() } : c);
-      localStorage.setItem("firstmate_chat_history", JSON.stringify(updated));
-      return updated;
-    });
+    const newTitle = renameInput.trim();
+    setChatHistory(prev =>
+      prev.map(c => c.id === id ? { ...c, title: newTitle } : c)
+    );
     setRenamingChatId(null);
+    await renameChatDB(id, newTitle);
   };
 
   // Suggestions for fast prompting
@@ -307,17 +296,24 @@ const AIPage = () => {
     setMessages(newMessages);
 
     let chatId = currentChatId;
-    let title = "";
+    const title = text.slice(0, 50) + (text.length > 50 ? "..." : "");
+
+    // Create or optimistically update the chat in local state
     if (!chatId) {
-      chatId = Date.now().toString();
-      setCurrentChatId(chatId);
-      title = text.slice(0, 30) + (text.length > 30 ? "..." : "");
+      // Persist new chat to Supabase and get the real UUID back
+      const created = await createChatDB(user.id, title, newMessages);
+      if (created) {
+        chatId = created.id;
+        setCurrentChatId(chatId);
+        setChatHistory(prev => [created, ...prev]);
+      }
     } else {
-      const existing = chatHistory.find(c => c.id === chatId);
-      title = existing ? existing.title : text.slice(0, 30);
+      // Optimistic local update
+      setChatHistory(prev =>
+        prev.map(c => c.id === chatId ? { ...c, messages: newMessages, updated_at: new Date().toISOString() } : c)
+      );
+      updateChatMessages(chatId, newMessages);
     }
-    
-    updateChatHistory(chatId, title, newMessages);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -353,7 +349,12 @@ const AIPage = () => {
 
       const finalMessages = [...newMessages, assistantMessage];
       setMessages(finalMessages);
-      updateChatHistory(chatId, title, finalMessages);
+      if (chatId) {
+        setChatHistory(prev =>
+          prev.map(c => c.id === chatId ? { ...c, messages: finalMessages, updated_at: new Date().toISOString() } : c)
+        );
+        updateChatMessages(chatId, finalMessages);
+      }
 
     } catch (error) {
       const errorMessage = {
@@ -362,7 +363,12 @@ const AIPage = () => {
       };
       const finalMessages = [...newMessages, errorMessage];
       setMessages(finalMessages);
-      updateChatHistory(chatId, title, finalMessages);
+      if (chatId) {
+        setChatHistory(prev =>
+          prev.map(c => c.id === chatId ? { ...c, messages: finalMessages, updated_at: new Date().toISOString() } : c)
+        );
+        updateChatMessages(chatId, finalMessages);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -427,7 +433,7 @@ const AIPage = () => {
                           <Pencil className="w-3 h-3" />
                         </button>
                         <button
-                          onClick={(e) => deleteChat(chat.id, e)}
+                          onClick={(e) => handleDeleteChat(chat.id, e)}
                           className="p-1 text-zinc-500 hover:text-red-400 transition-colors rounded hover:bg-red-500/10"
                           title="Delete Chat"
                         >
