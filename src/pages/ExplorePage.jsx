@@ -74,6 +74,9 @@ const ExplorePage = () => {
   const [startupOrgs, setStartupOrgs] = useState([]);
   const [loadingStartupOrgs, setLoadingStartupOrgs] = useState(true);
 
+  // Org Search State
+  const [orgSearchQuery, setOrgSearchQuery] = useState("");
+
   // Sidebar State
   const [activeSidebarItem, setActiveSidebarItem] = useState("explore");
 
@@ -504,13 +507,13 @@ const ExplorePage = () => {
               <TabButton
                 label="Trusted Repos"
                 active={selectedTab === "trusted"}
-                onClick={() => setSelectedTab("trusted")}
+                onClick={() => { setSelectedTab("trusted"); setOrgSearchQuery(""); }}
                 icon={Shield}
               />
               <TabButton
                 label="Startup Orgs"
                 active={selectedTab === "startups"}
-                onClick={() => setSelectedTab("startups")}
+                onClick={() => { setSelectedTab("startups"); setOrgSearchQuery(""); }}
                 icon={Rocket}
               />
               <TabButton
@@ -593,17 +596,30 @@ const ExplorePage = () => {
           ) : selectedTab === "trusted" ? (
             /* Trusted Repos Tab Content */
             <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center border border-emerald-500/20">
-                  <Shield className="w-5 h-5 text-emerald-400" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-emerald-600/10 flex items-center justify-center border border-emerald-500/20">
+                    <Shield className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">
+                      Trusted Repositories
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      Hand-picked repos perfect for first contributions
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">
-                    Trusted Repositories
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    Hand-picked repos perfect for first contributions
-                  </p>
+
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    placeholder="Search by organization..."
+                    value={orgSearchQuery}
+                    onChange={(e) => setOrgSearchQuery(e.target.value)}
+                    className="w-full bg-zinc-950/50 border border-zinc-800/80 rounded-lg py-2 pl-9 pr-4 text-sm text-zinc-300 focus:outline-none focus:border-zinc-700 transition-colors placeholder:text-zinc-600"
+                  />
                 </div>
               </div>
 
@@ -613,9 +629,17 @@ const ExplorePage = () => {
                     <TrustedRepoSkeleton key={i} />
                   ))}
                 </div>
-              ) : trustedRepos.length > 0 ? (
+              ) : trustedRepos.filter(repo => {
+                if (!orgSearchQuery) return true;
+                const orgName = (repo.organization || "").toLowerCase();
+                return orgName.includes(orgSearchQuery.toLowerCase());
+              }).length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {trustedRepos.map((repo) => (
+                  {trustedRepos.filter(repo => {
+                    if (!orgSearchQuery) return true;
+                    const orgName = (repo.organization || "").toLowerCase();
+                    return orgName.includes(orgSearchQuery.toLowerCase());
+                  }).map((repo) => (
                     <TrustedRepoCard key={repo.id} repo={repo} />
                   ))}
                 </div>
@@ -636,17 +660,30 @@ const ExplorePage = () => {
           ) : selectedTab === "startups" ? (
             /* Startup Orgs Tab Content */
             <div>
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-fuchsia-600/10 flex items-center justify-center border border-violet-500/20">
-                  <Rocket className="w-5 h-5 text-violet-400" />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500/20 to-fuchsia-600/10 flex items-center justify-center border border-violet-500/20">
+                    <Rocket className="w-5 h-5 text-violet-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">
+                      Startup Orgs
+                    </h2>
+                    <p className="text-sm text-gray-500">
+                      Contribute to open-source projects from innovative startups
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold text-white">
-                    Startup Orgs
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    Contribute to open-source projects from innovative startups
-                  </p>
+
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <input
+                    type="text"
+                    placeholder="Search by organization..."
+                    value={orgSearchQuery}
+                    onChange={(e) => setOrgSearchQuery(e.target.value)}
+                    className="w-full bg-zinc-950/50 border border-zinc-800/80 rounded-lg py-2 pl-9 pr-4 text-sm text-zinc-300 focus:outline-none focus:border-zinc-700 transition-colors placeholder:text-zinc-600"
+                  />
                 </div>
               </div>
 
@@ -656,9 +693,17 @@ const ExplorePage = () => {
                     <StartupOrgSkeleton key={i} />
                   ))}
                 </div>
-              ) : startupOrgs.length > 0 ? (
+              ) : startupOrgs.filter(org => {
+                if (!orgSearchQuery) return true;
+                const orgName = (org.github_name || org.display_name || "").toLowerCase();
+                return orgName.includes(orgSearchQuery.toLowerCase());
+              }).length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {startupOrgs.map((org) => (
+                  {startupOrgs.filter(org => {
+                    if (!orgSearchQuery) return true;
+                    const orgName = (org.github_name || org.display_name || "").toLowerCase();
+                    return orgName.includes(orgSearchQuery.toLowerCase());
+                  }).map((org) => (
                     <StartupOrgCard key={org.id} org={org} />
                   ))}
                 </div>
