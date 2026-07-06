@@ -49,7 +49,7 @@ const LandingPage = () => {
   }, [isVisible]);
 
   const animateCount = () => {
-    const target = 200;
+    const target = 1000;
     const duration = 2000;
     const steps = 60;
     const increment = target / steps;
