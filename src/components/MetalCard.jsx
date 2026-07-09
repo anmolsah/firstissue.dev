@@ -157,7 +157,7 @@ const MetalCard = ({ attestation, showActions = true }) => {
         />
 
         {/* Card Content */}
-        <div className="relative z-30 p-5 flex flex-col h-full transform-gpu translate-z-10 text-white">
+        <div className="relative z-30 p-5 flex flex-col h-full text-white">
           {/* Header */}
           <div className="mb-4">
             <span className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-200 to-zinc-400">
@@ -222,9 +222,10 @@ const MetalCard = ({ attestation, showActions = true }) => {
                 <button
                   onClick={handleDownload}
                   title="Download as Image"
-                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors flex items-center justify-center border border-white/10 hover:border-emerald-500/30"
+                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors flex items-center justify-center border border-white/10 hover:border-emerald-500/30 cursor-pointer"
+                  style={{ position: 'relative', zIndex: 50, pointerEvents: 'auto' }}
                 >
-                  <Download className="w-4 h-4 opacity-70 hover:opacity-100" />
+                  <Download className="w-4 h-4 opacity-70 hover:opacity-100 pointer-events-none" />
                 </button>
               )}
               <a
@@ -233,9 +234,10 @@ const MetalCard = ({ attestation, showActions = true }) => {
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 title="View Pull Request on GitHub"
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center border border-white/10"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center border border-white/10 cursor-pointer"
+                style={{ position: 'relative', zIndex: 50, pointerEvents: 'auto' }}
               >
-                <ExternalLink className="w-4 h-4 opacity-70" />
+                <ExternalLink className="w-4 h-4 opacity-70 pointer-events-none" />
               </a>
             </div>
           </div>
