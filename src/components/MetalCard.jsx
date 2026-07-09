@@ -256,19 +256,19 @@ const MetalCard = ({ attestation, showActions = true }) => {
               >
                 <Download className="w-4 h-4 opacity-70 hover:opacity-100" />
               </button>
+            </div>
+            )}
 
               <a
                 href={`https://github.com/${attestation.repo_name}/pull/${attestation.pr_number}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                title="View on GitHub"
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center border border-white/10"
+                title="View Pull Request on GitHub"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center border border-white/10 z-40"
               >
                 <ExternalLink className="w-4 h-4 opacity-70" />
               </a>
-            </div>
-            )}
           </div>
         </div>
       </motion.div>
