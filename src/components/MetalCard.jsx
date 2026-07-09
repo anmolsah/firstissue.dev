@@ -217,28 +217,27 @@ const MetalCard = ({ attestation, showActions = true }) => {
               </span>
             </div>
 
-            {showActions && (
-            <div data-export-hide className={`flex items-center gap-2 z-40 ${isExporting ? 'hidden' : ''}`}>
-              <button
-                onClick={handleDownload}
-                title="Download as Image"
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors flex items-center justify-center border border-white/10 hover:border-emerald-500/30"
-              >
-                <Download className="w-4 h-4 opacity-70 hover:opacity-100" />
-              </button>
-            </div>
-            )}
-
+            <div data-export-hide className={`flex items-center gap-2 relative z-40 ${isExporting ? 'hidden' : ''}`}>
+              {showActions && (
+                <button
+                  onClick={handleDownload}
+                  title="Download as Image"
+                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-emerald-500/20 hover:text-emerald-400 transition-colors flex items-center justify-center border border-white/10 hover:border-emerald-500/30"
+                >
+                  <Download className="w-4 h-4 opacity-70 hover:opacity-100" />
+                </button>
+              )}
               <a
                 href={`https://github.com/${attestation.repo_name}/pull/${attestation.pr_number}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 title="View Pull Request on GitHub"
-                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center border border-white/10 z-40"
+                className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors flex items-center justify-center border border-white/10"
               >
                 <ExternalLink className="w-4 h-4 opacity-70" />
               </a>
+            </div>
           </div>
         </div>
       </motion.div>
