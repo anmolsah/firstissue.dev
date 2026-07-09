@@ -6,28 +6,10 @@ import { toPng } from 'html-to-image';
 const getLanguageIcon = () => Code;
 const MetalCard = ({ attestation, showActions = true }) => {
   const cardRef = useRef(null);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleMouseMove = (e) => {
-    if (!cardRef.current) return;
-    const rect = cardRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    // Calculate rotation (-15 to +15 degrees)
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const rotateY = ((x - centerX) / centerX) * 15;
-    const rotateX = -((y - centerY) / centerY) * 15;
-    
-    setRotation({ x: rotateX, y: rotateY });
-  };
-
   const handleMouseLeave = () => {
-    setRotation({ x: 0, y: 0 });
     setIsHovered(false);
   };
 
@@ -37,10 +19,9 @@ const MetalCard = ({ attestation, showActions = true }) => {
     if (!cardRef.current || isExporting) return;
     
     try {
-      // 1. Reset 3D rotation via React state so Framer Motion applies flat transform
+      // 1. Reset hover state
       setIsExporting(true);
       setIsHovered(false);
-      setRotation({ x: 0, y: 0 });
       
       // 2. Wait for Framer Motion to settle to the flat orientation and React to hide buttons
       await new Promise(r => setTimeout(r, 350));
@@ -121,33 +102,22 @@ const MetalCard = ({ attestation, showActions = true }) => {
     <div className="perspective-1000 w-full h-full min-h-[220px]">
       <motion.div
         ref={cardRef}
-        onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={handleMouseLeave}
-        animate={{
-          rotateX: isHovered ? rotation.x : 0,
-          rotateY: isHovered ? rotation.y : 0,
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 300,
-          damping: 20,
-          mass: 0.5
-        }}
         className={`group relative w-full h-full rounded-2xl overflow-hidden cursor-pointer
           border border-white/10 backdrop-blur-sm bg-gradient-to-br ${tier.gradient}
-          transform-gpu preserve-3d transition-shadow duration-300`}
+          transition-shadow duration-300`}
         style={{
           boxShadow: isHovered
             ? `0 24px 50px -12px rgba(0,0,0,0.65), 0 0 0 1px ${tier.ring}, inset 0 1px 1px rgba(255,255,255,0.12)`
             : `0 12px 32px -16px rgba(0,0,0,0.6), 0 0 0 1px ${tier.ring}`,
         }}
       >
-        {/* Holographic foil — shifts with tilt */}
+        {/* Holographic foil */}
         <motion.div
           className="absolute inset-0 pointer-events-none z-10 opacity-[0.14]"
           animate={{
-            background: `conic-gradient(from ${130 + rotation.y * 6}deg at ${50 + rotation.y * 4}% ${50 + rotation.x * 4}%, #ff0080, #7928ca, #00d4ff, #34d399, #fbbf24, #ff0080)`,
+            background: `conic-gradient(from 130deg at 50% 50%, #ff0080, #7928ca, #00d4ff, #34d399, #fbbf24, #ff0080)`,
           }}
           transition={{ duration: 0.15 }}
         />
@@ -164,12 +134,12 @@ const MetalCard = ({ attestation, showActions = true }) => {
         {/* Top glossy specular highlight */}
         <div className="absolute inset-x-0 top-0 h-1/3 pointer-events-none z-10 bg-gradient-to-b from-white/[0.14] to-transparent" />
 
-        {/* Cursor-follow sheen */}
+        {/* Sheen */}
         <motion.div
           className="absolute inset-0 pointer-events-none z-20"
           animate={{
             background: isHovered
-              ? `radial-gradient(circle at ${50 + rotation.y * 3}% ${50 + rotation.x * 3}%, ${sheenColor} 0%, transparent 45%)`
+              ? `radial-gradient(circle at 50% 50%, ${sheenColor} 0%, transparent 45%)`
               : `radial-gradient(circle at 50% 0%, ${sheenColor} 0%, transparent 55%)`
           }}
           transition={{ duration: 0.1 }}
