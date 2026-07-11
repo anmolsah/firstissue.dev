@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useSupporter } from '../contexts/SupporterContext';
 import { useAttestations, useVerifyContribution } from '../hooks/useProofOfWork';
 import MetalCard from './MetalCard';
-import { ShieldCheck, Plus, Link as LinkIcon, AlertCircle, Loader2, Crown } from 'lucide-react';
+import { ShieldCheck, Plus, Link as LinkIcon, AlertCircle, Loader2, Crown, Info } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const ProofOfWorkTab = () => {
@@ -97,8 +97,19 @@ const ProofOfWorkTab = () => {
             <span className="font-medium text-sm">Share Profile</span>
           </button>
           
-          <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/80 shadow-inner min-w-[120px]">
-            <div className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1">Total Impact</div>
+          <div className="bg-zinc-950 p-4 rounded-xl border border-zinc-800/80 shadow-inner min-w-[120px] relative">
+            <div className="text-xs text-zinc-500 uppercase tracking-wider font-semibold mb-1 flex items-center gap-1.5">
+              Total Impact
+              <div className="relative group/tooltip">
+                <Info className="w-3.5 h-3.5 text-zinc-600 hover:text-zinc-400 cursor-help transition-colors" />
+                <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl text-left opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none">
+                  <p className="text-[11px] text-zinc-300 leading-relaxed normal-case tracking-normal font-normal">
+                    <span className="font-semibold text-white">Impact Score</span> measures the significance of your merged PR. It's calculated from lines changed, file complexity, repo star count, and review depth — scored out of 100.
+                  </p>
+                  <div className="absolute bottom-0 right-3 translate-y-1/2 rotate-45 w-2 h-2 bg-zinc-900 border-r border-b border-zinc-700/80"></div>
+                </div>
+              </div>
+            </div>
             <div className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-cyan-400">
               {attestations?.reduce((acc, curr) => acc + (curr.impact_score || 0), 0) || 0}
             </div>
