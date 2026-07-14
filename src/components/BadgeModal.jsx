@@ -16,6 +16,8 @@ import MonthMasterBadge from './badges/MonthMasterBadge';
 import PerfectScoreBadge from './badges/PerfectScoreBadge';
 import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
+import CenturionBadge from './badges/CenturionBadge';
+import MergeLegendBadge from './badges/MergeLegendBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -25,8 +27,10 @@ const BADGE_ICONS = {
   'contributor-10': Zap,
   'contributor-25': Trophy,
   'contributor-50': Crown,
+  'contributor-100': Crown,
   'merge-master-5': GitMerge,
   'merge-master-10': Trophy,
+  'merge-master-25': Trophy,
   'streak-7': Flame,
   'streak-30': Flame,
   'perfect-score': Crown,
@@ -152,12 +156,16 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
                         <ProlificContributorBadge earned={earned} variant="raw" />
                       ) : badge.id === 'contributor-50' ? (
                         <EliteContributorBadge earned={earned} variant="raw" />
+                      ) : badge.id === 'contributor-100' ? (
+                        <CenturionBadge earned={earned} variant="raw" />
                       ) : badge.id === 'merge-master-5' ? (
                         <MergeMasterBadge earned={earned} variant="raw" />
                       ) : badge.id === 'early-adopter' ? (
                         <EarlyAdopterBadge earned={earned} variant="raw" />
                       ) : badge.id === 'merge-master-10' ? (
                         <MergeChampionBadge earned={earned} variant="raw" />
+                      ) : badge.id === 'merge-master-25' ? (
+                        <MergeLegendBadge earned={earned} variant="raw" />
                       ) : badge.id === 'streak-7' ? (
                         <WeekWarriorBadge earned={earned} variant="raw" />
                       ) : badge.id === 'streak-30' ? (
