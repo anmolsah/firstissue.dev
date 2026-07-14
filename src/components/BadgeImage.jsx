@@ -14,6 +14,8 @@ import MonthMasterBadge from './badges/MonthMasterBadge';
 import PerfectScoreBadge from './badges/PerfectScoreBadge';
 import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
+import CenturionBadge from './badges/CenturionBadge';
+import MergeLegendBadge from './badges/MergeLegendBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -23,8 +25,10 @@ const BADGE_ICONS = {
   'contributor-10': Zap,
   'contributor-25': Trophy,
   'contributor-50': Crown,
+  'contributor-100': Crown,
   'merge-master-5': GitMerge,
   'merge-master-10': Trophy,
+  'merge-master-25': Trophy,
   'streak-7': Flame,
   'streak-30': Flame,
   'perfect-score': Crown,
@@ -110,6 +114,10 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = f
           <div className="w-full h-full flex items-center justify-center scale-125">
             <EliteContributorBadge earned={true} variant="raw" />
           </div>
+        ) : badge.id === 'contributor-100' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <CenturionBadge earned={true} variant="raw" />
+          </div>
         ) : badge.id === 'merge-master-5' ? (
           <div className="w-full h-full flex items-center justify-center scale-125">
             <MergeMasterBadge earned={true} variant="raw" />
@@ -121,6 +129,10 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = f
         ) : badge.id === 'merge-master-10' ? (
           <div className="w-full h-full flex items-center justify-center scale-125">
             <MergeChampionBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'merge-master-25' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <MergeLegendBadge earned={true} variant="raw" />
           </div>
         ) : badge.id === 'streak-7' ? (
           <div className="w-full h-full flex items-center justify-center scale-125">

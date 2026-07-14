@@ -14,6 +14,8 @@ import MonthMasterBadge from './badges/MonthMasterBadge';
 import PerfectScoreBadge from './badges/PerfectScoreBadge';
 import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
+import CenturionBadge from './badges/CenturionBadge';
+import MergeLegendBadge from './badges/MergeLegendBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -23,8 +25,10 @@ const BADGE_ICONS = {
   'contributor-10': Zap,
   'contributor-25': Trophy,
   'contributor-50': Crown,
+  'contributor-100': Crown,
   'merge-master-5': GitMerge,
   'merge-master-10': Trophy,
+  'merge-master-25': Trophy,
   'streak-7': Flame,
   'streak-30': Flame,
   'perfect-score': Crown,
@@ -50,6 +54,9 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
   if (badge.id === 'contributor-50') {
     return <EliteContributorBadge earned={earned} onClick={onClick} />;
   }
+  if (badge.id === 'contributor-100') {
+    return <CenturionBadge earned={earned} onClick={onClick} />;
+  }
   if (badge.id === 'merge-master-5') {
     return <MergeMasterBadge earned={earned} onClick={onClick} />;
   }
@@ -58,6 +65,9 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
   }
   if (badge.id === 'merge-master-10') {
     return <MergeChampionBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'merge-master-25') {
+    return <MergeLegendBadge earned={earned} onClick={onClick} />;
   }
   if (badge.id === 'streak-7') {
     return <WeekWarriorBadge earned={earned} onClick={onClick} />;

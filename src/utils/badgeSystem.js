@@ -120,6 +120,25 @@ export const BADGE_DEFINITIONS = {
     color: 'amber'
   },
 
+  CONTRIBUTOR_100: {
+    id: 'contributor-100',
+    name: 'Centurion',
+    description: 'Made 100 contributions to open source',
+    image: '/badges/contributor-100.svg',
+    criteria: {
+      narrative: 'User must make at least 100 contributions to open source projects'
+    },
+    issuer: {
+      name: 'FirstIssue.dev',
+      url: 'https://firstissue.dev',
+      email: 'badges@firstissue.dev'
+    },
+    type: 'BadgeClass',
+    requirement: (stats) => stats.total >= 100,
+    rarity: 'legendary',
+    color: 'red'
+  },
+
   MERGE_MASTER_5: {
     id: 'merge-master-5',
     name: 'Merge Master',
@@ -155,6 +174,25 @@ export const BADGE_DEFINITIONS = {
     type: 'BadgeClass',
     requirement: (stats) => stats.merged >= 10,
     rarity: 'rare',
+    color: 'emerald'
+  },
+
+  MERGE_MASTER_25: {
+    id: 'merge-master-25',
+    name: 'Merge Legend',
+    description: 'Got 25 pull requests merged',
+    image: '/badges/merge-master-25.svg',
+    criteria: {
+      narrative: 'User must have at least 25 merged pull requests'
+    },
+    issuer: {
+      name: 'FirstIssue.dev',
+      url: 'https://firstissue.dev',
+      email: 'badges@firstissue.dev'
+    },
+    type: 'BadgeClass',
+    requirement: (stats) => stats.merged >= 25,
+    rarity: 'epic',
     color: 'emerald'
   },
 
