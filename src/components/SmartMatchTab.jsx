@@ -21,6 +21,12 @@ import {
   BrainCircuit,
   ShieldAlert,
   Tag,
+  Radar,
+  Layers,
+  BarChart3,
+  Search,
+  Gauge,
+  Wand2,
 } from 'lucide-react';
 
 const LABEL_OPTIONS = [
@@ -59,12 +65,12 @@ const SmartMatchLoadingScreen = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const statuses = [
-    { text: "Scanning your repositories", icon: "📡" },
-    { text: "Mapping your tech stack", icon: "🧬" },
-    { text: "Analyzing contribution patterns", icon: "📊" },
-    { text: "Searching open issues", icon: "🔍" },
-    { text: "Scoring match quality", icon: "⚡" },
-    { text: "Curating your results", icon: "✨" },
+    { text: "Scanning your repositories", Icon: Radar },
+    { text: "Mapping your tech stack", Icon: Layers },
+    { text: "Analyzing contribution patterns", Icon: BarChart3 },
+    { text: "Searching open issues", Icon: Search },
+    { text: "Scoring match quality", Icon: Gauge },
+    { text: "Curating your results", Icon: Wand2 },
   ];
 
   useEffect(() => {
@@ -249,7 +255,7 @@ const SmartMatchLoadingScreen = () => {
                   transform: isTransitioning ? 'translateY(-8px)' : 'translateY(0)',
                 }}
               >
-                <span className="text-base leading-none">{statuses[statusIndex].icon}</span>
+                {React.createElement(statuses[statusIndex].Icon, { className: 'w-3.5 h-3.5 text-purple-400 flex-shrink-0' })}
                 <span className="text-[11px] font-semibold text-zinc-400 tracking-wide truncate">
                   {statuses[statusIndex].text}
                 </span>
