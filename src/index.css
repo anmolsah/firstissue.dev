@@ -677,4 +677,97 @@ textarea:focus {
 }
 
 
+/* ============================================
+   Smart Match — Premium Loading Animations
+   ============================================ */
 
+/* Orbiting dots — clockwise */
+@keyframes sm-loading-orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.sm-loading-orbit {
+  animation: sm-loading-orbit 6s linear infinite;
+}
+
+/* Orbiting dots — counter-clockwise */
+@keyframes sm-loading-orbit-reverse {
+  from { transform: rotate(360deg); }
+  to   { transform: rotate(0deg); }
+}
+.sm-loading-orbit-reverse {
+  animation: sm-loading-orbit-reverse 4s linear infinite;
+}
+
+/* Core breathing pulse */
+@keyframes sm-loading-core-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 50px -5px rgba(168,85,247,0.25); }
+  50%      { transform: scale(1.04); box-shadow: 0 0 60px -5px rgba(168,85,247,0.4); }
+}
+.sm-loading-core-pulse {
+  animation: sm-loading-core-pulse 3s ease-in-out infinite;
+}
+
+/* Inner shine sweep */
+@keyframes sm-loading-shine {
+  0%   { transform: translateX(-120%) rotate(-30deg); }
+  100% { transform: translateX(120%) rotate(-30deg); }
+}
+.sm-loading-shine {
+  animation: sm-loading-shine 4s ease-in-out infinite;
+}
+
+/* Floating ambient blobs */
+@keyframes sm-loading-float {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(15px, -20px); }
+}
+.sm-loading-float {
+  animation: sm-loading-float 8s ease-in-out infinite;
+}
+.sm-loading-float-delayed {
+  animation: sm-loading-float 8s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+/* Tiny floating particles */
+@keyframes sm-loading-particle {
+  0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+  20%  { opacity: 1; transform: translateY(-10px) scale(1); }
+  80%  { opacity: 0.6; transform: translateY(-40px) scale(0.8); }
+  100% { opacity: 0; transform: translateY(-60px) scale(0.3); }
+}
+.sm-loading-particle {
+  animation: sm-loading-particle 5s ease-in-out infinite;
+}
+
+/* Data stream lines — horizontal */
+@keyframes sm-loading-data-stream {
+  0%, 100% { opacity: 0; transform: scaleX(0.3); }
+  50%      { opacity: 1; transform: scaleX(1); }
+}
+.sm-loading-data-stream {
+  animation: sm-loading-data-stream 3s ease-in-out infinite;
+}
+
+/* Data stream lines — vertical */
+@keyframes sm-loading-data-stream-v {
+  0%, 100% { opacity: 0; transform: scaleY(0.3); }
+  50%      { opacity: 1; transform: scaleY(1); }
+}
+.sm-loading-data-stream-v {
+  animation: sm-loading-data-stream-v 3s ease-in-out infinite;
+}
+
+/* Progress bar gradient animation */
+@keyframes sm-loading-gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Progress bar shine sweep */
+@keyframes sm-loading-bar-shine {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
