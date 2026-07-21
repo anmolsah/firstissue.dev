@@ -1,6 +1,6 @@
 import React from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
 import { SupporterProvider } from "./contexts/SupporterContext";
 import LoginPage from "./pages/LoginPage";
@@ -26,6 +26,15 @@ import CookieConsent from "./components/CookieConsent";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
 import AIPage from "./pages/AIPage";
+
+// Route guard: redirects authenticated users to /explore
+// Used for landing page and login page — only accessible when logged out
+const PublicOnlyRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (user) return <Navigate to="/explore" replace />;
+  return children;
+};
 
 // Layout wrapper that conditionally shows Navbar/Footer
 const AppLayout = ({ children }) => {
@@ -85,9 +94,9 @@ const App = () => {
         <SupporterProvider>
           <AppLayout>
             <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<PublicOnlyRoute><LandingPage /></PublicOnlyRoute>} />
               <Route path="/getting-started" element={<DocsPage />} />
-              <Route path="/login" element={<LoginPage />} />
+              <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
               <Route path="/bookmarks" element={<BookmarksPage />} />
               <Route path="/status" element={<StatusPage />} />
               <Route path="/test-github" element={<TestGitHubPage />} />
@@ -115,3 +124,4 @@ const App = () => {
 };
 
 export default App;
+

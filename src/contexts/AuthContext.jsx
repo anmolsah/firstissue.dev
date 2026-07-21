@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }) => {
       provider: "github",
       options: {
         scopes: "read:user user:email",
-        redirectTo: `${window.location.origin}/status`,
+        redirectTo: `${window.location.origin}/explore`,
       },
     });
     return { data, error };
