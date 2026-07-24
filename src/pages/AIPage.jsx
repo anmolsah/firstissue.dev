@@ -11,6 +11,7 @@ import {
   deleteChat as deleteChatDB,
 } from "../services/chatHistoryService";
 import AppSidebar from "../components/AppSidebar";
+import MobileBottomNav from "../components/MobileBottomNav";
 const logo = "/officialLogo.png";
 
 // Code block component with copy feedback
@@ -450,9 +451,9 @@ const AIPage = () => {
       </AppSidebar>
 
       {/* Main Container */}
-      <main className="flex-1 lg:ml-64 flex flex-col min-h-screen bg-[#0B0C10] relative">
+      <main className="flex-1 lg:ml-64 flex flex-col min-h-screen bg-[#0B0C10] relative pb-20 lg:pb-0">
         {/* Sticky ChatGPT Header */}
-        <header className="h-16 border-b border-zinc-800/60 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-6">
+        <header className="h-14 sm:h-16 border-b border-zinc-800/60 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between px-4 sm:px-6">
           <div className="flex items-center gap-2.5">
             <span className="text-lg font-bold text-white tracking-tight">
               FirstMate AI
@@ -625,6 +626,9 @@ const AIPage = () => {
           </div>
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 };

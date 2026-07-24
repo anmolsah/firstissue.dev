@@ -5,6 +5,7 @@ import { useAddBookmark, useRemoveBookmark, bookmarkKeys } from "../hooks/querie
 import { useQueryClient } from "@tanstack/react-query";
 import SmartMatchTab from "../components/SmartMatchTab";
 import AppSidebar from "../components/AppSidebar";
+import MobileBottomNav from "../components/MobileBottomNav";
 import {
   Search,
   Compass,
@@ -438,9 +439,9 @@ const ExplorePage = () => {
       </AppSidebar>
 
       {/* Main Content Area */}
-      <main className="flex-1 lg:ml-64 min-w-0">
+      <main className="flex-1 lg:ml-64 min-w-0 pb-20 lg:pb-0">
         {/* Top Header */}
-        <header className="h-16 border-b border-zinc-800/60 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-6">
+        <header className="h-14 sm:h-16 border-b border-zinc-800/60 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6">
           <div className="flex flex-1 items-center max-w-xl relative">
             <Search className="absolute left-3 w-3.5 h-3.5 text-zinc-500" />
             <input
@@ -785,6 +786,9 @@ const ExplorePage = () => {
           )}
         </div>
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav />
     </div>
   );
 };

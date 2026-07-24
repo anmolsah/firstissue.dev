@@ -12,6 +12,7 @@ import EditProfileModal from "../components/EditProfileModal";
 import BadgesSection from "../components/BadgesSection";
 import BadgeUnlockedNotification from "../components/BadgeUnlockedNotification";
 import AppSidebar from "../components/AppSidebar";
+import MobileBottomNav from "../components/MobileBottomNav";
 import ProofOfWorkTab from "../components/ProofOfWorkTab";
 import { useBadges } from "../hooks/useBadges";
 import { useAttestations } from "../hooks/useProofOfWork";
@@ -687,15 +688,7 @@ const ProfilePageNew = () => {
       </main>
 
       {/* ── Mobile Bottom Navigation ── */}
-      <div className="mobile-bottom-nav lg:hidden">
-        <div className="flex items-center justify-around py-2 px-2">
-          <MobileNavItem icon={Compass} label="Explore" onClick={() => navigate("/explore")} />
-          <MobileNavItem icon={Bookmark} label="Saved" onClick={() => navigate("/bookmarks")} />
-          <MobileNavItem icon={User} label="Profile" active onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
-          <MobileNavItem icon={TrendingUp} label="Status" onClick={() => navigate("/status")} />
-          <MobileNavItem icon={BookOpen} label="Docs" onClick={() => navigate("/getting-started")} />
-        </div>
-      </div>
+      <MobileBottomNav />
 
       {/* Edit Profile Modal */}
       <EditProfileModal
@@ -775,17 +768,7 @@ const SidebarLink = ({ icon: Icon, label, to, onClick }) => {
   );
 };
 
-const MobileNavItem = ({ icon: Icon, label, active, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`flex flex-col items-center gap-0.5 px-2.5 py-1 rounded transition-colors cursor-pointer min-w-0 ${
-      active ? "text-white" : "text-zinc-500 hover:text-zinc-300"
-    }`}
-  >
-    <Icon className="w-4 h-4" />
-    <span className="text-[9px] font-semibold uppercase tracking-wider">{label}</span>
-  </button>
-);
+
 
 const SidebarStatCard = ({ label, value, icon: Icon }) => {
   return (
