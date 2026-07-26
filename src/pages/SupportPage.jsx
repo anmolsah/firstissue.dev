@@ -8,7 +8,7 @@ import {
   Crown,
   Check,
   ArrowRight,
-  Zap,
+  Bot,
   Target,
   Brain,
   Shield,
@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Navbar from "../components/Navbar";
+import { FREE_DAILY_COPILOT_MESSAGES } from "../lib/limits";
 
 const SupportPage = () => {
   const { user } = useAuth();
@@ -74,7 +75,7 @@ const SupportPage = () => {
 
             if (existing) {
               console.log(`Supporter record found on attempt ${attempt}`, existing);
-              toast.success("🎉 Welcome, Supporter! Smart Match and Unlimited Proof of Work are now unlocked.");
+              toast.success("🎉 Welcome, Supporter! Smart Match, unlimited FirstMate, and unlimited Proof of Work are now unlocked.");
               refreshStatus();
               return;
             }
@@ -160,9 +161,9 @@ const SupportPage = () => {
       accent: "text-purple-400",
     },
     {
-      icon: Zap,
-      title: "Priority Access",
-      description: "Access new features first and get priority feedback from the engineering team.",
+      icon: Bot,
+      title: "Unlimited FirstMate AI",
+      description: `Free accounts get ${FREE_DAILY_COPILOT_MESSAGES} FirstMate messages a day. Supporters ask unlimited questions — git, merge conflicts, PR reviews — with no daily cap.`,
       color: "from-amber-500/20 to-orange-500/5",
       accent: "text-amber-400",
     },
@@ -171,7 +172,7 @@ const SupportPage = () => {
   const faqs = [
     {
       q: "What benefits do I get as a Supporter?",
-      a: "You get access to our AI-powered Smart Match system on the Explore page, and you lift the 5-mint limit on Proof of Work credentials, allowing you to build an unlimited cryptographic portfolio of your contributions.",
+      a: `Three things: full access to AI Smart Match on the Explore page, unlimited FirstMate AI Copilot chat (free accounts get ${FREE_DAILY_COPILOT_MESSAGES} messages per day), and no limit on Proof of Work credentials so you can build an unlimited cryptographic portfolio of your contributions.`,
     },
     {
       q: "What is Proof of Work?",
@@ -179,7 +180,7 @@ const SupportPage = () => {
     },
     {
       q: "Is there a limit on the Free tier?",
-      a: "Yes. Free accounts can browse issues, bookmark them, and mint up to 5 Proof of Work credentials. Becoming a supporter removes this limit entirely, allowing unlimited verifications.",
+      a: `Yes. Free accounts can browse issues, bookmark them, mint up to 5 Proof of Work credentials, and send ${FREE_DAILY_COPILOT_MESSAGES} FirstMate messages per day (the daily allowance resets at midnight UTC). Becoming a supporter removes both limits entirely.`,
     },
     {
       q: "Can I cancel my subscription anytime?",
@@ -195,6 +196,7 @@ const SupportPage = () => {
     { feature: "Browse beginner issues", free: "Yes", supporter: "Yes" },
     { feature: "Bookmarks & Status Tracking", free: "Yes", supporter: "Yes" },
     { feature: "Verified Proof of Work limit", free: "Max 5", supporter: "Unlimited" },
+    { feature: "FirstMate AI Copilot", free: `${FREE_DAILY_COPILOT_MESSAGES}/day`, supporter: "Unlimited" },
     { feature: "AI Smart Matching", free: "No", supporter: "Yes" },
     { feature: "Tech stack & language fit", free: "No", supporter: "Yes" },
     { feature: "Premium Profile badge", free: "No", supporter: "Yes" },
@@ -239,18 +241,18 @@ const SupportPage = () => {
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded border border-zinc-800 text-zinc-400 text-[10px] font-mono bg-zinc-950 uppercase tracking-wider mb-6">
             <Crown className="w-3 h-3 text-zinc-450" />
-            <span>Empower Open Source</span>
+            <span>Supporter</span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-white mb-6 leading-tight">
-            Level Up Your <br className="hidden sm:inline" />
+            Get Your First PR Merged <br className="hidden sm:inline" />
             <span className="text-white">
-              Contribution Journey
+              — Or Your Next 20
             </span>
           </h1>
 
           <p className="text-sm text-zinc-450 mb-8 max-w-xl mx-auto leading-relaxed">
-            Support the platform and unlock AI Smart Matching along with unlimited verified Proof of Work credentials on your developer profile.
+            Most people stall between finding an issue and shipping the pull request. Supporter gives you AI Smart Match to pick the right issue, unlimited FirstMate to get unstuck, and unlimited Proof of Work to prove every merge you land.
           </p>
 
           {isSupporter ? (
@@ -313,8 +315,8 @@ const SupportPage = () => {
       <section className="py-16 px-6 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">Premium Supporter Privileges</h2>
-            <p className="text-xs text-zinc-500 max-w-md mx-auto">Supercharge your open source profile with premium tools designed to help you stand out.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mb-2">What You Get</h2>
+            <p className="text-xs text-zinc-500 max-w-md mx-auto">Four tools that move you from browsing issues to merged code you can point a recruiter at.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

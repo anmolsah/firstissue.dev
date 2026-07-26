@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink, Copy, Check, Pencil } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink, Copy, Check, Pencil, Crown } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useSupporter } from "../contexts/SupporterContext";
+import { useCopilotQuota } from "../hooks/queries/useCopilotQuota";
 import { supabase } from "../lib/supabase";
 import {
   fetchChatHistory,
@@ -176,8 +178,16 @@ const renderMarkdown = (text) => {
 
 const AIPage = () => {
   const { user, loading: authLoading } = useAuth();
+  const { isSupporter } = useSupporter();
   const navigate = useNavigate();
-  
+
+  // Free accounts get a daily message allowance (enforced in the kb-query
+  // edge function); supporters are unlimited and skip the query entirely.
+  const { remaining, limit, applyServerQuota, markExhausted } = useCopilotQuota(user?.id, {
+    enabled: !isSupporter,
+  });
+  const outOfMessages = !isSupporter && remaining <= 0;
+
   const initialMessage = {
     role: "assistant",
     content: "Hi! I am **FirstMate**, your AI Copilot. 🌟\n\nAsk me anything about git commands, codebase architecture, open-source workflow steps, or platform features! I search our vector knowledge base to find exact documentation references."
@@ -272,7 +282,7 @@ const AIPage = () => {
   }, [messages, isLoading]);
 
   const handleSuggestionClick = (text) => {
-    if (isLoading) return;
+    if (isLoading || outOfMessages) return;
     sendMessage(text);
   };
 
@@ -283,7 +293,7 @@ const AIPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading || outOfMessages) return;
     sendMessage(input.trim());
     setInput("");
   };
@@ -337,11 +347,32 @@ const AIPage = () => {
 
       if (!response.ok) {
         const errorJson = await response.json().catch(() => ({}));
+
+        // Daily free allowance spent — surface the upgrade path rather than a
+        // generic error, and lock the composer until tomorrow.
+        if (response.status === 429 || errorJson.code === "daily_limit_reached") {
+          markExhausted(errorJson.limit);
+          const limitMessage = {
+            role: "assistant",
+            content: `🔒 **You've used all ${errorJson.limit || limit} free FirstMate messages for today.**\n\nYour allowance resets at midnight UTC. Supporters get **unlimited** FirstMate chat — along with AI Smart Match and unlimited Proof of Work — for $9/mo.`
+          };
+          const finalMessages = [...newMessages, limitMessage];
+          setMessages(finalMessages);
+          if (chatId) {
+            setChatHistory(prev =>
+              prev.map(c => c.id === chatId ? { ...c, messages: finalMessages, updated_at: new Date().toISOString() } : c)
+            );
+            updateChatMessages(chatId, finalMessages);
+          }
+          return;
+        }
+
         throw new Error(errorJson.error || `Server responded with ${response.status}`);
       }
 
       const data = await response.json();
-      
+      applyServerQuota(data.quota);
+
       const assistantMessage = {
         role: "assistant",
         content: data.answer,
@@ -461,6 +492,23 @@ const AIPage = () => {
             <div className="flex items-center gap-1 px-1.5 py-0.5 rounded border border-zinc-850 bg-zinc-950/80">
               <span className="text-[9px] text-zinc-400 font-mono uppercase tracking-wider font-bold">Online</span>
             </div>
+
+            {/* Free-tier daily allowance counter */}
+            {!isSupporter && (
+              <Link
+                to="/support"
+                title="Supporters get unlimited FirstMate messages"
+                className={`hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border transition-colors ${
+                  outOfMessages
+                    ? "border-amber-900/50 bg-amber-950/20 text-amber-400 hover:border-amber-700"
+                    : "border-zinc-850 bg-zinc-950/80 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200"
+                }`}
+              >
+                <span className="text-[9px] font-mono uppercase tracking-wider font-bold">
+                  {remaining} / {limit} left today
+                </span>
+              </Link>
+            )}
           </div>
 
           <button
@@ -602,23 +650,46 @@ const AIPage = () => {
         {/* ChatGPT Style Floating Input Area */}
         <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-[#0B0C10] via-[#0B0C10]/95 to-transparent z-20">
           <div className="max-w-3xl mx-auto">
-            <form onSubmit={handleSubmit} className="relative flex items-center bg-zinc-950 border border-zinc-800 focus-within:border-zinc-700 rounded-lg p-1.5 pr-2.5 shadow-2xl transition-all duration-200">
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask FirstMate a question..."
-                disabled={isLoading}
-                className="flex-1 bg-transparent px-3 py-2.5 text-xs text-white placeholder-zinc-550 focus:outline-none disabled:opacity-50"
-              />
-              <button
-                type="submit"
-                disabled={isLoading || !input.trim()}
-                className="p-2 bg-white hover:bg-zinc-200 text-black rounded flex items-center justify-center shrink-0 disabled:opacity-30 disabled:pointer-events-none transition-all"
-              >
-                <Send className="w-3.5 h-3.5 text-black" />
-              </button>
-            </form>
+            {outOfMessages ? (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-zinc-950 border border-amber-900/40 rounded-lg p-4 shadow-2xl">
+                <div className="flex items-start gap-3 flex-1 min-w-0">
+                  <div className="p-1.5 rounded border border-amber-900/40 bg-amber-950/20 text-amber-400 shrink-0">
+                    <Lock className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="space-y-0.5 min-w-0">
+                    <p className="text-xs font-bold text-white">Daily free limit reached</p>
+                    <p className="text-[11px] text-zinc-450 leading-relaxed">
+                      You've used all {limit} FirstMate messages for today. Resets at midnight UTC — or go unlimited now.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to="/support"
+                  className="flex items-center justify-center gap-1.5 px-4 py-2 bg-white hover:bg-zinc-200 text-black rounded text-xs font-semibold transition-all shrink-0"
+                >
+                  <Crown className="w-3.5 h-3.5 text-black" />
+                  <span>Go unlimited — $9/mo</span>
+                </Link>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="relative flex items-center bg-zinc-950 border border-zinc-800 focus-within:border-zinc-700 rounded-lg p-1.5 pr-2.5 shadow-2xl transition-all duration-200">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask FirstMate a question..."
+                  disabled={isLoading}
+                  className="flex-1 bg-transparent px-3 py-2.5 text-xs text-white placeholder-zinc-550 focus:outline-none disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading || !input.trim()}
+                  className="p-2 bg-white hover:bg-zinc-200 text-black rounded flex items-center justify-center shrink-0 disabled:opacity-30 disabled:pointer-events-none transition-all"
+                >
+                  <Send className="w-3.5 h-3.5 text-black" />
+                </button>
+              </form>
+            )}
 
             <p className="text-[10px] text-zinc-650 text-center mt-3 font-mono">
               FirstMate can make mistakes. Please verify important commands and codebase guides.

@@ -2,8 +2,9 @@
 // Deploy: supabase functions deploy kb-query
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
-import { createUserClient } from "../_shared/supabaseClient.ts";
+import { createUserClient, createAdminClient } from "../_shared/supabaseClient.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
+import { isActiveSupporter, FREE_DAILY_COPILOT_MESSAGES } from "../_shared/supporter.ts";
 
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -39,6 +40,49 @@ serve(async (req: Request) => {
         JSON.stringify({ error: "Unauthorized. Please log in to use FirstMate." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // ── Daily quota: free accounts get FREE_DAILY_COPILOT_MESSAGES/day, ──
+    // supporters are unlimited. Consumed BEFORE any billable API call so a
+    // rejected request never costs us an embedding or a completion.
+    const adminClient = createAdminClient();
+    const supporter = await isActiveSupporter(adminClient, user.id);
+    let quota: { limited: boolean; used?: number; limit?: number; remaining?: number } = {
+      limited: false,
+    };
+
+    if (!supporter) {
+      const { data: quotaRows, error: quotaError } = await adminClient.rpc(
+        "consume_ai_copilot_quota",
+        { p_user_id: user.id, p_limit: FREE_DAILY_COPILOT_MESSAGES },
+      );
+
+      if (quotaError) {
+        console.error("[kb-query] Quota check failed:", quotaError);
+        return new Response(
+          JSON.stringify({ error: "Could not verify your daily message quota. Please try again." }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const result = Array.isArray(quotaRows) ? quotaRows[0] : quotaRows;
+      const used = result?.used ?? 0;
+      const limit = result?.daily_limit ?? FREE_DAILY_COPILOT_MESSAGES;
+
+      if (!result?.allowed) {
+        console.log(`[kb-query] Daily limit reached for user ${user.id} (${used}/${limit})`);
+        return new Response(
+          JSON.stringify({
+            error: `You've used all ${limit} free FirstMate messages for today. Become a supporter for unlimited chat, or come back tomorrow.`,
+            code: "daily_limit_reached",
+            used,
+            limit,
+          }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      quota = { limited: true, used, limit, remaining: Math.max(0, limit - used) };
     }
 
     // Get API Key for OpenRouter
@@ -187,7 +231,7 @@ ${contextText ? `Retrieved Context Chunks:\n${contextText}` : "No relevant docum
     }
 
     return new Response(
-      JSON.stringify({ answer, sources }),
+      JSON.stringify({ answer, sources, quota }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 

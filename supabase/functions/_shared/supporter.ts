@@ -9,6 +9,10 @@ import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Free accounts may mint up to this many Proof of Work attestations.
 export const FREE_ATTESTATION_LIMIT = 5;
 
+// Free accounts may send this many FirstMate AI Copilot messages per UTC day.
+// Keep in sync with FREE_DAILY_COPILOT_MESSAGES in src/lib/limits.js.
+export const FREE_DAILY_COPILOT_MESSAGES = 10;
+
 /**
  * Determine whether a user currently has an active supporter entitlement.
  *
