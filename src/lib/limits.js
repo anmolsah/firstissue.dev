@@ -11,3 +11,6 @@ export const FREE_DAILY_COPILOT_MESSAGES = 10;
 
 // Proof of Work attestations a free account may mint in total.
 export const FREE_ATTESTATION_LIMIT = 5;
+
+// Contribution Kits a free account may generate per calendar month.
+export const FREE_MONTHLY_KITS = 1;

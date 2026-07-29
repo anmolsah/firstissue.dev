@@ -771,3 +771,19 @@ textarea:focus {
   0%   { transform: translateX(-100%); }
   100% { transform: translateX(200%); }
 }
+
+/* Contribution Kit modal entrance */
+@keyframes ck-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-in-fade {
+  animation: ck-fade 0.15s ease-out;
+}
+@keyframes ck-pop {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-in-pop {
+  animation: ck-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}

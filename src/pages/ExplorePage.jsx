@@ -6,6 +6,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import SmartMatchTab from "../components/SmartMatchTab";
 import AppSidebar from "../components/AppSidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
+import ContributionKitModal from "../components/ContributionKitModal";
 import {
   Search,
   Compass,
@@ -26,6 +27,7 @@ import {
   Globe,
   Calendar,
   Building2,
+  Wrench,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
@@ -824,6 +826,7 @@ const TabButton = ({ label, active, onClick, icon: Icon, isPremium }) => (
 const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   const repoName = issue.repository_url.split("/").slice(-2).join("/");
   const timeAgo = formatTimeAgo(issue.created_at);
+  const [kitOpen, setKitOpen] = useState(false);
 
   return (
     <div className="bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-6 hover:border-zinc-750 hover:bg-white/[0.01] transition-all duration-300 group flex flex-col h-full relative">
@@ -891,15 +894,31 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
             />
           ))}
         </div>
-        <a
-          href={issue.html_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-zinc-500 hover:text-zinc-250 transition-colors"
-        >
-          <ExternalLink className="w-3.5 h-3.5" />
-        </a>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setKitOpen(true)}
+            title="Generate a Contribution Kit for this issue"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700 transition-all text-[11px] font-semibold"
+          >
+            <Wrench className="w-3 h-3" />
+            Kit
+          </button>
+          <a
+            href={issue.html_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-zinc-500 hover:text-zinc-250 transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
       </div>
+
+      <ContributionKitModal
+        issue={{ url: issue.html_url, title: issue.title, body: issue.body }}
+        isOpen={kitOpen}
+        onClose={() => setKitOpen(false)}
+      />
     </div>
   );
 };
