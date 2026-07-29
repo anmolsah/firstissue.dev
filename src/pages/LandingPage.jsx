@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import ComparisonSection from "../components/ComparisonSection";
 import TimelineFeatures from "../components/TimelineFeatures";
+import ContributionKitShowcase from "../components/ContributionKitShowcase";
 import {
   ArrowRight,
   Github,
@@ -177,6 +178,9 @@ const LandingPage = () => {
 
       {/* Bento Grid Feature Showcase */}
       <TimelineFeatures />
+
+      {/* Contribution Kit Showcase */}
+      <ContributionKitShowcase />
 
       {/* User Count Section */}
       <section id="user-count-section" className="py-16 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-zinc-900/60">
