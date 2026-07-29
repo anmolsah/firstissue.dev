@@ -199,9 +199,11 @@ serve(async (req: Request) => {
         return jsonResponse({ error: "Missing diff" }, 400, corsHeaders);
       }
 
-      const reviewSystem = `You are a senior open-source maintainer doing a pre-submission review of a contributor's diff BEFORE they open a pull request. Your job is to flag anything that would get the PR rejected, requested-changes, or ignored, so they can fix it first.
+      // Terse prompt = fewer input tokens. All checks preserved; only prose
+      // filler dropped. JSON schema stays exact.
+      const reviewSystem = `Senior open-source maintainer. Pre-submit review of a contributor's diff BEFORE the PR opens. Flag anything that gets the PR rejected, change-requested, or ignored — so they fix it first.
 
-Focus on: mismatch with the repo's conventions and style, missing tests, unrelated/scope-creep changes, missing docs/changelog updates, formatting/lint issues, commented-out code, debug logging, and anything that signals "first-timer who didn't read CONTRIBUTING".
+Check: convention/style mismatch, missing tests, scope-creep/unrelated changes, missing docs/changelog, format/lint issues, commented-out code, debug logging, signs of a "first-timer who skipped CONTRIBUTING".
 
 Return ONLY valid JSON, no markdown. Format:
 {
@@ -211,7 +213,7 @@ Return ONLY valid JSON, no markdown. Format:
     {"severity": "<'high'|'medium'|'low'>", "note": "<specific, actionable issue>"}
   ]
 }
-Order findings by severity (high first). Be specific and reference the diff. If the diff looks clean, return an empty findings array and verdict 'likely-accept'.`;
+Order findings by severity (high first). Be specific, reference the diff. Clean diff -> empty findings array, verdict 'likely-accept'.`;
 
       const reviewUser = `## Issue being addressed
 ${issueTitle || "(not provided)"} ${repo ? `in ${repo}` : ""}
@@ -292,7 +294,10 @@ ${diff.slice(0, 12000)}
     ]);
 
     // 4. Build the kit prompt.
-    const kitSystem = `You are an expert open-source mentor helping a developer go from "I found an issue" to "I opened a solid pull request". Given a GitHub issue and the repository's README/CONTRIBUTING docs, produce a practical starter kit.
+    // Prompt prose is intentionally terse to cut input tokens per call — every
+    // instruction is preserved, only filler dropped. Do NOT "prettify" back to
+    // verbose sentences. The JSON schema and rules stay exact.
+    const kitSystem = `Open-source mentor. Turn a GitHub issue + the repo README/CONTRIBUTING into a practical starter kit for the contributor.
 
 Return ONLY valid JSON, no markdown, no commentary. Format:
 {
@@ -307,9 +312,9 @@ Return ONLY valid JSON, no markdown, no commentary. Format:
 }
 
 Rules:
-- filesToTouch is a best guess — say so implicitly by keeping reasons hedged ("likely", "probably").
-- Never invent repo-specific commands that aren't supported by the docs; when unsure, use conventional defaults and note the assumption.
-- Keep everything concrete and beginner-friendly.`;
+- filesToTouch = best guess. Keep reasons hedged ("likely", "probably").
+- Never invent repo commands not in the docs. Unsure -> conventional defaults + note the assumption.
+- Concrete, beginner-friendly. claimComment and prDescription MUST read natural and professional (a human posts them) — do not compress those.`;
 
     const kitUser = `## Repository
 ${repo}
