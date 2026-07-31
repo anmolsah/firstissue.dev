@@ -125,6 +125,55 @@ const TARGETS = [
   { url: 'https://git-scm.com/book/en/v2/Git-Tools-Interactive-Staging',           type: 'git-book', category: 'Pro Git Book' },
   { url: 'https://git-scm.com/book/en/v2/Git-Tools-Stashing-and-Cleaning',        type: 'git-book', category: 'Pro Git Book' },
   { url: 'https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History',            type: 'git-book', category: 'Pro Git Book' },
+  { url: 'https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging', type: 'git-book', category: 'Pro Git Book' },
+  { url: 'https://git-scm.com/book/en/v2/Git-Basics-Tagging',                     type: 'git-book', category: 'Pro Git Book' },
+  { url: 'https://git-scm.com/book/en/v2/Git-Basics-Undoing-Things',              type: 'git-book', category: 'Pro Git Book' },
+  { url: 'https://git-scm.com/book/en/v2/Git-Basics-Git-Aliases',                 type: 'git-book', category: 'Pro Git Book' },
+
+  // ─── GitHub Docs — forking / contributing workflow (Markdown API) ─────────
+  { url: 'https://docs.github.com/en/get-started/quickstart/fork-a-repo',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-forks',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/syncing-a-fork',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/about-merge-conflicts',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/resolving-a-merge-conflict-on-github',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/addressing-merge-conflicts/resolving-a-merge-conflict-using-the-command-line',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/changing-the-stage-of-a-pull-request',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-branches',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/issues/tracking-your-work-with-issues/about-issues',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/issues/tracking-your-work-with-issues/linking-a-pull-request-to-an-issue',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/issues/using-labels-and-milestones-to-track-work/managing-labels',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/committing-changes-to-your-project/creating-and-editing-commits/about-commits',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-readmes',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/communities/setting-up-your-project-for-healthy-contributions/setting-guidelines-for-repository-contributors',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/discussions/quickstart',
+    type: 'github-docs', category: 'GitHub Docs' },
+
+  // ─── Open Source Guides — remaining chapters (opensource.guide) ────────────
+  { url: 'https://opensource.guide/leadership-and-governance/', type: 'opensource-guide', category: 'Open Source Guides' },
+  { url: 'https://opensource.guide/metrics/',                   type: 'opensource-guide', category: 'Open Source Guides' },
+  { url: 'https://opensource.guide/legal/',                     type: 'opensource-guide', category: 'Open Source Guides' },
+  { url: 'https://opensource.guide/building-community/',        type: 'opensource-guide', category: 'Open Source Guides' },
+  { url: 'https://opensource.guide/maintaining-balance/',       type: 'opensource-guide', category: 'Open Source Guides' },
+
+  // ─── Raw Markdown specs & guides (clean .md, no HTML parsing) ──────────────
+  { url: 'https://raw.githubusercontent.com/semver/semver/master/semver.md',
+    type: 'raw-md', category: 'Specs & Conventions', title: 'Semantic Versioning (SemVer) Specification' },
+  { url: 'https://raw.githubusercontent.com/firstcontributions/first-contributions/main/README.md',
+    type: 'raw-md', category: 'Specs & Conventions', title: 'First Contributions — Beginner Git/GitHub Guide' },
 ];
 
 // =============================================================================
@@ -469,6 +518,23 @@ async function scrapeAndIndex() {
       // ── GitHub Docs: Use their Markdown API (no HTML parsing needed) ──
       if (target.type === 'github-docs') {
         chunks = await fetchGithubDocsMarkdown(target.url);
+      } else if (target.type === 'raw-md') {
+        // ── Raw Markdown files (e.g. raw.githubusercontent.com specs/READMEs) ──
+        // No HTML parsing at all — fetch the .md and chunk it directly. This is
+        // the most robust source type, so prefer it for any doc that exposes
+        // clean Markdown. (Sites built on Hugo/Docusaurus shortcodes are NOT
+        // clean raw Markdown — use their rendered HTML or a dedicated parser.)
+        const response = await fetch(target.url, {
+          headers: { 'User-Agent': 'FirstIssueScraper/1.0 (https://firstissue.dev; bot)' }
+        });
+        if (!response.ok) {
+          console.error(`  [ERROR] Failed to fetch: Status ${response.status}`);
+          continue;
+        }
+        const markdown = await response.text();
+        const titleMatch = markdown.match(/^#\s+(.+)$/m);
+        const pageTitle = target.title || (titleMatch ? titleMatch[1].trim() : 'Documentation');
+        chunks = parseMarkdownIntoChunks(markdown, pageTitle, target.url);
       } else {
         // ── All other types: Fetch HTML and parse ──
         const response = await fetch(target.url, {

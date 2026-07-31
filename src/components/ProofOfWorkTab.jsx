@@ -2,25 +2,99 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useSupporter } from '../contexts/SupporterContext';
-import { useAttestations, useVerifyContribution } from '../hooks/useProofOfWork';
+import { useAttestations, useVerifyContribution, useOpenToWork, useUpdateOpenToWork } from '../hooks/useProofOfWork';
+import { generateResumePdf } from '../utils/generateResumePdf';
 import MetalCard from './MetalCard';
-import { ShieldCheck, Plus, Link as LinkIcon, AlertCircle, Loader2, Crown, Info } from 'lucide-react';
+import { ShieldCheck, Plus, Link as LinkIcon, AlertCircle, Loader2, Crown, Info, Download, Copy, Code2, Sparkles, Briefcase } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 const ProofOfWorkTab = () => {
   const { user } = useAuth();
   const { isSupporter } = useSupporter();
   const { data: attestations, isLoading: isFetching } = useAttestations(user?.id);
   const verifyMutation = useVerifyContribution();
-  
+  const { data: openToWorkData } = useOpenToWork(user?.id);
+  const updateOpenToWork = useUpdateOpenToWork();
+
   const [prUrl, setPrUrl] = useState('');
   const [isMinting, setIsMinting] = useState(false);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [blurbDraft, setBlurbDraft] = useState('');
+
+  const openToWork = !!openToWorkData?.open_to_work;
+
+  // Seed the blurb input once data arrives, without clobbering in-progress edits.
+  React.useEffect(() => {
+    if (openToWorkData?.open_to_work_blurb != null) {
+      setBlurbDraft(openToWorkData.open_to_work_blurb);
+    }
+  }, [openToWorkData?.open_to_work_blurb]);
+
+  const handleToggleOpenToWork = () => {
+    if (!user?.id || updateOpenToWork.isPending) return;
+    updateOpenToWork.mutate(
+      { userId: user.id, open_to_work: !openToWork, open_to_work_blurb: blurbDraft || null },
+      {
+        onSuccess: () => toast.success(!openToWork ? "You're now visible to recruiters" : 'Open to work turned off'),
+        onError: () => toast.error('Could not update your status'),
+      },
+    );
+  };
+
+  const handleSaveBlurb = () => {
+    if (!user?.id || !openToWork) return;
+    updateOpenToWork.mutate(
+      { userId: user.id, open_to_work: true, open_to_work_blurb: blurbDraft || null },
+      {
+        onSuccess: () => toast.success('Pitch saved'),
+        onError: () => toast.error('Could not save your pitch'),
+      },
+    );
+  };
 
 
   const FREE_LIMIT = 5;
   const attestationCount = attestations?.length || 0;
   const freeRemaining = Math.max(0, FREE_LIMIT - attestationCount);
   const isFreeLimitReached = !isSupporter && attestationCount >= FREE_LIMIT;
+
+  // ── Live Portfolio distribution surfaces ──────────────────────────────
+  const ghUsername = user?.user_metadata?.user_name || user?.user_metadata?.preferred_username;
+  const badgeUrl = ghUsername && SUPABASE_URL
+    ? `${SUPABASE_URL}/functions/v1/badge-svg?u=${encodeURIComponent(ghUsername)}`
+    : null;
+  const profileUrl = ghUsername ? `${window.location.origin}/u/${ghUsername}` : null;
+  const badgeMarkdown = badgeUrl ? `[![Proof of Work](${badgeUrl})](${profileUrl})` : '';
+  const badgeHtml = badgeUrl
+    ? `<a href="${profileUrl}"><img src="${badgeUrl}" alt="Proof of Work on FirstIssue" height="140" /></a>`
+    : '';
+
+  const copyText = (text, label) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`${label} copied!`);
+  };
+
+  const handleDownloadResume = async () => {
+    if (isPdfLoading) return;
+    setIsPdfLoading(true);
+    const loading = toast.loading('Building your open-source résumé…');
+    try {
+      const profile = {
+        github_username: ghUsername,
+        name: user?.user_metadata?.full_name || user?.user_metadata?.name || ghUsername,
+        github_avatar_url: user?.user_metadata?.avatar_url,
+      };
+      await generateResumePdf(profile, attestations || []);
+      toast.success('Résumé downloaded!', { id: loading });
+    } catch (e) {
+      console.error(e);
+      toast.error('Could not generate PDF résumé', { id: loading });
+    } finally {
+      setIsPdfLoading(false);
+    }
+  };
 
   const handleMint = async (e) => {
     e.preventDefault();
@@ -116,6 +190,108 @@ const ProofOfWorkTab = () => {
           </div>
         </div>
       </div>
+
+      {/* Distribute — badge embed + PDF résumé */}
+      {ghUsername && (
+        <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+            <h3 className="text-lg font-semibold text-zinc-100 flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-emerald-400" />
+              Distribute Your Proof of Work
+            </h3>
+            <button
+              onClick={handleDownloadResume}
+              disabled={isPdfLoading}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-xl transition-colors text-sm font-medium disabled:opacity-50"
+            >
+              {isPdfLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+              Download résumé (PDF)
+            </button>
+          </div>
+
+          {/* Badge preview */}
+          <div className="flex justify-center p-5 bg-zinc-950 rounded-xl border border-zinc-800/80 mb-4">
+            {badgeUrl && <img src={badgeUrl} alt="Your Proof of Work badge" height="140" className="max-w-full" />}
+          </div>
+
+          {/* Supporter gating note */}
+          {isSupporter ? (
+            <p className="text-xs text-emerald-400/90 mb-4 flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5" /> Live badge — auto-updates every time you mint a new credential.
+            </p>
+          ) : (
+            <div className="mb-4 flex flex-col sm:flex-row sm:items-center gap-2 justify-between p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+              <p className="text-xs text-amber-200/90">
+                Your badge is a <strong>static snapshot</strong>. Become a supporter to keep it live as your work grows.
+              </p>
+              <a href="/support" className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-orange-500 text-zinc-950 text-xs font-semibold rounded-lg hover:from-amber-400 hover:to-orange-400 transition-all whitespace-nowrap">
+                <Crown className="w-3.5 h-3.5" /> Keep it live
+              </a>
+            </div>
+          )}
+
+          {/* Copy snippets */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              onClick={() => copyText(badgeMarkdown, 'Markdown')}
+              className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/70 rounded-xl transition-colors text-sm"
+            >
+              <Copy className="w-4 h-4 text-zinc-500" />
+              Copy README Markdown
+            </button>
+            <button
+              onClick={() => copyText(badgeHtml, 'HTML embed')}
+              className="flex items-center gap-2 px-4 py-2.5 bg-zinc-800/60 hover:bg-zinc-800 text-zinc-300 border border-zinc-700/70 rounded-xl transition-colors text-sm"
+            >
+              <Code2 className="w-4 h-4 text-zinc-500" />
+              Copy HTML embed
+            </button>
+          </div>
+
+          {/* Open to work */}
+          <div className="mt-5 pt-5 border-t border-zinc-800/60">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5">
+                <Briefcase className="w-4 h-4 text-zinc-400" />
+                <div>
+                  <p className="text-sm font-semibold text-zinc-200">Open to work</p>
+                  <p className="text-xs text-zinc-500">Show a recruiter banner on your public profile.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={openToWork}
+                onClick={handleToggleOpenToWork}
+                disabled={updateOpenToWork.isPending}
+                className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors disabled:opacity-50 ${openToWork ? 'bg-emerald-500' : 'bg-zinc-700'}`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${openToWork ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
+
+            {openToWork && (
+              <div className="mt-3 flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={blurbDraft}
+                  onChange={(e) => setBlurbDraft(e.target.value)}
+                  maxLength={120}
+                  placeholder="e.g. Frontend dev seeking remote React roles"
+                  className="flex-1 px-3 py-2 bg-zinc-950 border border-zinc-700 rounded-lg text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+                <button
+                  onClick={handleSaveBlurb}
+                  disabled={updateOpenToWork.isPending}
+                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  Save pitch
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Minting Form */}
       <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6">

@@ -32,6 +32,11 @@ verify_jwt = false
 [functions.kb-query]
 verify_jwt = false
 
+# Public embeddable Proof of Work badge — served to <img> requests (GitHub camo
+# proxy, browsers) that carry no Supabase JWT.
+[functions.badge-svg]
+verify_jwt = false
+
 # ── Authenticated functions: always reached via supabase.functions.invoke,
 #    which attaches at least the anon JWT (plus the user session when present) ──
 

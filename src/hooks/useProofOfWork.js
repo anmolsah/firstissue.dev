@@ -28,7 +28,7 @@ export function usePublicProfileAndAttestations(githubUsername) {
       // 1. Fetch user ID from profiles using github_username
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, github_username, github_avatar_url, name')
+        .select('id, github_username, github_avatar_url, name, open_to_work, open_to_work_blurb')
         .eq('github_username', githubUsername)
         .single();
 
@@ -54,6 +54,41 @@ export function usePublicProfileAndAttestations(githubUsername) {
       };
     },
     enabled: !!githubUsername,
+  });
+}
+
+// Owner-only: read/update the "open to work" recruiter flag on the user's
+// own profiles row (RLS: "Users can update own profile").
+export function useOpenToWork(userId) {
+  return useQuery({
+    queryKey: ['openToWork', userId],
+    queryFn: async () => {
+      if (!userId) return null;
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('open_to_work, open_to_work_blurb')
+        .eq('id', userId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!userId,
+  });
+}
+
+export function useUpdateOpenToWork() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ userId, open_to_work, open_to_work_blurb }) => {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ open_to_work, open_to_work_blurb })
+        .eq('id', userId);
+      if (error) throw error;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['openToWork', variables.userId] });
+    },
   });
 }
 
