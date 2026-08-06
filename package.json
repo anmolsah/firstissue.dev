@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/generate-seo-pages.mjs && node scripts/generate-profile-pages.mjs",
+    "build": "vite build && node scripts/generate-seo-pages.mjs",
     "build:app": "vite build",
     "seo": "node scripts/generate-seo-pages.mjs",
     "seo:profiles": "node scripts/generate-profile-pages.mjs",

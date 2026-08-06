@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Github, ArrowLeft, Download, Loader2, Briefcase } from 'lucide-react';
+import { ShieldCheck, Github, ArrowLeft, Download, Loader2, Briefcase, GitCommit, Activity, GitMerge, Trophy } from 'lucide-react';
 import { usePublicProfileAndAttestations } from '../hooks/useProofOfWork';
 import { generateResumePdf } from '../utils/generateResumePdf';
+import { supabase } from '../lib/supabase';
 import MetalCard from '../components/MetalCard';
 import toast from 'react-hot-toast';
 
@@ -11,6 +12,26 @@ const PublicProfilePage = () => {
   const { username } = useParams();
   const { data, isLoading, error } = usePublicProfileAndAttestations(username);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
+  const [ghStats, setGhStats] = useState(null);
+
+  // Live GitHub contribution totals (past 12 months), fetched via the
+  // github-data edge function using a server token so it works for logged-out
+  // recruiters too. Non-blocking: the profile renders without it.
+  useEffect(() => {
+    if (!username) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: res, error: fnErr } = await supabase.functions.invoke('github-data', {
+          body: { action: 'contributionStats', username },
+        });
+        if (!cancelled && !fnErr && res?.stats) setGhStats(res.stats);
+      } catch {
+        /* stats are a nice-to-have; ignore failures */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [username]);
 
   const handleDownloadResume = async () => {
     if (isPdfLoading || !data) return;
@@ -144,6 +165,22 @@ const PublicProfilePage = () => {
           </div>
         </div>
 
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
+          <PublicStat icon={GitMerge} label="Merged PRs" value={attestations.length} />
+          <PublicStat icon={Trophy} label="Total Impact" value={totalImpact} />
+          <PublicStat
+            icon={Activity}
+            label="Contributions (1y)"
+            value={ghStats ? ghStats.totalContributions.toLocaleString() : null}
+          />
+          <PublicStat
+            icon={GitCommit}
+            label="Commits (1y)"
+            value={ghStats ? ghStats.totalCommits.toLocaleString() : null}
+          />
+        </div>
+
         {/* Credentials Grid */}
         <div className="space-y-6">
           <div className="flex items-center gap-3 border-b border-zinc-800 pb-4">
@@ -192,5 +229,19 @@ const PublicProfilePage = () => {
     </div>
   );
 };
+
+const PublicStat = ({ icon: Icon, label, value }) => (
+  <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-5">
+    <div className="w-8 h-8 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-center text-zinc-400 mb-3">
+      <Icon className="w-4 h-4" />
+    </div>
+    {value == null ? (
+      <div className="h-8 w-16 bg-zinc-800/60 rounded animate-pulse mb-1" />
+    ) : (
+      <div className="text-2xl sm:text-3xl font-black text-zinc-100 font-mono mb-1">{value}</div>
+    )}
+    <div className="text-[11px] text-zinc-500 uppercase tracking-wider font-semibold">{label}</div>
+  </div>
+);
 
 export default PublicProfilePage;

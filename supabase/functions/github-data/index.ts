@@ -252,6 +252,57 @@ async function fetchIssues(languages: any[], token?: string, preferredLabels?: s
   return diverseIssues;
 }
 
+// Public contribution totals for any GitHub user, via the GraphQL
+// contributionsCollection (past 12 months). Works for a logged-out visitor
+// because it uses a SERVER token (GITHUB_API_TOKEN) rather than the viewer's —
+// the numbers returned are the target user's PUBLIC contributions.
+async function getContributionStats(username: string, token?: string) {
+  const cacheKey = `contribstats:v1:${username}`;
+  const cached = await redisGet(cacheKey);
+  if (cached) {
+    console.log(`[Cache Hit] Contribution stats for ${username}`);
+    return cached;
+  }
+
+  const ghToken = token || Deno.env.get("GITHUB_API_TOKEN");
+  if (!ghToken) throw new Error("No GitHub token available for contribution stats");
+
+  const query = `query($login:String!){
+    user(login:$login){
+      contributionsCollection{
+        totalCommitContributions
+        totalPullRequestContributions
+        contributionCalendar{ totalContributions }
+      }
+    }
+  }`;
+
+  const res = await fetch(`${GITHUB_API_BASE}/graphql`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${ghToken}`,
+      "Content-Type": "application/json",
+      "User-Agent": "firstissue.dev",
+    },
+    body: JSON.stringify({ query, variables: { login: username } }),
+  });
+
+  if (!res.ok) throw new Error(`GitHub GraphQL error: ${res.status}`);
+  const json = await res.json();
+  const cc = json?.data?.user?.contributionsCollection;
+  if (!cc) throw new Error("User not found or no contribution data");
+
+  const stats = {
+    totalContributions: cc.contributionCalendar?.totalContributions || 0,
+    totalCommits: cc.totalCommitContributions || 0,
+    totalPRs: cc.totalPullRequestContributions || 0,
+  };
+
+  // Cache 6h — contribution graph doesn't change minute-to-minute.
+  await redisSet(cacheKey, stats, 21600);
+  return stats;
+}
+
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
@@ -278,8 +329,16 @@ serve(async (req: Request) => {
     if (action === "fetchIssues") {
       if (!languages || !Array.isArray(languages)) throw new Error("Missing or invalid languages");
       const issues = await fetchIssues(languages, token, preferredLabels);
-      return new Response(JSON.stringify({ issues }), { 
-        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      return new Response(JSON.stringify({ issues }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
+    if (action === "contributionStats") {
+      if (!username) throw new Error("Missing username");
+      const stats = await getContributionStats(username, token);
+      return new Response(JSON.stringify({ stats }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 

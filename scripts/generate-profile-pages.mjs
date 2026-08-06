@@ -15,6 +15,15 @@
 //
 // NON-CRITICAL: any failure logs loudly and exits 0 so it can never break the
 // app deploy.
+//
+// ⚠️ INTENTIONALLY NOT WIRED INTO `npm run build`. A fully static /u/<username>
+// page shadows the live SPA route (on Vercel a static file wins over the SPA
+// rewrite), so it CANNOT reflect live changes — an "open to work" toggle or new
+// mint would appear stale until the next rebuild. The public profile is now the
+// live SPA (src/pages/PublicProfilePage.jsx). Before re-enabling this for SEO,
+// add client-side hydration to the emitted page (or move to SSR/prerender at
+// request time) so the static snapshot stays crawlable AND live. Run manually
+// with `npm run seo:profiles` only if you understand that tradeoff.
 
 import { writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
