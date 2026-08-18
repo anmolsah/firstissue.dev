@@ -14,22 +14,110 @@ const PublicProfilePage = () => {
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [ghStats, setGhStats] = useState(null);
 
-  // Live GitHub contribution totals (past 12 months), fetched via the
-  // github-data edge function using a server token so it works for logged-out
-  // recruiters too. Non-blocking: the profile renders without it.
+  // Live GitHub contribution totals (past 12 months).
+  // Strategy: edge function → GraphQL (client token) → REST events API
+  // (no auth) → graceful zeros. The UI never stays in loading forever.
   useEffect(() => {
     if (!username) return;
     let cancelled = false;
+
     (async () => {
+      let stats = null;
+
+      // 1) Try the edge function (uses GITHUB_API_TOKEN on the server)
       try {
         const { data: res, error: fnErr } = await supabase.functions.invoke('github-data', {
           body: { action: 'contributionStats', username },
         });
-        if (!cancelled && !fnErr && res?.stats) setGhStats(res.stats);
+        if (!fnErr && res?.stats) stats = res.stats;
       } catch {
-        /* stats are a nice-to-have; ignore failures */
+        /* edge function unavailable — fall through */
+      }
+
+      // 2) Fallback: direct GitHub GraphQL using client-side token
+      if (!stats) {
+        const clientToken = import.meta.env.VITE_GITHUB_TOKEN;
+        if (clientToken) {
+          try {
+            const query = `query($login:String!){
+              user(login:$login){
+                contributionsCollection{
+                  totalCommitContributions
+                  totalPullRequestContributions
+                  contributionCalendar{ totalContributions }
+                }
+              }
+            }`;
+            const res = await fetch('https://api.github.com/graphql', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${clientToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ query, variables: { login: username } }),
+            });
+            if (res.ok) {
+              const json = await res.json();
+              const cc = json?.data?.user?.contributionsCollection;
+              if (cc) {
+                stats = {
+                  totalContributions: cc.contributionCalendar?.totalContributions || 0,
+                  totalCommits: cc.totalCommitContributions || 0,
+                  totalPRs: cc.totalPullRequestContributions || 0,
+                };
+              }
+            }
+          } catch {
+            /* GraphQL fallback failed — fall through */
+          }
+        }
+      }
+
+      // 3) Fallback: GitHub REST events API (no auth needed, public data)
+      //    Fetches up to 10 pages × 100 events to approximate recent activity.
+      if (!stats) {
+        try {
+          let totalCommits = 0;
+          let totalPRs = 0;
+          let totalContributions = 0;
+          const headers = { Accept: 'application/vnd.github.v3+json' };
+          // Fetch up to 3 pages (300 events) for a reasonable estimate
+          for (let page = 1; page <= 3; page++) {
+            const res = await fetch(
+              `https://api.github.com/users/${username}/events/public?per_page=100&page=${page}`,
+              { headers }
+            );
+            if (!res.ok) break;
+            const events = await res.json();
+            if (!Array.isArray(events) || events.length === 0) break;
+            for (const ev of events) {
+              if (ev.type === 'PushEvent') {
+                const commitCount = ev.payload?.commits?.length || 0;
+                totalCommits += commitCount;
+                totalContributions += commitCount;
+              } else if (ev.type === 'PullRequestEvent') {
+                totalPRs += 1;
+                totalContributions += 1;
+              } else if (ev.type === 'IssuesEvent' || ev.type === 'IssueCommentEvent' ||
+                         ev.type === 'PullRequestReviewEvent' || ev.type === 'CreateEvent') {
+                totalContributions += 1;
+              }
+            }
+          }
+          if (totalContributions > 0) {
+            stats = { totalContributions, totalCommits, totalPRs };
+          }
+        } catch {
+          /* REST fallback failed — fall through */
+        }
+      }
+
+      // 4) Final fallback: zeros so the UI doesn't stay loading forever
+      if (!cancelled) {
+        setGhStats(stats || { totalContributions: 0, totalCommits: 0, totalPRs: 0 });
       }
     })();
+
     return () => { cancelled = true; };
   }, [username]);
 
