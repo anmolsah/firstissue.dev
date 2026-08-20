@@ -177,10 +177,6 @@ const PublicProfilePage = () => {
         {profile.open_to_work && (
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between bg-emerald-500/10 border border-emerald-500/30 rounded-2xl px-6 py-4 mb-6">
             <div className="flex items-center gap-3">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
-              </span>
               <div>
                 <p className="text-emerald-300 font-semibold flex items-center gap-2">
                   <Briefcase className="w-4 h-4" /> Open to opportunities
