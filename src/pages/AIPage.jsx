@@ -69,6 +69,32 @@ const parseInlineElements = (text) => {
     return part;
   });
 
+  // Parse Links: [text](url)
+  elements = elements.flatMap((el) => {
+    if (typeof el !== "string") return [el];
+    const split = el.split(/(\[.*?\]\(.*?\))/g);
+    return split.map((sub, k) => {
+      if (sub.startsWith("[") && sub.endsWith(")") && sub.includes("](")) {
+        const match = sub.match(/\[(.*?)\]\((.*?)\)/);
+        if (match) {
+          const [, linkText, url] = match;
+          return (
+            <a
+              key={`link-${k}`}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-emerald-400 hover:text-emerald-300 underline underline-offset-2 decoration-emerald-400/30 hover:decoration-emerald-400 transition-colors"
+            >
+              {linkText}
+            </a>
+          );
+        }
+      }
+      return sub;
+    });
+  });
+
   // Parse Inline Code: `code`
   elements = elements.flatMap((el) => {
     if (typeof el !== "string") return [el];
