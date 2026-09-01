@@ -1,0 +1,33 @@
+# FirstIssue.dev
+
+> The #1 platform to find your first open source issue and start contributing. Free, curated, beginner-friendly.
+
+FirstIssue.dev helps beginners, students, and new developers discover beginner-friendly open source issues, track their contributions, and build a verifiable developer portfolio. The platform curates 500+ "good first issue" and "help wanted" labeled GitHub issues from verified, welcoming open source projects.
+
+## Key Pages
+
+- [Explore Issues](https://firstissue.dev/explore): Browse and filter curated beginner-friendly open source issues by programming language, label, and project. The main discovery interface for finding your first issue.
+- [Good First Issues by Language](https://firstissue.dev/good-first-issues): Static, crawlable directory of good first issues organized by programming language (JavaScript, Python, TypeScript, Go, Rust, Java, C++, Ruby, and 20+ more).
+- [Getting Started Guide](https://firstissue.dev/getting-started): Step-by-step guide for making your first open source contribution, from finding an issue to submitting a pull request.
+- [Documentation](https://firstissue.dev/docs): Complete developer documentation covering contribution workflows, Git commands, pull request best practices, code review etiquette, and troubleshooting.
+- [FirstMate AI Copilot](https://firstissue.dev/firstmate): AI-powered assistant that helps you find the right issue, understand codebases, and prepare your first contribution.
+- [Contribution Tracker](https://firstissue.dev/status): Track your open source contributions including pull requests, merges, and issue assignments with an activity heatmap.
+- [Public Profiles](https://firstissue.dev/u/): Shareable developer profiles showcasing open source contributions, badges, and statistics.
+- [Support](https://firstissue.dev/support): Get help with the platform, report issues, or request features.
+
+## Key Documentation
+
+- [First Steps](https://firstissue.dev/docs/getting-started/first-steps): How to sign up, connect GitHub, and find your first issue.
+- [Understanding Labels](https://firstissue.dev/docs/getting-started/understanding-labels): Guide to GitHub issue labels like "good first issue", "help wanted", "beginner-friendly".
+- [Contribution Workflow](https://firstissue.dev/docs/contribution-guide/workflow): Fork, clone, branch, commit, push, PR — the complete workflow.
+- [Pull Request Guide](https://firstissue.dev/docs/contribution-guide/pull-requests): Writing good PR descriptions, following contribution guidelines, and getting merged.
+- [Code Review Tips](https://firstissue.dev/docs/contribution-guide/code-review): How to respond to review feedback and iterate on your PR.
+- [Building Your Portfolio](https://firstissue.dev/docs/best-practices/building-portfolio): How to leverage open source contributions for your resume and career.
+
+## About
+
+FirstIssue.dev is created by Anmol Sah. It is completely free to use, open source, and designed specifically for first-time contributors. The platform syncs with GitHub in real-time to surface fresh, actionable issues from projects that actively welcome newcomers.
+
+- Website: https://firstissue.dev
+- GitHub: https://github.com/anmolsah/firstissue.dev
+- Creator: Anmol Sah

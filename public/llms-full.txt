@@ -1,0 +1,136 @@
+# FirstIssue.dev — Full Content for AI Engines
+
+> The #1 platform to find your first open source issue and start contributing. Free, curated, beginner-friendly. Created by Anmol Sah.
+
+---
+
+## What is FirstIssue.dev?
+
+FirstIssue.dev is a free, open-source platform that helps beginners, students, and new developers find their first open source contribution. It curates 500+ beginner-friendly GitHub issues from verified projects that welcome first-time contributors.
+
+### Core Features
+
+1. **Issue Discovery**: Browse curated "good first issue" and "help wanted" labeled GitHub issues, filtered by programming language, project, and difficulty level.
+2. **Contribution Tracking**: Automatically track all GitHub contributions including pull requests, merges, and issue assignments. View your activity heatmap and statistics.
+3. **Developer Portfolio**: Build a shareable public profile showcasing your open source contributions, badges earned, and contribution statistics.
+4. **FirstMate AI Copilot**: AI-powered assistant that helps you find the right issue for your skill level, understand unfamiliar codebases, and prepare your contribution.
+5. **Beginner-Friendly Curation**: All projects are verified to ensure they actively welcome newcomers with clear contribution guidelines, responsive maintainers, and well-documented codebases.
+6. **Real-Time GitHub Sync**: Issues are updated in real-time from the GitHub API to ensure freshness and relevance.
+
+### Supported Programming Languages
+
+JavaScript, TypeScript, Python, Go, Rust, Java, C++, C#, Ruby, PHP, Swift, Kotlin, Dart, Scala, Elixir, Haskell, Clojure, R, Shell/Bash, Lua, and more.
+
+---
+
+## Frequently Asked Questions
+
+### How do I find my first open source issue?
+
+FirstIssue.dev makes it easy to find your first open source issue. Simply sign up, connect your GitHub account, and explore curated beginner-friendly issues labeled "good first issue" or "help wanted". Filter by your preferred programming language and skill level to discover issues perfect for first-time contributors.
+
+### Is FirstIssue.dev good for beginners and students?
+
+Yes! FirstIssue.dev is specifically designed for beginners, students, and first-time contributors. We curate beginner-friendly open source issues from verified projects that welcome new contributors. It's perfect for students building their developer portfolio and anyone making their first open source contribution.
+
+### What are beginner-friendly open source issues?
+
+Beginner-friendly issues are GitHub issues labeled "good first issue" or "help wanted" that are suitable for first-time contributors. These issues typically require minimal context, have clear descriptions, and are perfect for students and new developers learning to contribute to open source projects.
+
+### How can I track my open source contributions as a student?
+
+FirstIssue.dev automatically tracks all your GitHub contributions including pull requests, merges, and issue assignments. View your contribution activity heatmap, statistics, and build a verifiable portfolio perfect for student resumes and job applications.
+
+### Do I need experience to make my first open source contribution?
+
+No experience required! FirstIssue.dev helps beginners and students find their first issue with step-by-step guidance. Start with documentation updates, simple bug fixes, or beginner-friendly features. Our platform is designed specifically for first-time contributors.
+
+### How do I find good first issues for students?
+
+Use FirstIssue.dev to discover curated good first issues perfect for students. Filter by programming language, project type, and difficulty level. We verify all projects to ensure they're welcoming to first-time contributors and ideal for building your student developer portfolio.
+
+### What is FirstMate?
+
+FirstMate is FirstIssue.dev's AI copilot that assists you throughout your open source journey. It can help you find the right issue for your skill level, explain unfamiliar codebases, draft PR descriptions, and answer questions about open source contribution best practices.
+
+### Is FirstIssue.dev free?
+
+Yes, FirstIssue.dev is completely free to use. There are no premium tiers, paywalls, or hidden costs. The platform is open source itself.
+
+---
+
+## Getting Started Guide
+
+### Step 1: Sign Up
+Visit https://firstissue.dev and sign up with your GitHub account. This allows the platform to sync your contributions and personalize issue recommendations.
+
+### Step 2: Explore Issues
+Navigate to the Explore page to browse curated beginner-friendly issues. Use filters to narrow down by:
+- **Programming Language**: JavaScript, Python, TypeScript, Go, Rust, etc.
+- **Label**: "good first issue", "help wanted", "beginner-friendly"
+- **Project**: Filter by specific open source projects
+
+### Step 3: Pick an Issue
+Look for issues that match your skill level. Good indicators of beginner-friendly issues:
+- Clear description of what needs to be done
+- Labels like "good first issue" or "help wanted"
+- Active maintainers who respond to questions
+- Well-documented contribution guidelines
+
+### Step 4: Make Your Contribution
+1. Fork the repository on GitHub
+2. Clone your fork locally
+3. Create a new branch for your changes
+4. Make your changes and commit them
+5. Push your branch and open a Pull Request
+6. Respond to review feedback and iterate
+
+### Step 5: Track Your Progress
+Return to FirstIssue.dev to see your contribution tracked automatically. Build your portfolio and earn badges as you contribute more.
+
+---
+
+## Contribution Workflow Best Practices
+
+### Writing Good Pull Requests
+- Reference the issue number in your PR description
+- Explain what you changed and why
+- Follow the project's contribution guidelines
+- Keep changes focused and minimal
+- Add tests if the project requires them
+
+### Code Review Etiquette
+- Be respectful and professional
+- Don't take feedback personally — it's about the code
+- Ask questions if you don't understand a comment
+- Make requested changes promptly
+- Thank reviewers for their time
+
+### Building Your Developer Portfolio
+- Contribute to diverse projects across different technologies
+- Focus on quality over quantity
+- Write meaningful commit messages
+- Document your contributions on your profile
+- Share your FirstIssue.dev public profile on your resume
+
+---
+
+## Platform Architecture
+
+FirstIssue.dev is built with:
+- **Frontend**: React 19, Vite, TailwindCSS 4
+- **Backend**: Supabase (PostgreSQL, Auth, Edge Functions)
+- **APIs**: GitHub REST API, GitHub Search API
+- **AI**: FirstMate AI copilot for contribution guidance
+- **Hosting**: Vercel (Edge network)
+- **SEO**: Programmatic static pages for "good first issues" by language
+
+---
+
+## Contact & Links
+
+- **Website**: https://firstissue.dev
+- **GitHub Repository**: https://github.com/anmolsah/firstissue.dev
+- **Creator**: Anmol Sah
+- **Support**: https://firstissue.dev/support
+- **Documentation**: https://firstissue.dev/docs

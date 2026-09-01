@@ -1,23 +1,85 @@
 # robots.txt for https://firstissue.dev
+# Last updated: 2026-09-01
 
+# ─── Default: allow all crawlers ───────────────────────────────────────
 User-agent: *
 Allow: /
-Allow: /explore
-Allow: /status
-Allow: /docs
-Allow: /getting-started
-Allow: /good-first-issues
-Allow: /u
 Disallow: /api/
 Disallow: /admin/
-
-# Crawl-delay for all bots
 Crawl-delay: 1
 
-# Sitemap locations
+# ─── Google ────────────────────────────────────────────────────────────
+User-agent: Googlebot
+Allow: /
+
+User-agent: GoogleOther
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+# ─── Bing / Edge / Yahoo ──────────────────────────────────────────────
+User-agent: Bingbot
+Allow: /
+
+User-agent: msnbot
+Allow: /
+
+# ─── Brave Search ─────────────────────────────────────────────────────
+User-agent: Brave
+Allow: /
+
+# ─── Yandex ───────────────────────────────────────────────────────────
+User-agent: Yandex
+Allow: /
+
+# ─── AI Search Bots (for citations in AI-generated answers) ──────────
+# These bots power live search results in ChatGPT, Claude, Perplexity, etc.
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+# ─── AI Training Bots (allow to increase model knowledge) ────────────
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: meta-externalagent
+Allow: /
+
+# ─── Sitemaps ──────────────────────────────────────────────────────────
 Sitemap: https://firstissue.dev/sitemap.xml
 Sitemap: https://firstissue.dev/sitemap-good-first-issues.xml
 
-# Additional information
-# This site helps developers find and track open source contributions
-# Contact: support@firstissue.dev
+# ─── AI Content Files ─────────────────────────────────────────────────
+# See https://llmstxt.org for the llms.txt specification
+# llms.txt: https://firstissue.dev/llms.txt
+# llms-full.txt: https://firstissue.dev/llms-full.txt

@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <link rel="icon" href="/logo001.png" type="image/png" />
     <link rel="apple-touch-icon" href="/logo001.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Primary Meta Tags -->
@@ -99,13 +100,6 @@
           "@type": "Person",
           "name": "Anmol Sah"
         },
-        "aggregateRating": {
-          "@type": "AggregateRating",
-          "ratingValue": "4.8",
-          "ratingCount": "150",
-          "bestRating": "5",
-          "worstRating": "1"
-        },
         "featureList": [
           "Find your first open source issue",
           "Discover beginner-friendly GitHub issues",
@@ -169,7 +163,7 @@
         "logo": "https://firstissue.dev/logo001.png",
         "description": "Platform helping beginners, students, and new developers find their first open source issue and start contributing to GitHub projects",
         "sameAs": [
-          "https://github.com/firstissue",
+          "https://github.com/anmolsah/firstissue.dev",
           "https://twitter.com/anmolsah"
         ],
         "contactPoint": {
@@ -231,6 +225,8 @@
         "headline": "How to Find and Make Your First Open Source Contribution - Complete Beginner's Guide",
         "description": "Step-by-step guide for beginners, students, and new developers on finding their first open source issue and making their first contribution. Learn how to discover beginner-friendly issues, submit your first pull request, and start your open source journey.",
         "url": "https://firstissue.dev/docs",
+        "datePublished": "2026-04-19",
+        "dateModified": "2026-09-01",
         "author": {
           "@type": "Person",
           "name": "Anmol Sah"
@@ -367,6 +363,31 @@
       }
     </script>
 
+    <!-- WebSite Schema for Sitelinks Search Box -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "FirstIssue.dev",
+        "alternateName": "First Issue",
+        "url": "https://firstissue.dev",
+        "description": "Find your first open source issue and start contributing. Curated beginner-friendly GitHub issues for students and new developers.",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://firstissue.dev/explore?q={search_term_string}"
+          },
+          "query-input": "required name=search_term_string"
+        },
+        "inLanguage": "en-US"
+      }
+    </script>
+
+    <!-- AI Content Files -->
+    <link rel="alternate" type="text/markdown" href="/llms.txt" title="LLM-friendly content map" />
+    <link rel="alternate" type="text/markdown" href="/llms-full.txt" title="Full LLM-friendly content" />
+
     <!-- Preconnect for performance -->
     <link rel="preconnect" href="https://api.github.com" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -377,5 +398,85 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
+    <!-- Noscript fallback: rich content for crawlers that don't execute JavaScript -->
+    <noscript>
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; color: #EEEEEE; background: #222831;">
+        <header>
+          <h1>FirstIssue.dev — Find Your First Open Source Issue</h1>
+          <p>The #1 platform to find beginner-friendly open source issues and start contributing. Perfect for students, new developers, and first-time contributors.</p>
+        </header>
+
+        <nav aria-label="Main navigation">
+          <ul>
+            <li><a href="/explore">Explore Beginner-Friendly Issues</a></li>
+            <li><a href="/good-first-issues">Good First Issues by Language</a></li>
+            <li><a href="/firstmate">FirstMate AI Copilot</a></li>
+            <li><a href="/docs">Documentation &amp; Guides</a></li>
+            <li><a href="/getting-started">Getting Started Guide</a></li>
+            <li><a href="/status">Contribution Tracker</a></li>
+            <li><a href="/support">Support</a></li>
+          </ul>
+        </nav>
+
+        <main>
+          <article>
+            <h2>What is FirstIssue.dev?</h2>
+            <p>FirstIssue.dev is a free, open-source platform that helps beginners, students, and new developers find their first open source contribution. We curate 500+ beginner-friendly GitHub issues from verified projects that welcome first-time contributors.</p>
+
+            <h3>Key Features</h3>
+            <ul>
+              <li><strong>Issue Discovery</strong>: Browse curated "good first issue" and "help wanted" labeled GitHub issues, filtered by programming language and difficulty.</li>
+              <li><strong>Contribution Tracking</strong>: Automatically track all your GitHub contributions including pull requests, merges, and issue assignments.</li>
+              <li><strong>Developer Portfolio</strong>: Build a shareable public profile showcasing your open source contributions and earned badges.</li>
+              <li><strong>FirstMate AI Copilot</strong>: AI-powered assistant to help you find the right issue, understand codebases, and prepare contributions.</li>
+              <li><strong>Real-Time GitHub Sync</strong>: Issues updated in real-time from the GitHub API for freshness and relevance.</li>
+            </ul>
+
+            <h3>Supported Languages</h3>
+            <p>JavaScript, TypeScript, Python, Go, Rust, Java, C++, C#, Ruby, PHP, Swift, Kotlin, Dart, Scala, and 10+ more.</p>
+          </article>
+
+          <section>
+            <h2>Frequently Asked Questions</h2>
+
+            <h3>How do I find my first open source issue?</h3>
+            <p>Sign up on FirstIssue.dev, connect your GitHub account, and explore curated beginner-friendly issues labeled "good first issue" or "help wanted". Filter by your preferred programming language to find issues perfect for first-time contributors.</p>
+
+            <h3>Is FirstIssue.dev good for beginners and students?</h3>
+            <p>Yes! FirstIssue.dev is specifically designed for beginners, students, and first-time contributors. All issues are curated from verified projects that welcome new contributors.</p>
+
+            <h3>Do I need experience to contribute?</h3>
+            <p>No experience required! Start with documentation updates, simple bug fixes, or beginner-friendly features. The platform guides you step-by-step through your first contribution.</p>
+
+            <h3>Is it free?</h3>
+            <p>Yes, FirstIssue.dev is completely free to use with no premium tiers or hidden costs. The platform itself is open source.</p>
+          </section>
+
+          <section>
+            <h2>Good First Issues by Language</h2>
+            <ul>
+              <li><a href="/good-first-issues/javascript">JavaScript Good First Issues</a></li>
+              <li><a href="/good-first-issues/python">Python Good First Issues</a></li>
+              <li><a href="/good-first-issues/typescript">TypeScript Good First Issues</a></li>
+              <li><a href="/good-first-issues/go">Go Good First Issues</a></li>
+              <li><a href="/good-first-issues/rust">Rust Good First Issues</a></li>
+              <li><a href="/good-first-issues/java">Java Good First Issues</a></li>
+              <li><a href="/good-first-issues/cpp">C++ Good First Issues</a></li>
+              <li><a href="/good-first-issues/ruby">Ruby Good First Issues</a></li>
+            </ul>
+          </section>
+        </main>
+
+        <footer>
+          <p>&copy; 2026 FirstIssue.dev by Anmol Sah. All rights reserved.</p>
+          <p>
+            <a href="/privacy">Privacy Policy</a> |
+            <a href="/terms">Terms of Service</a> |
+            <a href="https://github.com/anmolsah/firstissue.dev">GitHub</a>
+          </p>
+        </footer>
+      </div>
+    </noscript>
   </body>
 </html>
