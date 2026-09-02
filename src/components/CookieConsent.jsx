@@ -46,7 +46,7 @@ const CookieConsent = () => {
                   We use cookies <ShieldCheck className="w-4 h-4 text-[#00ADB5]" />
                 </h3>
                 <p className="text-gray-400 text-sm leading-relaxed max-w-2xl">
-                  We use cookies to enhance your experience, analyze site traffic, and personalize content. 
+                  We use cookies to keep you signed in and remember your preferences. 
                   By clicking "Accept", you agree to our use of cookies. For more details, see our{" "}
                   <Link 
                     to="/privacy" 

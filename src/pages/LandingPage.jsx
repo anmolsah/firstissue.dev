@@ -101,8 +101,8 @@ const LandingPage = () => {
           </h1>
 
           <p className="text-sm sm:text-base text-zinc-400 mb-8 max-w-xl mx-auto leading-relaxed">
-            The premium platform for developers to find, track, and conquer
-            open-source issues at world-class companies.
+            Find beginner-friendly issues, make your first pull request, and
+            build a real open source track record.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3.5 justify-center items-center mb-16">
@@ -212,8 +212,8 @@ const LandingPage = () => {
               Ready to build the future?
             </h2>
             <p className="text-sm text-zinc-400 mb-8 max-w-lg mx-auto relative z-10 leading-relaxed">
-              Join thousands of world-class developers making an impact on the
-              projects that power the world.
+              Join 1,000+ developers who started here and now contribute to
+              real open source projects.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center relative z-10">
