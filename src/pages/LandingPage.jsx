@@ -5,6 +5,7 @@ import ComparisonSection from "../components/ComparisonSection";
 import TimelineFeatures from "../components/TimelineFeatures";
 import ContributionKitShowcase from "../components/ContributionKitShowcase";
 import ContributionTree from "../components/ContributionTree";
+import TrustedByMarquee from "../components/TrustedByMarquee";
 import {
   ArrowRight,
   Github,
@@ -82,15 +83,24 @@ const LandingPage = () => {
       {/* Hero Section */}
       <section className="relative z-10 pt-32 pb-16 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          {/* Vercel Announcement Pill */}
-          <Link
-            to="/docs/getting-started/platform-guide#proof-of-work-pow-attestations"
-            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 mb-8 text-[11px] sm:text-xs font-medium text-zinc-400 bg-white/[0.03] border border-zinc-800/80 rounded-full hover:border-zinc-700 hover:text-white transition-all duration-300 select-none max-w-[95%] sm:max-w-none mx-auto"
+          {/* Announcement Pill: Contribution Tree & Book */}
+          <a
+            href="#contribution-tree"
+            onClick={(e) => {
+              e.preventDefault();
+              document.getElementById("contribution-tree")?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 mb-8 text-[11px] sm:text-xs font-medium text-zinc-400 bg-white/[0.03] border border-zinc-800/80 rounded-full hover:border-emerald-500/40 hover:text-white transition-all duration-300 select-none max-w-[95%] sm:max-w-none mx-auto group cursor-pointer"
           >
-            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-wider bg-blue-500/10 px-1.5 py-0.5 rounded-full border border-blue-500/20 flex-shrink-0">NEW</span>
-            <span className="truncate sm:whitespace-normal text-left">Introducing Cryptographic Proof of Work Attestations</span>
-            <ArrowRight className="w-3.5 h-3.5 text-zinc-500 flex-shrink-0" />
-          </Link>
+            <span className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded-full border border-emerald-500/20 flex-shrink-0 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              NEW
+            </span>
+            <span className="truncate sm:whitespace-normal text-left group-hover:text-emerald-300 transition-colors">
+              Introducing the Living Contribution Tree &amp; Contribution Book
+            </span>
+            <ArrowRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          </a>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6 leading-[1.12]">
             Ship your{" "}
@@ -122,29 +132,8 @@ const LandingPage = () => {
             </Link>
           </div>
 
-          {/* Trusted By */}
-          <div className="mb-20">
-            <p className="text-[9px] font-bold text-zinc-500 tracking-[0.2em] uppercase mb-6">
-              trusted by developers at
-            </p>
-            <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 opacity-35 hover:opacity-75 transition-opacity duration-300">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-white tracking-tight">
-                <Github className="w-4 h-4" /> GitHub
-              </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-white tracking-tight">
-                <Zap className="w-4 h-4" /> Vercel
-              </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-white tracking-tight">
-                <Database className="w-4 h-4" /> Supabase
-              </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-white tracking-tight">
-                <Layout className="w-4 h-4" /> Linear
-              </div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-white tracking-tight">
-                <Code2 className="w-4 h-4" /> Prisma
-              </div>
-            </div>
-          </div>
+          {/* Trusted By Sliding Marquee */}
+          <TrustedByMarquee />
         </div>
 
         {/* Dashboard Preview */}

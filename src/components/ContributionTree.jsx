@@ -75,7 +75,7 @@ const ContributionTree = () => {
   }, [searchTerm, selectedBranch, branches]);
 
   return (
-    <section className="relative z-10 py-16 sm:py-24 px-3.5 sm:px-6 lg:px-8 border-t border-zinc-900/80 bg-[#0B0C10] overflow-hidden">
+    <section id="contribution-tree" className="relative z-10 py-16 sm:py-24 px-3.5 sm:px-6 lg:px-8 border-t border-zinc-900/80 bg-[#0B0C10] overflow-hidden scroll-mt-16">
       {/* Background Architectural Grid & Subtle Ambiance */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293710_1px,transparent_1px),linear-gradient(to_bottom,#1f293710_1px,transparent_1px)] bg-[size:28px_28px] sm:bg-[size:40px_40px]" />
