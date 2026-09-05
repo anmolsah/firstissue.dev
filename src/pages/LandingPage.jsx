@@ -51,7 +51,7 @@ const LandingPage = () => {
   }, [isVisible]);
 
   const animateCount = () => {
-    const target = 1000;
+    const target = 1200;
     const duration = 2000;
     const steps = 60;
     const increment = target / steps;
@@ -216,7 +216,7 @@ const LandingPage = () => {
               Ready to build the future?
             </h2>
             <p className="text-sm text-zinc-400 mb-8 max-w-lg mx-auto relative z-10 leading-relaxed">
-              Join 1,000+ developers who started here and now contribute to
+              Join 1200+ developers who started here and now contribute to
               real open source projects.
             </p>
 

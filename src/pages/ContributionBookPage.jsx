@@ -55,7 +55,7 @@ const ContributionBookPage = () => {
   }`;
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] text-[#EEEEEE] pt-24 pb-20 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0B0C10] text-[#EEEEEE] pt-20 sm:pt-24 pb-16 sm:pb-20 px-3.5 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background Ambience */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-10 left-1/4 w-[500px] h-[300px] bg-emerald-500/5 rounded-full blur-[130px]" />
@@ -73,13 +73,13 @@ const ContributionBookPage = () => {
         </div>
 
         {/* Hero Banner */}
-        <div className="text-center max-w-2xl mx-auto mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 mb-4 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full select-none">
+        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
+          <div className="inline-flex items-center gap-2 px-3 py-1 mb-3 sm:mb-4 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full select-none">
             <BookOpen className="w-3.5 h-3.5" />
             <span>INTERACTIVE ONBOARDING GUIDE</span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white mb-4">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-3 sm:mb-4">
             The Contribution{" "}
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
               Book
@@ -157,18 +157,19 @@ const ContributionBookPage = () => {
         </div>
 
         {/* Step by Step Walkthrough */}
-        <div className="space-y-6">
+        {/* Step by Step Walkthrough */}
+        <div className="space-y-4 sm:space-y-6">
           {/* Step 1: Fork */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center flex-shrink-0">
+          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
                 1
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <GitFork className="w-4 h-4 text-emerald-400" />
-                    Fork the Repository
+                  <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                    <GitFork className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span>Fork the Repository</span>
                   </h3>
                   <a
                     href={`${repoUrl}/fork`}
@@ -189,21 +190,21 @@ const ContributionBookPage = () => {
           </div>
 
           {/* Step 2: Clone */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center flex-shrink-0">
+          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
                 2
               </div>
-              <div className="flex-1">
-                <h3 className="text-base font-bold text-white flex items-center gap-2 mb-2">
-                  <Terminal className="w-4 h-4 text-cyan-400" />
-                  Clone your fork to your computer
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 mb-2">
+                  <Terminal className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+                  <span>Clone your fork to your computer</span>
                 </h3>
                 <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
                   Open your terminal or command prompt, and paste this command to download your copy:
                 </p>
 
-                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300">
+                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300 w-full max-w-full overflow-hidden">
                   <button
                     onClick={() =>
                       copyToClipboard(
@@ -211,7 +212,7 @@ const ContributionBookPage = () => {
                         2
                       )
                     }
-                    className="absolute right-2.5 top-2.5 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all"
+                    className="absolute right-2 top-2 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all z-10"
                     title="Copy command"
                   >
                     {copiedIndex === 2 ? (
@@ -220,38 +221,40 @@ const ContributionBookPage = () => {
                       <Copy className="w-3.5 h-3.5" />
                     )}
                   </button>
-                  <div className="text-zinc-500 select-none"># Clone your fork</div>
-                  <div className="text-emerald-400">
-                    git clone https://github.com/{cleanUsername}/firstissue.dev.git
+                  <div className="overflow-x-auto pr-8">
+                    <div className="text-zinc-500 select-none"># Clone your fork</div>
+                    <div className="text-emerald-400 whitespace-nowrap">
+                      git clone https://github.com/{cleanUsername}/firstissue.dev.git
+                    </div>
+                    <div className="text-zinc-500 select-none mt-1"># Navigate into the project folder</div>
+                    <div className="text-white whitespace-nowrap">cd firstissue.dev</div>
                   </div>
-                  <div className="text-zinc-500 select-none mt-1"># Navigate into the project folder</div>
-                  <div className="text-white">cd firstissue.dev</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Step 3: Branch */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center flex-shrink-0">
+          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
                 3
               </div>
-              <div className="flex-1">
-                <h3 className="text-base font-bold text-white flex items-center gap-2 mb-2">
-                  <GitBranch className="w-4 h-4 text-purple-400" />
-                  Create a new branch
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 mb-2">
+                  <GitBranch className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                  <span>Create a new branch</span>
                 </h3>
                 <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
                   In Git, you always make changes in a separate branch instead of <code className="text-zinc-300">main</code>:
                 </p>
 
-                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300">
+                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300 w-full max-w-full overflow-hidden">
                   <button
                     onClick={() =>
                       copyToClipboard(`git switch -c add-${cleanUsername}`, 3)
                     }
-                    className="absolute right-2.5 top-2.5 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all"
+                    className="absolute right-2 top-2 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all z-10"
                   >
                     {copiedIndex === 3 ? (
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -259,7 +262,9 @@ const ContributionBookPage = () => {
                       <Copy className="w-3.5 h-3.5" />
                     )}
                   </button>
-                  <div className="text-purple-400">git switch -c add-{cleanUsername}</div>
+                  <div className="overflow-x-auto pr-8">
+                    <div className="text-purple-400 whitespace-nowrap">git switch -c add-{cleanUsername}</div>
+                  </div>
                 </div>
                 <div className="mt-2 text-[11px] text-zinc-500">
                   Tip: If your Git version does not support <code>git switch</code>, use{" "}
@@ -270,18 +275,21 @@ const ContributionBookPage = () => {
           </div>
 
           {/* Step 4: Add name to contributors.json */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center flex-shrink-0">
+          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700 overflow-hidden">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
                 4
               </div>
-              <div className="flex-1">
-                <h3 className="text-base font-bold text-white flex items-center gap-2 mb-2">
-                  <FileCode2 className="w-4 h-4 text-amber-400" />
-                  Add yourself to <code className="text-xs bg-zinc-800 px-1.5 py-0.5 rounded text-amber-300">src/data/contributors.json</code>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-white flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
+                  <FileCode2 className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                  <span>Add yourself to</span>
+                  <code className="text-[11px] sm:text-xs bg-zinc-800 px-1.5 py-0.5 rounded text-amber-300 font-mono break-all">
+                    src/data/contributors.json
+                  </code>
                 </h3>
                 <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
-                  Open <strong className="text-zinc-200">src/data/contributors.json</strong> in your code editor.
+                  Open <strong className="text-zinc-200">src/data/contributors.json</strong> in your editor.
                   Customize your message below, then copy this block and paste it inside the JSON list:
                 </p>
 
@@ -294,49 +302,61 @@ const ContributionBookPage = () => {
                     value={personalMessage}
                     onChange={(e) => setPersonalMessage(e.target.value)}
                     placeholder="e.g. My first PR! Hello open source world 🌱"
-                    className="w-full px-3 py-2 text-xs bg-[#0B0C10] border border-zinc-700/80 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-all"
+                    className="w-full max-w-full px-3 py-2 text-xs bg-[#0B0C10] border border-zinc-700/80 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-all"
                   />
                 </div>
 
-                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300 overflow-x-auto">
-                  <button
-                    onClick={() => copyToClipboard(jsonSnippet, 4)}
-                    className="absolute right-2.5 top-2.5 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all z-10 flex items-center gap-1 text-[11px]"
-                  >
-                    {copiedIndex === 4 ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span className="text-emerald-400">Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5" />
-                        <span>Copy JSON snippet</span>
-                      </>
-                    )}
-                  </button>
-                  <pre className="text-emerald-300">{jsonSnippet}</pre>
+                {/* Responsive IDE Code Preview Card */}
+                <div className="w-full max-w-full rounded-lg border border-zinc-800 bg-[#0d0e12] overflow-hidden">
+                  <div className="flex items-center justify-between px-3 py-2 bg-zinc-950/80 border-b border-zinc-800/80 text-[11px] font-mono text-zinc-400">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
+                      <span className="truncate text-zinc-300">src/data/contributors.json</span>
+                    </div>
+                    <button
+                      onClick={() => copyToClipboard(jsonSnippet, 4)}
+                      className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 flex-shrink-0 text-[11px]"
+                      title="Copy JSON snippet"
+                    >
+                      {copiedIndex === 4 ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
+                          <span className="text-emerald-400 font-semibold">Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          <span className="hidden xs:inline sm:inline">Copy snippet</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <div className="p-3 overflow-x-auto max-w-full">
+                    <pre className="text-[11px] sm:text-xs text-emerald-300 font-mono whitespace-pre leading-relaxed">
+                      {jsonSnippet}
+                    </pre>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Step 5: Commit changes */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center flex-shrink-0">
+          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
                 5
               </div>
-              <div className="flex-1">
-                <h3 className="text-base font-bold text-white flex items-center gap-2 mb-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  Stage and commit your changes
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 mb-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>Stage and commit your changes</span>
                 </h3>
                 <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
                   Stage the modified <code className="text-zinc-300">contributors.json</code> and commit it with a clear message:
                 </p>
 
-                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300">
+                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300 w-full max-w-full overflow-hidden">
                   <button
                     onClick={() =>
                       copyToClipboard(
@@ -344,7 +364,7 @@ const ContributionBookPage = () => {
                         5
                       )
                     }
-                    className="absolute right-2.5 top-2.5 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all"
+                    className="absolute right-2 top-2 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all z-10"
                   >
                     {copiedIndex === 5 ? (
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -352,9 +372,11 @@ const ContributionBookPage = () => {
                       <Copy className="w-3.5 h-3.5" />
                     )}
                   </button>
-                  <div className="text-white">git add src/data/contributors.json</div>
-                  <div className="text-emerald-400 mt-1">
-                    git commit -m "feat(community): add {cleanUsername} to contribution tree"
+                  <div className="overflow-x-auto pr-8">
+                    <div className="text-white whitespace-nowrap">git add src/data/contributors.json</div>
+                    <div className="text-emerald-400 mt-1 whitespace-nowrap">
+                      git commit -m "feat(community): add {cleanUsername} to contribution tree"
+                    </div>
                   </div>
                 </div>
               </div>
@@ -362,26 +384,26 @@ const ContributionBookPage = () => {
           </div>
 
           {/* Step 6: Push */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center flex-shrink-0">
+          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
                 6
               </div>
-              <div className="flex-1">
-                <h3 className="text-base font-bold text-white flex items-center gap-2 mb-2">
-                  <Terminal className="w-4 h-4 text-blue-400" />
-                  Push changes to your GitHub fork
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 mb-2">
+                  <Terminal className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                  <span>Push changes to your GitHub fork</span>
                 </h3>
                 <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
                   Push your branch to GitHub using the command below:
                 </p>
 
-                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300">
+                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300 w-full max-w-full overflow-hidden">
                   <button
                     onClick={() =>
                       copyToClipboard(`git push -u origin add-${cleanUsername}`, 6)
                     }
-                    className="absolute right-2.5 top-2.5 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all"
+                    className="absolute right-2 top-2 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all z-10"
                   >
                     {copiedIndex === 6 ? (
                       <Check className="w-3.5 h-3.5 text-emerald-400" />
@@ -389,29 +411,31 @@ const ContributionBookPage = () => {
                       <Copy className="w-3.5 h-3.5" />
                     )}
                   </button>
-                  <div className="text-cyan-400">git push -u origin add-{cleanUsername}</div>
+                  <div className="overflow-x-auto pr-8">
+                    <div className="text-cyan-400 whitespace-nowrap">git push -u origin add-{cleanUsername}</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Step 7: Pull Request */}
-          <div className="bg-gradient-to-r from-emerald-950/20 via-zinc-900/40 to-teal-950/20 border border-emerald-500/30 rounded-xl p-6 transition-all">
-            <div className="flex items-start gap-4">
-              <div className="w-8 h-8 rounded-full bg-emerald-400 text-black font-extrabold text-sm flex items-center justify-center flex-shrink-0">
+          <div className="bg-gradient-to-r from-emerald-950/20 via-zinc-900/40 to-teal-950/20 border border-emerald-500/30 rounded-xl p-4 sm:p-6 transition-all">
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-400 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
                 7
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
-                    <Sprout className="w-4 h-4 text-emerald-400" />
-                    Submit Your Pull Request!
+                  <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                    <Sprout className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                    <span>Submit Your Pull Request!</span>
                   </h3>
                   <a
                     href={`${repoUrl}/compare`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-black bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 rounded-lg shadow-lg shadow-emerald-900/20 transition-all self-start sm:self-auto"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-black bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 rounded-lg shadow-lg shadow-emerald-900/20 transition-all self-start sm:self-auto flex-shrink-0"
                   >
                     <span>Open Pull Request</span>
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -419,7 +443,7 @@ const ContributionBookPage = () => {
                 </div>
                 <p className="text-xs text-zinc-400 leading-relaxed">
                   Go to GitHub and click <strong>Compare & pull request</strong>. Write a short title like{" "}
-                  <code className="text-emerald-300">"Add @{cleanUsername} to Contribution Tree"</code> and submit!
+                  <code className="text-emerald-300 font-mono">"Add @{cleanUsername} to Contribution Tree"</code> and submit!
                   Once merged, your leaf will grow onto the live website tree!
                 </p>
               </div>
