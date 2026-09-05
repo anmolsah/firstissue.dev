@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink, Copy, Check, Pencil, Crown } from "lucide-react";
+import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink, Copy, Check, Pencil, Crown, ThumbsUp, ThumbsDown, Sparkles, Lightbulb } from "lucide-react";
+import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
 import { useSupporter } from "../contexts/SupporterContext";
 import { useCopilotQuota } from "../hooks/queries/useCopilotQuota";
@@ -12,6 +13,12 @@ import {
   renameChat as renameChatDB,
   deleteChat as deleteChatDB,
 } from "../services/chatHistoryService";
+import {
+  recordAiFeedback,
+  findMatchingLearnedContext,
+  getMessageFeedback,
+  setMessageFeedback,
+} from "../services/aiLearningService";
 import AppSidebar from "../components/AppSidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
 const logo = "/officialLogo.png";
@@ -226,6 +233,10 @@ const AIPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [renamingChatId, setRenamingChatId] = useState(null);
   const [renameInput, setRenameInput] = useState("");
+  const [feedbackMap, setFeedbackMap] = useState({});
+  const [activeCorrectionIdx, setActiveCorrectionIdx] = useState(null);
+  const [correctionText, setCorrectionText] = useState("");
+  const [copiedMsgIdx, setCopiedMsgIdx] = useState(null);
 
   const messagesEndRef = useRef(null);
 
@@ -244,6 +255,8 @@ const AIPage = () => {
     if (chat) {
       setCurrentChatId(id);
       setMessages(chat.messages);
+      setFeedbackMap({});
+      setActiveCorrectionIdx(null);
     }
   };
 
@@ -276,13 +289,65 @@ const AIPage = () => {
     await renameChatDB(id, newTitle);
   };
 
-  // Suggestions for fast prompting
+  // Enriched suggestions spanning multiple domains & programs
   const suggestions = [
-    "How do I fix a merge conflict?",
-    "Show me how to fork a repository with GitHub CLI",
-    "What is a 3D MetalCard in FirstIssue?",
-    "Syntax guide for git branch and checkout"
+    "How do I prepare a proposal for Google Summer of Code (GSoC)?",
+    "How do I fix a merge conflict using git rebase upstream/main?",
+    "What is the difference between MIT, Apache 2.0, and GPLv3 licenses?",
+    "Show me how to squash commits with interactive rebase before a PR",
+    "What is Developer Certificate of Origin (DCO) and git commit -s?",
+    "How do I debug failed GitHub Actions CI checks on my PR?"
   ];
+
+  // Feedback & Self-Learning Handlers
+  const handleVote = async (msgIdx, voteType) => {
+    const msg = messages[msgIdx];
+    if (!msg || msg.role !== "assistant") return;
+
+    const current = feedbackMap[msgIdx];
+    const newVote = current === voteType ? null : voteType;
+    setFeedbackMap(prev => ({ ...prev, [msgIdx]: newVote }));
+
+    if (newVote) {
+      setMessageFeedback(`msg-${currentChatId || 'temp'}-${msgIdx}`, newVote);
+      await recordAiFeedback({
+        userQuery: msg.userQuery || (messages[msgIdx - 1]?.content) || "Open source question",
+        assistantResponse: msg.content,
+        feedbackType: newVote,
+        userId: user?.id
+      });
+      if (newVote === "up") {
+        toast.success("Helpful! FirstMate saved this to its learned memory 🌱", { id: "fb-toast" });
+      } else {
+        toast("Thanks for the feedback. Click 'Teach FirstMate' to train a better answer!", { icon: "💡", id: "fb-toast" });
+      }
+    }
+  };
+
+  const handleCopyMessage = (content, msgIdx) => {
+    navigator.clipboard.writeText(content);
+    setCopiedMsgIdx(msgIdx);
+    toast.success("Solution copied to clipboard!", { id: "copy-toast" });
+    setTimeout(() => setCopiedMsgIdx(null), 2000);
+  };
+
+  const handleCorrectionSubmit = async (msgIdx) => {
+    const msg = messages[msgIdx];
+    if (!correctionText.trim() || !msg) return;
+
+    await recordAiFeedback({
+      userQuery: msg.userQuery || (messages[msgIdx - 1]?.content) || "Open source question",
+      assistantResponse: msg.content,
+      feedbackType: "correction",
+      correctionText: correctionText.trim(),
+      userId: user?.id
+    });
+
+    toast.success("Brilliant! FirstMate learned your correction for future queries 🧠", { id: "learn-toast" });
+    setActiveCorrectionIdx(null);
+    setCorrectionText("");
+    setFeedbackMap(prev => ({ ...prev, [msgIdx]: "up" }));
+  };
 
   // Auth Protection
   useEffect(() => {
@@ -315,6 +380,8 @@ const AIPage = () => {
   const handleNewChat = () => {
     setCurrentChatId(null);
     setMessages([initialMessage]);
+    setFeedbackMap({});
+    setActiveCorrectionIdx(null);
   };
 
   const handleSubmit = (e) => {
@@ -361,13 +428,17 @@ const AIPage = () => {
         headers["Authorization"] = `Bearer ${session.access_token}`;
       }
 
+      // Retrieve locally or community learned knowledge relevant to this query
+      const learned = findMatchingLearnedContext(text);
+
       // Call Edge Function
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/kb-query`, {
         method: "POST",
         headers,
         body: JSON.stringify({
           message: text,
-          history: messages.slice(1).map(m => ({ role: m.role, content: m.content }))
+          history: messages.slice(1).map(m => ({ role: m.role, content: m.content })),
+          learnedContext: learned
         })
       });
 
@@ -400,9 +471,12 @@ const AIPage = () => {
       applyServerQuota(data.quota);
 
       const assistantMessage = {
+        id: `msg-${Date.now()}`,
         role: "assistant",
         content: data.answer,
-        sources: data.sources || []
+        sources: data.sources || [],
+        userQuery: text,
+        learnedApplied: data.learned_applied || learned.length > 0,
       };
 
       const finalMessages = [...newMessages, assistantMessage];
@@ -644,6 +718,127 @@ const AIPage = () => {
                               </div>
                             );
                           })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Self-Learning & Action Bar */}
+                    {isAssistant && idx > 0 && (
+                      <div className="pt-2.5 mt-2 border-t border-zinc-850/40 flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          {/* Adaptive Learning Badge */}
+                          {msg.learnedApplied && (
+                            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 font-mono mr-1">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              <span>Adaptive Learning Applied</span>
+                            </div>
+                          )}
+
+                          {/* Thumbs Up */}
+                          <button
+                            type="button"
+                            onClick={() => handleVote(idx, "up")}
+                            title="Helpful answer (trains FirstMate)"
+                            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all ${
+                              feedbackMap[idx] === "up"
+                                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold"
+                                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 border border-transparent"
+                            }`}
+                          >
+                            <ThumbsUp className="w-3 h-3" />
+                            <span>Helpful</span>
+                          </button>
+
+                          {/* Thumbs Down */}
+                          <button
+                            type="button"
+                            onClick={() => handleVote(idx, "down")}
+                            title="Needs improvement"
+                            className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all ${
+                              feedbackMap[idx] === "down"
+                                ? "bg-red-500/20 text-red-300 border border-red-500/40 font-semibold"
+                                : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 border border-transparent"
+                            }`}
+                          >
+                            <ThumbsDown className="w-3 h-3" />
+                          </button>
+
+                          {/* Teach / Suggest Correction */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveCorrectionIdx(activeCorrectionIdx === idx ? null : idx);
+                              setCorrectionText("");
+                            }}
+                            title="Teach FirstMate a better solution or note"
+                            className="flex items-center gap-1 px-2 py-1 rounded text-[10px] text-amber-400/90 hover:text-amber-300 hover:bg-amber-950/20 transition-all border border-amber-900/30 hover:border-amber-700/50"
+                          >
+                            <Lightbulb className="w-3 h-3 text-amber-400" />
+                            <span>Teach FirstMate</span>
+                          </button>
+                        </div>
+
+                        {/* Copy Response */}
+                        <button
+                          type="button"
+                          onClick={() => handleCopyMessage(msg.content, idx)}
+                          className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] transition-all ${
+                            copiedMsgIdx === idx
+                              ? "text-emerald-400"
+                              : "text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900"
+                          }`}
+                        >
+                          {copiedMsgIdx === idx ? (
+                            <>
+                              <Check className="w-3 h-3 text-emerald-400" />
+                              <span className="font-semibold">Copied!</span>
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3" />
+                              <span>Copy</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Inline "Teach FirstMate" Correction Form */}
+                    {activeCorrectionIdx === idx && (
+                      <div className="mt-2.5 p-3 rounded-lg bg-zinc-900/90 border border-amber-900/40 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-semibold text-amber-300 font-mono flex items-center gap-1.5">
+                            <Lightbulb className="w-3 h-3 text-amber-400" />
+                            <span>Teach FirstMate a Better Solution</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setActiveCorrectionIdx(null)}
+                            className="text-[10px] text-zinc-500 hover:text-zinc-300"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                        <p className="text-[11px] text-zinc-400">
+                          Provide a corrected terminal command, parameter tip, or clarification. FirstMate continuously incorporates this into its learning base!
+                        </p>
+                        <textarea
+                          rows={2}
+                          value={correctionText}
+                          onChange={(e) => setCorrectionText(e.target.value)}
+                          placeholder="e.g. For git rebase conflicts, run: git rebase --continue after staging files..."
+                          className="w-full bg-zinc-950 text-xs text-zinc-200 p-2.5 rounded border border-zinc-800 focus:outline-none focus:border-amber-500/60 font-mono resize-none placeholder-zinc-600"
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleCorrectionSubmit(idx)}
+                            disabled={!correctionText.trim()}
+                            className="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-black text-[11px] font-semibold rounded disabled:opacity-30 transition-all flex items-center gap-1"
+                          >
+                            <Sparkles className="w-3 h-3" />
+                            <span>Train FirstMate</span>
+                          </button>
                         </div>
                       </div>
                     )}

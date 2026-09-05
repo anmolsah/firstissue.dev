@@ -13,7 +13,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { message, history = [] } = await req.json();
+    const { message, history = [], learnedContext = [] } = await req.json();
 
     if (!message) {
       return new Response(
@@ -150,7 +150,36 @@ serve(async (req: Request) => {
 
     console.log(`[kb-query] Found ${chunks?.length || 0} matching document chunks`);
 
-    // 3. Construct System Prompt with context
+    // 3. Retrieve learned community solutions & corrections
+    let dbLearned: any[] = [];
+    try {
+      const { data: learnedData } = await adminClient
+        .from("ai_learned_solutions")
+        .select("query_text, assistant_response, user_correction, helpful_count")
+        .or("user_feedback.eq.up,user_correction.neq.null")
+        .order("helpful_count", { ascending: false })
+        .limit(4);
+      if (learnedData && Array.isArray(learnedData)) {
+        dbLearned = learnedData;
+      }
+    } catch {
+      // Table might be initializing or connection error
+    }
+
+    const combinedLearned = [...(Array.isArray(learnedContext) ? learnedContext : []), ...dbLearned];
+    const learnedApplied = combinedLearned.length > 0;
+
+    const learnedPromptBlock = learnedApplied
+      ? `\n\nVerified Community Best Practices & Self-Learned Corrections:\n` +
+        combinedLearned
+          .slice(0, 3)
+          .map((item: any, idx: number) => 
+            `[Pattern ${idx + 1}] User Question Context: "${item.query_text || ''}"\nValidated Best Solution / Correction: "${item.user_correction || item.assistant_response || ''}"`
+          )
+          .join("\n---\n")
+      : "";
+
+    // 4. Construct Advanced FirstMate System Prompt
     const contextText = chunks && chunks.length > 0
       ? chunks
           .filter((c: any) => c.similarity > 0.35)
@@ -158,20 +187,23 @@ serve(async (req: Request) => {
           .join("\n\n---\n\n")
       : "";
 
-    const systemPrompt = `You are a helpful, expert AI assistant named FirstMate for FirstIssue.dev. 
-Your goal is to act as a friendly 'first mate' and answer developer questions related to open source contributions, GitHub workflows, git commands, coding syntax, codebase architecture, and firstissue.dev platform features.
+    const systemPrompt = `You are FirstMate, an exceptionally advanced, expert AI copilot for FirstIssue.dev.
+You specialize in open source software development, Git version control, GitHub/GitLab collaboration workflows, codebase architectures, licenses (MIT, Apache, GPL, CLA, DCO), bug triage, CI/CD checks, and global open source programs (Google Summer of Code, LFX Mentorship, Hacktoberfest, Outreachy, MLH).
 
-Use the following retrieved context chunks from our documentation to answer the question. If the context is not sufficient, answer to the best of your knowledge but clarify that it is not explicitly documented in our guides.
+Your mission is to provide the highest-quality, most accurate, and developer-friendly answers possible.
 
-Rules:
-1. Be concise, direct, and developer-friendly. Avoid fluff.
-2. Provide copy-pasteable code blocks or terminal commands (e.g., git commands) when helpful.
-3. Keep the tone encouraging and supportive for beginners.
-4. Cite the retrieved sources at the very end of your response under a "Sources:" heading if they were relevant. Format them clearly (e.g. "- [Guide Name](/docs/getting-started/first-steps)").
+CRITICAL INSTRUCTIONS & RESPONSE STRUCTURE:
+1. Direct, Actionable Solutions: Start with a clear, direct answer and immediately provide copy-pasteable terminal commands or code snippets in syntax-highlighted code blocks (e.g. \`\`\`bash).
+2. Deep Step-by-Step Breakdown: Explain what each command flag or method does (e.g., explain why to use \`git push --force-with-lease\` instead of raw \`--force\`).
+3. Safety Warnings & Pro Tips: Explicitly flag potential data loss risks, remote branch collisions, or open source etiquette pitfalls.
+4. Self-Improvement & Continuous Learning: When learned community solutions are provided below, prioritize their insights to guarantee the latest best practices.
+5. Tone: Encouraging, precise, and professional. Avoid filler words.
+6. Documentation Citations: Cite referenced documents at the end under a "Sources:" heading formatted cleanly (e.g. "- [Guide Title](/docs/section/article)").
 
-${contextText ? `Retrieved Context Chunks:\n${contextText}` : "No relevant documentation found in our database for this specific query. Answer using your general knowledge, but mention that this is general git/open-source guidance."}`;
+${contextText ? `Retrieved Documentation Knowledge:\n${contextText}` : "No specific vector document matched. Rely on your deep, comprehensive knowledge of Git, GitHub, and open-source ecosystems."}
+${learnedPromptBlock}`;
 
-    // 4. Call OpenRouter for chat completion
+    // 5. Call OpenRouter for chat completion
     // Model used: google/gemini-2.5-flash (standard, fast, cheap) or meta-llama/llama-3.1-8b-instruct
     const completionModel = Deno.env.get("RAG_COMPLETION_MODEL") || "google/gemini-2.5-flash-lite";
     
@@ -213,7 +245,7 @@ ${contextText ? `Retrieved Context Chunks:\n${contextText}` : "No relevant docum
     const completionJson = await completionResponse.json();
     const answer = completionJson.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
 
-    // 5. Gather sources/citations for the frontend
+    // 6. Gather sources/citations for the frontend
     const sources = [];
     const seenPaths = new Set();
     if (chunks) {
@@ -231,7 +263,7 @@ ${contextText ? `Retrieved Context Chunks:\n${contextText}` : "No relevant docum
     }
 
     return new Response(
-      JSON.stringify({ answer, sources, quota }),
+      JSON.stringify({ answer, sources, quota, learned_applied: learnedApplied }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 

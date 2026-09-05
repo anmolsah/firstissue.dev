@@ -131,7 +131,7 @@ function parseDocContent() {
             chunks.push({
               source: 'docContent.js',
               title: `${section.title} - ${currentTitle}`,
-              path: `/docs/${secKey}`,
+              path: `/docs/${catKey}/${secKey}`,
               content: currentText.join('\n').trim()
             });
           }
@@ -152,7 +152,7 @@ function parseDocContent() {
         chunks.push({
           source: 'docContent.js',
           title: `${section.title} - ${currentTitle}`,
-          path: `/docs/${secKey}`,
+          path: `/docs/${catKey}/${secKey}`,
           content: currentText.join('\n').trim()
         });
       }

@@ -23,6 +23,9 @@ import {
   HelpCircle,
   Star,
   Clock,
+  Award,
+  ShieldCheck,
+  GitMerge,
 } from "lucide-react";
 import Footer from "../components/Footer";
 import ContactFormModal from "../components/ContactFormModal";
@@ -247,9 +250,98 @@ const DocsPage = () => {
         },
       ],
     },
+    {
+      id: "open-source-programs",
+      title: "Open Source Programs & Fellowships",
+      icon: Award,
+      color: "text-amber-400",
+      bgColor: "bg-amber-500/10",
+      borderColor: "border-amber-500/20",
+      description: "Roadmap to Google Summer of Code, LFX Mentorship, Hacktoberfest, and Fellowships",
+      articles: [
+        {
+          id: "gsoc-guide",
+          title: "Google Summer of Code (GSoC) Complete Roadmap",
+          readTime: "12 min",
+        },
+        {
+          id: "hacktoberfest-guide",
+          title: "Hacktoberfest & Global Contribution Programs",
+          readTime: "10 min",
+        },
+      ],
+    },
+    {
+      id: "licenses-and-legal",
+      title: "Licenses, CLAs & Legal Guide",
+      icon: ShieldCheck,
+      color: "text-emerald-400",
+      bgColor: "bg-emerald-500/10",
+      borderColor: "border-emerald-500/20",
+      description: "Permissive vs Copyleft licenses, CLAs, and Developer Certificate of Origin (DCO)",
+      articles: [
+        {
+          id: "license-types",
+          title: "Understanding Open Source Licenses (MIT, Apache, GPL & More)",
+          readTime: "9 min",
+        },
+        {
+          id: "cla-and-dco",
+          title: "Contributor License Agreements (CLA) & DCO",
+          readTime: "7 min",
+        },
+      ],
+    },
+    {
+      id: "advanced-git-workflows",
+      title: "Advanced Git & GitHub Mastery",
+      icon: GitMerge,
+      color: "text-indigo-400",
+      bgColor: "bg-indigo-500/10",
+      borderColor: "border-indigo-500/20",
+      description: "Interactive rebase, squash commits, fork syncing, worktrees, and CI debugging",
+      articles: [
+        {
+          id: "interactive-rebase-squash",
+          title: "Interactive Rebase & Squashing Commits",
+          readTime: "11 min",
+        },
+        {
+          id: "fork-syncing-upstream",
+          title: "Syncing Forks & Managing Remotes",
+          readTime: "8 min",
+        },
+        {
+          id: "git-stash-worktrees",
+          title: "Git Stashing & Worktrees",
+          readTime: "9 min",
+        },
+        {
+          id: "github-actions-debugging",
+          title: "Debugging GitHub Actions & CI/CD PR Checks",
+          readTime: "10 min",
+        },
+      ],
+    },
   ];
 
   const popularArticles = [
+    {
+      icon: Award,
+      title: "Google Summer of Code (GSoC) Complete Roadmap",
+      section: "open-source-programs",
+      article: "gsoc-guide",
+      readTime: "12 min read",
+      updated: "Updated today",
+    },
+    {
+      icon: GitMerge,
+      title: "Interactive Rebase & Squashing Commits",
+      section: "advanced-git-workflows",
+      article: "interactive-rebase-squash",
+      readTime: "11 min read",
+      updated: "Updated today",
+    },
     {
       icon: FileText,
       title: "Your First Open Source Contribution",
@@ -259,20 +351,20 @@ const DocsPage = () => {
       updated: "Updated 2 days ago",
     },
     {
+      icon: ShieldCheck,
+      title: "Understanding Open Source Licenses",
+      section: "licenses-and-legal",
+      article: "license-types",
+      readTime: "9 min read",
+      updated: "Updated today",
+    },
+    {
       icon: Key,
       title: "Understanding GitHub Labels",
       section: "getting-started",
       article: "understanding-labels",
       readTime: "6 min read",
       updated: "Updated 1 week ago",
-    },
-    {
-      icon: Settings,
-      title: "Using FirstIssue.dev Platform",
-      section: "getting-started",
-      article: "platform-guide",
-      readTime: "7 min read",
-      updated: "Updated 4 days ago",
     },
     {
       icon: GitBranch,

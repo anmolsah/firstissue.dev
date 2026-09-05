@@ -72,6 +72,11 @@ const TARGETS = [
   { url: 'https://git-scm.com/docs/git-fetch',       type: 'git-scm', category: 'Git Commands' },
   { url: 'https://git-scm.com/docs/git-cherry-pick', type: 'git-scm', category: 'Git Commands' },
   { url: 'https://git-scm.com/docs/git-tag',         type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-worktree',    type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-bisect',      type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-reflog',      type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-submodule',   type: 'git-scm', category: 'Git Commands' },
+  { url: 'https://git-scm.com/docs/git-blame',       type: 'git-scm', category: 'Git Commands' },
 
   // ─── GitHub CLI Manuals (cli.github.com/manual) ───────────────────────────
   { url: 'https://cli.github.com/manual/gh_pr_create',    type: 'gh-cli', category: 'GitHub CLI' },
@@ -88,6 +93,10 @@ const TARGETS = [
   // ─── GitHub Docs (docs.github.com — uses Markdown API) ────────────────────
   { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request',
     type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/commenting-on-a-pull-request',
+    type: 'github-docs', category: 'GitHub Docs' },
   { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/incorporating-changes-from-a-pull-request/merging-a-pull-request',
     type: 'github-docs', category: 'GitHub Docs' },
   { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/about-pull-request-reviews',
@@ -100,6 +109,8 @@ const TARGETS = [
     type: 'github-docs', category: 'GitHub Docs' },
   { url: 'https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent',
     type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/authentication/managing-commit-signature-verification/signing-commits',
+    type: 'github-docs', category: 'GitHub Docs' },
   { url: 'https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository',
     type: 'github-docs', category: 'GitHub Docs' },
   { url: 'https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue',
@@ -109,6 +120,8 @@ const TARGETS = [
   { url: 'https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files',
     type: 'github-docs', category: 'GitHub Docs' },
   { url: 'https://docs.github.com/en/actions/writing-workflows/quickstart',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/codespaces/getting-started/quickstart',
     type: 'github-docs', category: 'GitHub Docs' },
 
   // ─── Open Source Guides (opensource.guide) ─────────────────────────────────
@@ -174,6 +187,10 @@ const TARGETS = [
     type: 'raw-md', category: 'Specs & Conventions', title: 'Semantic Versioning (SemVer) Specification' },
   { url: 'https://raw.githubusercontent.com/firstcontributions/first-contributions/main/README.md',
     type: 'raw-md', category: 'Specs & Conventions', title: 'First Contributions — Beginner Git/GitHub Guide' },
+  { url: 'https://raw.githubusercontent.com/conventional-commits/conventionalcommits.org/master/content/v1.0.0/index.md',
+    type: 'raw-md', category: 'Specs & Conventions', title: 'Conventional Commits 1.0.0 Specification' },
+  { url: 'https://raw.githubusercontent.com/olivierlacan/keep-a-changelog/main/README.md',
+    type: 'raw-md', category: 'Specs & Conventions', title: 'Keep a Changelog Guide & Specification' },
 ];
 
 // =============================================================================

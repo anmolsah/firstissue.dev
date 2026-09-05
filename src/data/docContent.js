@@ -5,8 +5,11 @@ Terminal,
 AlertTriangle,
 Code,
 GitBranch,
+Award,
+ShieldCheck,
+GitMerge,
 } from "lucide-react";
-import architectureDiagram from "../assets/architecture_diagram.png";
+const architectureDiagram = "/architecture_diagram.png";
 
 export const docContent = {
 "getting-started": {
@@ -2162,6 +2165,423 @@ type: "callout",
 variant: "info",
 title: "Security Consideration",
 text: "All operations involving the GitHub API are proxied through server-side Edge Functions. This ensures GitHub OAuth provider tokens are never stored long-term in the database or exposed in client browser memory."
+}
+]
+}
+},
+
+"open-source-programs": {
+title: "Open Source Programs & Fellowships",
+icon: Award,
+color: "text-amber-400",
+
+"gsoc-guide": {
+title: "Google Summer of Code (GSoC) Complete Roadmap",
+description: "Step-by-step roadmap to finding organizations, engaging with mentors, and drafting a winning GSoC proposal.",
+readTime: "12 min read",
+updated: "today",
+difficulty: "Intermediate",
+content: [
+{
+type: "paragraph",
+text: "Google Summer of Code (GSoC) is a prestigious global online program that introduces new developers to open source software development under the direct mentorship of senior engineers."
+},
+{
+type: "heading",
+level: 2,
+text: "1. Understanding the GSoC Timeline"
+},
+{
+type: "paragraph",
+text: "GSoC runs annually from January through November. Understanding the key milestones is essential for proper preparation:"
+},
+{
+type: "list",
+ordered: true,
+items: [
+"January - February: Mentoring organizations apply to participate.",
+"Late February: Google announces accepted organizations and their Project Ideas Lists.",
+"March - April: Contributor proposal window opens (2-3 weeks).",
+"May: Accepted contributor projects are announced. Community Bonding period begins.",
+"June - August: Official coding period (midterm evaluation at week 6, final evaluation at week 12). Extended projects can run up to 22 weeks.",
+"September - November: Results announced, completion certificates, and final stipends disbursed."
+]
+},
+{
+type: "heading",
+level: 2,
+text: "2. The 3-Month Preparation Strategy"
+},
+{
+type: "paragraph",
+text: "Don't wait until organizations are announced! More than 70% of participating organizations return each year (e.g., Apache Software Foundation, Linux Foundation, Python Software Foundation, CNCF, KDE, Mozilla)."
+},
+{
+type: "callout",
+variant: "tip",
+title: "Pro-Contributor Rule",
+text: "Organizations strongly prioritize candidates who have already landed 2-4 PRs in their repositories before the proposal period closes. Early code contributions speak louder than promises."
+},
+{
+type: "list",
+ordered: false,
+items: [
+"Pick 1 or at most 2 organizations that match your tech stack (e.g. Python, Go, TypeScript, Rust, C++).",
+"Join the organization's official chat channels (Slack, Discord, Zulip, Matrix, or mailing lists).",
+"Introduce yourself politely: mention your background, your timezone, and link to your GitHub profile.",
+"Browse open issues labeled 'good first issue' or 'help wanted' and request assignment."
+]
+},
+{
+type: "heading",
+level: 2,
+text: "3. Structure of a Winning Proposal"
+},
+{
+type: "paragraph",
+text: "A successful GSoC proposal is treated like an engineering specification. Follow this proven structure:"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"Project Abstract: 2-3 paragraphs defining the problem, proposed solution, and tangible user impact.",
+"Technical Architecture: API contracts, data models, third-party libraries, and sequence diagrams.",
+"Detailed Weekly Timeline: Break down the 12 weeks into concrete deliverables with buffer weeks for unforeseen bugs.",
+"Testing & Documentation Plan: Unit tests, integration tests, benchmarks, and developer guides.",
+"Prior Contributions: Links to merged PRs, open issues, and code reviews in the project.",
+"Availability & Commitments: Clarify your weekly working hours (e.g., 30 hrs/week) and university exams upfront."
+]
+}
+]
+},
+
+"hacktoberfest-guide": {
+title: "Hacktoberfest & Global Contribution Programs",
+description: "Rules, qualifying PR criteria, and exploration of LFX Mentorship, Outreachy, and MLH Fellowship.",
+readTime: "10 min read",
+updated: "today",
+difficulty: "Beginner",
+content: [
+{
+type: "paragraph",
+text: "Beyond GSoC, the global open source ecosystem hosts several world-class contribution programs and fellowships that provide stipends, mentorship, and career acceleration."
+},
+{
+type: "heading",
+level: 2,
+text: "1. Hacktoberfest Rules & Best Practices"
+},
+{
+type: "paragraph",
+text: "Hacktoberfest is celebrated every October by DigitalOcean and community partners. Contributors must submit 4 accepted pull requests to participating public GitHub/GitLab repositories between October 1st and October 31st."
+},
+{
+type: "callout",
+variant: "warning",
+title: "Avoid Spam Contributions",
+text: "PRs that only fix typos in README files, reformat spaces, or submit automated changes are marked as spam by maintainers. Two spam flags lead to permanent disqualification across Hacktoberfest."
+},
+{
+type: "heading",
+level: 2,
+text: "2. Linux Foundation Mentorship (LFX)"
+},
+{
+type: "paragraph",
+text: "The Linux Foundation Mentorship Program (LFX) provides 12-week paid remote internships across high-impact cloud native and systems infrastructure projects (Kubernetes, Hyperledger, GraphQL, OpenSSF, RISC-V)."
+},
+{
+type: "list",
+ordered: false,
+items: [
+"Runs 3 times a year: Spring (March-May), Summer (June-August), and Fall (September-November).",
+"Includes competitive location-based stipends.",
+"Apply directly via the LFX Mentorship portal with your CV and statement of intent."
+]
+},
+{
+type: "heading",
+level: 2,
+text: "3. Outreachy & MLH Fellowship"
+},
+{
+type: "paragraph",
+text: "Outreachy offers $7,000 USD stipends for 3-month remote internships for underrepresented groups in tech. Major League Hacking (MLH) Fellowship pairs developers with open source projects like React, Babel, and Jest with weekly stipends and 1-on-1 mentorship."
+}
+]
+}
+},
+
+"licenses-and-legal": {
+title: "Licenses, CLAs & Legal Guide",
+icon: ShieldCheck,
+color: "text-emerald-400",
+
+"license-types": {
+title: "Understanding Open Source Licenses (MIT, Apache, GPL & More)",
+description: "Compare permissive vs copyleft software licenses and learn how to pick the right one for your project.",
+readTime: "9 min read",
+updated: "today",
+difficulty: "Beginner",
+content: [
+{
+type: "paragraph",
+text: "Without an open source license, standard copyright laws apply by default — meaning you retain exclusive rights and nobody else can legally copy, distribute, or modify your code, even if it's hosted publicly on GitHub."
+},
+{
+type: "heading",
+level: 2,
+text: "1. Permissive Licenses (Build with Freedom)"
+},
+{
+type: "paragraph",
+text: "Permissive licenses give users maximum freedom to modify, redistribute, and even incorporate the code into closed-source commercial software:"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"MIT License: Short, simple, and permissive. Users can do whatever they want as long as they include the original copyright notice.",
+"Apache License 2.0: Permissive like MIT, but provides an explicit grant of patent rights and protects against patent infringement lawsuits.",
+"BSD 3-Clause: Similar to MIT, with a specific clause barring the use of the project author's name for marketing/endorsement without permission."
+]
+},
+{
+type: "heading",
+level: 2,
+text: "2. Copyleft Licenses (Share and Share Alike)"
+},
+{
+type: "paragraph",
+text: "Copyleft licenses require that anyone distributing derivative works of your code must also release their source code under the same license:"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"GNU GPLv3 (General Public License): Strong copyleft. Any application that modifies or links to GPLv3 code must also be licensed under GPLv3.",
+"GNU AGPLv3 (Affero GPL): Network copyleft. Closes the cloud/SaaS loophole — if modified code runs as a remote network service, the full source code must be made available to network users.",
+"GNU LGPLv3 (Lesser GPL): Weak copyleft. Allows proprietary programs to link dynamically to LGPL libraries without forcing the proprietary program to be open source."
+]
+}
+]
+},
+
+"cla-and-dco": {
+title: "Contributor License Agreements (CLA) & DCO",
+description: "Learn why major projects require signed commits (`git commit -s`), EasyCLA, and DCO sign-offs.",
+readTime: "7 min read",
+updated: "today",
+difficulty: "Intermediate",
+content: [
+{
+type: "paragraph",
+text: "When you contribute code to an enterprise or foundation-backed open source repository, you will frequently see automated bots requesting a CLA sign-off or DCO commit verification."
+},
+{
+type: "heading",
+level: 2,
+text: "1. Developer Certificate of Origin (DCO)"
+},
+{
+type: "paragraph",
+text: "Created by the Linux kernel community, DCO is a lightweight legal affirmation that you wrote the code or have the legal right to submit it under the project's license."
+},
+{
+type: "code",
+language: "bash",
+code: "# Sign off on your commit using the -s flag:\ngit commit -s -m \"feat: implement token caching\""
+},
+{
+type: "paragraph",
+text: "This automatically appends 'Signed-off-by: Your Name <your.email@example.com>' to the bottom of the commit message."
+},
+{
+type: "heading",
+level: 2,
+text: "2. How to Fix Missing DCO on Existing Commits"
+},
+{
+type: "paragraph",
+text: "If a DCO bot fails your PR on GitHub, you can sign off on your branch's past commits with an interactive rebase:"
+},
+{
+type: "code",
+language: "bash",
+code: "# Re-sign the last 3 commits with your author sign-off:\ngit rebase --signoff HEAD~3\n\n# Safely push the updated branch to your fork:\ngit push --force-with-lease origin branch-name"
+}
+]
+}
+},
+
+"advanced-git-workflows": {
+title: "Advanced Git & GitHub Mastery",
+icon: GitMerge,
+color: "text-indigo-400",
+
+"interactive-rebase-squash": {
+title: "Interactive Rebase & Squashing Commits",
+description: "Master `git rebase -i` to clean up messy commit histories before code review.",
+readTime: "11 min read",
+updated: "today",
+difficulty: "Advanced",
+content: [
+{
+type: "paragraph",
+text: "While developing a feature, your local git log often fills up with 'wip', 'fix typo', and 'cleanup' commits. Interactive rebase lets you tidy up these commits into clean, logical units before requesting review."
+},
+{
+type: "heading",
+level: 2,
+text: "1. Starting an Interactive Rebase"
+},
+{
+type: "code",
+language: "bash",
+code: "# Rebase the last 4 commits on your current branch:\ngit rebase -i HEAD~4"
+},
+{
+type: "paragraph",
+text: "Git opens your default terminal editor showing the list of commits from oldest to newest with action keywords:"
+},
+{
+type: "code",
+language: "text",
+code: "pick a1b2c3d feat(auth): add google oauth provider\nsquash d4e5f6g fix typo in auth config\nfixup h7i8j9k remove debug logs\n\n# Commands:\n# p, pick = use commit\n# r, reword = use commit, but edit the commit message\n# e, edit = pause for amending\n# s, squash = meld into previous commit and keep message\n# f, fixup = like squash, but discard this commit's log message\n# d, drop = remove commit"
+},
+{
+type: "callout",
+variant: "tip",
+title: "Squash vs Fixup",
+text: "Use 'squash' when you want to combine messages, and 'fixup' when the commit is just a small bugfix or typo whose individual message isn't worth keeping."
+}
+]
+},
+
+"fork-syncing-upstream": {
+title: "Syncing Forks & Managing Remotes",
+description: "Configure upstream remotes, rebase feature branches on upstream/main, and safely push with `--force-with-lease`.",
+readTime: "8 min read",
+updated: "today",
+difficulty: "Intermediate",
+content: [
+{
+type: "paragraph",
+text: "When contributing to open source, changes are constantly being merged into the parent project. Keeping your fork in sync avoids painful merge conflicts later."
+},
+{
+type: "heading",
+level: 2,
+text: "1. Setting Up Upstream Remote"
+},
+{
+type: "code",
+language: "bash",
+code: "# Check your existing remotes (usually just origin):\ngit remote -v\n\n# Add the parent project as upstream:\ngit remote add upstream https://github.com/original-owner/repo.git\n\n# Verify both origin and upstream are configured:\ngit remote -v"
+},
+{
+type: "heading",
+level: 2,
+text: "2. The Golden Rebase Routine"
+},
+{
+type: "code",
+language: "bash",
+code: "# 1. Fetch latest changes from the parent project:\ngit fetch upstream\n\n# 2. Checkout your feature branch:\ngit checkout feat/my-cool-feature\n\n# 3. Rebase your work on top of upstream/main:\ngit rebase upstream/main\n\n# 4. Push updated commits to your GitHub fork:\ngit push --force-with-lease origin feat/my-cool-feature"
+},
+{
+type: "callout",
+variant: "warning",
+title: "Always Use --force-with-lease",
+text: "Never use plain 'git push --force'. If someone else pushed to the branch, '--force' will obliterate their work. '--force-with-lease' verifies no unknown remote commits exist before pushing."
+}
+]
+},
+
+"git-stash-worktrees": {
+title: "Git Stashing & Worktrees",
+description: "Master `git stash` with labels and use `git worktree` to work on multiple branches simultaneously without switching.",
+readTime: "9 min read",
+updated: "today",
+difficulty: "Intermediate",
+content: [
+{
+type: "paragraph",
+text: "Need to switch branches to review a PR or fix an urgent bug without committing your half-finished changes? Git provides two powerful tools: Stash and Worktree."
+},
+{
+type: "heading",
+level: 2,
+text: "1. Labeled Stashing"
+},
+{
+type: "code",
+language: "bash",
+code: "# Save untracked and modified files with a clear label:\ngit stash push -u -m \"wip: stripe checkout modal\"\n\n# List all saved stashes:\ngit stash list\n\n# Inspect changes inside the top stash:\ngit stash show -p stash@{0}\n\n# Restore and pop the stash:\ngit stash pop"
+},
+{
+type: "heading",
+level: 2,
+text: "2. Git Worktrees: Simultaneous Branches"
+},
+{
+type: "paragraph",
+text: "Git worktree allows you to checkout multiple branches in separate directories on disk at the same time, without touching your current node_modules or build cache."
+},
+{
+type: "code",
+language: "bash",
+code: "# Check out a branch in a parallel folder:\ngit worktree add ../hotfix-folder -b hotfix/critical-api-bug\n\n# Now navigate and work in both directories simultaneously:\ncd ../hotfix-folder\nnpm test\n\n# When finished, remove the worktree:\ngit worktree remove ../hotfix-folder"
+}
+]
+},
+
+"github-actions-debugging": {
+title: "Debugging GitHub Actions & CI/CD PR Checks",
+description: "Diagnose failing automated tests, linters, and build checks in your Pull Requests.",
+readTime: "10 min read",
+updated: "today",
+difficulty: "Intermediate",
+content: [
+{
+type: "paragraph",
+text: "When you open a Pull Request, automated CI/CD workflows run linters, type checks, and integration tests. Understanding how to read and reproduce CI failures saves maintainers and contributors immense time."
+},
+{
+type: "heading",
+level: 2,
+text: "1. How to Read CI Failure Logs"
+},
+{
+type: "list",
+ordered: true,
+items: [
+"On your GitHub PR, scroll to the checks section at the bottom.",
+"Click 'Details' next to any red ❌ check.",
+"Expand the failed step (often named 'Run linter', 'Run tests', or 'Build').",
+"Look for the first error line or failing assertion near the top of the trace."
+]
+},
+{
+type: "heading",
+level: 2,
+text: "2. Reproducing Checks Locally"
+},
+{
+type: "paragraph",
+text: "Most projects configure package scripts that mirror CI checks:"
+},
+{
+type: "code",
+language: "bash",
+code: "# Run the linter locally to catch formatting errors:\nnpm run lint\n\n# Run tests locally:\nnpm test\n\n# Test production build bundle:\nnpm run build"
+},
+{
+type: "callout",
+variant: "tip",
+title: "Amending Without New Commits",
+text: "If you just need to fix a small lint failure in your latest commit, use 'git commit --amend --no-edit' followed by 'git push --force-with-lease origin branch-name' to keep your commit history clean."
 }
 ]
 }
