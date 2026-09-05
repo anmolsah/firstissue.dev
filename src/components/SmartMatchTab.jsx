@@ -27,6 +27,7 @@ import {
   Search,
   Gauge,
   Wand2,
+  GitPullRequest,
 } from 'lucide-react';
 
 const LABEL_OPTIONS = [
@@ -381,8 +382,8 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
     return (
       <div className="relative py-8">
         <div className="bg-zinc-950/30 border border-zinc-800/60 rounded-xl p-8 max-w-md mx-auto text-center">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-purple-950/25 flex items-center justify-center border border-purple-500/30 text-purple-400">
-            <Sparkles className="w-5 h-5" />
+          <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-[#00ADB5]/10 flex items-center justify-center border border-[#00ADB5]/25 text-[#00ADB5] shadow-[0_0_20px_rgba(0,173,181,0.15)]">
+            <GitPullRequest className="w-5 h-5" />
           </div>
 
           <h3 className="text-lg font-bold text-white mb-2 tracking-tight">
@@ -401,7 +402,7 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
               'Specific "why this match" reasoning',
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-2 text-xs text-zinc-300">
-                <Zap className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
+                <Zap className="w-3.5 h-3.5 text-[#00ADB5] flex-shrink-0" />
                 {feature}
               </div>
             ))}
@@ -416,9 +417,9 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
             <button
               onClick={handleAnalyze}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-500 hover:to-blue-500 transition-all shadow-lg shadow-purple-500/20 cursor-pointer disabled:opacity-50 text-sm"
+              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-[#00ADB5] hover:bg-[#00c2cb] text-[#08090C] rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(0,173,181,0.25)] hover:shadow-[0_0_30px_rgba(0,173,181,0.4)] cursor-pointer disabled:opacity-50 text-sm"
             >
-              <Sparkles className="w-4 h-4" />
+              <GitPullRequest className="w-4 h-4" />
               Get my 2 free matches
             </button>
           )}
@@ -562,7 +563,7 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
         </div>
       ) : (
         <div className="text-center py-20">
-          <Sparkles className="w-12 h-12 text-purple-400/40 mx-auto mb-4" />
+          <GitPullRequest className="w-12 h-12 text-[#00ADB5]/40 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-white mb-2">No matches yet</h3>
           <p className="text-sm text-gray-500 mb-6">Click the button below to analyze your profile and find matching issues.</p>
           {isRateLimited && (
@@ -574,14 +575,14 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
           <button
             onClick={handleAnalyze}
             disabled={loading || isRateLimited}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-xl font-semibold hover:from-purple-500 hover:to-blue-500 transition-all shadow-lg shadow-purple-500/20 cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00ADB5] hover:bg-[#00c2cb] text-[#08090C] rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(0,173,181,0.25)] hover:shadow-[0_0_30px_rgba(0,173,181,0.4)] cursor-pointer disabled:opacity-50"
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : isRateLimited ? (
               <ShieldAlert className="w-4 h-4" />
             ) : (
-              <Sparkles className="w-4 h-4" />
+              <GitPullRequest className="w-4 h-4" />
             )}
             {loading ? 'Analyzing...' : isRateLimited ? `Wait ${remainingCooldown}s` : 'Analyze My Profile'}
           </button>

@@ -22,6 +22,7 @@ import {
   User,
   Shield,
   GitFork,
+  GitPullRequest,
   Sparkles,
   Rocket,
   Globe,
@@ -523,7 +524,7 @@ const ExplorePage = () => {
                 label="Smart Match"
                 active={selectedTab === "smart"}
                 onClick={() => setSelectedTab("smart")}
-                icon={Sparkles}
+                icon={GitPullRequest}
                 isPremium
               />
             </div>
@@ -803,10 +804,10 @@ const TabButton = ({ label, active, onClick, icon: Icon, isPremium }) => (
     className={`px-3 py-1 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 whitespace-nowrap border ${
       active
         ? isPremium
-          ? "bg-purple-950/20 text-purple-300 border-purple-500/30 shadow-[0_1px_2px_rgba(147,51,234,0.1)] font-semibold"
+          ? "bg-[#00ADB5]/10 text-[#00ADB5] border-[#00ADB5]/30 shadow-[0_1px_2px_rgba(0,173,181,0.1)] font-semibold"
           : "bg-white/[0.04] text-white border-zinc-850/80 shadow-[0_1px_2px_rgba(0,0,0,0.5)] font-semibold"
         : isPremium
-          ? "text-purple-400/60 hover:text-purple-300 border-transparent hover:bg-white/[0.01]"
+          ? "text-[#00ADB5]/70 hover:text-[#00ADB5] border-transparent hover:bg-white/[0.01]"
           : "text-zinc-400 hover:text-zinc-100 border-transparent hover:bg-white/[0.01]"
     }`}
   >
@@ -814,8 +815,8 @@ const TabButton = ({ label, active, onClick, icon: Icon, isPremium }) => (
       <Icon
         className={`w-3.5 h-3.5 ${
           active
-            ? isPremium ? "text-purple-400" : "text-white"
-            : isPremium ? "text-purple-500/40" : "text-zinc-500"
+            ? isPremium ? "text-[#00ADB5]" : "text-white"
+            : isPremium ? "text-[#00ADB5]/50" : "text-zinc-500"
         }`}
       />
     )}
