@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useRateLimiter } from "../hooks/useRateLimiter";
-import { Mail, Lock, Github, AlertCircle, CheckCircle, ShieldAlert } from "lucide-react";
+import { Mail, Lock, Github, AlertCircle, CheckCircle, ShieldAlert, Loader2 } from "lucide-react";
 import logo from "../assets/logo01.png";
 
 const SignupPage = () => {
@@ -14,6 +14,7 @@ const SignupPage = () => {
     confirmPassword: "",
   });
   const [loading, setLoading] = useState(false);
+  const [githubLoading, setGithubLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const { isRateLimited, remainingCooldown, checkRateLimit, recordAttempt } = useRateLimiter({
@@ -58,11 +59,19 @@ const SignupPage = () => {
       return;
     }
     recordAttempt();
-    setLoading(true);
+    setGithubLoading(true);
     setError("");
-    const { error } = await signInWithGitHub();
-    if (error) setError(error.message);
-    setLoading(false);
+    try {
+      const { error } = await signInWithGitHub();
+      if (error) {
+        setError(error.message);
+        setGithubLoading(false);
+      }
+      // On success, keep githubLoading=true while the browser redirects to GitHub OAuth
+    } catch (err) {
+      setError(err?.message || "Failed to initiate GitHub sign-in");
+      setGithubLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -115,18 +124,23 @@ const SignupPage = () => {
 
           <button
             onClick={handleGitHubSignIn}
-            disabled={loading || success || isRateLimited}
-            className="w-full mb-6 flex items-center justify-center gap-3 px-4 py-3 bg-[#222831] text-[#EEEEEE] rounded-lg font-medium hover:bg-[#222831]/80 border border-[#393E46] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={githubLoading || loading || success || isRateLimited}
+            className="w-full mb-6 flex items-center justify-center gap-3 px-4 py-3 bg-[#222831] text-[#EEEEEE] rounded-lg font-medium hover:bg-[#222831]/80 border border-[#393E46] transition-colors disabled:opacity-85 disabled:cursor-wait"
           >
-            {isRateLimited ? (
+            {githubLoading ? (
+              <>
+                <Loader2 className="h-5 w-5 text-white animate-spin" />
+                <span>Connecting to GitHub...</span>
+              </>
+            ) : isRateLimited ? (
               <>
                 <ShieldAlert className="h-5 w-5 text-amber-400" />
-                Wait {remainingCooldown}s...
+                <span>Wait {remainingCooldown}s...</span>
               </>
             ) : (
               <>
                 <Github className="h-5 w-5" />
-                Continue with GitHub
+                <span>Continue with GitHub</span>
               </>
             )}
           </button>

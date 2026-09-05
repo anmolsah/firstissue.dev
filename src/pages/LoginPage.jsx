@@ -27,9 +27,17 @@ const LoginPage = () => {
     recordAttempt();
     setLoading(true);
     setError("");
-    const { error } = await signInWithGitHub();
-    if (error) setError(error.message);
-    setLoading(false);
+    try {
+      const { error } = await signInWithGitHub();
+      if (error) {
+        setError(error.message);
+        setLoading(false);
+      }
+      // On success, keep loading=true while the browser redirects to GitHub OAuth
+    } catch (err) {
+      setError(err?.message || "Failed to initiate GitHub sign-in");
+      setLoading(false);
+    }
   };
 
   return (
@@ -68,12 +76,12 @@ const LoginPage = () => {
         <button
           onClick={handleGitHubSignIn}
           disabled={loading || isRateLimited}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-white hover:bg-zinc-200 text-black text-xs font-semibold rounded transition-all disabled:opacity-30 disabled:pointer-events-none"
+          className="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-white hover:bg-zinc-200 text-black text-xs font-semibold rounded transition-all disabled:opacity-85 disabled:cursor-wait"
         >
           {loading ? (
             <>
               <Loader2 className="h-4 w-4 text-black animate-spin" />
-              <span>Connecting...</span>
+              <span>Connecting to GitHub...</span>
             </>
           ) : isRateLimited ? (
             <>
