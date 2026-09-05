@@ -317,7 +317,7 @@ const AIPage = () => {
         userId: user?.id
       });
       if (newVote === "up") {
-        toast.success("Helpful! FirstMate saved this to its learned memory 🌱", { id: "fb-toast" });
+        toast.success("Thank you for the feedback!", { id: "fb-toast" });
       } else {
         toast("Thanks for the feedback. Click 'Teach FirstMate' to train a better answer!", { icon: "💡", id: "fb-toast" });
       }
@@ -726,13 +726,6 @@ const AIPage = () => {
                     {isAssistant && idx > 0 && (
                       <div className="pt-2.5 mt-2 border-t border-zinc-850/40 flex flex-wrap items-center justify-between gap-2">
                         <div className="flex flex-wrap items-center gap-1.5">
-                          {/* Adaptive Learning Badge */}
-                          {msg.learnedApplied && (
-                            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-semibold bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 font-mono mr-1">
-                              <Sparkles className="w-2.5 h-2.5" />
-                              <span>Adaptive Learning Applied</span>
-                            </div>
-                          )}
 
                           {/* Thumbs Up */}
                           <button
