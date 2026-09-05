@@ -3,80 +3,10 @@
     "id": "1",
     "name": "Anmol Sah",
     "github": "anmolsah",
-    "avatar": "https://github.com/anmolsah.png",
+    "avatar": "https://github.com/anmolsah.png?size=150",
     "role": "Maintainer",
     "message": "Welcome to FirstIssue.dev! Plant your leaf here and begin your open-source journey. 🌱",
     "joinedAt": "2025-01-01",
     "branch": "root"
-  },
-  {
-    "id": "2",
-    "name": "Alex Rivera",
-    "github": "alexrivera-dev",
-    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    "role": "Contributor",
-    "message": "First open source PR merged! FirstIssue made it so approachable.",
-    "joinedAt": "2025-01-14",
-    "branch": "left"
-  },
-  {
-    "id": "3",
-    "name": "Sarah Chen",
-    "github": "sarahchen-oss",
-    "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-    "role": "Contributor",
-    "message": "Landed my first bug fix in open source. Never looking back!",
-    "joinedAt": "2025-01-20",
-    "branch": "right"
-  },
-  {
-    "id": "4",
-    "name": "David Kim",
-    "github": "davidkim-code",
-    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    "role": "Contributor",
-    "message": "Learned git rebase and fork workflow in 10 minutes. Awesome guide!",
-    "joinedAt": "2025-02-02",
-    "branch": "left"
-  },
-  {
-    "id": "5",
-    "name": "Elena Rostova",
-    "github": "erostova",
-    "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
-    "role": "Contributor",
-    "message": "Planted my leaf! Proud to be part of this community.",
-    "joinedAt": "2025-02-11",
-    "branch": "center"
-  },
-  {
-    "id": "6",
-    "name": "Marcus Johnson",
-    "github": "marcus-j-dev",
-    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-    "role": "Contributor",
-    "message": "From tutorial hell to real open source contributor in an hour.",
-    "joinedAt": "2025-02-18",
-    "branch": "right"
-  },
-  {
-    "id": "7",
-    "name": "Priya Patel",
-    "github": "priyacodes",
-    "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150&auto=format&fit=crop&q=80",
-    "role": "Contributor",
-    "message": "Great beginner friendly project. Hello from India! 🇮🇳",
-    "joinedAt": "2025-02-25",
-    "branch": "left"
-  },
-  {
-    "id": "8",
-    "name": "Liam Wilson",
-    "github": "liam-w",
-    "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
-    "role": "Contributor",
-    "message": "First git commit pushed and merged cleanly. Excited for more!",
-    "joinedAt": "2025-03-01",
-    "branch": "center"
   }
 ]
