@@ -26,6 +26,7 @@ import CookieConsent from "./components/CookieConsent";
 import { Toaster } from "react-hot-toast";
 import ScrollToTop from "./components/ScrollToTop";
 import AIPage from "./pages/AIPage";
+import ContributionBookPage from "./pages/ContributionBookPage";
 
 // Route guard: redirects authenticated users to /explore
 // Used for landing page and login page — only accessible when logged out
@@ -98,6 +99,7 @@ const App = () => {
               <Route path="/getting-started" element={<DocsPage />} />
               <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
               <Route path="/bookmarks" element={<BookmarksPage />} />
+              <Route path="/contribution-book" element={<ContributionBookPage />} />
               <Route path="/status" element={<StatusPage />} />
               <Route path="/test-github" element={<TestGitHubPage />} />
               <Route path="/profile" element={<ProfilePage />} />

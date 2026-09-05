@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import ComparisonSection from "../components/ComparisonSection";
 import TimelineFeatures from "../components/TimelineFeatures";
 import ContributionKitShowcase from "../components/ContributionKitShowcase";
+import ContributionTree from "../components/ContributionTree";
 import {
   ArrowRight,
   Github,
@@ -181,6 +182,9 @@ const LandingPage = () => {
 
       {/* Contribution Kit Showcase */}
       <ContributionKitShowcase />
+
+      {/* Contribution Tree Section */}
+      <ContributionTree />
 
       {/* User Count Section */}
       <section id="user-count-section" className="py-16 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-zinc-900/60">

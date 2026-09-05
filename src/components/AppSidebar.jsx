@@ -5,7 +5,8 @@ import {
   TrendingUp,
   User,
   BookOpen,
-  BotMessageSquare
+  BotMessageSquare,
+  Sprout
 } from "lucide-react";
 
 /**
@@ -22,6 +23,7 @@ const AppSidebar = ({ children, className = "" }) => {
     if (path.includes("/bookmarks")) return "bookmarks";
     if (path.includes("/status")) return "status";
     if (path.includes("/profile")) return "profile";
+    if (path.includes("/contribution-book")) return "contribution-book";
     if (path.includes("/docs") || path.includes("/getting-started")) return "docs";
     if (path.includes("/firstmate")) return "firstmate";
     return "";
@@ -35,6 +37,12 @@ const AppSidebar = ({ children, className = "" }) => {
       icon: Compass,
       label: "Explore Issues",
       path: "/explore",
+    },
+    {
+      id: "contribution-book",
+      icon: Sprout,
+      label: "Contribution Book",
+      path: "/contribution-book",
     },
     {
       id: "bookmarks",
