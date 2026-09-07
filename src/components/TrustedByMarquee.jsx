@@ -12,25 +12,25 @@ const COMPANIES = [
   {
     name: "Google",
     type: "Company",
-    logo: "https://cdn.simpleicons.org/google",
+    logo: "/logos/google.svg",
     fallbackColor: "from-blue-600 to-red-600",
   },
   {
     name: "Microsoft",
     type: "Company",
-    logo: "https://cdn.simpleicons.org/microsoft",
+    logo: "/logos/microsoft.svg",
     fallbackColor: "from-blue-500 to-amber-500",
   },
   {
     name: "Meta",
     type: "Company",
-    logo: "https://cdn.simpleicons.org/meta/white",
+    logo: "/logos/meta.svg",
     fallbackColor: "from-blue-600 to-indigo-700",
   },
   {
     name: "Amazon",
     type: "Company",
-    logo: "https://cdn.simpleicons.org/amazon/white",
+    logo: "/logos/amazon.svg",
     fallbackColor: "from-amber-600 to-zinc-900",
   },
   {
