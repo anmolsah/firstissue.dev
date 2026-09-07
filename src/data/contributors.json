@@ -8,5 +8,25 @@
     "message": "Welcome to FirstIssue.dev! Plant your leaf here and begin your open-source journey. 🌱",
     "joinedAt": "2025-01-01",
     "branch": "root"
+  },
+  {
+    "id": "2",
+    "name": "Amanpreet Kaur",
+    "github": "amanpreetkaur112",
+    "avatar": "https://github.com/amanpreetkaur112.png?size=150",
+    "role": "Contributor",
+    "message": "Excited to contribute to FirstIssue.dev and the open source community! 🌱",
+    "joinedAt": "2025-02-15",
+    "branch": "left"
+  },
+  {
+    "id": "3",
+    "name": "Ritik Raj",
+    "github": "ritik245",
+    "avatar": "https://github.com/ritik245.png?size=150",
+    "role": "Contributor",
+    "message": "CS student | Excited to make an open source impact with FirstIssue.dev! 🚀",
+    "joinedAt": "2025-02-20",
+    "branch": "right"
   }
 ]
