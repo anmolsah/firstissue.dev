@@ -130,18 +130,29 @@ export async function generateResumePdf(profile, attestations = []) {
 
     y += 14;
 
-    // Title (wrapped)
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    doc.setTextColor(...MUTED);
-    const titleLines = doc.splitTextToSize(a.pr_title || "(untitled)", pageW - M * 2 - 90);
+    // Title / Headline (wrapped)
+    const displayTitle = a.headline || a.pr_title || "(untitled)";
+    doc.setFont("helvetica", a.headline ? "bold" : "normal");
+    doc.setFontSize(a.headline ? 11 : 10);
+    doc.setTextColor(...INK);
+    const titleLines = doc.splitTextToSize(displayTitle, pageW - M * 2 - 90);
     doc.text(titleLines, M, y);
 
     // Date + language (right-aligned, first line)
     const meta = [date, a.primary_language].filter(Boolean).join("  ·  ");
     if (meta) doc.text(meta, pageW - M, y, { align: "right" });
 
-    y += titleLines.length * 12 + 12;
+    let summaryHeight = 0;
+    if (a.impact_summary) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9.5);
+      doc.setTextColor(...MUTED);
+      const summaryLines = doc.splitTextToSize(a.impact_summary, pageW - M * 2 - 90);
+      doc.text(summaryLines, M, y + titleLines.length * 14 + 2);
+      summaryHeight = summaryLines.length * 12 + 6;
+    }
+
+    y += titleLines.length * 14 + summaryHeight + 12;
   }
 
   // ── Footer on every page ────────────────────────────────────────────────

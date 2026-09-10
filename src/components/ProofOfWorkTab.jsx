@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
 import { useSupporter } from '../contexts/SupporterContext';
-import { useAttestations, useVerifyContribution, useOpenToWork, useUpdateOpenToWork } from '../hooks/useProofOfWork';
+import { useAttestations, useVerifyContribution, useOpenToWork, useUpdateOpenToWork, useGenerateQuantifiedImpact } from '../hooks/useProofOfWork';
 import { generateResumePdf } from '../utils/generateResumePdf';
 import MetalCard from './MetalCard';
 import { ShieldCheck, Plus, Link as LinkIcon, AlertCircle, Loader2, Crown, Info, Download, Copy, Code2, Sparkles, Briefcase } from 'lucide-react';
@@ -17,6 +17,16 @@ const ProofOfWorkTab = () => {
   const verifyMutation = useVerifyContribution();
   const { data: openToWorkData } = useOpenToWork(user?.id);
   const updateOpenToWork = useUpdateOpenToWork();
+  const generateImpactMutation = useGenerateQuantifiedImpact();
+
+  const handleGenerateImpact = async (attestationId) => {
+    try {
+      await generateImpactMutation.mutateAsync({ attestationId });
+      toast.success("AI impact summary generated!");
+    } catch (err) {
+      toast.error(err.message || "Failed to generate AI summary.");
+    }
+  };
 
   const [prUrl, setPrUrl] = useState('');
   const [isMinting, setIsMinting] = useState(false);
@@ -392,7 +402,7 @@ const ProofOfWorkTab = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
               >
-                <MetalCard attestation={attestation} />
+                <MetalCard attestation={attestation} isOwner={true} onRegenerate={handleGenerateImpact} />
               </motion.div>
             ))}
           </div>

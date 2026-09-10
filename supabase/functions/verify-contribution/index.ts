@@ -5,6 +5,70 @@ import { isActiveSupporter, FREE_ATTESTATION_LIMIT } from "../_shared/supporter.
 
 const GITHUB_API_BASE = 'https://api.github.com';
 
+async function generateQuantifiedImpact(prData: any, repoData: any) {
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY");
+  if (!apiKey) {
+    console.warn("OPENROUTER_API_KEY not set. Skipping AI summary.");
+    return null;
+  }
+
+  const model = Deno.env.get("OPENROUTER_COMPLETION_MODEL") || "google/gemini-2.0-flash-lite-001";
+  
+  const prompt = `
+You are an expert engineering manager. Analyze the following Pull Request and generate a Quantified Impact summary.
+Return ONLY valid JSON matching this schema:
+{
+  "headline": "Short 3-6 word action-oriented title (e.g. 'Distributed State Sync Engine')",
+  "impact_summary": "1-2 sentence quantified impact statement",
+  "problem_solved": "Brief explanation of the underlying problem",
+  "technical_highlights": ["Highlight 1", "Highlight 2"],
+  "tech_stack": ["Tag1", "Tag2"]
+}
+
+PR Title: ${prData.title}
+PR Body: ${(prData.body || "").substring(0, 1000)}
+Additions: ${prData.additions}
+Deletions: ${prData.deletions}
+Changed Files: ${prData.changed_files}
+Repo Description: ${repoData.description || ""}
+Repo Topics: ${(repoData.topics || []).join(", ")}
+`;
+
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "HTTP-Referer": "https://firstissue.dev",
+        "X-Title": "FirstIssue Proof of Work",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+
+    if (!res.ok) {
+      console.error("OpenRouter API error:", await res.text());
+      return null;
+    }
+
+    const json = await res.json();
+    let content = json.choices[0].message.content;
+    
+    // Clean up markdown formatting if present
+    if (content.startsWith("\`\`\`json")) {
+      content = content.replace(/^\`\`\`json\n/, "").replace(/\n\`\`\`$/, "");
+    }
+    
+    return JSON.parse(content);
+  } catch (err) {
+    console.error("Failed to generate AI impact:", err);
+    return null;
+  }
+}
+
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
@@ -12,13 +76,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { prUrl, githubUsername } = await req.json();
-
-    if (!prUrl || !githubUsername) {
-      return new Response(JSON.stringify({ error: "Missing prUrl or githubUsername" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
-      });
-    }
+    const { action, attestationId, prUrl, githubUsername } = await req.json();
 
     // ── Authenticate the caller; derive userId from the JWT, never the body ──
     let userClient;
@@ -41,8 +99,77 @@ serve(async (req: Request) => {
     // Service-role client for entitlement checks and the privileged insert.
     const supabaseAdmin = createAdminClient();
 
+    const ghToken = Deno.env.get("GITHUB_API_TOKEN");
+    const ghHeaders = {
+      "Accept": "application/vnd.github.v3+json",
+      ...(ghToken ? { "Authorization": `Bearer ${ghToken}` } : {})
+    };
+
+    if (action === "summarize-existing") {
+      if (!attestationId) {
+        return new Response(JSON.stringify({ error: "Missing attestationId" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      // Fetch existing attestation
+      const { data: existing, error: fetchErr } = await supabaseAdmin
+        .from('user_attestations')
+        .select('*')
+        .eq('id', attestationId)
+        .eq('user_id', userId)
+        .single();
+
+      if (fetchErr || !existing) {
+        return new Response(JSON.stringify({ error: "Attestation not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const [owner, repo] = existing.repo_name.split("/");
+      
+      const prRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/pulls/${existing.pr_number}`, { headers: ghHeaders });
+      if (!prRes.ok) throw new Error("Failed to fetch PR from GitHub");
+      const prData = await prRes.json();
+
+      const repoRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}`, { headers: ghHeaders });
+      let repoData = {};
+      if (repoRes.ok) {
+        repoData = await repoRes.json();
+      }
+
+      const aiImpact = await generateQuantifiedImpact(prData, repoData);
+      if (!aiImpact) {
+         return new Response(JSON.stringify({ error: "Failed to generate AI summary." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const updatePayload = {
+        headline: aiImpact.headline,
+        impact_summary: aiImpact.impact_summary,
+        problem_solved: aiImpact.problem_solved,
+        technical_highlights: aiImpact.technical_highlights,
+        tech_stack: aiImpact.tech_stack,
+        repo_stars: repoData.stargazers_count || 0,
+        additions: prData.additions || 0,
+        deletions: prData.deletions || 0,
+        changed_files: prData.changed_files || 0
+      };
+
+      const { error: updateErr } = await supabaseAdmin
+        .from('user_attestations')
+        .update(updatePayload)
+        .eq('id', attestationId);
+
+      if (updateErr) throw updateErr;
+
+      return new Response(JSON.stringify({ success: true, data: { ...existing, ...updatePayload } }), { 
+        headers: { ...corsHeaders, "Content-Type": "application/json" } 
+      });
+    }
+
+    if (!prUrl || !githubUsername) {
+      return new Response(JSON.stringify({ error: "Missing prUrl or githubUsername" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
+      });
+    }
+
     // ── Enforce the freemium limit server-side ──
-    // Free accounts may mint up to FREE_ATTESTATION_LIMIT proofs; supporters unlimited.
     if (!(await isActiveSupporter(supabaseAdmin, userId))) {
       const { count, error: countError } = await supabaseAdmin
         .from("user_attestations")
@@ -50,7 +177,6 @@ serve(async (req: Request) => {
         .eq("user_id", userId);
 
       if (countError) {
-        console.error("Failed to count existing attestations:", countError);
         return new Response(JSON.stringify({ error: "Could not verify attestation quota" }), {
           status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
@@ -58,14 +184,14 @@ serve(async (req: Request) => {
 
       if ((count ?? 0) >= FREE_ATTESTATION_LIMIT) {
         return new Response(JSON.stringify({
-          error: `Free accounts are limited to ${FREE_ATTESTATION_LIMIT} Proofs of Work. Become a supporter for unlimited attestations.`,
+          error: \`Free accounts are limited to \${FREE_ATTESTATION_LIMIT} Proofs of Work. Become a supporter for unlimited attestations.\`,
         }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
     }
 
-    // Parse PR URL (e.g., https://github.com/vercel/next.js/pull/123)
+    // Parse PR URL
     const urlMatch = prUrl.match(/github\.com\/([^\/]+)\/([^\/]+)\/pull\/(\d+)/);
     if (!urlMatch) {
       return new Response(JSON.stringify({ error: "Invalid GitHub PR URL format" }), {
@@ -74,19 +200,9 @@ serve(async (req: Request) => {
     }
 
     const [, owner, repo, pullNumber] = urlMatch;
-    const repoName = `${owner}/${repo}`;
+    const repoName = \`\${owner}/\${repo}\`;
 
-    // Fetch PR details from GitHub API
-    // Using an optional GitHub token if available from env to prevent rate limiting, otherwise public access
-    const ghToken = Deno.env.get("GITHUB_API_TOKEN");
-    const ghHeaders = {
-      "Accept": "application/vnd.github.v3+json",
-      ...(ghToken ? { "Authorization": `Bearer ${ghToken}` } : {})
-    };
-
-    const prRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/pulls/${pullNumber}`, {
-      headers: ghHeaders
-    });
+    const prRes = await fetch(\`\${GITHUB_API_BASE}/repos/\${owner}/\${repo}/pulls/\${pullNumber}\`, { headers: ghHeaders });
 
     if (!prRes.ok) {
       if (prRes.status === 404) {
@@ -94,16 +210,15 @@ serve(async (req: Request) => {
           status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-      return new Response(JSON.stringify({ error: `GitHub API error: ${prRes.status}` }), {
+      return new Response(JSON.stringify({ error: \`GitHub API error: \${prRes.status}\` }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
 
     const prData = await prRes.json();
 
-    // Verify ownership and merged status
     if (prData.user.login.toLowerCase() !== githubUsername.toLowerCase()) {
-      return new Response(JSON.stringify({ error: `Verification failed: PR author (${prData.user.login}) does not match your GitHub username (${githubUsername})` }), {
+      return new Response(JSON.stringify({ error: \`Verification failed: PR author (\${prData.user.login}) does not match your GitHub username (\${githubUsername})\` }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
@@ -114,26 +229,21 @@ serve(async (req: Request) => {
       });
     }
 
-    // Calculate Impact Score
-    // Base: 10 points
-    // +1 point per 10 lines of code added
-    // +1 point per 20 lines deleted
-    // +5 points per comment/review
-    // Cap at 100 per PR, plus repo prestige bonus
     const additions = prData.additions || 0;
     const deletions = prData.deletions || 0;
+    const changed_files = prData.changed_files || 0;
     const comments = prData.comments || 0;
     const reviewComments = prData.review_comments || 0;
     
     let baseScore = 10 + Math.floor(additions / 10) + Math.floor(deletions / 20) + ((comments + reviewComments) * 5);
     baseScore = Math.min(baseScore, 100);
 
-    // Repo prestige bonus (fetch repo stars)
-    const repoRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}`, { headers: ghHeaders });
+    const repoRes = await fetch(\`\${GITHUB_API_BASE}/repos/\${owner}/\${repo}\`, { headers: ghHeaders });
     let repoStars = 0;
     let primaryLanguage = "Unknown";
+    let repoData = {};
     if (repoRes.ok) {
-      const repoData = await repoRes.json();
+      repoData = await repoRes.json();
       repoStars = repoData.stargazers_count || 0;
       primaryLanguage = repoData.language || "Unknown";
     }
@@ -145,19 +255,17 @@ serve(async (req: Request) => {
 
     const totalImpactScore = baseScore + bonus;
 
-    // Generate simulated on-chain identifiers
     const timestampStr = new Date().toISOString();
-    
-    // In Deno, we use Web Crypto API to generate a hash
     const encoder = new TextEncoder();
-    const dataToHash = encoder.encode(`${userId}-${repoName}-${pullNumber}-${timestampStr}`);
+    const dataToHash = encoder.encode(\`\${userId}-\${repoName}-\${pullNumber}-\${timestampStr}\`);
     const hashBuffer = await crypto.subtle.digest('SHA-256', dataToHash);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const txHash = '0x' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    
-    const attestationId = 'att_' + txHash.substring(2, 18);
+    const attestationIdStr = 'att_' + txHash.substring(2, 18);
 
-    // Insert into database using the Service Role client created above.
+    // AI Generation
+    const aiImpact = await generateQuantifiedImpact(prData, repoData);
+
     const attestationData = {
       user_id: userId,
       repo_name: repoName,
@@ -167,7 +275,18 @@ serve(async (req: Request) => {
       primary_language: primaryLanguage,
       merged_at: prData.merged_at,
       tx_hash: txHash,
-      attestation_id: attestationId
+      attestation_id: attestationIdStr,
+      repo_stars: repoStars,
+      additions: additions,
+      deletions: deletions,
+      changed_files: changed_files,
+      ...(aiImpact ? {
+        headline: aiImpact.headline,
+        impact_summary: aiImpact.impact_summary,
+        problem_solved: aiImpact.problem_solved,
+        technical_highlights: aiImpact.technical_highlights,
+        tech_stack: aiImpact.tech_stack
+      } : {})
     };
 
     const { error: insertError } = await supabaseAdmin
@@ -175,12 +294,11 @@ serve(async (req: Request) => {
       .insert(attestationData);
 
     if (insertError) {
-      if (insertError.code === '23505') { // Unique violation
+      if (insertError.code === '23505') {
         return new Response(JSON.stringify({ error: "You have already minted a proof for this Pull Request" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-      console.error("Database insert error:", insertError);
       throw insertError;
     }
 

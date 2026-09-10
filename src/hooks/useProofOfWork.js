@@ -131,3 +131,39 @@ export function useVerifyContribution() {
     }
   });
 }
+
+export function useGenerateQuantifiedImpact() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ attestationId }) => {
+      const { data, error } = await supabase.functions.invoke('verify-contribution', {
+        body: { action: 'summarize-existing', attestationId }
+      });
+
+      if (error) {
+        let message = 'Failed to generate impact summary';
+        try {
+          if (error.context && typeof error.context.json === 'function') {
+            const body = await error.context.json();
+            if (body?.error) message = body.error;
+          } else if (error.message && !error.message.includes('non-2xx')) {
+            message = error.message;
+          }
+        } catch {
+          // Fallback
+        }
+        throw new Error(message);
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+
+      return data?.data || data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['attestations']);
+    }
+  });
+}

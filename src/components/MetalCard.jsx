@@ -1,13 +1,21 @@
 import React, { useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { ExternalLink, Code, Star, Github, Download } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ExternalLink, Code, Star, Github, Download, CheckCircle, ChevronDown, RefreshCw, FileDiff } from 'lucide-react';
 import { toPng } from 'html-to-image';
 
 const getLanguageIcon = () => Code;
-const MetalCard = ({ attestation, showActions = true }) => {
+
+const formatNumber = (num) => {
+  if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
+  return num;
+};
+
+const MetalCard = ({ attestation, showActions = true, isOwner = false, onRegenerate }) => {
   const cardRef = useRef(null);
   const [isHovered, setIsHovered] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isDeepDiveOpen, setIsDeepDiveOpen] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   const handleMouseLeave = () => {
     setIsHovered(false);
@@ -19,28 +27,25 @@ const MetalCard = ({ attestation, showActions = true }) => {
     if (!cardRef.current || isExporting) return;
     
     try {
-      // 1. Reset hover state
       setIsExporting(true);
       setIsHovered(false);
+      setIsDeepDiveOpen(false); // Close deep dive before exporting to keep the card compact
       
-      // 2. Wait for Framer Motion to settle to the flat orientation and React to hide buttons
       await new Promise(r => setTimeout(r, 350));
 
-      // 3. Find and hide the action buttons container via DOM (belt-and-suspenders with isExporting)
       const actionsEl = cardRef.current.querySelector('[data-export-hide]');
       if (actionsEl) actionsEl.style.display = 'none';
 
       const dataUrl = await toPng(cardRef.current, { 
         quality: 1.0,
-        pixelRatio: 4, // Premium 4x resolution for crisp exports
+        pixelRatio: 4, 
         skipFonts: false,
         cacheBust: true,
         style: {
-          transform: 'none', // Ensure no residual 3D transform in the capture
+          transform: 'none',
         },
       });
       
-      // 4. Restore action buttons visibility
       if (actionsEl) actionsEl.style.display = '';
       setIsExporting(false);
 
@@ -50,10 +55,21 @@ const MetalCard = ({ attestation, showActions = true }) => {
       link.click();
     } catch (err) {
       console.error('Failed to export image:', err);
-      // Restore state on failure
       const actionsEl = cardRef.current?.querySelector('[data-export-hide]');
       if (actionsEl) actionsEl.style.display = '';
       setIsExporting(false);
+    }
+  };
+
+  const handleRegenerate = async (e) => {
+    e.stopPropagation();
+    if (onRegenerate && !isRegenerating) {
+      setIsRegenerating(true);
+      try {
+        await onRegenerate(attestation.id);
+      } finally {
+        setIsRegenerating(false);
+      }
     }
   };
 
@@ -61,7 +77,6 @@ const MetalCard = ({ attestation, showActions = true }) => {
   const shortHash = attestation.tx_hash ? `${attestation.tx_hash.substring(0, 6)}...${attestation.tx_hash.substring(attestation.tx_hash.length - 4)}` : 'Minting...';
   const score = attestation.impact_score || 0;
 
-  // ── Premium tier system based on impact score ──
   const TIERS = {
     legendary: {
       label: 'Legendary',
@@ -104,6 +119,7 @@ const MetalCard = ({ attestation, showActions = true }) => {
         ref={cardRef}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={handleMouseLeave}
+        onClick={() => setIsDeepDiveOpen(!isDeepDiveOpen)}
         className={`group relative w-full h-full rounded-2xl overflow-hidden cursor-pointer
           border border-white/10 backdrop-blur-sm bg-gradient-to-br ${tier.gradient}
           transition-shadow duration-300`}
@@ -159,35 +175,109 @@ const MetalCard = ({ attestation, showActions = true }) => {
         {/* Card Content */}
         <div className="relative z-30 p-5 flex flex-col h-full text-white">
           {/* Header */}
-          <div className="mb-4">
-            <span className="text-lg font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-200 to-zinc-400">
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
+                  <LangIcon className="w-3 h-3 text-white/80" />
+                </div>
+                <span className="text-sm font-semibold text-white/90 truncate max-w-[180px]">{attestation.repo_name}</span>
+                <CheckCircle className="w-3.5 h-3.5 text-blue-400" />
+              </div>
+              {attestation.repo_stars > 0 && (
+                <div className="flex items-center gap-1 mt-1.5 ml-1">
+                  <Star className="w-3 h-3 text-amber-400/80" fill="currentColor" />
+                  <span className="text-xs font-medium text-white/60">{formatNumber(attestation.repo_stars)}</span>
+                </div>
+              )}
+            </div>
+            <span className="text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-200 to-zinc-400 opacity-60">
               FirstIssue.dev
             </span>
-            <div className="flex items-center gap-2 mt-2">
-              <div className="w-6 h-6 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
-                <LangIcon className="w-3 h-3 text-white/80" />
-              </div>
-              <span className="text-xs font-semibold text-white/70 truncate max-w-[150px]">{attestation.repo_name}</span>
-            </div>
           </div>
 
           {/* Body */}
           <div className="flex-1 mb-3">
-            <h3 className="font-semibold text-[17px] leading-snug mb-2 line-clamp-2 text-white">
-              <span className="opacity-50 mr-1.5 font-mono">#{attestation.pr_number}</span>
-              {attestation.pr_title}
-            </h3>
+            {attestation.headline ? (
+              <>
+                <h3 className="font-bold text-xl leading-snug mb-2 text-white/95">
+                  {attestation.headline}
+                </h3>
+                <p className="text-sm text-white/70 leading-relaxed mb-4 line-clamp-3">
+                  {attestation.impact_summary}
+                </p>
+                {attestation.tech_stack && attestation.tech_stack.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {attestation.tech_stack.slice(0, 4).map(tag => (
+                      <span key={tag} className="px-2 py-0.5 rounded-md bg-white/10 border border-white/10 text-[10px] font-medium text-white/80">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <h3 className="font-semibold text-[17px] leading-snug mb-2 line-clamp-2 text-white">
+                <span className="opacity-50 mr-1.5 font-mono">#{attestation.pr_number}</span>
+                {attestation.pr_title}
+              </h3>
+            )}
 
-            {/* Impact meter */}
-            <div className="mt-3">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-white/45 flex items-center gap-1">
-                  <Star className="w-3 h-3" /> Verified Impact
-                </span>
-                <span className="text-xs font-bold font-mono" style={{ color: tier.accent }}>
-                  {score}<span className="text-white/35">/100</span>
-                </span>
+            {/* Expandable Deep Dive */}
+            <AnimatePresence>
+              {isDeepDiveOpen && attestation.headline && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="mb-4 overflow-hidden"
+                >
+                  <div className="pt-2 pb-4 border-t border-white/10">
+                    {attestation.problem_solved && (
+                      <div className="mb-3">
+                        <h4 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1">Problem Solved</h4>
+                        <p className="text-sm text-white/80">{attestation.problem_solved}</p>
+                      </div>
+                    )}
+                    {attestation.technical_highlights && attestation.technical_highlights.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold text-white/50 uppercase tracking-wider mb-1.5">Technical Highlights</h4>
+                        <ul className="list-disc list-inside text-sm text-white/80 space-y-1">
+                          {attestation.technical_highlights.map((hl, i) => <li key={i}>{hl}</li>)}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Impact & Diff Strip */}
+            <div className="mt-auto pt-2">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  {(attestation.additions > 0 || attestation.deletions > 0) && (
+                    <div className="flex items-center gap-1.5 text-xs font-mono">
+                      <span className="text-emerald-400">+{attestation.additions}</span>
+                      <span className="text-white/30">/</span>
+                      <span className="text-rose-400">-{attestation.deletions}</span>
+                    </div>
+                  )}
+                  {attestation.changed_files > 0 && (
+                    <div className="flex items-center gap-1 text-[11px] text-white/50">
+                      <FileDiff className="w-3 h-3" />
+                      {attestation.changed_files} files
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-2">
+                   <span className="text-xs font-bold font-mono" style={{ color: tier.accent }}>
+                    {score}<span className="text-white/35">/100</span>
+                  </span>
+                </div>
               </div>
+              
               <div className="h-1.5 w-full rounded-full bg-white/[0.06] overflow-hidden border border-white/5">
                 <div
                   className="h-full rounded-full transition-all duration-700"
@@ -198,19 +288,15 @@ const MetalCard = ({ attestation, showActions = true }) => {
                   }}
                 />
               </div>
-              {attestation.primary_language && (
-                <div className="flex items-center gap-1.5 mt-2.5 text-white/55">
-                  <Code className="w-3.5 h-3.5" />
-                  <span className="text-[11px]">{attestation.primary_language}</span>
-                </div>
-              )}
             </div>
           </div>
 
           {/* Footer - Cryptographic Stamp */}
           <div className="mt-auto pt-3 border-t border-white/10 flex justify-between items-end bg-black/25 -mx-5 -mb-5 p-4 rounded-b-2xl">
-            <div className="flex flex-col gap-2">
-              <span className="text-[9px] font-mono opacity-45 uppercase tracking-[0.2em]">Attestation Hash</span>
+            <div className="flex flex-col gap-2 cursor-pointer" onClick={() => setIsDeepDiveOpen(!isDeepDiveOpen)}>
+              <span className="text-[9px] font-mono opacity-45 uppercase tracking-[0.2em] flex items-center gap-1">
+                Attestation Hash {attestation.headline && <ChevronDown className={`w-3 h-3 transition-transform ${isDeepDiveOpen ? 'rotate-180' : ''}`} />}
+              </span>
               <span className="text-xs font-mono font-medium tracking-wider flex items-center gap-1.5 text-white/85">
                 <Github className="w-3 h-3 opacity-50" />
                 {shortHash}
@@ -218,6 +304,17 @@ const MetalCard = ({ attestation, showActions = true }) => {
             </div>
 
             <div data-export-hide className={`flex items-center gap-2 relative z-40 ${isExporting ? 'hidden' : ''}`}>
+              {showActions && isOwner && !attestation.headline && (
+                <button
+                  onClick={handleRegenerate}
+                  title="Generate Quantified Impact Summary"
+                  disabled={isRegenerating}
+                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-purple-500/20 hover:text-purple-400 transition-colors flex items-center justify-center border border-white/10 hover:border-purple-500/30 cursor-pointer disabled:opacity-50"
+                  style={{ position: 'relative', zIndex: 50, pointerEvents: 'auto' }}
+                >
+                  <RefreshCw className={`w-4 h-4 opacity-70 pointer-events-none ${isRegenerating ? 'animate-spin' : ''}`} />
+                </button>
+              )}
               {showActions && (
                 <button
                   onClick={handleDownload}
