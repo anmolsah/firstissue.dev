@@ -28,5 +28,25 @@
     "message": "CS student | Excited to make an open source impact with FirstIssue.dev! 🚀",
     "joinedAt": "2025-02-20",
     "branch": "right"
+  },
+  {
+    "id": "4",
+    "name": "Shahil Raz",
+    "github": "shahilraz",
+    "avatar": "https://github.com/shahilraz.png?size=150",
+    "role": "Contributor",
+    "message": "Excited to make my first open source contribution! 🌱",
+    "joinedAt": "2026-09-10",
+    "branch": "center"
+  },
+  {
+    "id": "5",
+    "name": "Rohan Chandra",
+    "github": "rohanchandra2003",
+    "avatar": "https://github.com/rohanchandra2003.png?size=150",
+    "role": "Contributor",
+    "message": "Excited to make my first open source contribution! 🌱",
+    "joinedAt": "2026-09-10",
+    "branch": "left"
   }
 ]

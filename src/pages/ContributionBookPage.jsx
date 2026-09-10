@@ -74,10 +74,6 @@ const ContributionBookPage = () => {
 
         {/* Hero Banner */}
         <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 mb-3 sm:mb-4 text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-full select-none">
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>INTERACTIVE ONBOARDING GUIDE</span>
-          </div>
 
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-3 sm:mb-4">
             The Contribution{" "}

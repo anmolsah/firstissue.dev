@@ -12,7 +12,7 @@ async function generateQuantifiedImpact(prData: any, repoData: any) {
     return null;
   }
 
-  const model = Deno.env.get("OPENROUTER_COMPLETION_MODEL") || "google/gemini-2.0-flash-lite-001";
+  const model = Deno.env.get("OPENROUTER_COMPLETION_MODEL") || "google/gemini-2.5-flash-lite:batch";
   
   const prompt = `
 You are an expert engineering manager. Analyze the following Pull Request and generate a Quantified Impact summary.
@@ -184,7 +184,7 @@ serve(async (req: Request) => {
 
       if ((count ?? 0) >= FREE_ATTESTATION_LIMIT) {
         return new Response(JSON.stringify({
-          error: \`Free accounts are limited to \${FREE_ATTESTATION_LIMIT} Proofs of Work. Become a supporter for unlimited attestations.\`,
+          error: `Free accounts are limited to ${FREE_ATTESTATION_LIMIT} Proofs of Work. Become a supporter for unlimited attestations.`,
         }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
@@ -200,9 +200,9 @@ serve(async (req: Request) => {
     }
 
     const [, owner, repo, pullNumber] = urlMatch;
-    const repoName = \`\${owner}/\${repo}\`;
+    const repoName = `${owner}/${repo}`;
 
-    const prRes = await fetch(\`\${GITHUB_API_BASE}/repos/\${owner}/\${repo}/pulls/\${pullNumber}\`, { headers: ghHeaders });
+    const prRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}/pulls/${pullNumber}`, { headers: ghHeaders });
 
     if (!prRes.ok) {
       if (prRes.status === 404) {
@@ -210,7 +210,7 @@ serve(async (req: Request) => {
           status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" }
         });
       }
-      return new Response(JSON.stringify({ error: \`GitHub API error: \${prRes.status}\` }), {
+      return new Response(JSON.stringify({ error: `GitHub API error: ${prRes.status}` }), {
         status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
@@ -218,7 +218,7 @@ serve(async (req: Request) => {
     const prData = await prRes.json();
 
     if (prData.user.login.toLowerCase() !== githubUsername.toLowerCase()) {
-      return new Response(JSON.stringify({ error: \`Verification failed: PR author (\${prData.user.login}) does not match your GitHub username (\${githubUsername})\` }), {
+      return new Response(JSON.stringify({ error: `Verification failed: PR author (${prData.user.login}) does not match your GitHub username (${githubUsername})` }), {
         status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" }
       });
     }
@@ -238,7 +238,7 @@ serve(async (req: Request) => {
     let baseScore = 10 + Math.floor(additions / 10) + Math.floor(deletions / 20) + ((comments + reviewComments) * 5);
     baseScore = Math.min(baseScore, 100);
 
-    const repoRes = await fetch(\`\${GITHUB_API_BASE}/repos/\${owner}/\${repo}\`, { headers: ghHeaders });
+    const repoRes = await fetch(`${GITHUB_API_BASE}/repos/${owner}/${repo}`, { headers: ghHeaders });
     let repoStars = 0;
     let primaryLanguage = "Unknown";
     let repoData = {};
@@ -257,7 +257,7 @@ serve(async (req: Request) => {
 
     const timestampStr = new Date().toISOString();
     const encoder = new TextEncoder();
-    const dataToHash = encoder.encode(\`\${userId}-\${repoName}-\${pullNumber}-\${timestampStr}\`);
+    const dataToHash = encoder.encode(`${userId}-${repoName}-${pullNumber}-${timestampStr}`);
     const hashBuffer = await crypto.subtle.digest('SHA-256', dataToHash);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const txHash = '0x' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');

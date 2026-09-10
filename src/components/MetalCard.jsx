@@ -175,14 +175,14 @@ const MetalCard = ({ attestation, showActions = true, isOwner = false, onRegener
         {/* Card Content */}
         <div className="relative z-30 p-5 flex flex-col h-full text-white">
           {/* Header */}
-          <div className="mb-4 flex items-start justify-between">
-            <div>
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
+                <div className="w-6 h-6 shrink-0 rounded-full bg-black/40 border border-white/10 flex items-center justify-center">
                   <LangIcon className="w-3 h-3 text-white/80" />
                 </div>
-                <span className="text-sm font-semibold text-white/90 truncate max-w-[180px]">{attestation.repo_name}</span>
-                <CheckCircle className="w-3.5 h-3.5 text-blue-400" />
+                <span className="text-sm font-semibold text-white/90 truncate">{attestation.repo_name}</span>
+                <CheckCircle className="w-3.5 h-3.5 shrink-0 text-blue-400" />
               </div>
               {attestation.repo_stars > 0 && (
                 <div className="flex items-center gap-1 mt-1.5 ml-1">
@@ -191,7 +191,7 @@ const MetalCard = ({ attestation, showActions = true, isOwner = false, onRegener
                 </div>
               )}
             </div>
-            <span className="text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-200 to-zinc-400 opacity-60">
+            <span className="shrink-0 text-sm font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-zinc-200 to-zinc-400 opacity-60">
               FirstIssue.dev
             </span>
           </div>
