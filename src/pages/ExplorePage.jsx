@@ -7,6 +7,7 @@ import SmartMatchTab from "../components/SmartMatchTab";
 import AppSidebar from "../components/AppSidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
 import ContributionKitModal from "../components/ContributionKitModal";
+import { buildExcludedLabelsQuery, filterStaleIssues } from "../utils/issueQualityFilter";
 import {
   Search,
   Compass,
@@ -227,7 +228,9 @@ const ExplorePage = () => {
 
       if (response.ok) {
         const data = await response.json();
-        const filteredIssues = data.items || [];
+        // Post-fetch quality filter: remove stale/abandoned issues that
+        // slipped through the search query (e.g. old + 0 comments)
+        const filteredIssues = filterStaleIssues(data.items || []);
 
         if (reset) setIssues(filteredIssues);
         else setIssues((prev) => [...prev, ...filteredIssues]);
@@ -248,7 +251,7 @@ const ExplorePage = () => {
 
   const buildQuery = () => {
     let query =
-      "state:open type:issue is:public -label:duplicate -label:invalid -label:wontfix";
+      `state:open type:issue is:public no:assignee ${buildExcludedLabelsQuery()}`;
 
     if (filters.labels.length > 0) {
       filters.labels.forEach((label) => (query += ` label:"${label}"`));

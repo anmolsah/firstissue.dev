@@ -179,7 +179,7 @@ async function fetchIssues(languages: any[], token?: string, preferredLabels?: s
   for (const label of labels) {
     // Combine all languages into one query per label for efficiency
     const langFilter = langList.map((l: string) => `language:${l}`).join(' ');
-    const query = `state:open type:issue label:"${label}" ${langFilter} is:public -label:duplicate -label:invalid`;
+    const query = `state:open type:issue label:"${label}" ${langFilter} is:public no:assignee -label:duplicate -label:invalid -label:wontfix -label:"won't fix" -label:stale -label:spam -label:blocked -label:"on hold" -label:"not planned" -label:"needs triage" -label:"cannot reproduce"`;
 
     try {
       const response = await fetch(
