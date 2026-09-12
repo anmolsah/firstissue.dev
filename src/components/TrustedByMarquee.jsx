@@ -78,89 +78,93 @@ const COMPANIES = [
 ];
 
 // Top Renowned Universities & Engineering Institutions
+// Logos fetched via Google's S2 Favicon API from each university's official domain —
+// CDN-backed, reliable, and always returns the official icon.
+const universityLogo = (domain) => `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+
 const UNIVERSITIES = [
   {
     name: "IIT Bombay",
     subtitle: "Mumbai",
     type: "IIT",
-    logo: "https://upload.wikimedia.org/wikipedia/de/5/58/IIT_Bombay_Logo.svg",
+    logo: universityLogo("iitb.ac.in"),
     fallbackInitials: "IITB",
   },
   {
     name: "IIT Delhi",
     subtitle: "New Delhi",
     type: "IIT",
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/f/fd/Indian_Institute_of_Technology_Delhi_Logo.svg/200px-Indian_Institute_of_Technology_Delhi_Logo.svg.png",
+    logo: universityLogo("iitd.ac.in"),
     fallbackInitials: "IITD",
   },
   {
     name: "Stanford University",
     subtitle: "Stanford, California",
     type: "University",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b5/Seal_of_Leland_Stanford_Junior_University.svg/200px-Seal_of_Leland_Stanford_Junior_University.svg.png",
+    logo: universityLogo("stanford.edu"),
     fallbackInitials: "SU",
   },
   {
     name: "IIT Madras",
     subtitle: "Chennai",
     type: "IIT",
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/6/69/IIT_Madras_Logo.svg/200px-IIT_Madras_Logo.svg.png",
+    logo: universityLogo("iitm.ac.in"),
     fallbackInitials: "IITM",
   },
   {
     name: "MIT",
     subtitle: "Cambridge, Massachusetts",
     type: "University",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0c/MIT_logo.svg/200px-MIT_logo.svg.png",
+    logo: universityLogo("mit.edu"),
     fallbackInitials: "MIT",
   },
   {
     name: "NIT Trichy",
     subtitle: "Tiruchirappalli",
     type: "NIT",
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/a/ad/NIT_Trichy_logo.png/200px-NIT_Trichy_logo.png",
+    logo: universityLogo("nitt.edu"),
     fallbackInitials: "NITT",
   },
   {
     name: "Harvard University",
     subtitle: "Cambridge, Massachusetts",
     type: "University",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Harvard_University_logo.svg/200px-Harvard_University_logo.svg.png",
+    logo: universityLogo("harvard.edu"),
     fallbackInitials: "HU",
   },
   {
     name: "IIT Roorkee",
     subtitle: "Roorkee",
     type: "IIT",
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/d/dc/Indian_Institute_of_Technology_Roorkee_logo.png/200px-Indian_Institute_of_Technology_Roorkee_logo.png",
+    logo: universityLogo("iitr.ac.in"),
     fallbackInitials: "IITR",
   },
   {
     name: "BITS Pilani",
     subtitle: "Pilani, Rajasthan",
     type: "Institute",
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/d/d3/BITS_Pilani-Logo.svg/200px-BITS_Pilani-Logo.svg.png",
+    logo: universityLogo("bits-pilani.ac.in"),
     fallbackInitials: "BITS",
   },
   {
     name: "UC Berkeley",
     subtitle: "Berkeley, California",
     type: "University",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Seal_of_University_of_California%2C_Berkeley.svg/200px-Seal_of_University_of_California%2C_Berkeley.svg.png",
+    logo: universityLogo("berkeley.edu"),
     fallbackInitials: "UCB",
   },
   {
     name: "Oxford University",
     subtitle: "Oxford, UK",
     type: "University",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Oxford-University-Circlet.svg/200px-Oxford-University-Circlet.svg.png",
+    logo: universityLogo("ox.ac.uk"),
     fallbackInitials: "OX",
   },
   {
     name: "Cambridge University",
     subtitle: "Cambridge, UK",
     type: "University",
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Coat_of_Arms_of_the_University_of_Cambridge.svg/200px-Coat_of_Arms_of_the_University_of_Cambridge.svg.png",
+    logo: universityLogo("cam.ac.uk"),
     fallbackInitials: "CAM",
   },
 ];
