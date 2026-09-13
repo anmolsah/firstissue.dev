@@ -248,6 +248,11 @@ const DocsPage = () => {
           title: "Website Workflow & System Architecture",
           readTime: "12 min",
         },
+        {
+          id: "interview-system-design",
+          title: "System Design for Interviews (Scalability & Concurrency)",
+          readTime: "15 min",
+        },
       ],
     },
     {

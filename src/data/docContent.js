@@ -2167,6 +2167,206 @@ title: "Security Consideration",
 text: "All operations involving the GitHub API are proxied through server-side Edge Functions. This ensures GitHub OAuth provider tokens are never stored long-term in the database or exposed in client browser memory."
 }
 ]
+},
+
+"interview-system-design": {
+title: "System Design for Interviews (Scalability & Concurrency)",
+description: "A comprehensive guide on explaining the FirstIssue.dev architecture, handling concurrency, scalability, and security during a system design interview.",
+readTime: "15 min read",
+updated: "today",
+difficulty: "Advanced",
+content: [
+{
+type: "paragraph",
+text: "When explaining the FirstIssue.dev system design, a structured approach helps convey clarity and depth. Follow this comprehensive guide covering What, Why, How, Scale, and Failure. Below are the architectural concepts paired with real-world implementation examples."
+},
+{
+type: "heading",
+level: 2,
+text: "1. High-Level Architecture"
+},
+{
+type: "paragraph",
+text: "FirstIssue.dev operates on a serverless, decoupled architecture. The frontend is a React Single Page Application (SPA) hosted on Vercel. The backend utilizes Supabase (managed PostgreSQL) for data persistence, Supabase Auth for identity, and Supabase Edge Functions (Deno) for secure, compute-heavy tasks like AI generation and GitHub syncing. External APIs (GitHub, OpenAI) are accessed exclusively via these Edge Functions."
+},
+{
+type: "code",
+language: "typescript",
+code: "// Example: A lightweight Deno Edge Function acting as the secure API Gateway\nimport { serve } from \"https://deno.land/std@0.168.0/http/server.ts\";\nimport { createClient } from \"https://esm.sh/@supabase/supabase-js@2\";\n\nserve(async (req) => {\n  const supabaseClient = createClient(Deno.env.get('SUPABASE_URL'), Deno.env.get('SUPABASE_ANON_KEY'));\n  return new Response(JSON.stringify({ status: 'Architecture Online' }), { headers: { \"Content-Type\": \"application/json\" } });\n});"
+},
+{
+type: "heading",
+level: 2,
+text: "2. Core User Flows: Submitting a Contribution"
+},
+{
+type: "list",
+ordered: true,
+items: [
+"User authenticates via GitHub OAuth on the frontend.",
+"User pastes a PR URL or triggers an automatic sync.",
+"The frontend invokes a Supabase Edge Function to securely query the GitHub API.",
+"The Edge Function verifies PR status, author match, and merges.",
+"The backend signs a cryptographic 'Proof of Work' (Attestation) and upserts it into the PostgreSQL database.",
+"The frontend receives a success response and renders an interactive 3D MetalCard for the user's portfolio."
+]
+},
+{
+type: "code",
+language: "javascript",
+code: "// Example: Frontend invoking the Edge Function to sync a PR\nconst syncContribution = async (prUrl) => {\n  const { data, error } = await supabase.functions.invoke('github-sync', {\n    body: { url: prUrl }\n  });\n  \n  if (error) throw new Error('Sync failed');\n  return data;\n};"
+},
+{
+type: "heading",
+level: 2,
+text: "3. Detailed Component Design"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"Frontend (React/Vite): Uses TanStack Query for server state caching and optimistic UI updates. TailwindCSS and Framer Motion handle styling and animations.",
+"Edge Functions (Deno): Stateless, distributed functions that act as the API Gateway for external services. They hold all secrets (OpenAI Keys, Admin DB keys).",
+"PostgreSQL DB: Uses Row Level Security (RLS) to enforce data access rules at the database level. pgvector is used to store and query AI embeddings for the Copilot."
+]
+},
+{
+type: "code",
+language: "javascript",
+code: "// Example: React Component using TanStack Query for optimal component design\nimport { useQuery } from '@tanstack/react-query';\n\nfunction Portfolio() {\n  const { data: contributions, isLoading } = useQuery({\n    queryKey: ['contributions'],\n    queryFn: fetchUserContributions\n  });\n\n  if (isLoading) return <SkeletonLoader />;\n  return <MetalCardGrid data={contributions} />;\n}"
+},
+{
+type: "heading",
+level: 2,
+text: "4. API Design"
+},
+{
+type: "paragraph",
+text: "Instead of building a traditional REST API, the frontend directly queries the Supabase database using the Supabase client. This is safe because RLS policies restrict what data can be read or mutated. For operations requiring secrets (e.g., generating AI kits), the client calls RPCs (Remote Procedure Calls) or Edge Functions."
+},
+{
+type: "code",
+language: "javascript",
+code: "// Example: Securely fetching user contributions directly from the client\nconst { data, error } = await supabase\n  .from('contributions')\n  .select('*')\n  .eq('pr_status', 'merged')\n  .order('created_at', { ascending: false });\n// RLS ensures users ONLY get their own data, no backend endpoint needed!"
+},
+{
+type: "heading",
+level: 2,
+text: "5. Data Flow"
+},
+{
+type: "paragraph",
+text: "Data flows unidirectionally for GitHub syncs: GitHub API -> Edge Function (parsing/transformation) -> PostgreSQL (Storage) -> React Client (Real-time updates via Supabase Realtime). For AI Copilot, User Query -> Edge Function -> pgvector (context retrieval) -> OpenAI API -> Client (streaming response)."
+},
+{
+type: "code",
+language: "javascript",
+code: "// Example: Edge Function fetching from GitHub and pushing to Supabase\nconst githubRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`, {\n  headers: { Authorization: `Bearer ${GITHUB_TOKEN}` }\n});\nconst prData = await githubRes.json();\n\n// Push to DB\nawait supabaseAdmin.from('contributions').upsert({\n  user_id: userId,\n  pr_url: prData.html_url,\n  title: prData.title\n});"
+},
+{
+type: "heading",
+level: 2,
+text: "6. Authentication & Authorization"
+},
+{
+type: "paragraph",
+text: "Authentication is managed via Supabase Auth using GitHub OAuth. Upon login, a JWT is issued to the client. Authorization is handled via PostgreSQL Row Level Security (RLS). For example, the policy 'auth.uid() = user_id' ensures users can only modify their own 'contributions' rows."
+},
+{
+type: "code",
+language: "sql",
+code: "-- Example: Creating an RLS Policy for Authorization\nALTER TABLE contributions ENABLE ROW LEVEL SECURITY;\n\nCREATE POLICY \"Users can insert their own contributions\"\nON contributions FOR INSERT\nWITH CHECK ( auth.uid() = user_id );\n\nCREATE POLICY \"Users can view their own contributions\"\nON contributions FOR SELECT\nUSING ( auth.uid() = user_id );"
+},
+{
+type: "heading",
+level: 2,
+text: "7. Caching & Performance"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"Client Caching: TanStack Query caches API responses in the browser memory, preventing redundant network requests during navigation.",
+"Edge Caching: Vercel CDN caches static assets globally.",
+"Sync Throttling: To respect GitHub's rate limits, the client enforces a 5-minute cooldown before allowing a manual or automatic data sync."
+]
+},
+{
+type: "code",
+language: "javascript",
+code: "// Example: Configuring TanStack Query for optimal client caching\nconst queryClient = new QueryClient({\n  defaultOptions: {\n    queries: {\n      staleTime: 1000 * 60 * 5, // Data is fresh for 5 minutes\n      cacheTime: 1000 * 60 * 30, // Keep in cache for 30 minutes\n      refetchOnWindowFocus: false,\n    },\n  },\n});"
+},
+{
+type: "heading",
+level: 2,
+text: "8. Scalability"
+},
+{
+type: "paragraph",
+text: "The architecture scales horizontally almost infinitely. Vercel automatically scales the frontend delivery. Supabase Edge Functions automatically spin up instances globally based on traffic. PostgreSQL is scaled vertically initially, with read replicas planned for heavy public portfolio read workloads."
+},
+{
+type: "code",
+language: "sql",
+code: "-- Example: Scaling AI Vector Search with pgvector HNSW Index\nCREATE INDEX ON kb_embeddings USING hnsw (embedding vector_cosine_ops)\nWITH (m = 16, ef_construction = 64);\n-- This index allows scalable, sub-millisecond similarity search across millions of vectors."
+},
+{
+type: "heading",
+level: 2,
+text: "9. Background Jobs / Async Processing"
+},
+{
+type: "paragraph",
+text: "Heavy tasks like bulk generating AI portfolios or scraping documentation for the knowledge base run asynchronously. We use Supabase pg_cron for scheduled background jobs, such as cleaning up stale chat sessions or resetting monthly AI quotas for free users."
+},
+{
+type: "code",
+language: "sql",
+code: "-- Example: Scheduling a daily cleanup job using pg_cron\nSELECT cron.schedule(\n  'cleanup-stale-sessions',\n  '0 0 * * *', -- Runs every day at midnight\n  $$ DELETE FROM chat_sessions WHERE created_at < NOW() - INTERVAL '30 days' $$\n);"
+},
+{
+type: "heading",
+level: 2,
+text: "10. Reliability & Failure Handling"
+},
+{
+type: "paragraph",
+text: "For the AI Contribution Kit, handling quota concurrency is critical. We use Atomic Row Locks ('SELECT ... FOR UPDATE') in PL/pgSQL to serialize concurrent requests, preventing race conditions where users might bypass quotas. If an external API (like OpenAI) fails, the edge function catches the error and issues a refund to the user's quota via a 'refund_kit_quota' RPC."
+},
+{
+type: "code",
+language: "sql",
+code: "-- Example: Atomic Row Lock in PL/pgSQL to prevent concurrency bugs\nSELECT kit_count INTO v_used\nFROM public.contribution_kit_usage\nWHERE user_id = p_user_id AND usage_month = v_month\nFOR UPDATE; -- This locks the row until the transaction completes!\n\nIF v_used >= p_limit THEN\n    RETURN false;\nEND IF;"
+},
+{
+type: "heading",
+level: 2,
+text: "11. Security"
+},
+{
+type: "paragraph",
+text: "We follow a Zero-Trust Architecture. Sensitive GitHub OAuth provider tokens are never exposed to the frontend. All GitHub API calls are proxied through server-side Edge Functions. The database is strictly locked down by RLS."
+},
+{
+type: "code",
+language: "typescript",
+code: "// Example: Edge Function securely validating the user's JWT token\nconst authHeader = req.headers.get('Authorization');\nconst token = authHeader.replace('Bearer ', '');\n\nconst { data: { user }, error } = await supabaseClient.auth.getUser(token);\nif (error || !user) {\n  return new Response('Unauthorized', { status: 401 });\n}\n// Proceed with secure logic for authenticated user..."
+},
+{
+type: "heading",
+level: 2,
+text: "12. Monitoring & Observability"
+},
+{
+type: "paragraph",
+text: "We leverage Vercel Analytics for frontend web vitals. Supabase provides native observability for database query performance and Edge Function invocation logs. We track API rate limits closely to avoid being blocked by GitHub."
+},
+{
+type: "code",
+language: "javascript",
+code: "// Example: Custom tracking for Edge Function execution time\nconsole.time('GitHub API Request');\nconst response = await fetch(githubUrl, { headers });\nconsole.timeEnd('GitHub API Request'); // Automatically logged in Supabase Observability\n\n// Check Rate Limit Headers\nconst limit = response.headers.get('x-ratelimit-remaining');\nconsole.log(`GitHub API calls remaining: ${limit}`);"
+}
+]
 }
 },
 
