@@ -2169,16 +2169,16 @@ text: "All operations involving the GitHub API are proxied through server-side E
 ]
 },
 
-"interview-system-design": {
-title: "System Design for Interviews (Scalability & Concurrency)",
-description: "A comprehensive guide on explaining the FirstIssue.dev architecture, handling concurrency, scalability, and security during a system design interview.",
+"architecture-deep-dive": {
+title: "Architecture Deep Dive (Scalability & Concurrency)",
+description: "A comprehensive guide on the FirstIssue.dev architecture, handling concurrency, scalability, and security.",
 readTime: "15 min read",
 updated: "today",
 difficulty: "Advanced",
 content: [
 {
 type: "paragraph",
-text: "When explaining the FirstIssue.dev system design, a structured approach helps convey clarity and depth. Follow this comprehensive guide covering What, Why, How, Scale, and Failure. Below are the architectural concepts paired with real-world implementation examples."
+text: "This structured guide covers the core architectural principles of FirstIssue.dev: What, Why, How, Scale, and Failure. Below are the concepts paired with real-world implementation examples."
 },
 {
 type: "heading",

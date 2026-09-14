@@ -249,8 +249,8 @@ const DocsPage = () => {
           readTime: "12 min",
         },
         {
-          id: "interview-system-design",
-          title: "System Design for Interviews (Scalability & Concurrency)",
+          id: "architecture-deep-dive",
+          title: "Architecture Deep Dive (Scalability & Concurrency)",
           readTime: "15 min",
         },
       ],
