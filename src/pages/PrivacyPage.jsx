@@ -238,11 +238,11 @@ const PrivacyPage = () => {
               <div className="mt-6 pt-4 border-t border-zinc-800/60 text-[11px] font-mono text-zinc-500 space-y-2">
                 <p>Have questions about your data?</p>
                 <a
-                  href="mailto:annifind010@gmail.com"
+                  href="mailto:support@firstissue.dev"
                   className="inline-flex items-center gap-1.5 text-[#00ADB5] hover:underline"
                 >
                   <Mail className="w-3 h-3" />
-                  <span>annifind010@gmail.com</span>
+                  <span>support@firstissue.dev</span>
                 </a>
               </div>
             </div>
@@ -554,7 +554,7 @@ const PrivacyPage = () => {
                 <ul className="list-disc list-inside space-y-1.5 ml-1">
                   <li><strong className="text-zinc-300">Active Accounts:</strong> User profile data and bookmarks are maintained until you choose to delete your account.</li>
                   <li><strong className="text-zinc-300">Server Logs:</strong> Temporary diagnostic server logs are purged automatically after 30 days.</li>
-                  <li><strong className="text-zinc-300">Account Deletion Workflow:</strong> You can request immediate, permanent deletion of your profile and data by emailing <code className="text-zinc-200">annifind010@gmail.com</code>. Upon receipt, all associated database records are irreversibly removed within 14 business days.</li>
+                  <li><strong className="text-zinc-300">Account Deletion Workflow:</strong> You can request immediate, permanent deletion of your profile and data by emailing <code className="text-zinc-200">support@firstissue.dev</code>. Upon receipt, all associated database records are irreversibly removed within 14 business days.</li>
                 </ul>
               </div>
             </section>
@@ -629,7 +629,7 @@ const PrivacyPage = () => {
               </div>
 
               <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                FirstIssue.dev does not knowingly solicit or collect personally identifiable information from children under the age of 13. If you believe that a minor under 13 has registered or provided personal data on our site, please notify us immediately at <code className="text-zinc-200 font-mono">annifind010@gmail.com</code>, and we will promptly purge such records.
+                FirstIssue.dev does not knowingly solicit or collect personally identifiable information from children under the age of 13. If you believe that a minor under 13 has registered or provided personal data on our site, please notify us immediately at <code className="text-zinc-200 font-mono">support@firstissue.dev</code>, and we will promptly purge such records.
               </p>
             </section>
 
@@ -654,11 +654,11 @@ const PrivacyPage = () => {
                     <h4 className="text-sm font-bold text-white mb-1">Data Privacy Officer &amp; Support</h4>
                     <p className="text-xs text-zinc-400 font-mono">Direct email contact for all privacy inquiries:</p>
                     <a
-                      href="mailto:annifind010@gmail.com"
+                      href="mailto:support@firstissue.dev"
                       className="text-xs font-mono font-bold text-[#00ADB5] hover:underline flex items-center gap-1.5 mt-1"
                     >
                       <Mail className="w-3.5 h-3.5" />
-                      annifind010@gmail.com
+                      support@firstissue.dev
                     </a>
                   </div>
 

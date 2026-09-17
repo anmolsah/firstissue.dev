@@ -239,11 +239,11 @@ const TermsPage = () => {
               <div className="mt-6 pt-4 border-t border-zinc-800/60 text-[11px] font-mono text-zinc-500 space-y-2">
                 <p>Questions about these terms?</p>
                 <a
-                  href="mailto:annifind010@gmail.com"
+                  href="mailto:support@firstissue.dev"
                   className="inline-flex items-center gap-1.5 text-[#00ADB5] hover:underline"
                 >
                   <Mail className="w-3 h-3" />
-                  <span>annifind010@gmail.com</span>
+                  <span>support@firstissue.dev</span>
                 </a>
               </div>
             </div>
@@ -496,7 +496,7 @@ const TermsPage = () => {
                   We reserve the right, in our sole discretion, to suspend, limit, or terminate your account and bar access to the Service at any time, without prior notice, if you breach these Terms, engage in scraping abuse, or act in a manner detrimental to the platform or other developers.
                 </p>
                 <p>
-                  You may terminate your account at any time by disconnecting your GitHub OAuth connection and requesting profile data removal via <code className="text-zinc-200 font-mono">annifind010@gmail.com</code>.
+                  You may terminate your account at any time by disconnecting your GitHub OAuth connection and requesting profile data removal via <code className="text-zinc-200 font-mono">support@firstissue.dev</code>.
                 </p>
               </div>
             </section>
@@ -559,11 +559,11 @@ const TermsPage = () => {
                     <h4 className="text-sm font-bold text-white mb-1">Legal Counsel &amp; Operations</h4>
                     <p className="text-xs text-zinc-400 font-mono">Direct email contact:</p>
                     <a
-                      href="mailto:annifind010@gmail.com"
+                      href="mailto:support@firstissue.dev"
                       className="text-xs font-mono font-bold text-[#00ADB5] hover:underline flex items-center gap-1.5 mt-1"
                     >
                       <Mail className="w-3.5 h-3.5" />
-                      annifind010@gmail.com
+                      support@firstissue.dev
                     </a>
                   </div>
 
