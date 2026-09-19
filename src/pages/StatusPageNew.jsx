@@ -31,6 +31,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { withUTM, extractRepo } from "../utils/utm";
+import { trackIssueClick } from "../utils/analytics";
 
 const StatusPage = () => {
   const { user, loading: authLoading } = useAuth();
@@ -650,11 +652,12 @@ const ContributionCard = ({
             </a>
           )}
           <a
-            href={contribution.issue_url}
+            href={withUTM(contribution.issue_url, { medium: 'status', content: 'contribution_link' })}
             target="_blank"
             rel="noopener noreferrer"
             className="p-1.5 text-zinc-500 hover:text-white transition-colors rounded hover:bg-white/5 border border-transparent"
             title="View Issue"
+            onClick={() => trackIssueClick({ issueUrl: contribution.issue_url, source: 'status', repo: extractRepo(contribution.issue_url), action: 'external_link' })}
           >
             <ExternalLink className="w-4 h-4" />
           </a>

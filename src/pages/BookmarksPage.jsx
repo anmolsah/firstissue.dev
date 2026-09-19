@@ -21,6 +21,8 @@ import {
   ChevronRight,
   Loader2,
 } from "lucide-react";
+import { withUTM, extractRepo } from "../utils/utm";
+import { trackIssueClick } from "../utils/analytics";
 
 const BookmarksPage = () => {
   const { user, loading: authLoading } = useAuth();
@@ -315,10 +317,11 @@ const BookmarksPage = () => {
                       </span>
                       <div className="flex items-center gap-1.5">
                         <a
-                          href={bookmark.issue_url}
+                          href={withUTM(bookmark.issue_url, { medium: 'bookmarks', content: 'external_icon' })}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 rounded transition-all"
+                          onClick={() => trackIssueClick({ issueUrl: bookmark.issue_url, source: 'bookmarks', repo: extractRepo(bookmark.issue_url), action: 'external_link' })}
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>

@@ -29,6 +29,8 @@ import {
   Wand2,
   GitPullRequest,
 } from 'lucide-react';
+import { withUTM } from '../utils/utm';
+import { trackIssueClick } from '../utils/analytics';
 
 const LABEL_OPTIONS = [
   { id: 'good first issue', label: 'Good First Issue', color: 'emerald' },
@@ -680,7 +682,12 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
 
       {/* Title */}
       <h3 className="text-base font-semibold text-white mb-3 leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-purple-400 transition-colors">
-        <a href={issue.url} target="_blank" rel="noopener noreferrer">
+        <a
+          href={withUTM(issue.url, { medium: 'smart_match', content: 'title_click' })}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackIssueClick({ issueUrl: issue.url, source: 'smart_match', repo: issue.repo, action: 'title_click' })}
+        >
           {issue.title}
         </a>
       </h3>
@@ -717,10 +724,11 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
         </div>
         
         <a
-          href={issue.url}
+          href={withUTM(issue.url, { medium: 'smart_match', content: 'view_issue_btn' })}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-1.5 text-xs font-bold text-white hover:text-purple-400 transition-colors group/link"
+          onClick={() => trackIssueClick({ issueUrl: issue.url, source: 'smart_match', repo: issue.repo, action: 'view_issue' })}
         >
           View Issue
           <ArrowRight className="w-3.5 h-3.5 transform group-hover/link:translate-x-0.5 transition-transform" />

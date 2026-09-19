@@ -32,6 +32,8 @@ import {
   Wrench,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { withUTM, extractRepo } from "../utils/utm";
+import { trackIssueClick } from "../utils/analytics";
 
 const formatTimeAgo = (dateString) => {
   const date = new Date(dateString);
@@ -845,10 +847,11 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
           </div>
           <div>
             <a
-              href={issue.html_url}
+              href={withUTM(issue.html_url, { medium: 'explore', content: 'repo_link' })}
               target="_blank"
               rel="noopener noreferrer"
               className="text-xs text-zinc-400 hover:text-white font-mono font-medium transition-colors"
+              onClick={() => trackIssueClick({ issueUrl: issue.html_url, source: 'explore', repo: repoName, action: 'repo_link' })}
             >
               {repoName}
             </a>
@@ -877,7 +880,12 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
       </div>
 
       <h3 className="text-base font-semibold text-white mb-2 leading-snug group-hover:text-blue-400 transition-colors line-clamp-2">
-        <a href={issue.html_url} target="_blank" rel="noopener noreferrer">
+        <a
+          href={withUTM(issue.html_url, { medium: 'explore', content: 'title_click' })}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => trackIssueClick({ issueUrl: issue.html_url, source: 'explore', repo: repoName, action: 'title_click' })}
+        >
           {issue.title}
         </a>
       </h3>
@@ -908,10 +916,11 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
             Kit
           </button>
           <a
-            href={issue.html_url}
+            href={withUTM(issue.html_url, { medium: 'explore', content: 'external_icon' })}
             target="_blank"
             rel="noopener noreferrer"
             className="text-zinc-500 hover:text-zinc-250 transition-colors"
+            onClick={() => trackIssueClick({ issueUrl: issue.html_url, source: 'explore', repo: repoName, action: 'external_link' })}
           >
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
