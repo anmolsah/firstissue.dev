@@ -48,5 +48,15 @@
     "message": "Excited to make my first open source contribution! 🌱",
     "joinedAt": "2026-09-10",
     "branch": "left"
+  },
+  {
+    "id": "3142",
+    "name": "Abhinav Adarsh",
+    "github": "abhinavgautam08",
+    "avatar": "https://github.com/abhinavgautam08.png",
+    "role": "Contributor",
+    "message": "Excited to make open source contribution! 🌱",
+    "joinedAt": "2026-10-03",
+    "branch": "center"
   }
 ]
