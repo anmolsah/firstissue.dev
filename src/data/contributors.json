@@ -48,5 +48,16 @@
     "message": "Excited to make my first open source contribution! 🌱",
     "joinedAt": "2026-09-10",
     "branch": "left"
+  },
+  {
+    "id": "0337",
+    "name": "ABHINAY TEJA",
+    "github": "abhinayteja",
+    "avatar": "https://github.com/abhinayteja.png",
+    "role": "Contributor",
+    "message": "Excited to make my first open source contribution! 🌱",
+    "joinedAt": "2026-10-13",
+    "branch": "center"
   }
+
 ]
