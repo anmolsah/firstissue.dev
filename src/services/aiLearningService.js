@@ -67,8 +67,32 @@ export const recordAiFeedback = async ({
   }
   saveLocalLearnedSolutions(localList);
 
+  // Mark teaching state in local storage
+  if (feedbackType === "correction" || correctionText) {
+    try {
+      localStorage.setItem("firstmate_has_taught_firstmate", "true");
+      if (userId) {
+        localStorage.setItem(`firstmate_has_taught_${userId}`, "true");
+        localStorage.setItem(`firstmate_taught_at_${userId}`, new Date().toISOString());
+      }
+    } catch {
+      // Ignore localStorage write failures
+    }
+  }
+
   // 2. Persist to Supabase if connected
   try {
+    // If authenticated user is teaching, record directly to ensure user_id association
+    if (userId && (feedbackType === "correction" || correctionText)) {
+      await supabase.from("ai_learned_solutions").insert({
+        user_id: userId,
+        query_text: userQuery.trim(),
+        assistant_response: assistantResponse.trim(),
+        user_feedback: feedbackType,
+        user_correction: correctionText ? correctionText.trim() : null,
+      });
+    }
+
     const { data, error } = await supabase.rpc("vote_learned_solution", {
       p_query_text: userQuery.trim(),
       p_assistant_response: assistantResponse.trim(),
@@ -76,7 +100,7 @@ export const recordAiFeedback = async ({
       p_correction: correctionText ? correctionText.trim() : null,
     });
 
-    if (error) {
+    if (error && !userId) {
       // Fallback to standard insert if RPC does not exist
       await supabase.from("ai_learned_solutions").insert({
         user_id: userId,

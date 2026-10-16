@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Send, Bot, User, ChevronRight, AlertCircle, Lock, Plus, Trash2, ExternalLink, Copy, Check, Pencil, Crown, ThumbsUp, ThumbsDown, Sparkles, Lightbulb } from "lucide-react";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../contexts/AuthContext";
 import { useSupporter } from "../contexts/SupporterContext";
 import { useCopilotQuota } from "../hooks/queries/useCopilotQuota";
+import { taughtFirstMateKeys } from "../hooks/queries/useHasTaughtFirstMate";
 import { supabase } from "../lib/supabase";
 import {
   fetchChatHistory,
@@ -213,6 +215,7 @@ const AIPage = () => {
   const { user, loading: authLoading } = useAuth();
   const { isSupporter } = useSupporter();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Free accounts get a daily message allowance (enforced in the kb-query
   // edge function); supporters are unlimited and skip the query entirely.
@@ -347,6 +350,10 @@ const AIPage = () => {
     setActiveCorrectionIdx(null);
     setCorrectionText("");
     setFeedbackMap(prev => ({ ...prev, [msgIdx]: "up" }));
+
+    if (user?.id) {
+      queryClient.invalidateQueries({ queryKey: taughtFirstMateKeys.user(user.id) });
+    }
   };
 
   // Auth Protection

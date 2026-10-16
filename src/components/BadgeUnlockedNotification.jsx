@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Award, X, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge } from 'lucide-react';
+import { Award, X, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, Brain } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 
 // Badge icon mapping
@@ -17,7 +17,8 @@ const BADGE_ICONS = {
   'streak-7': Flame,
   'streak-30': Flame,
   'perfect-score': Crown,
-  'early-adopter': Sparkles
+  'early-adopter': Sparkles,
+  'firstmate-mentor': Brain,
 };
 
 const BadgeUnlockedNotification = ({ badge, onClose }) => {
