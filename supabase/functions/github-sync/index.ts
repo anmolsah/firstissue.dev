@@ -27,14 +27,15 @@ async function batchProcess<T, R>(
   items: T[],
   processor: (item: T) => Promise<R>,
   batchSize = 5
-): Promise<R[]> {
-  const results: R[] = [];
+): Promise<{ index: number; value: R }[]> {
+  const results: { index: number; value: R }[] = [];
   for (let i = 0; i < items.length; i += batchSize) {
     const batch = items.slice(i, i + batchSize);
     const batchResults = await Promise.allSettled(batch.map(processor));
-    for (const result of batchResults) {
+    for (let j = 0; j < batchResults.length; j++) {
+      const result = batchResults[j];
       if (result.status === "fulfilled") {
-        results.push(result.value);
+        results.push({ index: i + j, value: result.value });
       }
     }
   }
@@ -261,9 +262,8 @@ serve(async (req: Request) => {
       );
 
       // Update contributions with detailed merge status
-      for (let i = 0; i < detailResults.length; i++) {
-        const detail = detailResults[i];
-        const { contributionIndex } = prsNeedingDetails[i];
+      for (const { index, value: detail } of detailResults) {
+        const { contributionIndex } = prsNeedingDetails[index];
         if (detail && contributions[contributionIndex]) {
           contributions[contributionIndex].pr_status = detail.merged_at ? 'merged' : detail.state;
           contributions[contributionIndex].pr_merged_at = detail.merged_at || null;
