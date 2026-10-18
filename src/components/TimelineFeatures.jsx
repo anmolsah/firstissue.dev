@@ -17,6 +17,8 @@ import {
   Check,
   ExternalLink,
   Flame,
+  Briefcase,
+  Building2,
 } from "lucide-react";
 
 // Accent styling mappings to give each card subtle, premium ambient lighting
@@ -90,6 +92,9 @@ const FeatureCard = ({
     if (e.target.closest("a") || e.target.closest("button")) {
       return;
     }
+    if (badge?.toLowerCase().includes("coming soon") || linkText?.toLowerCase().includes("coming soon")) {
+      return;
+    }
     if (isExternal) {
       window.open(link, "_blank", "noopener,noreferrer");
     } else if (onClick) {
@@ -104,7 +109,7 @@ const FeatureCard = ({
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.5, delay: index * 0.08 }}
       onClick={handleCardClick}
-      className={`group relative flex flex-col justify-between rounded-2xl bg-[#0c0d12]/90 hover:bg-[#10121a]/95 backdrop-blur-xl border border-white/[0.08] ${style.borderHover} transition-all duration-300 p-6 sm:p-7 overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.5)] ${style.glow} ${isPoW ? "min-h-[440px]" : "min-h-[410px]"} ${className} ${isExternal || onClick ? "cursor-pointer" : ""}`}
+      className={`group relative flex flex-col justify-between rounded-2xl bg-[#0c0d12]/90 hover:bg-[#10121a]/95 backdrop-blur-xl border border-white/[0.08] ${style.borderHover} transition-all duration-300 p-6 sm:p-7 overflow-hidden shadow-[0_4px_24px_rgba(0,0,0,0.5)] ${style.glow} ${isPoW ? "min-h-[440px]" : "min-h-[410px]"} ${className} ${(isExternal || onClick) && !linkText?.toLowerCase().includes("coming soon") ? "cursor-pointer" : ""}`}
     >
       {/* Top Hairline Light Reflection */}
       <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
@@ -123,7 +128,13 @@ const FeatureCard = ({
             <Icon className="w-5 h-5" />
           </div>
           {badge ? (
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-medium tracking-wider uppercase bg-white/[0.04] border border-white/[0.08] text-zinc-400">
+            <span
+              className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-semibold tracking-wider uppercase transition-all ${
+                badge.toLowerCase().includes("coming soon")
+                  ? "bg-rose-500/15 text-rose-300 border border-rose-500/30 shadow-[0_0_12px_rgba(244,63,94,0.18)]"
+                  : "bg-white/[0.04] border border-white/[0.08] text-zinc-400"
+              }`}
+            >
               {badge}
             </span>
           ) : (
@@ -147,9 +158,14 @@ const FeatureCard = ({
       </div>
 
       {/* Action Footer */}
-      {(link || onClick) && (
+      {(link || onClick || linkText) && (
         <div className="mt-3 relative z-10 text-left pt-2 border-t border-white/[0.04]">
-          {onClick ? (
+          {linkText?.toLowerCase().includes("coming soon") ? (
+            <div className="inline-flex items-center gap-2 text-xs font-mono font-medium text-rose-300/90 py-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" />
+              <span>Coming soon</span>
+            </div>
+          ) : onClick ? (
             <button
               onClick={onClick}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-300 hover:text-white transition-colors cursor-pointer bg-transparent border-none p-0 outline-none group-hover:text-white"
@@ -432,33 +448,42 @@ const ProofOfWorkVisualizer = ({ active }) => {
 };
 
 // ============================================================================
-// VISUALIZER 3: Open Source Hackathons (Live Competition Arena)
+// VISUALIZER 3: Startup Talent & Proof-of-Work Hiring (Contribly Talent Engine)
 // ============================================================================
-const HackathonVisualizer = ({ active }) => {
-  const hackathons = [
+const StartupHiringVisualizer = ({ active }) => {
+  const hiringRoles = [
     {
-      title: "GitAI Builders 2026",
-      organizer: "GitHub & OpenAI",
-      prize: "$25,000",
-      status: "Starts in 3 days",
-      badge: "AI & OPEN SOURCE",
-      teams: "148 Teams",
+      company: "Stack AI",
+      stage: "YC Backed",
+      title: "Founding Full-Stack Engineer",
+      comp: "$90k - $140k • Remote",
+      badge: "VERIFIED MATCH",
+      matchReason: "Matched via 12 Merged PRs in React & TypeScript",
+      matchScore: "96% Fit",
+      turnaround: "5-7d to offer",
+      tags: ["React", "Node.js", "AI Pipelines"],
     },
     {
-      title: "SustainOS Global",
-      organizer: "Linux Foundation",
-      prize: "$15,000",
-      status: "Starts in 10 days",
-      badge: "INFRASTRUCTURE",
-      teams: "92 Teams",
+      company: "Smallest AI",
+      stage: "DeepTech / Audio",
+      title: "Systems & Performance Engineer",
+      comp: "$100k - $160k • Remote",
+      badge: "HIGH SIGNAL",
+      matchReason: "Matched via Rust & Low-level Open Source work",
+      matchScore: "98% Fit",
+      turnaround: "Direct Founder Intro",
+      tags: ["Rust", "Wasm", "Performance"],
     },
     {
-      title: "OpenWeb World Sprint",
-      organizer: "Mozilla & W3C",
-      prize: "$10,000",
-      status: "Starts in 22 days",
-      badge: "WEB STANDARDS",
-      teams: "64 Teams",
+      company: "Supabase Ecosystem",
+      stage: "Dev Infrastructure",
+      title: "Edge & Database Engineer",
+      comp: "$110k - $150k • Global Remote",
+      badge: "CODE VERIFIED",
+      matchReason: "Matched via Postgres & Go repository contributions",
+      matchScore: "94% Fit",
+      turnaround: "Zero Resume Screening",
+      tags: ["Go", "Postgres", "Docker"],
     },
   ];
 
@@ -467,12 +492,12 @@ const HackathonVisualizer = ({ active }) => {
   useEffect(() => {
     if (!active) return;
     const interval = setInterval(() => {
-      setActiveIndex((prev) => (prev + 1) % hackathons.length);
+      setActiveIndex((prev) => (prev + 1) % hiringRoles.length);
     }, 3200);
     return () => clearInterval(interval);
-  }, [active, hackathons.length]);
+  }, [active, hiringRoles.length]);
 
-  const current = hackathons[activeIndex];
+  const current = hiringRoles[activeIndex];
 
   return (
     <div className="w-full h-full flex flex-col justify-between p-1 select-none text-left">
@@ -481,7 +506,7 @@ const HackathonVisualizer = ({ active }) => {
         <div className="flex items-center gap-1.5">
           <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
           <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-zinc-300">
-            CONTRIBLY ARENA
+            CONTRIBLY TALENT • COMING SOON
           </span>
         </div>
         <span className="px-1.5 py-0.5 rounded text-[8px] font-mono font-semibold bg-rose-500/15 text-rose-400 border border-rose-500/25">
@@ -489,7 +514,7 @@ const HackathonVisualizer = ({ active }) => {
         </span>
       </div>
 
-      {/* Featured Hackathon Card */}
+      {/* Featured Hiring Opportunity Card */}
       <motion.div
         key={activeIndex}
         initial={{ opacity: 0, y: 8 }}
@@ -500,40 +525,65 @@ const HackathonVisualizer = ({ active }) => {
       >
         <div className="flex items-start justify-between mb-1.5">
           <div>
-            <span className="text-[8px] font-mono text-zinc-400">
-              {current.organizer}
-            </span>
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className="text-[8.5px] font-mono font-semibold text-rose-300">
+                {current.company}
+              </span>
+              <span className="text-[7.5px] font-mono px-1 py-0.2 rounded bg-white/[0.05] text-zinc-400 border border-white/[0.06]">
+                {current.stage}
+              </span>
+            </div>
             <h4 className="text-[11px] font-bold text-white tracking-tight">
               {current.title}
             </h4>
           </div>
           <div className="text-right">
-            <div className="text-[8px] text-zinc-500 font-mono">PRIZE POOL</div>
-            <div className="text-[12px] font-black text-rose-400 font-mono">
-              {current.prize}
+            <div className="text-[7.5px] text-zinc-500 font-mono">COMPENSATION</div>
+            <div className="text-[10.5px] font-bold text-rose-400 font-mono">
+              {current.comp}
             </div>
           </div>
         </div>
 
-        <div className="flex items-center justify-between pt-2 mt-2 border-t border-white/[0.04] text-[8px] font-mono text-zinc-400">
-          <span className="text-emerald-400">{current.status}</span>
-          <span className="text-zinc-500">{current.teams}</span>
+        {/* Proof of Work Match Callout */}
+        <div className="mt-2 py-1.5 px-2 rounded-lg bg-black/40 border border-white/[0.04] flex items-center justify-between text-[8px] font-mono">
+          <span className="text-zinc-300 truncate max-w-[190px]">
+            ⚡ {current.matchReason}
+          </span>
+          <span className="text-emerald-400 font-semibold shrink-0">
+            {current.matchScore}
+          </span>
+        </div>
+
+        {/* Tags & Fast Response Indicator */}
+        <div className="flex items-center justify-between pt-2 mt-2 border-t border-white/[0.04] text-[8px] font-mono">
+          <div className="flex items-center gap-1">
+            {current.tags.map((tag) => (
+              <span
+                key={tag}
+                className="px-1.5 py-0.5 rounded bg-white/[0.04] text-zinc-400 border border-white/[0.05]"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+          <span className="text-zinc-400 font-medium">{current.turnaround}</span>
         </div>
       </motion.div>
 
-      {/* Navigation Indicators */}
+      {/* Navigation Indicators & Platform Metric */}
       <div className="flex items-center justify-between pt-1 border-t border-white/[0.06]">
         <span className="text-[8px] font-mono text-zinc-500">
-          3 Featured Contests
+          90%+ Candidate Response Rate
         </span>
         <div className="flex items-center gap-1.5">
-          {hackathons.map((_, idx) => (
+          {hiringRoles.map((_, idx) => (
             <button
               key={idx}
               type="button"
               onClick={() => setActiveIndex(idx)}
               className="p-1 -m-1 inline-flex items-center justify-center bg-transparent border-0 outline-none cursor-pointer appearance-none"
-              aria-label={`Go to hackathon ${idx + 1}`}
+              aria-label={`Go to role ${idx + 1}`}
             >
               <span
                 className={`block rounded-full transition-all duration-300 ${
@@ -727,13 +777,13 @@ const TimelineFeatures = () => {
     },
     {
       accent: "pink",
-      title: "Open Source Hackathons",
+      badge: "Coming Soon",
+      title: "Startup Talent & Hiring",
       description:
-        "Discover upcoming open source hackathons, collaborate with high-performing builders, and compete for real cash prizes.",
-      icon: Trophy,
-      visual: <HackathonVisualizer />,
-      link: "https://contribly.firstissue.dev/",
-      linkText: "Browse hackathons",
+        "Skip resume screening. Fast-growing startups and tech teams hire you directly through verified open-source pull requests and proof of work.",
+      icon: Briefcase,
+      visual: <StartupHiringVisualizer />,
+      linkText: "Coming soon",
     },
     {
       accent: "emerald",
