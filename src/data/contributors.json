@@ -57,6 +57,22 @@
     "role": "Contributor",
     "message": "Excited to make my first open source contribution! 🌱",
     "joinedAt": "2026-10-16",
+  {
+    "id": "0337",
+    "name": "ABHINAY TEJA",
+    "github": "abhinayteja",
+    "avatar": "https://github.com/abhinayteja.png",
+    "role": "Contributor",
+    "message": "Excited to make my first open source contribution! 🌱",
+    "joinedAt": "2026-10-13",
+    "id": "3142",
+    "name": "Abhinav Adarsh",
+    "github": "abhinavgautam08",
+    "avatar": "https://github.com/abhinavgautam08.png",
+    "role": "Contributor",
+    "message": "Excited to make open source contribution! 🌱",
+    "joinedAt": "2026-10-03",
     "branch": "center"
   }
+
 ]
