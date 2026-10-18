@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, Award } from 'lucide-react';
+import { Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, Award, Brain } from 'lucide-react';
 import FirstContributionBadge from './badges/FirstContributionBadge';
 import FirstMergeBadge from './badges/FirstMergeBadge';
 import ActiveContributorBadge from './badges/ActiveContributorBadge';
@@ -16,6 +16,7 @@ import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
 import CenturionBadge from './badges/CenturionBadge';
 import MergeLegendBadge from './badges/MergeLegendBadge';
+import FirstMateMentorBadge from './badges/FirstMateMentorBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -32,7 +33,8 @@ const BADGE_ICONS = {
   'streak-7': Flame,
   'streak-30': Flame,
   'perfect-score': Crown,
-  'early-adopter': Sparkles
+  'early-adopter': Sparkles,
+  'firstmate-mentor': Brain,
 };
 
 // Rarity color schemes
@@ -153,6 +155,10 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = f
         ) : badge.id === 'pow-10' ? (
           <div className="w-full h-full flex items-center justify-center scale-125">
             <ImpactMakerBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'firstmate-mentor' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <FirstMateMentorBadge earned={true} variant="raw" />
           </div>
         ) : (
           <div className={`relative w-full h-full rounded-full bg-gradient-to-br ${colors.bg} border-4 ${colors.border} shadow-2xl ${colors.glow} flex items-center justify-center overflow-hidden`}>

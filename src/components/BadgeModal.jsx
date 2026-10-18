@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Calendar, CheckCircle, Lock, Share2, Award, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, ExternalLink } from 'lucide-react';
+import { X, Calendar, CheckCircle, Lock, Share2, Award, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, ExternalLink, Brain } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 import BadgeShareModal from './BadgeShareModal';
 import FirstContributionBadge from './badges/FirstContributionBadge';
@@ -18,6 +18,7 @@ import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
 import CenturionBadge from './badges/CenturionBadge';
 import MergeLegendBadge from './badges/MergeLegendBadge';
+import FirstMateMentorBadge from './badges/FirstMateMentorBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -34,7 +35,8 @@ const BADGE_ICONS = {
   'streak-7': Flame,
   'streak-30': Flame,
   'perfect-score': Crown,
-  'early-adopter': Sparkles
+  'early-adopter': Sparkles,
+  'firstmate-mentor': Brain,
 };
 
 // Rarity gradient configs for the large showcase icon
@@ -176,6 +178,8 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
                         <VerifiedContributorBadge earned={earned} variant="raw" />
                       ) : badge.id === 'pow-10' ? (
                         <ImpactMakerBadge earned={earned} variant="raw" />
+                      ) : badge.id === 'firstmate-mentor' ? (
+                        <FirstMateMentorBadge earned={earned} variant="raw" />
                       ) : (
                         <BadgeIcon className={`w-11 h-11 ${rarityInfo.color}`} />
                       )

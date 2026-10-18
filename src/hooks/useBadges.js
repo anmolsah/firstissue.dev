@@ -33,8 +33,8 @@ export const useBadges = (stats, contributions = [], attestations = []) => {
   // Stabilize the inputs to prevent re-renders when object references change but values don't
   const statsKey = useMemo(() => {
     if (!stats) return '';
-    return `${stats.total}-${stats.merged}-${stats.in_progress}-${stats.applied}-${stats.closed}-${stats.saved}-${stats.signupIndex}`;
-  }, [stats?.total, stats?.merged, stats?.in_progress, stats?.applied, stats?.closed, stats?.saved, stats?.signupIndex]);
+    return `${stats.total}-${stats.merged}-${stats.in_progress}-${stats.applied}-${stats.closed}-${stats.saved}-${stats.signupIndex}-${stats.hasTaughtFirstMate}`;
+  }, [stats?.total, stats?.merged, stats?.in_progress, stats?.applied, stats?.closed, stats?.saved, stats?.signupIndex, stats?.hasTaughtFirstMate]);
 
   const contributionsKey = useMemo(() => {
     return contributions.length + '-' + (contributions[0]?.id || '');

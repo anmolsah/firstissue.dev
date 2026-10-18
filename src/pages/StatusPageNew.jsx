@@ -51,7 +51,6 @@ const StatusPage = () => {
     lastSynced,
     syncError,
     sync,
-    getSuccessRate,
   } = useGitHubSync(user?.id, true);
 
   // Bookmarks hook
@@ -227,7 +226,9 @@ const StatusPage = () => {
     );
   }
 
-  const successRate = getSuccessRate();
+  const successRate = stats.total > 0
+    ? Math.round((stats.merged / stats.total) * 100)
+    : 0;
   const filteredContributions = getFilteredContributions();
 
   // Pagination logic

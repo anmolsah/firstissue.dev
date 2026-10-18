@@ -1,4 +1,4 @@
-import { Lock, CheckCircle, Award, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge } from 'lucide-react';
+import { Lock, CheckCircle, Award, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, Brain } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 import FirstContributionBadge from './badges/FirstContributionBadge';
 import FirstMergeBadge from './badges/FirstMergeBadge';
@@ -16,6 +16,7 @@ import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
 import CenturionBadge from './badges/CenturionBadge';
 import MergeLegendBadge from './badges/MergeLegendBadge';
+import FirstMateMentorBadge from './badges/FirstMateMentorBadge';
 
 // Badge icon mapping
 const BADGE_ICONS = {
@@ -32,7 +33,8 @@ const BADGE_ICONS = {
   'streak-7': Flame,
   'streak-30': Flame,
   'perfect-score': Crown,
-  'early-adopter': Sparkles
+  'early-adopter': Sparkles,
+  'firstmate-mentor': Brain,
 };
 
 const BadgeCard = ({ badge, earned = false, onClick }) => {
@@ -83,6 +85,9 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
   }
   if (badge.id === 'pow-10') {
     return <ImpactMakerBadge earned={earned} onClick={onClick} />;
+  }
+  if (badge.id === 'firstmate-mentor') {
+    return <FirstMateMentorBadge earned={earned} onClick={onClick} />;
   }
 
   const rarityInfo = getBadgeRarityInfo(badge.rarity);

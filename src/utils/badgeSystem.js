@@ -4,6 +4,8 @@
  * https://www.imsglobal.org/sites/default/files/Badges/OBv2p0Final/index.html
  */
 
+import { checkHasTaughtFirstMate, getTaughtFirstMateDate } from '../hooks/queries/useHasTaughtFirstMate';
+
 // Badge Definitions following Open Badges Standard
 export const BADGE_DEFINITIONS = {
   FIRST_CONTRIBUTION: {
@@ -308,6 +310,25 @@ export const BADGE_DEFINITIONS = {
     requirement: (stats, contributions, attestations) => attestations && attestations.length >= 10,
     rarity: 'rare',
     color: 'cyan'
+  },
+
+  FIRSTMATE_MENTOR: {
+    id: 'firstmate-mentor',
+    name: 'FirstMate Mentor',
+    description: 'Taught FirstMate AI a solution or correction',
+    image: '/badges/firstmate-mentor.svg',
+    criteria: {
+      narrative: 'User must teach FirstMate AI at least once by submitting a helpful correction or solution'
+    },
+    issuer: {
+      name: 'FirstIssue.dev',
+      url: 'https://firstissue.dev',
+      email: 'badges@firstissue.dev'
+    },
+    type: 'BadgeClass',
+    requirement: (stats) => Boolean(stats && (stats.hasTaughtFirstMate || checkHasTaughtFirstMate(stats.userId))),
+    rarity: 'rare',
+    color: 'purple'
   }
 };
 
@@ -386,6 +407,8 @@ export function checkEarnedBadges(stats, contributions = [], attestations = []) 
         } else {
           earnedAt = sortedAttestations[sortedAttestations.length - 1].created_at;
         }
+      } else if (key === 'FIRSTMATE_MENTOR') {
+        earnedAt = getTaughtFirstMateDate(stats?.userId);
       } else if (sortedDates.length > 0) {
         // For other badges, use the most recent contribution date as the earned date
         earnedAt = sortedDates[sortedDates.length - 1];

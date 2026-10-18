@@ -2,6 +2,7 @@ import { useMemo, useCallback } from "react";
 import { useContributions } from "./queries/useContributions";
 import { useSignupIndex } from "./queries/useProfileInfo";
 import { useAutoGitHubSync } from "./queries/useGitHubSyncMutation";
+import { useHasTaughtFirstMate } from "./queries/useHasTaughtFirstMate";
 
 /**
  * Custom hook for GitHub sync functionality with TanStack Query.
@@ -16,6 +17,9 @@ export const useGitHubSync = (userId, autoSync = true) => {
 
     // Signup index from TanStack Query
     const { data: signupIndex = 0 } = useSignupIndex(userId);
+
+    // FirstMate teaching status from TanStack Query
+    const { data: hasTaughtFirstMate = false } = useHasTaughtFirstMate(userId);
 
     // Auto-sync mutation
     const syncMutation = useAutoGitHubSync(userId, autoSync);
@@ -32,6 +36,8 @@ export const useGitHubSync = (userId, autoSync = true) => {
             merged: 0,
             closed: 0,
             signupIndex: signupIndex,
+            hasTaughtFirstMate: Boolean(hasTaughtFirstMate),
+            userId: userId,
         };
 
         contributions.forEach((contribution) => {
@@ -49,7 +55,7 @@ export const useGitHubSync = (userId, autoSync = true) => {
         });
 
         return statsObj;
-    }, [contributions, signupIndex]);
+    }, [contributions, signupIndex, hasTaughtFirstMate, userId]);
 
     /**
      * Get statistics (backward compatibility)
