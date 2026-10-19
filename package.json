@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && node scripts/generate-seo-pages.mjs",
-    "build:app": "vite build",
+    "generate:badges": "node scripts/generate-badge-svgs.mjs",
+    "build": "node scripts/generate-badge-svgs.mjs && vite build && node scripts/generate-seo-pages.mjs",
+    "build:app": "node scripts/generate-badge-svgs.mjs && vite build",
     "seo": "node scripts/generate-seo-pages.mjs",
     "seo:profiles": "node scripts/generate-profile-pages.mjs",
     "lint": "eslint .",

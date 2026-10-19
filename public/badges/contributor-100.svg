@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="centurionGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700" />
+      <stop offset="50%" stop-color="#FFA500" />
+      <stop offset="100%" stop-color="#FF6B00" />
+    </linearGradient>
+    <linearGradient id="centurionRed" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF4444" />
+      <stop offset="100%" stop-color="#DC2626" />
+    </linearGradient>
+    <linearGradient id="centurionCrimson" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B6B" />
+      <stop offset="100%" stop-color="#B91C1C" />
+    </linearGradient>
+    <radialGradient id="centurionGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#DC2626" stop-opacity="0.32" />
+      <stop offset="70%" stop-color="#991B1B" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#12131C" stop-opacity="0" />
+    </radialGradient>
+    <filter id="centurionBlur">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <style>
+    @keyframes spin-cw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spin-ccw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.35; transform: scale(0.97); }
+      50% { opacity: 0.85; transform: scale(1.03); }
+    }
+    @keyframes pulse-node {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+    @keyframes sparkle-pulse {
+      0%, 100% { opacity: 0.25; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+    @keyframes flame-flicker {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50% { transform: scale(1.04, 0.96) translateY(-2.5px); }
+    }
+    @keyframes rocket-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    @keyframes rocket-fire {
+      0%, 100% { transform: scaleY(1); opacity: 0.8; }
+      50% { transform: scaleY(1.35) scaleX(0.9); opacity: 1; }
+    }
+    @keyframes brain-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    .orbit-outer {
+      transform-origin: 100px 100px;
+      animation: spin-cw 25s linear infinite;
+    }
+    .orbit-outer-fast {
+      transform-origin: 100px 100px;
+      animation: spin-cw 20s linear infinite;
+    }
+    .orbit-outer-slow {
+      transform-origin: 100px 100px;
+      animation: spin-cw 28s linear infinite;
+    }
+    .orbit-inner {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 15s linear infinite;
+    }
+    .orbit-inner-fast {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 12s linear infinite;
+    }
+    .orbit-inner-slow {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 18s linear infinite;
+    }
+    .glow-core {
+      transform-origin: 100px 100px;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    .sparkle-a {
+      transform-origin: 65px 45px;
+      animation: sparkle-pulse 1.8s ease-in-out infinite;
+    }
+    .sparkle-b {
+      transform-origin: 135px 95px;
+      animation: sparkle-pulse 2.2s ease-in-out infinite 0.7s;
+    }
+    .sparkle-c {
+      transform-origin: 100px 60px;
+      animation: sparkle-pulse 2s ease-in-out infinite 0.3s;
+    }
+    .node-pulse-anim {
+      transform-origin: 85px 110px;
+      animation: pulse-node 2s ease-in-out infinite;
+    }
+    .flame-anim {
+      transform-origin: 100px 135px;
+      animation: flame-flicker 0.85s ease-in-out infinite;
+    }
+    .rocket-anim {
+      transform-origin: 100px 90px;
+      animation: rocket-float 2.5s ease-in-out infinite;
+    }
+    .rocket-flame-anim {
+      transform-origin: 100px 125px;
+      animation: rocket-fire 0.4s ease-in-out infinite;
+    }
+    .brain-anim {
+      transform-origin: 100px 98px;
+      animation: brain-pulse 2s ease-in-out infinite;
+    }
+</style>
+  </defs>
+
+  <circle cx="100" cy="100" r="82" fill="url(#centurionGlow)" class="glow-core" />
+
+  <g class="orbit-outer">
+    <circle cx="100" cy="100" r="86" fill="none" stroke="url(#centurionGold)" stroke-width="2" stroke-dasharray="8 6" stroke-opacity="0.65" />
+    <circle cx="100" cy="14" r="3.5" fill="#FFD700" />
+    <circle cx="100" cy="186" r="3.5" fill="#FFD700" />
+  </g>
+
+  <g class="orbit-inner">
+    <circle cx="100" cy="100" r="72" fill="none" stroke="url(#centurionRed)" stroke-width="1.5" stroke-dasharray="35 18" stroke-opacity="0.55" />
+  </g>
+
+  <polygon points="100,32 158,62 158,138 100,168 42,138 42,62" fill="#11121F" stroke="#1E293B" stroke-width="3" />
+  <polygon points="100,40 150,66 150,134 100,160 50,134 50,66" fill="none" stroke="url(#centurionRed)" stroke-width="1.5" stroke-opacity="0.75" />
+
+  <path d="M 56 120 C 52 110, 50 98, 52 86 C 54 78, 58 72, 64 68 C 58 78, 56 90, 58 102" fill="none" stroke="url(#centurionGold)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 144 120 C 148 110, 150 98, 148 86 C 146 78, 142 72, 136 68 C 142 78, 144 90, 142 102" fill="none" stroke="url(#centurionGold)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+
+  <path d="M 100 60 L 125 75 L 125 110 L 100 130 L 75 110 L 75 75 Z" fill="none" stroke="url(#centurionCrimson)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+  <path d="M 100 65 L 121 77 L 121 108 L 100 125 L 79 108 L 79 77 Z" fill="url(#centurionRed)" opacity="0.2" />
+
+  <path d="M 100 50 L 100 140 M 90 62 L 110 62" fill="none" stroke="url(#centurionGold)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#centurionBlur)" />
+
+  <text x="100" y="102" text-anchor="middle" dominant-baseline="middle" fill="url(#centurionGold)" font-size="22" font-weight="bold" font-family="monospace" filter="url(#centurionBlur)">100</text>
+  <polygon class="sparkle-a" points="100,55 102,63 110,65 102,67 100,75 98,67 90,65 98,63" fill="#FFD700" transform="translate(-42, -18) scale(0.5)" />
+  <polygon class="sparkle-b" points="100,55 102,63 110,65 102,67 100,75 98,67 90,65 98,63" fill="#FF4444" transform="translate(42, 28) scale(0.5)" />
+</svg>

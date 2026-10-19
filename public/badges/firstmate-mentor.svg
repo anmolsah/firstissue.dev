@@ -1,0 +1,150 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="aiIndigo" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#A855F7" />
+      <stop offset="50%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+    <linearGradient id="aiCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E0E7FF" />
+      <stop offset="50%" stop-color="#A5B4FC" />
+      <stop offset="100%" stop-color="#38BDF8" />
+    </linearGradient>
+    <linearGradient id="aiCore" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F472B6" />
+      <stop offset="50%" stop-color="#C084FC" />
+      <stop offset="100%" stop-color="#60A5FA" />
+    </linearGradient>
+    <radialGradient id="aiGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0.32" />
+      <stop offset="60%" stop-color="#3B82F6" stop-opacity="0.12" />
+      <stop offset="100%" stop-color="#0B0C10" stop-opacity="0" />
+    </radialGradient>
+    <filter id="aiNeonBlur">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <style>
+    @keyframes spin-cw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spin-ccw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.35; transform: scale(0.97); }
+      50% { opacity: 0.85; transform: scale(1.03); }
+    }
+    @keyframes pulse-node {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+    @keyframes sparkle-pulse {
+      0%, 100% { opacity: 0.25; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+    @keyframes flame-flicker {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50% { transform: scale(1.04, 0.96) translateY(-2.5px); }
+    }
+    @keyframes rocket-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    @keyframes rocket-fire {
+      0%, 100% { transform: scaleY(1); opacity: 0.8; }
+      50% { transform: scaleY(1.35) scaleX(0.9); opacity: 1; }
+    }
+    @keyframes brain-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    .orbit-outer {
+      transform-origin: 100px 100px;
+      animation: spin-cw 25s linear infinite;
+    }
+    .orbit-outer-fast {
+      transform-origin: 100px 100px;
+      animation: spin-cw 20s linear infinite;
+    }
+    .orbit-outer-slow {
+      transform-origin: 100px 100px;
+      animation: spin-cw 28s linear infinite;
+    }
+    .orbit-inner {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 15s linear infinite;
+    }
+    .orbit-inner-fast {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 12s linear infinite;
+    }
+    .orbit-inner-slow {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 18s linear infinite;
+    }
+    .glow-core {
+      transform-origin: 100px 100px;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    .sparkle-a {
+      transform-origin: 65px 45px;
+      animation: sparkle-pulse 1.8s ease-in-out infinite;
+    }
+    .sparkle-b {
+      transform-origin: 135px 95px;
+      animation: sparkle-pulse 2.2s ease-in-out infinite 0.7s;
+    }
+    .sparkle-c {
+      transform-origin: 100px 60px;
+      animation: sparkle-pulse 2s ease-in-out infinite 0.3s;
+    }
+    .node-pulse-anim {
+      transform-origin: 85px 110px;
+      animation: pulse-node 2s ease-in-out infinite;
+    }
+    .flame-anim {
+      transform-origin: 100px 135px;
+      animation: flame-flicker 0.85s ease-in-out infinite;
+    }
+    .rocket-anim {
+      transform-origin: 100px 90px;
+      animation: rocket-float 2.5s ease-in-out infinite;
+    }
+    .rocket-flame-anim {
+      transform-origin: 100px 125px;
+      animation: rocket-fire 0.4s ease-in-out infinite;
+    }
+    .brain-anim {
+      transform-origin: 100px 98px;
+      animation: brain-pulse 2s ease-in-out infinite;
+    }
+</style>
+  </defs>
+
+  <circle cx="100" cy="100" r="82" fill="url(#aiGlow)" class="glow-core" />
+
+  <g class="orbit-outer">
+    <circle cx="100" cy="100" r="85" fill="none" stroke="url(#aiIndigo)" stroke-width="2" stroke-dasharray="12 8" stroke-opacity="0.75" />
+    <circle cx="100" cy="15" r="3.5" fill="#38BDF8" />
+    <circle cx="100" cy="185" r="3.5" fill="#C084FC" />
+  </g>
+
+  <g class="orbit-inner">
+    <circle cx="100" cy="100" r="72" fill="none" stroke="url(#aiCyan)" stroke-width="1.5" stroke-dasharray="36 18" stroke-opacity="0.5" />
+    <circle cx="28" cy="100" r="2.5" fill="#A855F7" />
+    <circle cx="172" cy="100" r="2.5" fill="#38BDF8" />
+  </g>
+
+  <polygon points="100,34 156,66 156,134 100,166 44,134 44,66" fill="#10111A" stroke="#1E2033" stroke-width="3" />
+  <polygon points="100,41 149,69 149,131 100,159 51,131 51,69" fill="none" stroke="url(#aiIndigo)" stroke-width="1.5" stroke-opacity="0.85" />
+
+  <path d="M 72 82 Q 80 62 100 62 Q 120 62 128 82 Q 138 98 126 116 Q 116 128 100 138 Q 84 128 74 116 Q 62 98 72 82 Z" fill="none" stroke="url(#aiCyan)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#aiNeonBlur)" />
+
+  <g class="brain-anim">
+    <circle cx="100" cy="98" r="14" fill="url(#aiCore)" opacity="0.95" />
+    <circle cx="100" cy="98" r="7" fill="#FFFFFF" opacity="0.9" filter="url(#aiNeonBlur)" />
+  </g>
+</svg>

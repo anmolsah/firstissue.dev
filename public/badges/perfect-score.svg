@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="goldSealGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="40%" stop-color="#FACC15" />
+      <stop offset="80%" stop-color="#EAB308" />
+      <stop offset="100%" stop-color="#A16207" />
+    </linearGradient>
+    <linearGradient id="goldNeon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF08A" />
+      <stop offset="100%" stop-color="#FACC15" />
+    </linearGradient>
+    <radialGradient id="goldGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#EAB308" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#12131C" stop-opacity="0" />
+    </radialGradient>
+    <filter id="goldBlur">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <style>
+    @keyframes spin-cw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spin-ccw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.35; transform: scale(0.97); }
+      50% { opacity: 0.85; transform: scale(1.03); }
+    }
+    @keyframes pulse-node {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+    @keyframes sparkle-pulse {
+      0%, 100% { opacity: 0.25; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+    @keyframes flame-flicker {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50% { transform: scale(1.04, 0.96) translateY(-2.5px); }
+    }
+    @keyframes rocket-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    @keyframes rocket-fire {
+      0%, 100% { transform: scaleY(1); opacity: 0.8; }
+      50% { transform: scaleY(1.35) scaleX(0.9); opacity: 1; }
+    }
+    @keyframes brain-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    .orbit-outer {
+      transform-origin: 100px 100px;
+      animation: spin-cw 25s linear infinite;
+    }
+    .orbit-outer-fast {
+      transform-origin: 100px 100px;
+      animation: spin-cw 20s linear infinite;
+    }
+    .orbit-outer-slow {
+      transform-origin: 100px 100px;
+      animation: spin-cw 28s linear infinite;
+    }
+    .orbit-inner {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 15s linear infinite;
+    }
+    .orbit-inner-fast {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 12s linear infinite;
+    }
+    .orbit-inner-slow {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 18s linear infinite;
+    }
+    .glow-core {
+      transform-origin: 100px 100px;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    .sparkle-a {
+      transform-origin: 65px 45px;
+      animation: sparkle-pulse 1.8s ease-in-out infinite;
+    }
+    .sparkle-b {
+      transform-origin: 135px 95px;
+      animation: sparkle-pulse 2.2s ease-in-out infinite 0.7s;
+    }
+    .sparkle-c {
+      transform-origin: 100px 60px;
+      animation: sparkle-pulse 2s ease-in-out infinite 0.3s;
+    }
+    .node-pulse-anim {
+      transform-origin: 85px 110px;
+      animation: pulse-node 2s ease-in-out infinite;
+    }
+    .flame-anim {
+      transform-origin: 100px 135px;
+      animation: flame-flicker 0.85s ease-in-out infinite;
+    }
+    .rocket-anim {
+      transform-origin: 100px 90px;
+      animation: rocket-float 2.5s ease-in-out infinite;
+    }
+    .rocket-flame-anim {
+      transform-origin: 100px 125px;
+      animation: rocket-fire 0.4s ease-in-out infinite;
+    }
+    .brain-anim {
+      transform-origin: 100px 98px;
+      animation: brain-pulse 2s ease-in-out infinite;
+    }
+</style>
+  </defs>
+
+  <circle cx="100" cy="100" r="82" fill="url(#goldGlow)" class="glow-core" />
+
+  <g class="orbit-outer">
+    <polygon points="100,10 178,55 178,145 100,190 22,145 22,55" fill="none" stroke="url(#goldSealGrad)" stroke-width="2" stroke-dasharray="10 12" stroke-opacity="0.65" />
+    <circle cx="100" cy="10" r="3.5" fill="#FACC15" />
+    <circle cx="100" cy="190" r="3.5" fill="#FACC15" />
+  </g>
+
+  <g class="orbit-inner">
+    <circle cx="100" cy="100" r="74" fill="none" stroke="url(#goldNeon)" stroke-width="1.5" stroke-dasharray="50 30" stroke-opacity="0.45" />
+  </g>
+
+  <polygon points="100,32 158,62 158,138 100,168 42,138 42,62" fill="#1A180F" stroke="#1E293B" stroke-width="3.5" />
+  <polygon points="100,40 150,66 150,134 100,160 50,134 50,66" fill="none" stroke="url(#goldSealGrad)" stroke-width="1.5" stroke-opacity="0.8" />
+
+  <circle class="sparkle-a" cx="70" cy="130" r="2" fill="#FEF08A" opacity="0.6" />
+  <circle class="sparkle-b" cx="130" cy="130" r="2.5" fill="#FEF08A" opacity="0.4" />
+
+  <circle cx="100" cy="104" r="38" fill="none" stroke="url(#goldSealGrad)" stroke-width="3" stroke-dasharray="8 8" stroke-opacity="0.75" />
+  <circle cx="100" cy="104" r="28" fill="#292518" stroke="url(#goldNeon)" stroke-width="1.5" stroke-opacity="0.45" />
+
+  <path d="M 82 104 L 94 116 L 122 86" fill="none" stroke="url(#goldNeon)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" filter="url(#goldBlur)" />
+  <path d="M 85 45 L 90 52 L 100 42 L 110 52 L 115 45 L 110 58 L 90 58 Z" fill="url(#goldNeon)" stroke="#EAB308" stroke-width="1.5" stroke-linejoin="round" />
+</svg>

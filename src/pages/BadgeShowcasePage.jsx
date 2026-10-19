@@ -1,16 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Award, Share2, Download, ArrowLeft, Github, ExternalLink } from 'lucide-react';
 import { ALL_BADGES, getBadgeRarityInfo } from '../utils/badgeSystem';
 import BadgeImage from '../components/BadgeImage';
+import BadgeShareModal from '../components/BadgeShareModal';
 import { toPng } from 'html-to-image';
 
 const BadgeShowcasePage = () => {
   const { badgeId } = useParams();
+  const [searchParams] = useSearchParams();
+  const username = searchParams.get('u') || 'developer';
   const navigate = useNavigate();
   const [badge, setBadge] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
 
   useEffect(() => {
     const foundBadge = ALL_BADGES.find(b => b.id === badgeId);
@@ -126,17 +130,8 @@ const BadgeShowcasePage = () => {
               </button>
               
               <button
-                onClick={() => {
-                  navigator.share({
-                    title: `I earned the ${badge.name} badge!`,
-                    text: badge.description,
-                    url: window.location.href
-                  }).catch(() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    alert('Link copied to clipboard!');
-                  });
-                }}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl transition-all font-medium text-sm"
+                onClick={() => setShowShareModal(true)}
+                className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl transition-all font-medium text-sm cursor-pointer shadow-lg shadow-blue-500/20"
               >
                 <Share2 className="w-4 h-4" />
                 Share Achievement
@@ -186,6 +181,15 @@ const BadgeShowcasePage = () => {
       <footer className="p-8 text-center text-gray-600 text-xs border-t border-white/5">
         &copy; {new Date().getFullYear()} FirstIssue.dev &bull; Verified Digital Achievement
       </footer>
+
+      {/* Share Modal */}
+      {showShareModal && badge && (
+        <BadgeShareModal
+          badge={badge}
+          username={username}
+          onClose={() => setShowShareModal(false)}
+        />
+      )}
     </div>
   );
 };
