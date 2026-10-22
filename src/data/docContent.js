@@ -2841,6 +2841,12 @@ items: [
 ]
 },
 {
+type: "image",
+src: "/reverse_engineering_workflow.png",
+alt: "Software Reverse Engineering Architectural Workflow",
+caption: "Figure 1: Forward Engineering (Standard Development) vs Reverse Engineering (Deconstruction & Architecture Recovery)"
+},
+{
 type: "heading",
 level: 2,
 text: "Why Reverse Engineering Matters for Modern Developers"
@@ -2932,6 +2938,7 @@ items: [
 "Browser DevTools: Built right into Google Chrome, Firefox, Safari, and Brave. Pressing F12 gives you the Network tab, JavaScript debugger, DOM inspector, and console—making it the fastest way to reverse engineer modern web apps and REST/GraphQL APIs.",
 "mitmproxy: A lightweight, open-source Man-in-the-Middle HTTPS interception proxy. It allows you to intercept, modify, and replay encrypted network calls from desktop applications and mobile apps on the fly.",
 "JADX: An open-source DEX-to-Java decompiler that takes compiled Android APK packages and turns them back into readable Java and Kotlin source code.",
+"REA (Reverse Engineer Anything - rea.tools): A open-source tool (https://rea.tools / GitHub: morluto/rea) built specifically for AI coding agents. It connects directly with your coding assistant, giving it tools to inspect running applications, executables, and web pages, retrieve assembly, and explain or rebuild features.",
 "Command-Line Swiss Army Knives: Built-in Linux/macOS utilities like 'file' (identifies binary format), 'strings' (extracts human-readable text), 'ltrace' (traces library calls), and 'strace' (traces operating system kernel calls)."
 ]
 },
@@ -3005,7 +3012,48 @@ text: "When decompiling, variable names often look like 'uVar1' or 'iVar2'. In G
 {
 type: "heading",
 level: 2,
-text: "4. Where Freshers Can Practice Safely and Legally"
+text: "4. REA (rea.tools): AI-Powered Reverse Engineering for Coding Agents"
+},
+{
+type: "paragraph",
+text: "One of the most exciting breakthroughs in reverse engineering today is REA (Reverse Engineer Anything), an open-source framework hosted at https://rea.tools and developed on GitHub (morluto/rea). Instead of manually deciphering thousands of lines of assembly or network packets alone, REA empowers your AI coding agent (like Claude Code, Cursor, Copilot, or Antigravity) to act as your expert reverse-engineering co-pilot."
+},
+{
+type: "paragraph",
+text: "How REA Works: You provide your coding agent with an application, a compiled binary, or a website and ask a question. REA equips the agent with inspection tools to analyze the running program, extract decompiled handlers, trace instructions, decode the logic, and guide you in rebuilding the feature from scratch in clean, modern code."
+},
+{
+type: "callout",
+variant: "info",
+title: "Quick 60-Second Setup",
+text: "To connect REA to your coding agent or terminal, simply run the setup command below in your PowerShell or terminal:"
+},
+{
+type: "code",
+language: "bash",
+code: "# Install REA and configure it for your coding agent:\nnpx rea-agents@latest setup\n\n# Or copy this prompt directly into your AI coding assistant:\n# \"Install REA and connect it to this coding agent using npx rea-agents@latest setup.\n# Show me the setup plan for approval, then verify the installation.\""
+},
+{
+type: "heading",
+level: 3,
+text: "Real-World Examples from REA Showcases"
+},
+{
+type: "list",
+ordered: false,
+items: [
+"The Chrome Dinosaur Game: Why does the offline T-Rex get faster as you run? By inspecting the running code with REA, the agent reveals that speed starts at 6 and increments by 0.001 per frame while below 13, enabling developers to recreate the mini-game with custom speed sliders.",
+"Windows Calculator's % Button: Why does '200 + 10%' equal 220 instead of 20? REA inspects calc.exe and its helper DLLs, decompiles the CMP EAX, 0x5c (multiplication) and 0x5b (division) branch instructions, and reveals that Calculator calculates percentages differently depending on whether the preceding operator was + or ×."
+]
+},
+{
+type: "paragraph",
+text: "For interactive showcases, documentation, and source code, visit the official site at https://rea.tools/ and the open-source repository at https://github.com/morluto/rea."
+},
+{
+type: "heading",
+level: 2,
+text: "5. Where Freshers Can Practice Safely and Legally"
 },
 {
 type: "paragraph",
@@ -3077,6 +3125,12 @@ items: [
 "The Legal Reviewers: Independent lawyers inspect the functional specification to verify that it contains only functional requirements and zero copied code, copyrighted expressions, or proprietary snippets.",
 "Team B ('The Clean Room' / Implementers): This team consists of software engineers who have NEVER seen the original proprietary code, binary, or disassembly. They read only the functional specification and write brand-new, clean code from scratch to implement those exact behaviors."
 ]
+},
+{
+type: "image",
+src: "/clean_room_design.png",
+alt: "Clean Room Design Architectural Diagram",
+caption: "Figure 2: The Three-Zone Clean Room Design Process (Dirty Room, Legal Firewall, and Clean Room)"
 },
 {
 type: "callout",
