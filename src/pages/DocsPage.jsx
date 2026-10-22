@@ -26,6 +26,7 @@ import {
   Award,
   ShieldCheck,
   GitMerge,
+  Cpu,
 } from "lucide-react";
 import Footer from "../components/Footer";
 import ContactFormModal from "../components/ContactFormModal";
@@ -328,9 +329,44 @@ const DocsPage = () => {
         },
       ],
     },
+    {
+      id: "reverse-engineering",
+      title: "Reverse Engineering & Security",
+      icon: Cpu,
+      color: "text-rose-400",
+      bgColor: "bg-rose-500/10",
+      borderColor: "border-rose-500/20",
+      description:
+        "Understand software internals, clean room design, security analysis, and interoperability",
+      articles: [
+        {
+          id: "intro-to-reverse-engineering",
+          title: "Introduction to Reverse Engineering: How Software Works Under the Hood",
+          readTime: "12 min",
+        },
+        {
+          id: "tools-and-practical-techniques",
+          title: "Reverse Engineering Tools & Practical Beginner Workflows",
+          readTime: "15 min",
+        },
+        {
+          id: "corporate-impact-and-legality",
+          title: "Business Impact, Clean Room Design & Legal Boundaries",
+          readTime: "14 min",
+        },
+      ],
+    },
   ];
 
   const popularArticles = [
+    {
+      icon: Cpu,
+      title: "Introduction to Reverse Engineering",
+      section: "reverse-engineering",
+      article: "intro-to-reverse-engineering",
+      readTime: "12 min read",
+      updated: "Updated today",
+    },
     {
       icon: Award,
       title: "Google Summer of Code (GSoC) Complete Roadmap",
