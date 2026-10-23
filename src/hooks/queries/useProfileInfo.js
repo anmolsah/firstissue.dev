@@ -25,14 +25,24 @@ async function fetchSignupIndex(userId) {
 }
 
 /**
- * Fetch custom profile fields (name, bio, location, company, website)
+ * Fetch custom profile fields (name, bio, college, location, company, website)
  */
 async function fetchCustomProfile(userId) {
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from('profiles')
-    .select('name, bio, location, company, website')
+    .select('name, bio, college, location, company, website')
     .eq('id', userId)
     .single();
+
+  if (error && (error.message?.toLowerCase().includes('college') || error.code === 'PGRST204' || error.code === '42703')) {
+    const fallback = await supabase
+      .from('profiles')
+      .select('name, bio, location, company, website')
+      .eq('id', userId)
+      .single();
+    data = fallback.data;
+    error = fallback.error;
+  }
 
   if (error && error.code !== 'PGRST116') throw error;
   return data || null;

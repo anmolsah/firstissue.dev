@@ -160,6 +160,7 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
   const [formData, setFormData] = useState({
     name: "",
     bio: "",
+    college: "",
     location: "",
     company: "",
     website: "",
@@ -174,15 +175,25 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
       // Fetch existing profile data from profiles table
       const fetchProfileData = async () => {
         try {
-          const { data } = await supabase
+          let { data, error: fetchErr } = await supabase
             .from("profiles")
-            .select("name, bio, location, company, website, tech_stack")
+            .select("name, bio, college, location, company, website, tech_stack")
             .eq("id", user.id)
             .single();
+
+          if (fetchErr && (fetchErr.message?.toLowerCase().includes("college") || fetchErr.code === "PGRST204" || fetchErr.code === "42703")) {
+            const fallback = await supabase
+              .from("profiles")
+              .select("name, bio, location, company, website, tech_stack")
+              .eq("id", user.id)
+              .single();
+            data = fallback.data;
+          }
 
           setFormData({
             name: data?.name || githubProfile.name || "",
             bio: data?.bio || githubProfile.bio || "",
+            college: data?.college || user?.user_metadata?.college || "",
             location: data?.location || githubProfile.location || "",
             company: data?.company || githubProfile.company || "",
             website: data?.website || githubProfile.blog || "",
@@ -192,6 +203,7 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
           setFormData({
             name: githubProfile.name || "",
             bio: githubProfile.bio || "",
+            college: user?.user_metadata?.college || "",
             location: githubProfile.location || "",
             company: githubProfile.company || "",
             website: githubProfile.blog || "",
@@ -201,7 +213,7 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
       };
       fetchProfileData();
     }
-  }, [isOpen, githubProfile, user?.id]);
+  }, [isOpen, githubProfile, user?.id, user?.user_metadata?.college]);
 
   const handleChange = (e) => {
     setFormData({
@@ -218,21 +230,35 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
 
     try {
       // Update profile in database
-      const { error: updateError } = await supabase.from("profiles").upsert(
-        {
-          id: user.id,
-          name: formData.name,
-          bio: formData.bio,
-          location: formData.location,
-          company: formData.company,
-          website: formData.website,
-          tech_stack: formData.tech_stack,
-          updated_at: new Date().toISOString(),
-        },
+      const payload = {
+        id: user.id,
+        name: formData.name,
+        bio: formData.bio,
+        college: formData.college,
+        location: formData.location,
+        company: formData.company,
+        website: formData.website,
+        tech_stack: formData.tech_stack,
+        updated_at: new Date().toISOString(),
+      };
+
+      let { error: updateError } = await supabase.from("profiles").upsert(
+        payload,
         {
           onConflict: "id",
         },
       );
+
+      if (updateError && (updateError.message?.toLowerCase().includes("college") || updateError.code === "PGRST204" || updateError.code === "42703")) {
+        delete payload.college;
+        const retry = await supabase.from("profiles").upsert(
+          payload,
+          {
+            onConflict: "id",
+          },
+        );
+        updateError = retry.error;
+      }
 
       if (updateError) throw updateError;
 
@@ -329,6 +355,21 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
                 setFormData({ ...formData, tech_stack: newStack })
               }
             />
+
+            {/* College Name */}
+            <div>
+              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+                College Name
+              </label>
+              <input
+                type="text"
+                name="college"
+                value={formData.college}
+                onChange={handleChange}
+                placeholder="Your college or university"
+                className="w-full px-3 py-2 bg-zinc-900/40 border border-zinc-800/80 rounded text-zinc-150 placeholder-zinc-600 focus:outline-none focus:border-zinc-705 transition-all text-xs"
+              />
+            </div>
 
             {/* Location */}
             <div>
