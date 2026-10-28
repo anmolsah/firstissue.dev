@@ -78,5 +78,15 @@
     "message": "Excited to make my first open source contribution! 🌱",
     "joinedAt": "2026-10-16",
     "branch": "center"
+  },
+    {
+    "id": "0704",
+    "name": "Kaushik Kumar",
+    "github": "Kaushik1234q",
+    "avatar": "https://github.com/Kaushik1234q.png",
+    "role": "Contributor",
+    "message": "Starting with my first contribution",
+    "joinedAt": "2026-10-28",
+    "branch": "center"
   }
 ]
