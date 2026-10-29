@@ -18,7 +18,6 @@ import {
   Bookmark,
   User,
   Command,
-  Bell,
   Plus,
   Loader2,
   RefreshCw,
@@ -270,9 +269,6 @@ const StatusPage = () => {
           </div>
 
           <div className="flex items-center gap-4 ml-4">
-            <button className="text-zinc-500 hover:text-white transition-colors relative">
-              <Bell className="w-4 h-4" />
-            </button>
             <div className="flex items-center gap-3 pl-4 border-l border-zinc-800/60">
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-semibold text-white leading-tight">
@@ -280,7 +276,6 @@ const StatusPage = () => {
                     user?.email?.split("@")[0] ||
                     "User"}
                 </p>
-                <p className="text-[10px] font-bold text-zinc-500 mt-0.5 uppercase tracking-wider">Contributor</p>
               </div>
               <div className="w-8 h-8 rounded-full border border-zinc-800 p-[1px] bg-zinc-900 overflow-hidden flex items-center justify-center">
                 <img

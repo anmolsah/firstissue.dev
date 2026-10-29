@@ -473,7 +473,6 @@ const ExplorePage = () => {
                 <p className="text-xs font-semibold text-white leading-tight">
                   {user ? user.user_metadata?.full_name || "User" : "Guest"}
                 </p>
-                <p className="text-[10px] font-bold text-zinc-500 mt-0.5 uppercase tracking-wider">Lvl 4 Contributor</p>
               </div>
               <div className="w-8 h-8 rounded-full border border-zinc-800 p-[1px] bg-zinc-900 overflow-hidden flex items-center justify-center">
                 <img

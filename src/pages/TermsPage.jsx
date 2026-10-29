@@ -218,17 +218,15 @@ const TermsPage = () => {
                       key={sec.id}
                       type="button"
                       onClick={() => scrollToSection(sec.id)}
-                      className={`w-full text-left px-3 py-2 rounded-lg transition-all flex items-center justify-between group cursor-pointer ${
-                        isActive
+                      className={`w-full text-left px-3 py-2 rounded-lg transition-all flex items-center justify-between group cursor-pointer ${isActive
                           ? "bg-white/[0.04] text-white font-semibold border-l-2 border-[#00ADB5]"
                           : "text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.02]"
-                      }`}
+                        }`}
                     >
                       <span className="truncate">{sec.title}</span>
                       <ChevronRight
-                        className={`w-3 h-3 transition-transform ${
-                          isActive ? "opacity-100 translate-x-0.5 text-[#00ADB5]" : "opacity-0 group-hover:opacity-50"
-                        }`}
+                        className={`w-3 h-3 transition-transform ${isActive ? "opacity-100 translate-x-0.5 text-[#00ADB5]" : "opacity-0 group-hover:opacity-50"
+                          }`}
                       />
                     </button>
                   );
@@ -258,7 +256,7 @@ const TermsPage = () => {
                   01
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  1. Acceptance of Terms &amp; Electronic Agreement
+                  Acceptance of Terms &amp; Electronic Agreement
                 </h2>
               </div>
 
@@ -279,7 +277,7 @@ const TermsPage = () => {
                   02
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  2. Eligibility &amp; Legal Capacity
+                  Eligibility &amp; Legal Capacity
                 </h2>
               </div>
 
@@ -300,7 +298,7 @@ const TermsPage = () => {
                   03
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  3. Scope of the Service &amp; Features
+                  Scope of the Service &amp; Features
                 </h2>
               </div>
 
@@ -326,7 +324,7 @@ const TermsPage = () => {
                   04
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  4. Accounts &amp; GitHub Authentication
+                  Accounts &amp; GitHub Authentication
                 </h2>
               </div>
 
@@ -349,7 +347,7 @@ const TermsPage = () => {
                   05
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  5. Acceptable Use Policy &amp; Prohibited Conduct
+                  Acceptable Use Policy &amp; Prohibited Conduct
                 </h2>
               </div>
 
@@ -384,7 +382,7 @@ const TermsPage = () => {
                   06
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  6. Intellectual Property &amp; Open Source Licensing
+                  Intellectual Property &amp; Open Source Licensing
                 </h2>
               </div>
 
@@ -408,7 +406,7 @@ const TermsPage = () => {
                   07
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  7. GitHub API Terms &amp; Third-Party Services
+                  GitHub API Terms &amp; Third-Party Services
                 </h2>
               </div>
 
@@ -439,7 +437,7 @@ const TermsPage = () => {
                   08
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  8. Disclaimers of Warranties ("As Is")
+                  Disclaimers of Warranties ("As Is")
                 </h2>
               </div>
 
@@ -455,7 +453,7 @@ const TermsPage = () => {
                   09
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  9. Limitation of Liability
+                  Limitation of Liability
                 </h2>
               </div>
 
@@ -471,7 +469,7 @@ const TermsPage = () => {
                   10
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  10. User Indemnification
+                  User Indemnification
                 </h2>
               </div>
 
@@ -487,7 +485,7 @@ const TermsPage = () => {
                   11
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  11. Suspension &amp; Account Termination
+                  Suspension &amp; Account Termination
                 </h2>
               </div>
 
@@ -508,7 +506,7 @@ const TermsPage = () => {
                   12
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  12. Governing Law &amp; Dispute Resolution
+                  Governing Law &amp; Dispute Resolution
                 </h2>
               </div>
 
@@ -529,7 +527,7 @@ const TermsPage = () => {
                   13
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  13. Modifications to Service &amp; Terms
+                  Modifications to Service &amp; Terms
                 </h2>
               </div>
 
@@ -545,7 +543,7 @@ const TermsPage = () => {
                   14
                 </span>
                 <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  14. Contact &amp; Legal Notices
+                  Contact &amp; Legal Notices
                 </h2>
               </div>
 
