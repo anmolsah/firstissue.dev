@@ -45,6 +45,7 @@ import {
   ShieldCheck,
   ChevronDown,
   ChevronUp,
+  GraduationCap,
 } from "lucide-react";
 
 const ProfilePageNew = () => {
@@ -409,6 +410,12 @@ const ProfilePageNew = () => {
           {(githubProfile || customProfile) && (
             <div className="bg-zinc-950/25 rounded-lg p-4 sm:p-5 border border-zinc-800/60 mb-6 sm:mb-8">
               <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-zinc-400">
+                {(customProfile?.college || user?.user_metadata?.college) && (
+                  <div className="flex items-center gap-1.5">
+                    <GraduationCap className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500" />
+                    <span className="truncate">{customProfile?.college || user?.user_metadata?.college}</span>
+                  </div>
+                )}
                 {(customProfile?.location || githubProfile?.location) && (
                   <div className="flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-zinc-500" />
