@@ -58,19 +58,23 @@ export function buildCanopyData(rawContributors = []) {
       organic = { x: 0, y: -140 };
       grid = { x: 0, y: -150 };
     } else {
-      // Newly added contributors following the Contribution Book grow seamlessly onto the tree branches
+      // Newly added contributors following the Contribution Book grow cleanly onto orbital tree rings without overlap
       const extraIdx = idx - 1;
-      const angle = (extraIdx * 137.5 * Math.PI) / 180;
-      const dist = 180 + extraIdx * 25;
+      const ring = Math.floor(extraIdx / 5);
+      const posInRing = extraIdx % 5;
+      const ringAngles = [-2.55, -0.58, 0.55, 2.52, 1.57];
+      const baseAngle = ringAngles[posInRing] + ring * 0.42;
+      const rx = 215 + ring * 135;
+      const ry = 135 + ring * 90;
       organic = {
-        x: Math.round(Math.cos(angle) * (dist * 1.1)),
-        y: Math.round(Math.sin(angle) * (dist * 0.75) + 30),
+        x: Math.round(Math.cos(baseAngle) * rx),
+        y: Math.round(Math.sin(baseAngle) * ry + 20),
       };
-      const col = extraIdx % 5;
-      const row = Math.floor(extraIdx / 5);
+      const col = extraIdx % 4;
+      const row = Math.floor(extraIdx / 4);
       grid = {
-        x: -360 + col * 180,
-        y: -50 + row * 95,
+        x: -285 + col * 190,
+        y: -30 + row * 105,
       };
     }
 
@@ -94,8 +98,8 @@ export function buildCanopyData(rawContributors = []) {
       diff: c.diff || (isRoot ? "+2,480 / -120 lines" : "+42 / -3 lines"),
       plantedAt: c.joinedAt ? `Planted on ${c.joinedAt}` : "Planted recently",
       hash: isRoot
-        ? "0x1a8f...b420"
-        : `0x${((idx + 1) * 39281).toString(16).slice(0, 4)}...${((idx + 1) * 71623).toString(16).slice(0, 4)}`,
+        ? "sha256:1a8f...b420"
+        : `sha256:${((idx + 1) * 39281).toString(16).slice(0, 4)}...${((idx + 1) * 71623).toString(16).slice(0, 4)}`,
       verified: true,
       radius,
       organic,
@@ -140,11 +144,10 @@ const ContributionTree = () => {
     []
   );
 
-  // Viewport transformation state with mobile-aware initial scale
-  const [zoom, setZoom] = useState(() =>
-    typeof window !== "undefined" && window.innerWidth < 640 ? 0.75 : 1.0
-  );
+  // Viewport transformation state with auto-fit geometry
+  const [zoom, setZoom] = useState(1.0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const hasInteractedRef = useRef(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef({ x: 0, y: 0, panX: 0, panY: 0 });
   const touchStartRef = useRef({ x: 0, y: 0, dist: 0, zoom: 1, panX: 0, panY: 0, startTime: 0 });
@@ -167,6 +170,39 @@ const ContributionTree = () => {
   const animationFrameRef = useRef(null);
   const particleTimeRef = useRef(0);
 
+  const computeFitViewport = useCallback(
+    (width, height, layoutMode) => {
+      if (!width || !height || CANOPY_CONTRIBUTORS.length === 0) {
+        return { zoom: 1, pan: { x: 0, y: 0 } };
+      }
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (const c of CANOPY_CONTRIBUTORS) {
+        const pt = layoutMode === "grid" ? c.grid : c.organic;
+        minX = Math.min(minX, pt.x - c.radius - 58);
+        maxX = Math.max(maxX, pt.x + c.radius + 58);
+        minY = Math.min(minY, pt.y - c.radius - 36);
+        maxY = Math.max(maxY, pt.y + c.radius + 48);
+      }
+      const bboxW = Math.max(240, maxX - minX + 64);
+      const bboxH = Math.max(200, maxY - minY + 64);
+      const fitZoom = Math.min(
+        1.0,
+        Math.max(0.28, Number(Math.min(width / bboxW, height / bboxH).toFixed(2)))
+      );
+      return {
+        zoom: fitZoom,
+        pan: {
+          x: -Math.round((minX + maxX) / 2),
+          y: -Math.round((minY + maxY) / 2),
+        },
+      };
+    },
+    [CANOPY_CONTRIBUTORS]
+  );
+
   // High-performance ResizeObserver (avoids layout thrashing inside 60fps loop)
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -180,6 +216,11 @@ const ContributionTree = () => {
       canvas.width = rect.width * dpr;
       canvas.height = rect.height * dpr;
       canvasSizeRef.current = { width: rect.width, height: rect.height, dpr };
+      if (!hasInteractedRef.current) {
+        const fitted = computeFitViewport(rect.width, rect.height, arrangement);
+        setZoom(fitted.zoom);
+        setPan(fitted.pan);
+      }
     };
 
     handleResize();
@@ -194,7 +235,7 @@ const ContributionTree = () => {
       resizeObserver.disconnect();
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [arrangement, computeFitViewport]);
 
   // Preload avatar images reliably without CORS restrictions
   useEffect(() => {
@@ -271,18 +312,22 @@ const ContributionTree = () => {
 
   // Adjust zoom smoothly
   const adjustZoom = (delta) => {
-    setZoom((prev) => Math.min(Math.max(0.6, Number((prev + delta).toFixed(2))), 2.0));
+    hasInteractedRef.current = true;
+    setZoom((prev) => Math.min(Math.max(0.4, Number((prev + delta).toFixed(2))), 2.0));
   };
 
   const resetZoom = () => {
-    const defaultZoom = typeof window !== "undefined" && window.innerWidth < 640 ? 0.75 : 1.0;
-    setZoom(defaultZoom);
-    setPan({ x: 0, y: 0 });
+    hasInteractedRef.current = false;
+    const { width, height } = canvasSizeRef.current;
+    const fitted = computeFitViewport(width, height, arrangement);
+    setZoom(fitted.zoom);
+    setPan(fitted.pan);
   };
 
   // Canvas Mouse Handlers
   const handleMouseDown = (e) => {
     if (e.button !== 0) return;
+    hasInteractedRef.current = true;
     setIsDragging(true);
     dragStartRef.current = {
       x: e.clientX,
@@ -383,6 +428,7 @@ const ContributionTree = () => {
   };
 
   const handleTouchMove = (e) => {
+    hasInteractedRef.current = true;
     if (e.touches.length === 1 && isDragging) {
       const dx = (e.touches[0].clientX - touchStartRef.current.x) / zoom;
       const dy = (e.touches[0].clientY - touchStartRef.current.y) / zoom;
@@ -396,7 +442,7 @@ const ContributionTree = () => {
         e.touches[0].clientY - e.touches[1].clientY
       );
       const factor = currentDist / touchStartRef.current.dist;
-      setZoom(Math.min(Math.max(0.6, Number((touchStartRef.current.zoom * factor).toFixed(2))), 2.0));
+      setZoom(Math.min(Math.max(0.4, Number((touchStartRef.current.zoom * factor).toFixed(2))), 2.0));
     }
   };
 
@@ -705,41 +751,30 @@ const ContributionTree = () => {
     <section
       id="contribution-tree"
       ref={containerRef}
-      className="relative z-10 py-10 sm:py-20 px-2.5 sm:px-6 lg:px-8 border-t border-zinc-900/80 bg-[#0B0C10] overflow-hidden scroll-mt-16 select-none"
+      className="relative z-10 py-14 sm:py-20 px-3 sm:px-6 lg:px-8 border-t border-[#22242A] bg-[#0F0F0F] overflow-hidden scroll-mt-20 select-none"
     >
-      {/* Background Architectural Grid & Glow */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293710_1px,transparent_1px),linear-gradient(to_bottom,#1f293710_1px,transparent_1px)] bg-[size:32px_32px]" />
-        <div className="absolute top-[10%] left-1/2 -translate-x-1/2 w-[850px] h-[350px] bg-emerald-500/[0.03] rounded-full blur-[140px]" />
-        <div className="absolute bottom-[20%] left-[10%] w-[350px] h-[300px] bg-cyan-500/[0.02] rounded-full blur-[120px]" />
-      </div>
-
       <div className="max-w-7xl mx-auto relative z-10">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-6 sm:mb-10">
-          <h2 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-2.5 sm:mb-4 leading-tight">
-            The Contribution{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-              Tree
-            </span>
+        <div className="max-w-2xl mb-8">
+          <h2 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#F4F4F0] mb-3 leading-tight text-balance">
+            The Contribution Tree
           </h2>
 
-          <p className="text-xs sm:text-sm md:text-base text-zinc-400 leading-relaxed max-w-2xl mx-auto px-1">
-            A living interactive canvas of developers who planted their first pull request into FirstIssue.dev.
-            Explore the canopy, zoom into branches, and verify cryptographic contribution credentials.
+          <p className="text-sm text-[#A8ADB6] leading-relaxed max-w-[60ch] text-pretty">
+            Interactive canopy of developers who landed their first pull request via FirstIssue.dev. Zoom, inspect branches, and add your own leaf via PR.
           </p>
         </div>
 
         {/* Interactive Viewport Canvas Box */}
-        <div className="relative w-full rounded-xl sm:rounded-2xl border border-white/[0.08] bg-[#0c0d12]/95 backdrop-blur-2xl shadow-2xl overflow-hidden flex flex-col justify-between min-h-[380px] sm:min-h-[580px]">
-          {/* Top Floating Command Toolbar (Fully Responsive) */}
-          <div className="relative z-30 w-full p-2.5 sm:p-4 border-b border-white/[0.06] bg-[#0c0d12]/85 backdrop-blur-md">
-            <div className="flex flex-col gap-2 sm:gap-2.5">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3">
-                {/* Spotlight Search (⌘K / Ctrl+K) */}
+        <div className="relative w-full rounded-[4px] border border-[#2B2E36] bg-[#141518] overflow-hidden flex flex-col justify-between min-h-[380px] sm:min-h-[580px]">
+          {/* Top Command Toolbar */}
+          <div className="relative z-30 w-full p-3 sm:p-4 border-b border-[#22242A] bg-[#17181B]">
+            <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
+                {/* Search */}
                 <div className="w-full sm:flex-1 sm:max-w-md min-w-0 relative">
                   <div className="relative flex items-center">
-                    <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 pointer-events-none" />
+                    <Search className="w-3.5 h-3.5 text-[#8C929C] absolute left-3 pointer-events-none" />
                     <input
                       id="canvas-search-input"
                       type="text"
@@ -752,10 +787,11 @@ const ContributionTree = () => {
                         if (searchQuery.trim().length > 0) setSearchFlyoutOpen(true);
                       }}
                       placeholder="Search contributor @handle, leaf #, or PR..."
-                      className="w-full bg-black/40 pl-8 pr-12 sm:pr-16 py-1.5 rounded-lg font-mono text-[11px] sm:text-xs text-white placeholder-zinc-500 border border-white/[0.08] focus:border-emerald-500/50 focus:outline-none transition-all shadow-inner"
+                      aria-label="Search contributor tree"
+                      className="w-full bg-[#0B0C0E] pl-9 pr-14 py-2 rounded-[4px] font-mono text-xs text-[#F4F4F0] placeholder-[#8C929C] border border-[#2B2E36] focus:border-[#DAFA9C] focus:outline-none transition-colors"
                     />
                     <div className="absolute right-2 flex items-center gap-1 pointer-events-none">
-                      <kbd className="px-1.5 py-0.5 rounded bg-white/[0.06] font-mono text-[9px] text-zinc-400 border border-white/[0.06]">
+                      <kbd className="px-1.5 py-0.5 rounded-[4px] bg-[#17181B] font-mono text-xs text-[#A8ADB6] border border-[#2B2E36]">
                         ⌘K
                       </kbd>
                     </div>
@@ -763,13 +799,13 @@ const ContributionTree = () => {
 
                   {/* Search Dropdown Flyout */}
                   {searchFlyoutOpen && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-[#11131a]/98 backdrop-blur-2xl rounded-xl border border-white/[0.1] shadow-2xl p-1.5 z-50 flex flex-col gap-1 max-h-60 overflow-y-auto">
-                      <div className="px-2 py-1 font-mono text-[9px] text-zinc-500 uppercase tracking-wider">
+                    <div className="absolute top-full left-0 right-0 mt-1.5 bg-[#17181B] rounded-[4px] border border-[#2B2E36] shadow-2xl p-1.5 z-50 flex flex-col gap-1 max-h-60 overflow-y-auto">
+                      <div className="px-2 py-1 font-mono text-xs text-[#8C929C] uppercase tracking-wider">
                         Canopy Matches ({searchResults.length})
                       </div>
                       {searchResults.length === 0 ? (
-                        <div className="p-3 text-center text-xs text-zinc-500 font-mono">
-                          No leaf found matching "{searchQuery}"
+                        <div className="p-3 text-center text-xs text-[#8C929C] font-mono">
+                          No leaf found matching &ldquo;{searchQuery}&rdquo;
                         </div>
                       ) : (
                         searchResults.map((c) => (
@@ -777,27 +813,27 @@ const ContributionTree = () => {
                             key={c.id}
                             type="button"
                             onClick={() => locateNode(c.id)}
-                            className="flex items-center justify-between p-2 rounded-lg hover:bg-white/[0.05] transition-all text-left group cursor-pointer"
+                            className="flex items-center justify-between p-2 rounded-[4px] hover:bg-[#1C1E23] transition-colors text-left group cursor-pointer"
                           >
                             <div className="flex items-center gap-2">
                               <img
                                 src={c.avatar}
                                 alt={c.name}
-                                className="w-6 h-6 rounded-full object-cover border border-white/[0.1]"
+                                className="w-6 h-6 rounded-full object-cover border border-[#2B2E36]"
                                 onError={(e) => {
                                   e.target.src = `https://avatar.vercel.sh/${c.github}`;
                                 }}
                               />
                               <div>
-                                <div className="text-xs text-white font-medium group-hover:text-emerald-400 transition-colors">
+                                <div className="text-xs text-[#F4F4F0] font-medium group-hover:text-[#DAFA9C] transition-colors">
                                   {c.name}
                                 </div>
-                                <div className="font-mono text-[10px] text-zinc-400">
-                                  {c.leafNumber} • @{c.github}
+                                <div className="font-mono text-xs text-[#8C929C]">
+                                  {c.leafNumber} · @{c.github}
                                 </div>
                               </div>
                             </div>
-                            <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-white/[0.06] text-zinc-400">
+                            <span className="font-mono text-xs px-2 py-0.5 rounded-[4px] bg-[#141518] text-[#A8ADB6] border border-[#22242A]">
                               Locate
                             </span>
                           </button>
@@ -807,83 +843,83 @@ const ContributionTree = () => {
                   )}
                 </div>
 
-                {/* Right Action Tools: Zoom & Arrangement Switcher */}
-                <div className="flex items-center justify-between sm:justify-end gap-1.5 sm:gap-2.5 w-full sm:w-auto overflow-x-auto scrollbar-none pb-0.5 sm:pb-0">
-                  {/* Zoom Controls */}
-                  <div className="flex items-center bg-black/40 border border-white/[0.08] rounded-lg p-0.5 shadow-sm shrink-0">
+                {/* Right Action Tools */}
+                <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+                  <div className="flex items-center bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] p-0.5 shrink-0">
                     <button
                       type="button"
                       onClick={() => adjustZoom(-0.15)}
                       title="Zoom Out"
-                      className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer"
+                      aria-label="Zoom out canopy"
+                      className="w-7 h-7 flex items-center justify-center rounded-[4px] text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#1C1E23] transition-colors cursor-pointer"
                     >
-                      <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="px-1 font-mono text-[10px] sm:text-[11px] text-zinc-400 min-w-[32px] sm:min-w-[38px] text-center select-none">
+                    <span className="px-1.5 font-mono text-xs text-[#A8ADB6] min-w-[44px] text-center tabular-nums select-none">
                       {Math.round(zoom * 100)}%
                     </span>
                     <button
                       type="button"
                       onClick={() => adjustZoom(0.15)}
                       title="Zoom In"
-                      className="w-6 h-6 sm:w-7 sm:h-7 flex items-center justify-center rounded text-zinc-400 hover:text-white hover:bg-white/[0.08] transition-all cursor-pointer"
+                      aria-label="Zoom in canopy"
+                      className="w-7 h-7 flex items-center justify-center rounded-[4px] text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#1C1E23] transition-colors cursor-pointer"
                     >
-                      <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                      <Plus className="w-3.5 h-3.5" />
                     </button>
                     <button
                       type="button"
                       onClick={resetZoom}
                       title="Fit to Canopy"
-                      className="w-6 h-6 sm:w-auto sm:px-2 sm:h-7 flex items-center justify-center gap-1 rounded text-zinc-400 hover:text-emerald-400 hover:bg-white/[0.08] font-mono text-[10px] sm:text-[11px] transition-all cursor-pointer"
+                      aria-label="Fit tree to viewport"
+                      className="px-2 h-7 flex items-center justify-center gap-1 rounded-[4px] text-[#A8ADB6] hover:text-[#DAFA9C] hover:bg-[#1C1E23] font-mono text-xs transition-colors cursor-pointer"
                     >
                       <Maximize2 className="w-3 h-3" />
                       <span className="hidden sm:inline">Fit</span>
                     </button>
                   </div>
 
-                  {/* View Mode Toggle */}
-                  <div className="flex items-center bg-black/40 border border-white/[0.08] rounded-lg p-0.5 shadow-sm shrink-0">
+                  <div className="flex items-center bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] p-0.5 shrink-0">
                     <button
                       type="button"
                       onClick={() => setArrangement("organic")}
-                      className={`px-2 sm:px-2.5 h-6 sm:h-7 flex items-center gap-1 sm:gap-1.5 rounded font-mono text-[10px] sm:text-xs transition-all cursor-pointer ${
+                      className={`px-2.5 h-7 flex items-center gap-1.5 rounded-[4px] font-mono text-xs transition-colors cursor-pointer ${
                         arrangement === "organic"
-                          ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold"
-                          : "text-zinc-400 hover:text-white"
+                          ? "bg-[#1C1E23] text-[#DAFA9C] border border-[#2B2E36] font-semibold"
+                          : "text-[#A8ADB6] hover:text-[#F4F4F0]"
                       }`}
                     >
-                      <Network className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      <span className="text-[10px] sm:text-xs">Organic</span>
+                      <Network className="w-3.5 h-3.5" />
+                      <span>Organic</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setArrangement("grid")}
-                      className={`px-2 sm:px-2.5 h-6 sm:h-7 flex items-center gap-1 sm:gap-1.5 rounded font-mono text-[10px] sm:text-xs transition-all cursor-pointer ${
+                      className={`px-2.5 h-7 flex items-center gap-1.5 rounded-[4px] font-mono text-xs transition-colors cursor-pointer ${
                         arrangement === "grid"
-                          ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold"
-                          : "text-zinc-400 hover:text-white"
+                          ? "bg-[#1C1E23] text-[#DAFA9C] border border-[#2B2E36] font-semibold"
+                          : "text-[#A8ADB6] hover:text-[#F4F4F0]"
                       }`}
                     >
-                      <Grid className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      <span className="text-[10px] sm:text-xs">Grid</span>
+                      <Grid className="w-3.5 h-3.5" />
+                      <span>Grid</span>
                     </button>
                   </div>
 
-                  {/* Plant PR Action */}
                   <Link
                     to="/contribution-book"
-                    className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 h-6 sm:h-7 sm:h-8 rounded-lg bg-emerald-400 text-black font-semibold text-[10px] sm:text-xs hover:bg-emerald-300 transition-all shadow-[0_0_16px_rgba(78,222,163,0.35)] cursor-pointer shrink-0"
+                    className="flex items-center gap-1.5 px-3 h-8 rounded-[4px] bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] font-semibold text-xs transition-colors cursor-pointer shrink-0"
                   >
-                    <GitPullRequest className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                    <GitPullRequest className="w-3.5 h-3.5" />
                     <span>Plant PR</span>
                   </Link>
                 </div>
               </div>
 
               {/* Sub-bar: Cohort Filter Tabs & Legend */}
-              <div className="flex items-center justify-between pt-1.5 flex-wrap gap-2 text-xs font-mono border-t border-white/[0.04]">
-                <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none touch-pan-x w-full sm:w-auto">
-                  <span className="text-[10px] text-zinc-500 uppercase tracking-wider mr-1 shrink-0 select-none">
+              <div className="flex items-center justify-between pt-2 flex-wrap gap-2 text-xs font-mono border-t border-[#22242A]">
+                <div className="flex flex-wrap items-center gap-1.5 py-0.5 w-full sm:w-auto">
+                  <span className="text-xs text-[#8C929C] uppercase tracking-wider mr-1 shrink-0 select-none">
                     Cohorts:
                   </span>
                   {[
@@ -897,10 +933,10 @@ const ContributionTree = () => {
                       key={cohort.id}
                       type="button"
                       onClick={() => setSelectedCohort(cohort.id)}
-                      className={`px-2.5 py-1 rounded-full text-[10px] whitespace-nowrap transition-all cursor-pointer shrink-0 ${
+                      className={`px-2.5 py-1 rounded-[4px] text-xs whitespace-nowrap transition-colors cursor-pointer shrink-0 ${
                         selectedCohort === cohort.id
-                          ? "bg-white/[0.1] text-white border border-white/[0.15] font-bold"
-                          : "bg-transparent text-zinc-400 hover:text-zinc-200 border border-transparent"
+                          ? "bg-[#141518] text-[#DAFA9C] border border-[#2B2E36] font-semibold"
+                          : "bg-transparent text-[#8C929C] hover:text-[#F4F4F0] border border-transparent"
                       }`}
                     >
                       {cohort.label}
@@ -908,22 +944,21 @@ const ContributionTree = () => {
                   ))}
                 </div>
 
-                {/* Visual Legend (Hidden on small mobile) */}
-                <div className="hidden lg:flex items-center gap-4 text-[10px] text-zinc-500 font-mono">
+                <div className="hidden lg:flex items-center gap-4 text-xs text-[#A8ADB6] font-mono">
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(245,158,11,0.6)]" />
+                    <span className="w-2 h-2 rounded-full bg-[#F59E0B]" />
                     Genesis #001
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(16,185,129,0.6)]" />
+                    <span className="w-2 h-2 rounded-full bg-[#34D399]" />
                     Canopy Core
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-cyan-400 shadow-[0_0_6px_rgba(6,182,212,0.6)]" />
+                    <span className="w-2 h-2 rounded-full bg-sky-400" />
                     Milestones
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-teal-300 animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-[#DAFA9C]" />
                     Fresh Sprout
                   </span>
                 </div>
@@ -931,8 +966,8 @@ const ContributionTree = () => {
             </div>
           </div>
 
-          {/* Canvas Viewport Area with Full Touch & Mouse Handling */}
-          <div className="relative w-full flex-1 h-[290px] xs:h-[330px] sm:h-[480px] md:h-[540px] min-h-[260px] sm:min-h-[480px] overflow-hidden bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-zinc-950/40 via-[#0B0C10] to-[#08090C]">
+          {/* Canvas Viewport */}
+          <div className="relative w-full flex-1 h-[290px] xs:h-[330px] sm:h-[480px] md:h-[540px] min-h-[260px] sm:min-h-[480px] overflow-hidden bg-[#0B0C0E]">
             <canvas
               ref={canvasRef}
               onMouseDown={handleMouseDown}
@@ -945,36 +980,37 @@ const ContributionTree = () => {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onTouchCancel={handleTouchEnd}
-              className={`w-full h-full block touch-none ${isDragging ? "cursor-grabbing" : "cursor-grab"}`}
+              className={`w-full h-full block touch-none ${
+                isDragging ? "cursor-grabbing" : "cursor-grab"
+              }`}
               style={{ width: "100%", height: "100%" }}
             />
 
-            {/* Contributor Node Detailed Inspector Drawer / Modal (Responsive Bottom Sheet on Mobile, Card on Desktop) */}
             {activeModalNode && (
-              <div className="absolute inset-x-3 bottom-3 sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 max-w-sm w-auto sm:w-full z-40 bg-[#12141c]/95 backdrop-blur-2xl border border-white/[0.12] rounded-2xl p-3.5 sm:p-4 shadow-2xl text-left animate-in fade-in zoom-in-95 duration-200 max-h-[85%] overflow-y-auto">
+              <div className="absolute inset-x-3 bottom-3 sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 max-w-sm w-auto sm:w-full z-40 bg-[#17181B] border border-[#2B2E36] rounded-[4px] p-4 shadow-2xl text-left max-h-[85%] overflow-y-auto">
                 <div className="flex items-start justify-between gap-3 mb-3">
                   <div className="flex items-center gap-3">
                     <div className="relative">
                       <img
                         src={activeModalNode.avatar}
                         alt={activeModalNode.name}
-                        className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-emerald-400/60 shadow-lg"
+                        className="w-11 h-11 rounded-full object-cover border-2 border-[#DAFA9C]"
                         onError={(e) => {
                           e.target.src = `https://avatar.vercel.sh/${activeModalNode.github}`;
                         }}
                       />
                       {activeModalNode.tier === "gold" && (
-                        <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-amber-400 flex items-center justify-center text-black">
-                          <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-black" />
+                        <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#F59E0B] flex items-center justify-center text-[#0F0F0F]">
+                          <Star className="w-2.5 h-2.5 fill-[#0F0F0F]" />
                         </div>
                       )}
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="text-xs sm:text-sm font-bold text-white leading-tight">
+                        <h3 className="text-sm font-semibold text-[#F4F4F0] leading-tight">
                           {activeModalNode.name}
-                        </h4>
-                        <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 font-bold">
+                        </h3>
+                        <span className="font-mono text-xs px-1.5 py-0.5 rounded-[4px] bg-[#141518] text-[#DAFA9C] border border-[#2B2E36]">
                           {activeModalNode.leafNumber}
                         </span>
                       </div>
@@ -982,7 +1018,7 @@ const ContributionTree = () => {
                         href={`https://github.com/${activeModalNode.github}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="font-mono text-[11px] sm:text-xs text-zinc-400 hover:text-emerald-400 transition-colors flex items-center gap-1 mt-0.5"
+                        className="font-mono text-xs text-[#A8ADB6] hover:text-[#DAFA9C] transition-colors flex items-center gap-1 mt-0.5"
                       >
                         @{activeModalNode.github}
                         <ExternalLink className="w-3 h-3" />
@@ -996,60 +1032,57 @@ const ContributionTree = () => {
                       setSelectedNode(null);
                       setHoveredNode(null);
                     }}
-                    className="p-1 rounded-lg text-zinc-500 hover:text-white hover:bg-white/[0.08] transition-colors cursor-pointer"
+                    aria-label="Close contributor inspector"
+                    className="p-1 rounded-[4px] text-[#8C929C] hover:text-[#F4F4F0] hover:bg-[#1C1E23] transition-colors cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* Cohort Badge */}
-                <div className="mb-2.5 sm:mb-3">
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-white/[0.06] border border-white/[0.08] font-mono text-[10px] text-zinc-300">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <div className="mb-3">
+                  <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-[4px] bg-[#141518] border border-[#22242A] font-mono text-xs text-[#F4F4F0]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#34D399]" />
                     {activeModalNode.cohortLabel}
                   </span>
                 </div>
 
-                {/* PR & Diff details */}
-                <div className="bg-black/50 border border-white/[0.06] rounded-xl p-2.5 sm:p-3 mb-2.5 sm:mb-3 font-mono">
-                  <div className="text-[10px] sm:text-[11px] font-medium text-emerald-300 mb-1 line-clamp-2">
+                <div className="bg-[#0B0C0E] border border-[#22242A] rounded-[4px] p-3 mb-3 font-mono">
+                  <div className="text-xs font-medium text-[#DAFA9C] mb-1 line-clamp-2">
                     {activeModalNode.prTitle}
                   </div>
-                  <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-zinc-400 pt-1.5 border-t border-white/[0.06]">
-                    <span className="text-zinc-300">{activeModalNode.diff}</span>
+                  <div className="flex items-center justify-between text-xs text-[#8C929C] pt-1.5 border-t border-[#22242A]">
+                    <span className="text-[#A8ADB6]">{activeModalNode.diff}</span>
                     <span>{activeModalNode.plantedAt}</span>
                   </div>
                 </div>
 
-                {/* Cryptographic Verification Badge */}
-                <div className="flex items-center justify-between py-1.5 px-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 mb-2.5 sm:mb-3">
-                  <div className="flex items-center gap-1.5 text-emerald-400 font-mono text-[9px] sm:text-[10px]">
+                <div className="flex items-center justify-between py-1.5 px-2.5 rounded-[4px] bg-[#34D399]/10 border border-[#34D399]/30 mb-3">
+                  <div className="flex items-center gap-1.5 text-[#34D399] font-mono text-xs">
                     <ShieldCheck className="w-3.5 h-3.5" />
-                    <span>Cryptographically Verified PR</span>
+                    <span>Verified Merge PR</span>
                   </div>
-                  <span className="font-mono text-[9px] text-emerald-500 font-semibold">
+                  <span className="font-mono text-xs text-[#34D399] font-semibold">
                     {activeModalNode.hash}
                   </span>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="flex items-center justify-between gap-2">
                   <a
                     href={`https://github.com/${activeModalNode.github}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex-1 py-1.5 px-3 rounded-lg bg-white/[0.08] hover:bg-white/[0.14] text-white text-xs font-mono font-medium text-center transition-all flex items-center justify-center gap-1.5"
+                    className="flex-1 py-2 px-3 rounded-[4px] bg-[#141518] hover:bg-[#1C1E23] border border-[#2B2E36] text-[#F4F4F0] text-xs font-mono font-medium text-center transition-colors flex items-center justify-center gap-1.5"
                   >
-                    <span>View GitHub</span>
+                    <span>GitHub</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                   <button
                     type="button"
                     onClick={() => handleApplaud(activeModalNode.id)}
                     title="Send appreciation"
-                    className="py-1.5 px-3 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 text-xs font-mono font-semibold transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="py-2 px-3 rounded-[4px] bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] text-xs font-mono font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
-                    <Heart className="w-3 h-3 fill-emerald-400" />
+                    <Heart className="w-3.5 h-3.5" />
                     <span>+{sproutCount[activeModalNode.id] || 1}</span>
                   </button>
                 </div>
@@ -1057,43 +1090,43 @@ const ContributionTree = () => {
             )}
           </div>
 
-          {/* Canvas Bottom Bar (Center Action & Hint) */}
-          <div className="relative z-30 w-full p-2 sm:p-2.5 border-t border-white/[0.06] bg-[#0c0d12]/85 backdrop-blur-md flex items-center justify-between text-[10px] sm:text-xs font-mono text-zinc-500">
-            <span className="hidden xs:inline">Drag to pan • Pinch / scroll to zoom</span>
+          <div className="relative z-30 w-full px-3 py-2.5 border-t border-[#22242A] bg-[#17181B] flex items-center justify-between text-xs font-mono text-[#8C929C]">
+            <span className="hidden xs:inline">Drag to pan · Pinch or scroll to zoom</span>
             <span className="xs:hidden">Pan &amp; tap to inspect</span>
             <button
               type="button"
               onClick={resetZoom}
               title="Re-center View"
-              className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-black/40 border border-white/[0.08] hover:bg-white/[0.08] text-zinc-300 hover:text-white font-mono text-[10px] sm:text-xs transition-all shadow-sm cursor-pointer flex items-center gap-1.5 ml-auto"
+              className="px-3 py-1 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] hover:border-[#3A3E48] text-[#F4F4F0] font-mono text-xs transition-colors cursor-pointer flex items-center gap-1.5 ml-auto"
             >
-              <Maximize2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <Maximize2 className="w-3.5 h-3.5 text-[#DAFA9C]" />
               <span>Center</span>
             </button>
           </div>
         </div>
 
-        {/* Scalable Community Growth Callout (Bottom banner) */}
-        <div className="mt-6 sm:mt-8 bg-zinc-900/30 border border-zinc-800/80 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 sm:gap-4">
+        <div className="mt-6 bg-[#141518] border border-[#22242A] rounded-[4px] p-4 sm:p-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 flex-shrink-0">
-              <Sprout className="w-4 h-4 text-emerald-400" />
-            </div>
+            <Sprout className="w-5 h-5 text-[#DAFA9C] shrink-0" />
             <div className="min-w-0">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono truncate">
-                Join the Tree via GitHub PR
-              </h4>
-              <p className="text-[11px] sm:text-xs text-zinc-400 line-clamp-2 sm:line-clamp-none">
-                Follow our interactive Contribution Book to add your profile to <code className="text-zinc-300 font-mono">src/data/contributors.json</code>. Once merged, your leaf will grow onto the live canvas tree!
+              <h3 className="text-xs font-semibold text-[#F4F4F0] uppercase tracking-wider font-mono">
+                Add Your Leaf via Pull Request
+              </h3>
+              <p className="text-xs text-[#A8ADB6]">
+                Follow our interactive Contribution Book to add your handle to{" "}
+                <code className="text-[#DAFA9C] font-mono">
+                  src/data/contributors.json
+                </code>
+                .
               </p>
             </div>
           </div>
 
           <Link
             to="/contribution-book"
-            className="w-full sm:w-auto px-4 py-2 text-xs font-semibold text-black bg-white hover:bg-zinc-200 rounded-lg transition-all text-center flex items-center justify-center gap-1.5 flex-shrink-0 shadow-sm"
+            className="w-full sm:w-auto px-4 py-2.5 text-xs font-semibold text-[#0F0F0F] bg-[#DAFA9C] hover:bg-[#C7F275] rounded-[4px] transition-colors text-center flex items-center justify-center gap-1.5 shrink-0"
           >
-            <span>Read Contribution Book</span>
+            <span>Open Contribution Book</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>

@@ -10,13 +10,13 @@ ShieldCheck,
 GitMerge,
 Cpu,
 } from "lucide-react";
-const architectureDiagram = "/architecture_diagram.png";
+const architectureDiagram = "architecture";
 
 export const docContent = {
 "getting-started": {
 title: "Getting Started",
 icon: Zap,
-color: "text-blue-400",
+color: "text-[#DAFA9C]",
 
 "first-steps": {
 title: "Your First Open Source Contribution",
@@ -415,7 +415,7 @@ text: "To ensure system resources are fairly distributed, free tier accounts are
 "contribution-guide": {
 title: "Contribution Guide",
 icon: Users,
-color: "text-purple-400",
+color: "text-[#34D399]",
 
 "workflow": {
 title: "Open Source Contribution Workflow",
@@ -967,7 +967,7 @@ code: "1. Comment on an issue asking a clarifying question\n2. See how quickly a
 "troubleshooting": {
 title: "Troubleshooting",
 icon: AlertTriangle,
-color: "text-pink-400",
+color: "text-[#F59E0B]",
 
 "common-issues": {
 title: "Common Beginner Issues",
@@ -1133,7 +1133,7 @@ text: "Before asking, search existing issues and discussions. Your question migh
 "git-commands": {
 title: "Git Commands",
 icon: GitBranch,
-color: "text-cyan-400",
+color: "text-[#DAFA9C]",
 
 "setup-configuration": {
 title: "Setup, Configuration & Repository Creation",
@@ -2067,7 +2067,7 @@ difficulty: "Advanced",
 content: [
 {
 type: "paragraph",
-text: "FirstIssue.dev is a decentralized verification and matchmaking platform that helps developers contribute to open source while building cryptographically verified portfolios. This guide outlines the platform's workflow, database architecture, and integration with the GitHub API."
+text: "FirstIssue.dev is a developer verification and issue-matching platform that helps contributors ship open-source pull requests while building GitHub-verified portfolios. This guide outlines the platform's workflow, database architecture, and integration with the GitHub API."
 },
 {
 type: "heading",
@@ -2079,10 +2079,10 @@ type: "paragraph",
 text: "The platform is built using a modern, serverless architecture that separates the user-facing frontend from sensitive back-end operations. This ensures security when handling users' GitHub OAuth tokens and performing cryptographic operations."
 },
 {
-type: "image",
-src: architectureDiagram,
+type: "diagram",
+diagramId: architectureDiagram,
 alt: "FirstIssue.dev System Architecture Diagram",
-caption: "Figure 1: High-level visual representation of system modules, APIs, and data flow."
+caption: "Figure 1: Serverless topology separating the SPA from Edge Functions, PostgreSQL, and GitHub APIs."
 },
 {
 type: "heading",
@@ -2093,7 +2093,7 @@ text: "Core Components"
 type: "list",
 ordered: false,
 items: [
-"Frontend Application: Built with Vite, React, Tailwind CSS (or Vanilla CSS for maximum styling control), and Framer Motion for premium, glassmorphic UI interactions.",
+"Frontend Application: Built with Vite, React, Tailwind CSS, and Framer Motion for responsive, keyboard-accessible UI interactions.",
 "Supabase Backend: Handles user authentication (OAuth via GitHub), database storage, and serves as our API layer.",
 "Supabase Edge Functions: Serverless JavaScript/TypeScript functions running on Deno. These securely make calls to the GitHub GraphQL/REST APIs, sign Proof of Work credentials, and generate payment webhooks without exposing private tokens to the client.",
 "GitHub Sync Engine: Periodically fetches pull requests, assignments, and commits from the user's connected GitHub account to build their activity stats.",
@@ -2157,7 +2157,7 @@ ordered: false,
 items: [
 "profiles: Stores user metadata, display name, bio, location, and total impact score.",
 "contributions: Cached representation of GitHub PRs, issues, and sync statuses.",
-"attestations: Stores cryptographically signed Proof of Work credentials (transaction hashes, impact scores).",
+"attestations: Stores cryptographically signed Proof of Work credentials (SHA-256 verification digests, impact scores).",
 "supporters: Manages subscription status, payment IDs, and freemium feature limits."
 ]
 },
@@ -2619,7 +2619,7 @@ code: "# Re-sign the last 3 commits with your author sign-off:\ngit rebase --sig
 "advanced-git-workflows": {
 title: "Advanced Git & GitHub Mastery",
 icon: GitMerge,
-color: "text-indigo-400",
+color: "text-[#34D399]",
 
 "interactive-rebase-squash": {
 title: "Interactive Rebase & Squashing Commits",
@@ -2841,10 +2841,10 @@ items: [
 ]
 },
 {
-type: "image",
-src: "/reverse_engineering_workflow.png",
+type: "diagram",
+diagramId: "reverse-engineering",
 alt: "Software Reverse Engineering Architectural Workflow",
-caption: "Figure 1: Forward Engineering (Standard Development) vs Reverse Engineering (Deconstruction & Architecture Recovery)"
+caption: "Figure 1: Forward Engineering (Compilation) vs Reverse Engineering (Architecture Recovery)"
 },
 {
 type: "heading",
@@ -3127,10 +3127,10 @@ items: [
 ]
 },
 {
-type: "image",
-src: "/clean_room_design.png",
+type: "diagram",
+diagramId: "clean-room",
 alt: "Clean Room Design Architectural Diagram",
-caption: "Figure 2: The Three-Zone Clean Room Design Process (Dirty Room, Legal Firewall, and Clean Room)"
+caption: "Figure 2: The Three-Zone Clean Room Design Process (Dirty Room, Ethical Wall, and Clean Room)"
 },
 {
 type: "callout",

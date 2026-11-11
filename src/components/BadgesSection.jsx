@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Award, TrendingUp, Lock, ChevronRight } from 'lucide-react';
+import { Award, Lock, ChevronRight } from 'lucide-react';
 import BadgeCard from './BadgeCard';
 import BadgeModal from './BadgeModal';
 import { BADGE_DEFINITIONS, checkEarnedBadges, getNextBadgeToUnlock } from '../utils/badgeSystem';
@@ -24,29 +24,28 @@ const BadgesSection = ({ stats, contributions = [], attestations = [], username 
   }, [stats, contributions, attestations]);
 
   const allBadges = useMemo(() => Object.values(BADGE_DEFINITIONS), []);
-  const earnedBadgeIds = useMemo(() => earnedBadges.map(b => b.id), [earnedBadges]);
+  const earnedBadgeIds = useMemo(() => earnedBadges.map((b) => b.id), [earnedBadges]);
 
-  const badgesWithStatus = useMemo(() =>
-    allBadges.map(badge => ({
-      ...badge,
-      earned: earnedBadgeIds.includes(badge.id),
-      earnedAt: earnedBadges.find(b => b.id === badge.id)?.earnedAt
-    })),
+  const badgesWithStatus = useMemo(
+    () =>
+      allBadges.map((badge) => ({
+        ...badge,
+        earned: earnedBadgeIds.includes(badge.id),
+        earnedAt: earnedBadges.find((b) => b.id === badge.id)?.earnedAt,
+      })),
     [allBadges, earnedBadgeIds, earnedBadges]
   );
 
-  // Filtered badges
   const filteredBadges = useMemo(() => {
     switch (activeFilter) {
       case 'earned':
-        return badgesWithStatus.filter(b => b.earned);
+        return badgesWithStatus.filter((b) => b.earned);
       case 'locked':
-        return badgesWithStatus.filter(b => !b.earned);
+        return badgesWithStatus.filter((b) => !b.earned);
       default:
-        // Show earned first, then locked
         return [
-          ...badgesWithStatus.filter(b => b.earned),
-          ...badgesWithStatus.filter(b => !b.earned)
+          ...badgesWithStatus.filter((b) => b.earned),
+          ...badgesWithStatus.filter((b) => !b.earned),
         ];
     }
   }, [badgesWithStatus, activeFilter]);
@@ -58,86 +57,91 @@ const BadgesSection = ({ stats, contributions = [], attestations = [], username 
 
   const earnedCount = earnedBadges.length;
   const totalCount = allBadges.length;
-  const completionPercentage = totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
+  const completionPercentage =
+    totalCount > 0 ? Math.round((earnedCount / totalCount) * 100) : 0;
 
-  // Next badge to unlock
   const nextBadge = useMemo(
-    () => stats ? getNextBadgeToUnlock(stats, contributions, attestations) : null,
+    () => (stats ? getNextBadgeToUnlock(stats, contributions, attestations) : null),
     [stats, contributions, attestations]
   );
 
   return (
-    <div className="bg-zinc-950/25 rounded-lg border border-zinc-800/60 overflow-hidden">
-      {/* Header */}
-      <div className="p-5 border-b border-zinc-800/60">
-        <div className="flex items-center justify-between">
+    <div className="bg-[#141518] rounded-[4px] border border-[#22242A] overflow-hidden">
+      <div className="p-5 border-b border-[#22242A]">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded bg-zinc-900 border border-zinc-800/60 flex items-center justify-center text-zinc-400">
-              <Award className="w-5 h-5 text-amber-400/90" />
+            <div className="w-10 h-10 rounded-[4px] bg-[#17181B] border border-[#2B2E36] flex items-center justify-center">
+              <Award className="w-5 h-5 text-[#DAFA9C]" />
             </div>
             <div>
-              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Achievements</h3>
-              <p className="text-xs text-zinc-500 mt-0.5">
+              <h3 className="text-xs font-mono font-semibold text-[#F4F4F0] uppercase tracking-wider">
+                Achievements
+              </h3>
+              <p className="text-xs text-[#A8ADB6] mt-0.5 font-mono tabular-nums">
                 {earnedCount} of {totalCount} badges earned
               </p>
             </div>
           </div>
 
-          {/* Progress Ring */}
-          <div className="relative w-12 h-12 flex-shrink-0">
-            <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 56 56">
+          <div className="relative w-12 h-12 shrink-0">
+            <svg className="w-12 h-12 -rotate-90" viewBox="0 0 56 56" aria-hidden="true">
               <circle
                 cx="28"
                 cy="28"
                 r="24"
-                stroke="currentColor"
+                stroke="#22242A"
                 strokeWidth="3.5"
                 fill="none"
-                className="text-zinc-900"
               />
               <circle
                 cx="28"
                 cy="28"
                 r="24"
-                stroke="currentColor"
+                stroke="#DAFA9C"
                 strokeWidth="3.5"
                 fill="none"
                 strokeDasharray={`${2 * Math.PI * 24}`}
                 strokeDashoffset={`${2 * Math.PI * 24 * (1 - completionPercentage / 100)}`}
-                className="text-amber-500/80 transition-all duration-1000"
+                className="transition-all duration-700"
                 strokeLinecap="round"
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[10px] font-mono font-bold text-white">{completionPercentage}%</span>
+              <span className="text-[11px] font-mono font-semibold text-[#F4F4F0] tabular-nums">
+                {completionPercentage}%
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Next badge to unlock */}
         {nextBadge && earnedCount < totalCount && (
           <button
+            type="button"
             onClick={() => handleBadgeClick({ ...nextBadge, earned: false })}
-            className="mt-4 w-full flex items-center gap-3 p-3 bg-zinc-950/40 rounded border border-zinc-800/80 hover:border-zinc-700 transition-colors group cursor-pointer"
+            className="mt-4 w-full flex items-center gap-3 p-3 bg-[#0B0C0E] rounded-[4px] border border-[#22242A] hover:border-[#2B2E36] transition-colors group cursor-pointer"
           >
-            <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-850 flex items-center justify-center flex-shrink-0">
-              <Lock className="w-4 h-4 text-zinc-500" />
+            <div className="w-8 h-8 rounded-[4px] bg-[#17181B] border border-[#2B2E36] flex items-center justify-center shrink-0">
+              <Lock className="w-4 h-4 text-[#8C929C]" />
             </div>
             <div className="flex-1 text-left min-w-0">
-              <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold">Next badge</p>
-              <p className="text-xs text-zinc-300 font-semibold truncate mt-0.5">{nextBadge.name}</p>
+              <p className="text-[11px] text-[#8C929C] font-mono uppercase tracking-wider">
+                Next Milestone
+              </p>
+              <p className="text-xs text-[#F4F4F0] font-semibold truncate mt-0.5">
+                {nextBadge.name}
+              </p>
             </div>
-            <ChevronRight className="w-4 h-4 text-zinc-650 group-hover:text-white transition-colors flex-shrink-0" />
+            <ChevronRight className="w-4 h-4 text-[#8C929C] group-hover:text-[#DAFA9C] transition-colors shrink-0" />
           </button>
         )}
       </div>
 
-      {/* Filter Tabs */}
-      <div className="px-5 pt-3.5 pb-1 flex gap-1 border-b border-zinc-800/40">
-        {FILTER_TABS.map(tab => {
-          const count = tab.key === 'all'
-            ? totalCount
-            : tab.key === 'earned'
+      <div className="px-5 pt-3 pb-1 flex gap-1.5 border-b border-[#22242A] bg-[#0F0F0F]">
+        {FILTER_TABS.map((tab) => {
+          const count =
+            tab.key === 'all'
+              ? totalCount
+              : tab.key === 'earned'
               ? earnedCount
               : totalCount - earnedCount;
           const isActive = activeFilter === tab.key;
@@ -145,15 +149,20 @@ const BadgesSection = ({ stats, contributions = [], attestations = [], username 
           return (
             <button
               key={tab.key}
+              type="button"
               onClick={() => setActiveFilter(tab.key)}
-              className={`px-2.5 py-1.5 rounded text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+              className={`px-3 py-1.5 rounded-[4px] text-xs font-mono transition-colors cursor-pointer ${
                 isActive
-                  ? 'bg-white/[0.04] text-white border border-zinc-800/80'
-                  : 'text-zinc-500 hover:text-zinc-200 border border-transparent'
+                  ? 'bg-[#17181B] text-[#F4F4F0] border border-[#2B2E36]'
+                  : 'text-[#8C929C] hover:text-[#F4F4F0] border border-transparent'
               }`}
             >
               {tab.label}
-              <span className={`ml-1.5 font-mono ${isActive ? 'text-zinc-300' : 'text-zinc-600'}`}>
+              <span
+                className={`ml-1.5 tabular-nums ${
+                  isActive ? 'text-[#DAFA9C]' : 'text-[#8C929C]'
+                }`}
+              >
                 {count}
               </span>
             </button>
@@ -161,10 +170,9 @@ const BadgesSection = ({ stats, contributions = [], attestations = [], username 
         })}
       </div>
 
-      {/* Badge Grid */}
-      <div className="p-5 pt-3">
+      <div className="p-5">
         {filteredBadges.length > 0 ? (
-          <div className="grid grid-cols-3 xs:grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2 sm:gap-3">
+          <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2.5 sm:gap-3">
             {filteredBadges.map((badge) => (
               <BadgeCard
                 key={badge.id}
@@ -176,36 +184,36 @@ const BadgesSection = ({ stats, contributions = [], attestations = [], username 
           </div>
         ) : (
           <div className="py-8 text-center">
-            <div className="w-10 h-10 mx-auto mb-3 rounded bg-zinc-900 border border-zinc-850 flex items-center justify-center">
+            <div className="w-10 h-10 mx-auto mb-3 rounded-[4px] bg-[#17181B] border border-[#2B2E36] flex items-center justify-center">
               {activeFilter === 'earned' ? (
-                <Award className="w-5 h-5 text-zinc-650" />
+                <Award className="w-5 h-5 text-[#8C929C]" />
               ) : (
-                <Lock className="w-5 h-5 text-zinc-650" />
+                <Lock className="w-5 h-5 text-[#8C929C]" />
               )}
             </div>
-            <p className="text-xs text-zinc-550">
+            <p className="text-xs text-[#A8ADB6]">
               {activeFilter === 'earned'
-                ? 'No badges earned yet. Start contributing!'
-                : 'All badges have been unlocked! 🎉'}
+                ? 'No badges earned yet. Submit a pull request to unlock your first milestone.'
+                : 'All milestone badges unlocked.'}
             </p>
           </div>
         )}
       </div>
 
-      {/* Empty State for no contributions */}
       {earnedCount === 0 && activeFilter === 'all' && (
         <div className="px-5 pb-5">
-          <div className="p-4 bg-zinc-950/20 rounded border border-zinc-800/60 text-center">
-            <Award className="w-6 h-6 text-amber-500/60 mx-auto mb-2" />
-            <h4 className="text-white font-bold mb-0.5 text-xs uppercase tracking-wider">Start Your Journey</h4>
-            <p className="text-[10px] text-zinc-500">
-              Make your first contribution to unlock your first badge!
+          <div className="p-4 bg-[#0B0C0E] rounded-[4px] border border-[#22242A] text-center">
+            <Award className="w-5 h-5 text-[#DAFA9C] mx-auto mb-2" />
+            <h4 className="text-[#F4F4F0] font-semibold mb-1 text-xs uppercase tracking-wider">
+              First Milestone Waiting
+            </h4>
+            <p className="text-xs text-[#A8ADB6]">
+              Start logging contributions to track verified achievements.
             </p>
           </div>
         </div>
       )}
 
-      {/* Badge Modal */}
       {showModal && selectedBadge && (
         <BadgeModal
           badge={selectedBadge}

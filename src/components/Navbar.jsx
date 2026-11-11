@@ -1,8 +1,8 @@
 import React from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { Menu, X } from "lucide-react";
-import logo from "../assets/logo01.png";
+import { Menu, X, ArrowUpRight } from "lucide-react";
+import { BrandLogo } from "./BrandMark";
 
 const Navbar = () => {
   const { user, signOut } = useAuth();
@@ -16,9 +16,9 @@ const Navbar = () => {
     setIsOpen(false);
   };
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) =>
+    path === "/" ? location.pathname === "/" : location.pathname.startsWith(path);
 
-  // New public nav links based on design
   const publicLinks = [
     { to: "/explore", label: "Explore" },
     { to: "/contribution-book", label: "Contribution Book" },
@@ -27,7 +27,6 @@ const Navbar = () => {
     { to: "/support", label: "Support" },
   ];
 
-  // Keep existing auth links for logged in users
   const authLinks = [
     { to: "/explore", label: "Explore" },
     { to: "/contribution-book", label: "Contribution Book" },
@@ -41,114 +40,130 @@ const Navbar = () => {
   const currentLinks = user ? authLinks : publicLinks;
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-[#0B0C10]/75 backdrop-blur-md border-b border-zinc-800/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <span className="text-sm font-bold tracking-tight text-white transition-opacity duration-200 hover:opacity-85">
-              FirstIssue.dev
-            </span>
+    <header role="banner" className="fixed top-0 w-full z-50 bg-[#0F0F0F] border-b border-[#22242A]">
+      <nav aria-label="Primary navigation" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-[68px]">
+          <Link
+            to="/"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center hover:opacity-90 transition-opacity"
+          >
+            <BrandLogo size="sm" />
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            {currentLinks.map((link) => (
-              <Link
-                key={link.label}
-                to={link.to}
-                className="text-xs font-medium text-zinc-400 hover:text-white transition-colors duration-200"
-              >
-                {link.label}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center gap-6">
+            {currentLinks.map((link) => {
+              const active = isActive(link.to);
+              return (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  aria-current={active ? "page" : undefined}
+                  className={`text-[13px] font-medium transition-colors ${
+                    active
+                      ? "text-[#F4F4F0]"
+                      : "text-[#A8ADB6] hover:text-[#F4F4F0]"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
           </div>
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
+          {/* Auth Actions */}
+          <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <button
-                onClick={handleSignOut}
-                className="text-xs font-medium text-zinc-400 hover:text-white transition-colors"
-              >
-                Sign Out
-              </button>
-            ) : (
               <>
-                {/* <Link
-                  to="/login"
-                  className="text-xs font-medium text-zinc-400 hover:text-white transition-colors"
-                >
-                  Login
-                </Link> */}
                 <Link
-                  to="/login"
-                  className="px-3 py-1.5 text-xs font-semibold text-black bg-white hover:bg-zinc-200 border border-white rounded transition-all duration-200"
+                  to="/explore"
+                  className="px-3.5 py-2 text-xs font-semibold text-[#0F0F0F] bg-[#DAFA9C] hover:bg-[#C7F275] rounded-[4px] transition-colors inline-flex items-center gap-1"
                 >
-                  Join the movement
+                  Workspace
+                  <ArrowUpRight className="w-3.5 h-3.5" />
                 </Link>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="px-3 py-2 text-xs font-medium text-[#A8ADB6] hover:text-[#F4F4F0] bg-[#141518] border border-[#2B2E36] hover:border-[#3A3E48] rounded-[4px] transition-colors"
+                >
+                  Sign Out
+                </button>
               </>
+            ) : (
+              <Link
+                to="/login"
+                className="px-4 py-2 text-[13px] font-semibold text-[#0F0F0F] bg-[#DAFA9C] hover:bg-[#C7F275] rounded-[4px] transition-colors"
+              >
+                Start Contributing
+              </Link>
             )}
           </div>
 
-          {/* Mobile menu button */}
+          {/* Mobile menu toggle */}
           <div className="md:hidden">
             <button
+              type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-1.5 rounded text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-colors"
+              aria-expanded={isOpen}
+              aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+              className="min-h-[44px] min-w-[44px] inline-flex items-center justify-center rounded-[4px] text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#17181B] border border-transparent hover:border-[#2B2E36] transition-colors"
             >
               {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile Navigation Panel */}
         {isOpen && (
-          <div className="md:hidden pb-6 bg-[#0B0C10] border-t border-zinc-800/60 absolute left-0 right-0 px-4">
-            <div className="space-y-3 pt-4">
-              {currentLinks.map((link) => (
-                <Link
-                  key={link.label}
-                  to={link.to}
-                  onClick={() => setIsOpen(false)}
-                  className="block text-sm font-medium text-zinc-400 hover:text-white transition-colors"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              
-              <div className="h-px bg-zinc-800/60 my-3" />
-              
+          <div className="md:hidden pb-5 pt-2 bg-[#141518] border-t border-[#22242A] border-b border-b-[#2B2E36] -mx-4 px-4 sm:-mx-6 sm:px-6">
+            <div className="flex flex-col space-y-1">
+              {currentLinks.map((link) => {
+                const active = isActive(link.to);
+                return (
+                  <Link
+                    key={link.label}
+                    to={link.to}
+                    onClick={() => setIsOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                    className={`min-h-[44px] flex items-center px-3 rounded-[4px] text-sm font-medium transition-colors ${
+                      active
+                        ? "bg-[#1C1E23] text-[#F4F4F0] border border-[#2B2E36]"
+                        : "text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#17181B]"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
+
+              <div className="h-px bg-[#22242A] my-2" />
+
               {user ? (
                 <button
+                  type="button"
                   onClick={handleSignOut}
-                  className="block w-full text-left text-sm font-medium text-red-400 hover:text-red-300 transition-colors"
+                  className="min-h-[44px] flex items-center px-3 w-full text-left text-sm font-medium text-[#F87171] hover:bg-[#17181B] rounded-[4px] transition-colors"
                 >
                   Sign Out
                 </button>
               ) : (
-                <div className="space-y-3">
+                <div className="flex flex-col gap-2 pt-1">
                   <Link
                     to="/login"
                     onClick={() => setIsOpen(false)}
-                    className="block text-sm font-medium text-zinc-400 hover:text-white transition-colors"
+                    className="min-h-[44px] flex items-center justify-center w-full text-sm font-semibold text-[#0F0F0F] bg-[#DAFA9C] hover:bg-[#C7F275] rounded-[4px] transition-colors"
                   >
-                    Login
-                  </Link>
-                  <Link
-                    to="/login"
-                    onClick={() => setIsOpen(false)}
-                    className="block w-full text-center px-4 py-2 text-sm font-semibold text-black bg-white hover:bg-zinc-200 rounded transition-all"
-                  >
-                    Join the movement
+                    Start Contributing
                   </Link>
                 </div>
               )}
             </div>
           </div>
         )}
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 };
 

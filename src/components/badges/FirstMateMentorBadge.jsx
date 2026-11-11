@@ -235,13 +235,13 @@ const FirstMateMentorBadge = ({ earned = false, onClick, variant = "card" }) => 
         </svg>
       ) : (
         /* Locked State */
-        <div className="w-24 h-24 rounded-full bg-[#0A0B10]/25 border border-white/[0.03] flex items-center justify-center relative group-hover:bg-white/[0.02] transition-all duration-300">
+        <div className="w-24 h-24 rounded-full bg-[#0B0C0E]/70 border border-[#22242A] flex items-center justify-center relative group-hover:bg-white/[0.02] transition-all duration-300">
           <svg viewBox="0 0 200 200" className="w-full h-full opacity-20 filter grayscale">
             <polygon points="100,34 156,66 156,134 100,166 44,134 44,66" fill="#181A24" stroke="#33374E" strokeWidth="3" />
             <path d="M 72 82 Q 80 62 100 62 Q 120 62 128 82 Q 138 98 126 116 Q 116 128 100 138 Q 84 128 74 116 Q 62 98 72 82 Z" fill="none" stroke="#64748B" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full bg-[#0b0c10]/90 border border-white/5 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
+            <div className="w-10 h-10 rounded-full bg-[#141518] border border-[#2B2E36] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
               <Lock className="w-4 h-4 text-zinc-500" />
             </div>
           </div>

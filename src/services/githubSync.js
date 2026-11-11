@@ -81,8 +81,8 @@ export const getStatusConfig = (status) => {
         in_progress: {
             label: 'In Progress',
             icon: '🔨',
-            color: 'text-purple-400',
-            bg: 'bg-purple-500/20',
+            color: 'text-[#DAFA9C]',
+            bg: 'bg-[#DAFA9C]/15',
         },
         merged: {
             label: 'Merged',

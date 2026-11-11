@@ -5,21 +5,16 @@ import { useBookmarks, useRemoveBookmark } from "../hooks/queries/useBookmarks";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
 import AppSidebar from "../components/AppSidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
+import BrandMark from "../components/BrandMark";
 import {
   Search,
-  Compass,
   Bookmark,
-  User,
-  Settings,
-  Plus,
-  Bell,
-  Command,
   ExternalLink,
   Trash2,
-  Filter,
+  ArrowUpDown,
+  Loader2,
   ChevronLeft,
   ChevronRight,
-  Loader2,
 } from "lucide-react";
 import { withUTM, extractRepo } from "../utils/utm";
 import { trackIssueClick } from "../utils/analytics";
@@ -47,7 +42,6 @@ const BookmarksPage = () => {
 
     if (!user) {
       navigate("/login");
-      return;
     }
   }, [user, authLoading, navigate]);
 
@@ -70,18 +64,20 @@ const BookmarksPage = () => {
   };
 
   const formatTimeAgo = (dateString) => {
+    if (!dateString) return "Recently";
     const date = new Date(dateString);
     const now = new Date();
-    const diffDays = Math.ceil(Math.abs(now - date) / (1000 * 60 * 60 * 24));
-    if (diffDays === 0) return "Today";
-    if (diffDays === 1) return "Yesterday";
-    if (diffDays < 7) return `Saved ${diffDays} days ago`;
-    if (diffDays < 30)
-      return `Saved ${Math.ceil(diffDays / 7)} week${diffDays >= 14 ? "s" : ""} ago`;
+    const diffDays = Math.floor(Math.abs(now - date) / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return "Saved today";
+    if (diffDays === 1) return "Saved yesterday";
+    if (diffDays < 7) return `Saved ${diffDays}d ago`;
+    if (diffDays < 30) {
+      const weeks = Math.ceil(diffDays / 7);
+      return `Saved ${weeks}w ago`;
+    }
     return `Saved ${date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
   };
 
-  // Filter and sort
   const filteredBookmarks = bookmarks
     .filter((b) => {
       if (activeTab === "issues") {
@@ -108,116 +104,119 @@ const BookmarksPage = () => {
       return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
     });
 
-  const totalPages = Math.ceil(filteredBookmarks.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredBookmarks.length / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
   const paginatedBookmarks = filteredBookmarks.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+    (safePage - 1) * itemsPerPage,
+    safePage * itemsPerPage,
   );
 
-  const getLabelBadge = (bookmark) => {
-    // Mock logic - in real app, check actual labels
-    const labels = [
-      {
-        match: "urgent",
-        text: "URGENT",
-        color: "bg-orange-500/20 text-orange-400 border-orange-500/30",
-      },
-      {
-        match: "good first issue",
-        text: "GOOD FIRST ISSUE",
-        color: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-      },
-      {
-        match: "feature",
-        text: "FEATURE",
-        color: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-      },
-    ];
-    // Simple random assignment for demo
-    const idx = bookmark.id?.charCodeAt(0) % labels.length || 0;
-    return labels[idx];
+  const getItemTypeBadge = (bookmark) => {
+    const isIssue = bookmark.issue_url && bookmark.issue_url.includes("/issues");
+    if (isIssue) {
+      return {
+        text: "ISSUE",
+        classes: "bg-[#DAFA9C]/10 text-[#DAFA9C] border-[#DAFA9C]/30",
+      };
+    }
+    return {
+      text: "REPO",
+      classes: "bg-[#17181B] text-[#A8ADB6] border-[#2B2E36]",
+    };
   };
 
   if (loading) {
     return (
-      <div className="flex bg-[#0B0C10] min-h-screen items-center justify-center">
-        <Loader2 className="w-8 h-8 text-white animate-spin" />
-        <span className="ml-3 text-zinc-400 text-sm">Loading bookmarks...</span>
+      <div className="flex bg-[#0F0F0F] min-h-screen items-center justify-center">
+        <Loader2 className="w-7 h-7 text-[#DAFA9C] animate-spin" />
+        <span className="ml-3 text-[#A8ADB6] text-xs font-mono">Loading saved items...</span>
       </div>
     );
   }
 
   return (
-    <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
+    <div className="flex bg-[#0F0F0F] min-h-screen text-[#F4F4F0] font-sans">
       <AppSidebar />
 
-      {/* Main Content */}
       <main className="flex-1 lg:ml-64 min-w-0 pb-20 lg:pb-0">
         {/* Top Header */}
-        <header className="h-14 sm:h-16 border-b border-zinc-800/60 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6">
-          <div className="flex flex-1 items-center max-w-xl relative">
-            <Search className="absolute left-3 w-3.5 h-3.5 text-zinc-500" />
-            <input
-              type="text"
-              placeholder="Search your bookmarks..."
-              className="w-full bg-zinc-950/40 border border-zinc-800/80 rounded-md py-1.5 pl-9 pr-4 text-xs text-zinc-350 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 transition-all placeholder:text-zinc-650"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                setCurrentPage(1);
-              }}
-            />
+        <header className="h-14 sm:h-16 border-b border-[#22242A] bg-[#0F0F0F]/95 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between gap-3 px-4 sm:px-6">
+          <div className="flex items-center gap-3 flex-1 max-w-xl">
+            <Link
+              to="/"
+              className="lg:hidden shrink-0"
+              aria-label="FirstIssue.dev home"
+            >
+              <BrandMark size="sm" />
+            </Link>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8C929C] pointer-events-none" />
+              <input
+                type="text"
+                aria-label="Search saved bookmarks"
+                placeholder="Search saved issues or repositories..."
+                className="w-full bg-[#141518] border border-[#2B2E36] rounded-[4px] py-2 pl-9 pr-4 text-xs text-[#F4F4F0] focus:outline-none focus:border-[#DAFA9C] transition-colors placeholder:text-[#8C929C]"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
           </div>
 
-          <div className="flex items-center gap-4 ml-4">
-            <div className="flex items-center gap-3 pl-4 border-l border-zinc-800/60">
-              <span className="text-xs font-semibold text-zinc-400">
-                {user?.user_metadata?.full_name ||
-                  user?.email?.split("@")[0] ||
-                  "alex_dev"}
-              </span>
-              <div className="w-8 h-8 rounded-full border border-zinc-800 overflow-hidden flex-shrink-0">
-                <img
-                  src={
-                    user?.user_metadata?.avatar_url ||
-                    `https://ui-avatars.com/api/?name=${user?.email || "User"}`
-                  }
-                  alt="Avatar"
-                  className="w-full h-full object-cover"
-                />
-              </div>
+          <div className="flex items-center gap-3 pl-3 border-l border-[#22242A] shrink-0">
+            <span className="hidden sm:inline text-xs font-medium text-[#A8ADB6] truncate max-w-[140px]">
+              {user?.user_metadata?.full_name ||
+                user?.email?.split("@")[0] ||
+                "Developer"}
+            </span>
+            <div className="w-8 h-8 rounded-[4px] border border-[#2B2E36] overflow-hidden shrink-0 bg-[#141518]">
+              <img
+                src={
+                  user?.user_metadata?.avatar_url ||
+                  `https://ui-avatars.com/api/?name=${user?.email || "User"}`
+                }
+                alt="User avatar"
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </header>
 
         {/* Content Body */}
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-5xl">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
               <div className="flex items-center gap-3 mb-1">
-                <h1 className="text-2xl font-bold tracking-tight text-white">
-                  Your Bookmarks
+                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#F4F4F0]">
+                  Saved Queue
                 </h1>
-                <span className="px-2 py-0.5 border border-zinc-800/80 text-zinc-400 text-[10px] font-mono rounded font-semibold uppercase tracking-wider">
+                <span className="px-2 py-0.5 bg-[#17181B] border border-[#2B2E36] text-[#A8ADB6] text-[11px] font-mono rounded-[4px] font-semibold uppercase tracking-wider tabular-nums">
                   {bookmarks.length} saved
                 </span>
               </div>
-              <p className="text-xs text-zinc-500">
-                Manage your saved open-source opportunities
+              <p className="text-xs text-[#8C929C]">
+                Shortlisted issues and repositories ready for your next pull request.
               </p>
             </div>
-            <button 
+            <button
+              type="button"
               onClick={() => setSortOrder(sortOrder === "desc" ? "asc" : "desc")}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-950/40 border border-zinc-800/85 text-zinc-300 text-xs font-semibold rounded hover:text-white hover:border-zinc-700 hover:bg-zinc-900/40 transition-all"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-[#141518] border border-[#2B2E36] text-[#A8ADB6] text-xs font-medium rounded-[4px] hover:text-[#F4F4F0] hover:border-[#3A3E48] hover:bg-[#17181B] transition-colors self-start sm:self-auto cursor-pointer"
             >
-              <Filter className="w-3.5 h-3.5" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#8C929C]" />
               <span>{sortOrder === "desc" ? "Newest First" : "Oldest First"}</span>
             </button>
           </div>
 
           {/* Tabs */}
-          <div className="flex items-center gap-6 border-b border-zinc-800/60 mb-6">
+          <div
+            role="tablist"
+            aria-label="Filter saved items"
+            className="flex items-center gap-6 border-b border-[#22242A] mb-6"
+          >
             <TabButton
               label="All Items"
               active={activeTab === "all"}
@@ -246,39 +245,38 @@ const BookmarksPage = () => {
 
           {/* Bookmarks List */}
           {filteredBookmarks.length === 0 ? (
-            <div className="text-center py-16 bg-zinc-950/25 rounded-lg border border-zinc-800/60 p-8">
-              <Bookmark className="w-8 h-8 text-zinc-650 mx-auto mb-3" />
-              <h3 className="text-sm font-medium text-white mb-1">
-                No bookmarks found
-              </h3>
-              <p className="text-xs text-zinc-500 mb-4 max-w-sm mx-auto">
+            <div className="text-center py-14 bg-[#141518] rounded-[4px] border border-[#2B2E36] p-8">
+              <div className="w-10 h-10 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] flex items-center justify-center mx-auto mb-3 text-[#8C929C]">
+                <Bookmark className="w-5 h-5" />
+              </div>
+              <h2 className="text-sm font-semibold text-[#F4F4F0] mb-1">
+                No saved items found
+              </h2>
+              <p className="text-xs text-[#8C929C] mb-5 max-w-sm mx-auto leading-relaxed">
                 {searchQuery
-                  ? "Try a different search term"
-                  : "Start by exploring issues and bookmarking the ones you like"}
+                  ? "Try adjusting your search query or switching tabs."
+                  : "Browse verified open-source issues and save targets you want to tackle next."}
               </p>
               <button
+                type="button"
                 onClick={() => navigate("/explore")}
-                className="px-4 py-2 bg-white hover:bg-zinc-200 text-black text-xs font-semibold rounded transition-all"
+                className="px-4 py-2 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] text-xs font-semibold rounded-[4px] transition-colors cursor-pointer"
               >
                 Explore Issues
               </button>
             </div>
           ) : (
-            <div className="bg-zinc-950/25 rounded-lg border border-zinc-800/60 overflow-hidden">
-              {paginatedBookmarks.map((bookmark, index) => {
-                const badge = getLabelBadge(bookmark);
+            <div className="bg-[#141518] rounded-[4px] border border-[#2B2E36] divide-y divide-[#22242A] overflow-hidden">
+              {paginatedBookmarks.map((bookmark) => {
+                const badge = getItemTypeBadge(bookmark);
                 return (
                   <div
                     key={bookmark.id}
-                    className={`flex items-center gap-4 p-4 hover:bg-white/[0.01] transition-colors ${
-                      index !== paginatedBookmarks.length - 1
-                        ? "border-b border-zinc-850/40"
-                        : ""
-                    }`}
+                    className="flex items-center gap-4 p-4 hover:bg-[#17181B] transition-colors"
                   >
-                    {/* Icon */}
-                    <div className="w-9 h-9 rounded bg-zinc-900 border border-zinc-800/65 flex items-center justify-center flex-shrink-0">
-                      <span className="text-[10px] font-mono font-bold text-zinc-400">
+                    {/* Monogram Icon */}
+                    <div className="w-9 h-9 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] flex items-center justify-center shrink-0">
+                      <span className="text-[11px] font-mono font-bold text-[#A8ADB6]">
                         {bookmark.repo_name
                           ?.split("/")[0]
                           ?.substring(0, 2)
@@ -288,44 +286,71 @@ const BookmarksPage = () => {
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <h4 className="text-sm text-zinc-150 font-semibold truncate hover:text-white transition-colors">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <a
+                          href={withUTM(bookmark.issue_url, {
+                            medium: "bookmarks",
+                            content: "title_link",
+                          })}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() =>
+                            trackIssueClick({
+                              issueUrl: bookmark.issue_url,
+                              source: "bookmarks",
+                              repo: extractRepo(bookmark.issue_url),
+                              action: "title_link",
+                            })
+                          }
+                          className="text-sm text-[#F4F4F0] font-semibold truncate hover:text-[#DAFA9C] transition-colors"
+                        >
                           {bookmark.title}
-                        </h4>
-                        {badge && (
-                          <span
-                            className={`px-1.5 py-0.5 text-[9px] font-bold tracking-wider rounded border uppercase ${badge.color}`}
-                          >
-                            {badge.text}
-                          </span>
-                        )}
+                        </a>
+                        <span
+                          className={`px-1.5 py-0.5 text-[11px] font-mono font-semibold tracking-wider rounded-[4px] border uppercase shrink-0 ${badge.classes}`}
+                        >
+                          {badge.text}
+                        </span>
                       </div>
-                      <p className="text-[11px] text-zinc-500 font-mono">
-                        <span className="text-zinc-400">
+                      <p className="text-[11px] text-[#8C929C] font-mono truncate">
+                        <span className="text-[#A8ADB6]">
                           {bookmark.repo_name}
                         </span>
                         {bookmark.language && (
-                          <span> • {bookmark.language}</span>
+                          <span> · {bookmark.language}</span>
                         )}
                       </p>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-4">
-                      <span className="text-xs text-zinc-500 font-mono hidden sm:block">
+                    <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+                      <span className="text-xs text-[#8C929C] font-mono hidden sm:block tabular-nums">
                         {formatTimeAgo(bookmark.created_at)}
                       </span>
                       <div className="flex items-center gap-1.5">
                         <a
-                          href={withUTM(bookmark.issue_url, { medium: 'bookmarks', content: 'external_icon' })}
+                          href={withUTM(bookmark.issue_url, {
+                            medium: "bookmarks",
+                            content: "external_icon",
+                          })}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 rounded transition-all"
-                          onClick={() => trackIssueClick({ issueUrl: bookmark.issue_url, source: 'bookmarks', repo: extractRepo(bookmark.issue_url), action: 'external_link' })}
+                          aria-label={`Open ${bookmark.title} on GitHub`}
+                          className="p-2 text-[#8C929C] hover:text-[#DAFA9C] hover:bg-[#1C1E23] border border-transparent hover:border-[#2B2E36] rounded-[4px] transition-colors"
+                          onClick={() =>
+                            trackIssueClick({
+                              issueUrl: bookmark.issue_url,
+                              source: "bookmarks",
+                              repo: extractRepo(bookmark.issue_url),
+                              action: "external_link",
+                            })
+                          }
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                         <button
+                          type="button"
+                          aria-label={`Remove ${bookmark.title} from bookmarks`}
                           onClick={() =>
                             setDeleteDialog({
                               isOpen: true,
@@ -334,7 +359,7 @@ const BookmarksPage = () => {
                               loading: false,
                             })
                           }
-                          className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-950/20 rounded transition-all"
+                          className="p-2 text-[#8C929C] hover:text-[#F87171] hover:bg-[#F87171]/10 border border-transparent hover:border-[#F87171]/30 rounded-[4px] transition-colors cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -349,32 +374,36 @@ const BookmarksPage = () => {
           {/* Pagination */}
           {filteredBookmarks.length > 0 && (
             <div className="flex items-center justify-between mt-6">
-              <p className="text-xs text-zinc-550 font-mono">
+              <p className="text-xs text-[#8C929C] font-mono tabular-nums">
                 Showing{" "}
                 {Math.min(
-                  (currentPage - 1) * itemsPerPage + 1,
+                  (safePage - 1) * itemsPerPage + 1,
                   filteredBookmarks.length,
                 )}{" "}
-                -{" "}
-                {Math.min(currentPage * itemsPerPage, filteredBookmarks.length)}{" "}
-                of {filteredBookmarks.length} bookmarks
+                –{" "}
+                {Math.min(safePage * itemsPerPage, filteredBookmarks.length)}{" "}
+                of {filteredBookmarks.length} saved
               </p>
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="flex items-center justify-center px-3 py-1.5 bg-zinc-950/40 border border-zinc-800/80 text-zinc-350 text-xs font-semibold rounded hover:text-white hover:border-zinc-700 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                  disabled={safePage === 1}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#141518] border border-[#2B2E36] text-[#A8ADB6] text-xs font-medium rounded-[4px] hover:text-[#F4F4F0] hover:border-[#3A3E48] transition-colors disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                 >
+                  <ChevronLeft className="w-3.5 h-3.5" />
                   Previous
                 </button>
                 <button
+                  type="button"
                   onClick={() =>
                     setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }
-                  disabled={currentPage >= totalPages}
-                  className="flex items-center justify-center px-3 py-1.5 bg-zinc-950/40 border border-zinc-800/80 text-zinc-350 text-xs font-semibold rounded hover:text-white hover:border-zinc-700 transition-all disabled:opacity-30 disabled:pointer-events-none"
+                  disabled={safePage >= totalPages}
+                  className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#141518] border border-[#2B2E36] text-[#A8ADB6] text-xs font-medium rounded-[4px] hover:text-[#F4F4F0] hover:border-[#3A3E48] transition-colors disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                 >
                   Next
+                  <ChevronRight className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
@@ -382,7 +411,6 @@ const BookmarksPage = () => {
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
 
       <DeleteConfirmationDialog
@@ -411,11 +439,14 @@ const BookmarksPage = () => {
 
 const TabButton = ({ label, active, onClick }) => (
   <button
+    type="button"
+    role="tab"
+    aria-selected={active}
     onClick={onClick}
-    className={`pb-3 text-xs font-semibold tracking-wider uppercase transition-all border-b-2 -mb-[2px] ${
+    className={`pb-3 text-xs font-mono font-semibold tracking-wider uppercase transition-colors border-b-2 -mb-[1px] cursor-pointer ${
       active
-        ? "border-white text-white"
-        : "border-transparent text-zinc-400 hover:text-zinc-200"
+        ? "border-[#DAFA9C] text-[#F4F4F0]"
+        : "border-transparent text-[#8C929C] hover:text-[#F4F4F0]"
     }`}
   >
     {label}

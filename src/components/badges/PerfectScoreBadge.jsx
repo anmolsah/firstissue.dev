@@ -206,14 +206,14 @@ const PerfectScoreBadge = ({ earned = false, onClick, variant = "card" }) => {
         </svg>
       ) : (
         // Locked State
-        <div className="w-24 h-24 rounded-full bg-[#0A0B10]/20 border border-white/[0.03] flex items-center justify-center relative group-hover:bg-white/[0.02] transition-all duration-300">
+        <div className="w-24 h-24 rounded-full bg-[#0B0C0E]/70 border border-[#22242A] flex items-center justify-center relative group-hover:bg-white/[0.02] transition-all duration-300">
           <svg viewBox="0 0 200 200" className="w-full h-full opacity-20 filter grayscale">
             <polygon points="100,32 158,62 158,138 100,168 42,138 42,62" fill="#1E293B" stroke="#475569" strokeWidth="3.5" />
             <circle cx="100" cy="104" r="38" fill="none" stroke="#64748B" strokeWidth="3" strokeDasharray="8 8" />
             <path d="M 82 104 L 94 116 L 122 86" fill="none" stroke="#64748B" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full bg-[#0b0c10]/90 border border-white/5 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
+            <div className="w-10 h-10 rounded-full bg-[#141518] border border-[#2B2E36] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
               <Lock className="w-4 h-4 text-gray-500" />
             </div>
           </div>

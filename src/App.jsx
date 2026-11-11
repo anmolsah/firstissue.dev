@@ -48,6 +48,7 @@ const AppLayout = ({ children }) => {
     "/bookmarks",
     "/status",
     "/docs",
+    "/getting-started",
     "/terms",
     "/privacy",
     "/firstmate",
@@ -60,7 +61,7 @@ const AppLayout = ({ children }) => {
   const isLoginPage = location.pathname === "/login";
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#222831]">
+    <div className="min-h-screen flex flex-col bg-[#0F0F0F] text-[#F4F4F0]">
       <ScrollToTop />
       {!hideGlobalLayout && !isLoginPage && <Navbar />}
       {!isLoginPage && <GitHubReconnectBanner />}
@@ -69,14 +70,16 @@ const AppLayout = ({ children }) => {
         reverseOrder={false}
         toastOptions={{
           style: {
-            background: "#393E46",
-            color: "#EEEEEE",
-            border: "1px solid rgba(238, 238, 238, 0.1)",
+            background: "#17181B",
+            color: "#F4F4F0",
+            border: "1px solid #2B2E36",
+            borderRadius: "6px",
+            fontSize: "13px",
           },
           success: {
             iconTheme: {
-              primary: "#00ADB5",
-              secondary: "#222831",
+              primary: "#DAFA9C",
+              secondary: "#0F0F0F",
             },
           },
         }}

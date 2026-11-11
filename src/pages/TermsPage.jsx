@@ -3,20 +3,18 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   Shield,
-  FileText,
-  CheckCircle2,
   ExternalLink,
   Clock,
   Printer,
   Mail,
   Layers,
-  Scale,
   Code2,
   AlertTriangle,
   ChevronRight,
   GitPullRequest,
 } from "lucide-react";
 import Footer from "../components/Footer";
+import BrandMark from "../components/BrandMark";
 
 const TOC_SECTIONS = [
   { id: "acceptance", title: "1. Acceptance of Terms" },
@@ -38,7 +36,6 @@ const TOC_SECTIONS = [
 const TermsPage = () => {
   const [activeSection, setActiveSection] = useState("acceptance");
 
-  // Scrollspy to automatically highlight the current section in the Table of Contents
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 180;
@@ -73,38 +70,40 @@ const TermsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] text-zinc-300 selection:bg-[#00ADB5]/20 selection:text-white">
-      {/* Top Floating App Bar */}
-      <header className="border-b border-zinc-800/80 bg-[#0B0C10]/85 backdrop-blur-xl sticky top-0 z-40">
+    <div className="min-h-screen bg-[#0F0F0F] text-[#A8ADB6] font-sans">
+      {/* Top App Bar */}
+      <header className="border-b border-[#22242A] bg-[#0F0F0F] sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
+            <Link to="/" className="hover:opacity-90 transition-opacity shrink-0" aria-label="FirstIssue.dev home">
+              <BrandMark size="sm" />
+            </Link>
             <Link
               to="/"
-              className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition-colors text-xs sm:text-sm font-medium"
+              className="inline-flex items-center gap-1.5 text-[#A8ADB6] hover:text-[#F4F4F0] transition-colors text-xs sm:text-sm font-medium"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Home</span>
             </Link>
 
-            <span className="hidden sm:inline-block w-px h-4 bg-zinc-800" />
+            <span className="hidden sm:inline-block w-px h-4 bg-[#22242A]" />
 
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-zinc-400 font-mono">
-              <span className="text-zinc-500">Legal</span>
-              <span className="text-zinc-600">/</span>
-              <span className="text-zinc-200">Terms of Service</span>
+            <div className="hidden sm:flex items-center gap-1.5 text-xs text-[#8C929C] font-mono">
+              <span>Legal</span>
+              <span>/</span>
+              <span className="text-[#F4F4F0]">Terms of Service</span>
             </div>
           </div>
 
-          {/* Quick Legal Document Switcher & Print Action */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-lg p-0.5 text-xs font-mono">
+            <div className="flex items-center bg-[#141518] border border-[#2B2E36] rounded-[4px] p-0.5 text-xs font-mono">
               <Link
                 to="/privacy"
-                className="px-2.5 py-1 rounded text-zinc-400 hover:text-white transition-colors"
+                className="px-2.5 py-1 rounded-[2px] text-[#A8ADB6] hover:text-[#F4F4F0] transition-colors"
               >
                 Privacy
               </Link>
-              <span className="px-2.5 py-1 rounded bg-[#00ADB5]/15 text-[#00ADB5] font-semibold border border-[#00ADB5]/30">
+              <span className="px-2.5 py-1 rounded-[2px] bg-[#DAFA9C]/15 text-[#DAFA9C] font-semibold border border-[#DAFA9C]/35">
                 Terms
               </span>
             </div>
@@ -112,8 +111,9 @@ const TermsPage = () => {
             <button
               type="button"
               onClick={() => window.print()}
+              aria-label="Print terms of service"
               title="Print or save as PDF"
-              className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white hover:border-zinc-700 text-xs font-mono transition-all flex items-center gap-1.5 cursor-pointer"
+              className="p-2 sm:px-2.5 sm:py-1.5 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-[#A8ADB6] hover:text-[#F4F4F0] hover:border-[#3A3E48] text-xs font-mono transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span className="hidden md:inline">Print</span>
@@ -123,94 +123,100 @@ const TermsPage = () => {
       </header>
 
       {/* Main Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
         {/* Document Hero */}
-        <div className="max-w-3xl mb-12 sm:mb-16">
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight">
+        <div className="max-w-3xl mb-12 sm:mb-14">
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-[#F4F4F0] tracking-tight mb-4 leading-tight text-balance">
             Terms of Service
           </h1>
 
-          <p className="text-sm sm:text-base text-zinc-400 leading-relaxed mb-6">
-            These Terms of Service ("Terms") constitute a legally binding electronic agreement governing your access to and use of FirstIssue.dev, our open-source issue discoverability services, community tree credentials, and associated tools.
+          <p className="text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] mb-6 text-pretty">
+            These Terms of Service (&quot;Terms&quot;) constitute a legally binding electronic agreement governing your access to and use of FirstIssue.dev, our open-source issue discoverability services, community contribution verification, and associated tools.
           </p>
 
-          <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-zinc-500 border-t border-zinc-900 pt-4">
+          <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-[#8C929C] border-t border-[#22242A] pt-4">
             <div className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-zinc-400" />
+              <Clock className="w-3.5 h-3.5 text-[#DAFA9C]" />
               <span>Effective Date: June 2026</span>
             </div>
-            <span>•</span>
+            <span>·</span>
             <span>Version: 2.4</span>
-            <span>•</span>
+            <span>·</span>
             <span>Est. Reading Time: ~7 minutes</span>
           </div>
         </div>
 
-        {/* Executive Summary / Key Highlights Cards */}
-        <div className="mb-14 p-5 sm:p-6 rounded-2xl bg-zinc-900/30 border border-zinc-800/80 shadow-xl">
-          <div className="mb-4">
-            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-zinc-300 font-mono">
-              Key Highlights (At a Glance)
-            </h3>
-          </div>
+        {/* Executive Summary */}
+        <section aria-label="Terms highlights summary" className="mb-14">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-[#8C929C] font-mono mb-4">
+            Key Highlights (At a Glance)
+          </h2>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4">
-            <div className="p-4 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80">
-              <div className="text-[#00ADB5] mb-2">
-                <Code2 className="w-5 h-5" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 rounded-[4px] bg-[#141518] border border-[#2B2E36]">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Code2 className="w-4 h-4 text-[#DAFA9C] shrink-0" />
+                <h3 className="text-xs font-bold text-[#F4F4F0]">
+                  Empowering Developers
+                </h3>
               </div>
-              <h4 className="text-xs font-bold text-white mb-1">Empowering Developers</h4>
-              <p className="text-[11px] text-zinc-400 leading-relaxed">
-                FirstIssue.dev is a free community platform dedicated to lowering the open-source barrier of entry for engineers worldwide.
+              <p className="text-xs text-[#A8ADB6] leading-relaxed text-pretty">
+                FirstIssue.dev helps lower the barrier to open-source engineering for students and new contributors worldwide.
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80">
-              <div className="text-[#00ADB5] mb-2">
-                <GitPullRequest className="w-5 h-5" />
+            <div className="p-4 rounded-[4px] bg-[#141518] border border-[#2B2E36]">
+              <div className="flex items-center gap-2 mb-1.5">
+                <GitPullRequest className="w-4 h-4 text-[#DAFA9C] shrink-0" />
+                <h3 className="text-xs font-bold text-[#F4F4F0]">
+                  You Own Your Code
+                </h3>
               </div>
-              <h4 className="text-xs font-bold text-white mb-1">You Own Your Code</h4>
-              <p className="text-[11px] text-zinc-400 leading-relaxed">
-                We claim zero ownership over your pull requests or software code. All contributions adhere to the underlying project's OSS license.
+              <p className="text-xs text-[#A8ADB6] leading-relaxed text-pretty">
+                We claim zero ownership over your pull requests or source code. Contributions follow the upstream repository&apos;s OSS license.
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80">
-              <div className="text-[#00ADB5] mb-2">
-                <Shield className="w-5 h-5" />
+            <div className="p-4 rounded-[4px] bg-[#141518] border border-[#2B2E36]">
+              <div className="flex items-center gap-2 mb-1.5">
+                <Shield className="w-4 h-4 text-[#DAFA9C] shrink-0" />
+                <h3 className="text-xs font-bold text-[#F4F4F0]">
+                  Responsible Usage
+                </h3>
               </div>
-              <h4 className="text-xs font-bold text-white mb-1">Responsible Usage</h4>
-              <p className="text-[11px] text-zinc-400 leading-relaxed">
-                Automated crawling that floods GitHub APIs or disrupts service availability is strictly prohibited under our fair use policy.
+              <p className="text-xs text-[#A8ADB6] leading-relaxed text-pretty">
+                Automated crawling that floods GitHub APIs or disrupts service availability is strictly prohibited under fair use.
               </p>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80">
-              <div className="text-[#00ADB5] mb-2">
-                <AlertTriangle className="w-5 h-5" />
+            <div className="p-4 rounded-[4px] bg-[#141518] border border-[#2B2E36]">
+              <div className="flex items-center gap-2 mb-1.5">
+                <AlertTriangle className="w-4 h-4 text-[#DAFA9C] shrink-0" />
+                <h3 className="text-xs font-bold text-[#F4F4F0]">
+                  &quot;As Is&quot; Service
+                </h3>
               </div>
-              <h4 className="text-xs font-bold text-white mb-1">"As Is" Service</h4>
-              <p className="text-[11px] text-zinc-400 leading-relaxed">
+              <p className="text-xs text-[#A8ADB6] leading-relaxed text-pretty">
                 We aggregate public repositories in good faith. We cannot guarantee issue acceptance, response times, or maintainer decisions.
               </p>
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Two-Column Grid: Sticky TOC on Left, Document Body on Right */}
+        {/* Two-Column Grid */}
         <div className="lg:grid lg:grid-cols-12 lg:gap-12 items-start">
-          {/* Sticky Sidebar Navigation (Desktop) */}
+          {/* Sticky Sidebar Navigation */}
           <aside className="hidden lg:block lg:col-span-4 sticky top-24">
-            <div className="rounded-2xl border border-zinc-800/80 bg-[#0d0e14]/80 backdrop-blur-xl p-5 shadow-lg">
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800/60">
-                <span className="text-xs font-mono font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                  <Layers className="w-3.5 h-3.5 text-[#00ADB5]" />
+            <div className="rounded-[4px] border border-[#2B2E36] bg-[#141518] p-5">
+              <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#22242A]">
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#F4F4F0] flex items-center gap-2">
+                  <Layers className="w-3.5 h-3.5 text-[#DAFA9C]" />
                   Table of Contents
                 </span>
-                <span className="text-[10px] font-mono text-zinc-500">14 Sections</span>
+                <span className="text-xs font-mono text-[#8C929C]">14 Sections</span>
               </div>
 
-              <nav className="space-y-1 text-xs font-mono">
+              <nav aria-label="Terms of service sections" className="space-y-1 text-xs font-mono">
                 {TOC_SECTIONS.map((sec) => {
                   const isActive = activeSection === sec.id;
                   return (
@@ -218,27 +224,30 @@ const TermsPage = () => {
                       key={sec.id}
                       type="button"
                       onClick={() => scrollToSection(sec.id)}
-                      className={`w-full text-left px-3 py-2 rounded-lg transition-all flex items-center justify-between group cursor-pointer ${isActive
-                          ? "bg-white/[0.04] text-white font-semibold border-l-2 border-[#00ADB5]"
-                          : "text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.02]"
-                        }`}
+                      className={`w-full text-left px-3 py-2 rounded-[4px] border transition-colors flex items-center justify-between group cursor-pointer ${
+                        isActive
+                          ? "bg-[#17181B] text-[#DAFA9C] border-[#DAFA9C]/40 font-semibold"
+                          : "text-[#A8ADB6] border-transparent hover:text-[#F4F4F0] hover:bg-[#17181B]/60"
+                      }`}
                     >
                       <span className="truncate">{sec.title}</span>
                       <ChevronRight
-                        className={`w-3 h-3 transition-transform ${isActive ? "opacity-100 translate-x-0.5 text-[#00ADB5]" : "opacity-0 group-hover:opacity-50"
-                          }`}
+                        className={`w-3 h-3 transition-transform shrink-0 ${
+                          isActive
+                            ? "opacity-100 translate-x-0.5 text-[#DAFA9C]"
+                            : "opacity-0 group-hover:opacity-60"
+                        }`}
                       />
                     </button>
                   );
                 })}
               </nav>
 
-              {/* Sidebar Help Box */}
-              <div className="mt-6 pt-4 border-t border-zinc-800/60 text-[11px] font-mono text-zinc-500 space-y-2">
+              <div className="mt-6 pt-4 border-t border-[#22242A] text-xs font-mono text-[#8C929C] space-y-2">
                 <p>Questions about these terms?</p>
                 <a
                   href="mailto:support@firstissue.dev"
-                  className="inline-flex items-center gap-1.5 text-[#00ADB5] hover:underline"
+                  className="inline-flex items-center gap-1.5 text-[#DAFA9C] hover:underline"
                 >
                   <Mail className="w-3 h-3" />
                   <span>support@firstissue.dev</span>
@@ -248,21 +257,20 @@ const TermsPage = () => {
           </aside>
 
           {/* Document Content Column */}
-          <div className="lg:col-span-8 space-y-12">
+          <div className="lg:col-span-8 space-y-10">
             {/* Section 1 */}
-            <section id="acceptance" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  01
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Acceptance of Terms &amp; Electronic Agreement
-                </h2>
-              </div>
+            <section
+              id="acceptance"
+              className="scroll-mt-24 pt-10 first:pt-0 border-t border-[#22242A] first:border-t-0"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Acceptance of Terms &amp; Electronic Agreement
+              </h2>
 
-              <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
+              <div className="space-y-4 text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] text-pretty">
                 <p>
-                  By accessing, browsing, creating an account on, or interacting with <strong className="text-white">FirstIssue.dev</strong> (the "Service" or "Platform"), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
+                  By accessing, browsing, creating an account on, or interacting with{" "}
+                  <strong className="text-[#F4F4F0]">FirstIssue.dev</strong> (the &quot;Service&quot; or &quot;Platform&quot;), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.
                 </p>
                 <p>
                   If you do not agree to these Terms in their entirety, you are strictly prohibited from accessing or using the Service. These Terms apply to all visitors, registered contributors, and organizations utilizing FirstIssue.dev.
@@ -271,19 +279,18 @@ const TermsPage = () => {
             </section>
 
             {/* Section 2 */}
-            <section id="eligibility" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  02
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Eligibility &amp; Legal Capacity
-                </h2>
-              </div>
+            <section
+              id="eligibility"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Eligibility &amp; Legal Capacity
+              </h2>
 
-              <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
+              <div className="space-y-4 text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] text-pretty">
                 <p>
-                  You represent and warrant that you are at least <strong className="text-white">13 years of age</strong> (or 16 years of age in applicable jurisdictions such as the European Economic Area). Individuals under the required age may not register for an account or transmit personal data to the Service.
+                  You represent and warrant that you are at least{" "}
+                  <strong className="text-[#F4F4F0]">13 years of age</strong> (or 16 years of age in applicable jurisdictions such as the European Economic Area). Individuals under the required age may not register for an account or transmit personal data to the Service.
                 </p>
                 <p>
                   If you are entering into these Terms on behalf of a company, educational institution, or legal entity, you represent and warrant that you possess the necessary authority to legally bind that entity to these provisions.
@@ -292,125 +299,135 @@ const TermsPage = () => {
             </section>
 
             {/* Section 3 */}
-            <section id="services-overview" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  03
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Scope of the Service &amp; Features
-                </h2>
-              </div>
+            <section
+              id="services-overview"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Scope of the Service &amp; Features
+              </h2>
 
-              <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
-                <p>
-                  FirstIssue.dev provides discovery tools, curated filters, AI-assisted issue summaries (FirstMate), and community visualization canvases (The Contribution Tree) to help software developers locate open-source contribution opportunities across GitHub.
+              <div className="space-y-4 text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[56ch] text-pretty">
+                <p className="max-w-[54ch]">
+                  FirstIssue.dev provides discovery tools, curated filters, AI-assisted issue briefs (FirstMate), and community visualization canvases (The Contribution Tree) to help software developers locate open-source contribution opportunities across GitHub.
                 </p>
-                <div className="p-4 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80 text-xs space-y-2">
-                  <div className="font-bold text-white">Platform Scope Boundaries:</div>
-                  <ul className="list-disc list-inside space-y-1 text-zinc-400">
-                    <li>FirstIssue.dev is an aggregator and facilitator; we do not own, maintain, or control third-party open-source repositories indexed on the platform.</li>
-                    <li>The acceptance, review, merging, or rejection of pull requests is solely at the discretion of individual project maintainers.</li>
-                    <li>FirstIssue.dev does not guarantee that any indexed issue remains unassigned or that maintainers will respond.</li>
+                <div className="p-4 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-sm space-y-2">
+                  <div className="font-bold text-[#F4F4F0]">Platform Scope Boundaries:</div>
+                  <ul className="list-disc list-inside space-y-1 text-[#A8ADB6] leading-relaxed">
+                    <li>
+                      FirstIssue.dev is an aggregator and facilitator; we do not own, maintain, or control third-party open-source repositories indexed on the platform.
+                    </li>
+                    <li>
+                      The acceptance, review, merging, or rejection of pull requests is solely at the discretion of individual project maintainers.
+                    </li>
+                    <li>
+                      FirstIssue.dev does not guarantee that any indexed issue remains unassigned or that maintainers will respond.
+                    </li>
                   </ul>
                 </div>
               </div>
             </section>
 
             {/* Section 4 */}
-            <section id="user-accounts" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  04
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Accounts &amp; GitHub Authentication
-                </h2>
-              </div>
+            <section
+              id="user-accounts"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Accounts &amp; GitHub Authentication
+              </h2>
 
-              <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
+              <div className="space-y-4 text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] text-pretty">
                 <p>
                   To save bookmarks, customize filters, or display your contributions, you must authenticate through GitHub OAuth.
                 </p>
-                <ul className="list-disc list-inside space-y-2 text-xs sm:text-sm ml-1">
-                  <li><strong className="text-white">Account Security:</strong> You are solely responsible for maintaining the security of your GitHub credentials and for any activity conducted through your authenticated session.</li>
-                  <li><strong className="text-white">Accuracy:</strong> You agree not to impersonate another developer, organization, or GitHub handle.</li>
-                  <li><strong className="text-white">Notification:</strong> You must promptly notify us if you suspect unauthorized access or security compromises relating to your session.</li>
+                <ul className="list-disc list-inside space-y-2 text-sm sm:text-[15px] ml-1">
+                  <li>
+                    <strong className="text-[#F4F4F0]">Account Security:</strong> You are solely responsible for maintaining the security of your GitHub credentials and for any activity conducted through your authenticated session.
+                  </li>
+                  <li>
+                    <strong className="text-[#F4F4F0]">Accuracy:</strong> You agree not to impersonate another developer, organization, or GitHub handle.
+                  </li>
+                  <li>
+                    <strong className="text-[#F4F4F0]">Notification:</strong> You must promptly notify us if you suspect unauthorized access or security compromises relating to your session.
+                  </li>
                 </ul>
               </div>
             </section>
 
             {/* Section 5 */}
-            <section id="acceptable-use" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  05
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Acceptable Use Policy &amp; Prohibited Conduct
-                </h2>
-              </div>
+            <section
+              id="acceptable-use"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Acceptable Use Policy &amp; Prohibited Conduct
+              </h2>
 
-              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-4">
+              <p className="text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] mb-4 text-pretty">
                 You agree to use FirstIssue.dev only for lawful, professional, and constructive software development purposes. You shall not:
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                <div className="p-3.5 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80">
-                  <h4 className="font-bold text-zinc-200 mb-1">No Malicious Abuse</h4>
-                  <p className="text-zinc-400">Attempt to disrupt, overwhelm, or launch Denial-of-Service (DDoS) attacks against FirstIssue.dev infrastructure.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs max-w-[56ch]">
+                <div className="p-3.5 rounded-[4px] bg-[#141518] border border-[#2B2E36]">
+                  <h3 className="font-bold text-[#F4F4F0] mb-1">No Malicious Abuse</h3>
+                  <p className="text-[#A8ADB6] leading-relaxed">
+                    Attempt to disrupt, overwhelm, or launch Denial-of-Service (DDoS) attacks against FirstIssue.dev infrastructure.
+                  </p>
                 </div>
-                <div className="p-3.5 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80">
-                  <h4 className="font-bold text-zinc-200 mb-1">No Aggressive Scraping</h4>
-                  <p className="text-zinc-400">Deploy automated bots or scrapers that exceed reasonable limits or trigger GitHub API rate-limiting blocks.</p>
+                <div className="p-3.5 rounded-[4px] bg-[#141518] border border-[#2B2E36]">
+                  <h3 className="font-bold text-[#F4F4F0] mb-1">No Aggressive Scraping</h3>
+                  <p className="text-[#A8ADB6] leading-relaxed">
+                    Deploy automated bots or scrapers that exceed reasonable limits or trigger GitHub API rate-limiting blocks.
+                  </p>
                 </div>
-                <div className="p-3.5 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80">
-                  <h4 className="font-bold text-zinc-200 mb-1">No Vulnerability Exploits</h4>
-                  <p className="text-zinc-400">Probe, scan, or reverse engineer database endpoints or authentication tokens without authorized consent.</p>
+                <div className="p-3.5 rounded-[4px] bg-[#141518] border border-[#2B2E36]">
+                  <h3 className="font-bold text-[#F4F4F0] mb-1">No Vulnerability Exploits</h3>
+                  <p className="text-[#A8ADB6] leading-relaxed">
+                    Probe, scan, or attack database endpoints or authentication tokens without authorized consent.
+                  </p>
                 </div>
-                <div className="p-3.5 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80">
-                  <h4 className="font-bold text-zinc-200 mb-1">No Community Harassment</h4>
-                  <p className="text-zinc-400">Post abusive comments, spam issue maintainers, or submit fraudulent pull requests to game leaderboard credentials.</p>
+                <div className="p-3.5 rounded-[4px] bg-[#141518] border border-[#2B2E36]">
+                  <h3 className="font-bold text-[#F4F4F0] mb-1">No Community Harassment</h3>
+                  <p className="text-[#A8ADB6] leading-relaxed">
+                    Post abusive comments, spam issue maintainers, or submit fraudulent pull requests to game verification records.
+                  </p>
                 </div>
               </div>
             </section>
 
             {/* Section 6 */}
-            <section id="intellectual-property" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  06
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Intellectual Property &amp; Open Source Licensing
-                </h2>
-              </div>
+            <section
+              id="intellectual-property"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Intellectual Property &amp; Open Source Licensing
+              </h2>
 
-              <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
+              <div className="space-y-4 text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] text-pretty">
                 <p>
-                  <strong className="text-white">Platform Property:</strong> FirstIssue.dev, its brand marks, logos, original software code, user interface designs, and interactive canvas components are the exclusive property of FirstIssue.dev and its creators.
+                  <strong className="text-[#F4F4F0]">Platform Property:</strong> FirstIssue.dev, its brand marks, logos, original software code, user interface designs, and interactive components are the property of FirstIssue.dev and its creators.
                 </p>
                 <p>
-                  <strong className="text-white">Third-Party Open Source Code:</strong> All source code, issue titles, issue descriptions, and pull requests indexed from GitHub are governed by the respective open-source licenses (e.g. MIT, Apache 2.0, GPL, BSD) designated by their respective repository owners. FirstIssue.dev asserts no copyright ownership over any third-party code.
+                  <strong className="text-[#F4F4F0]">Third-Party Open Source Code:</strong> All source code, issue titles, issue descriptions, and pull requests indexed from GitHub are governed by the respective open-source licenses (e.g., MIT, Apache 2.0, GPL, BSD) designated by their respective repository owners. FirstIssue.dev asserts no copyright ownership over any third-party code.
                 </p>
                 <p>
-                  <strong className="text-white">Community Tree Submissions:</strong> By submitting a pull request to be featured on the Contribution Tree canvas, you grant FirstIssue.dev a non-exclusive, worldwide, royalty-free license to display your public GitHub username, avatar, PR title, and cryptographic hash on the public canvas.
+                  <strong className="text-[#F4F4F0]">Community Tree Submissions:</strong> By submitting a pull request to be featured on the Contribution Tree, you grant FirstIssue.dev a non-exclusive, worldwide, royalty-free license to display your public GitHub username, avatar, PR title, and SHA-256 verification digest on the public feed.
                 </p>
               </div>
             </section>
 
             {/* Section 7 */}
-            <section id="third-party-github" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  07
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  GitHub API Terms &amp; Third-Party Services
-                </h2>
-              </div>
+            <section
+              id="third-party-github"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                GitHub API Terms &amp; Third-Party Services
+              </h2>
 
-              <div className="space-y-4 text-sm text-zinc-400 leading-relaxed">
+              <div className="space-y-4 text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] text-pretty">
                 <p>
                   FirstIssue.dev operates independently and is neither endorsed, sponsored, nor affiliated with GitHub, Inc. or Microsoft Corporation.
                 </p>
@@ -420,7 +437,7 @@ const TermsPage = () => {
                     href="https://docs.github.com/en/site-policy/github-terms/github-terms-of-service"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#00ADB5] hover:underline inline-flex items-center gap-1 font-mono text-xs"
+                    className="text-[#DAFA9C] hover:underline inline-flex items-center gap-1 font-mono text-xs"
                   >
                     GitHub Terms of Service
                     <ExternalLink className="w-3 h-3" />
@@ -431,86 +448,77 @@ const TermsPage = () => {
             </section>
 
             {/* Section 8 */}
-            <section id="disclaimers" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  08
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Disclaimers of Warranties ("As Is")
-                </h2>
-              </div>
+            <section
+              id="disclaimers"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Disclaimers of Warranties (&quot;As Is&quot;)
+              </h2>
 
-              <div className="p-4 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80 text-xs sm:text-sm font-mono text-zinc-300 leading-relaxed uppercase">
-                THE SERVICE IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. FIRSTISSUE.DEV DOES NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, BUG-FREE, SECURE, OR ACCURATE.
+              <div className="p-4 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-xs sm:text-sm font-mono text-[#F4F4F0]/90 leading-relaxed uppercase max-w-[56ch]">
+                THE SERVICE IS PROVIDED ON AN &quot;AS IS&quot; AND &quot;AS AVAILABLE&quot; BASIS WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, AND NON-INFRINGEMENT. FIRSTISSUE.DEV DOES NOT WARRANT THAT THE SERVICE WILL BE UNINTERRUPTED, BUG-FREE, SECURE, OR ACCURATE.
               </div>
             </section>
 
             {/* Section 9 */}
-            <section id="liability" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  09
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Limitation of Liability
-                </h2>
-              </div>
+            <section
+              id="liability"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Limitation of Liability
+              </h2>
 
-              <div className="p-4 rounded-xl bg-[#0B0C10]/60 border border-zinc-800/80 text-xs sm:text-sm font-mono text-zinc-300 leading-relaxed uppercase">
+              <div className="p-4 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-xs sm:text-sm font-mono text-[#F4F4F0]/90 leading-relaxed uppercase max-w-[56ch]">
                 TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL FIRSTISSUE.DEV, ITS FOUNDERS, EMPLOYEES, OR SUPPLIERS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING WITHOUT LIMITATION, LOSS OF PROFITS, DATA, USE, GOODWILL, CODE CORRUPTION, OR OTHER INTANGIBLE LOSSES ARISING OUT OF OR IN CONNECTION WITH YOUR ACCESS TO OR INABILITY TO ACCESS THE SERVICE.
               </div>
             </section>
 
             {/* Section 10 */}
-            <section id="indemnification" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  10
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  User Indemnification
-                </h2>
-              </div>
+            <section
+              id="indemnification"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                User Indemnification
+              </h2>
 
-              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+              <p className="text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] text-pretty">
                 You agree to defend, indemnify, and hold harmless FirstIssue.dev, its creators, operators, and affiliates from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or legal fees arising out of or relating to your violation of these Terms or your misuse of the Service.
               </p>
             </section>
 
             {/* Section 11 */}
-            <section id="termination" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  11
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Suspension &amp; Account Termination
-                </h2>
-              </div>
+            <section
+              id="termination"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Suspension &amp; Account Termination
+              </h2>
 
-              <div className="space-y-4 text-xs sm:text-sm text-zinc-400 leading-relaxed">
+              <div className="space-y-4 text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] text-pretty">
                 <p>
                   We reserve the right, in our sole discretion, to suspend, limit, or terminate your account and bar access to the Service at any time, without prior notice, if you breach these Terms, engage in scraping abuse, or act in a manner detrimental to the platform or other developers.
                 </p>
                 <p>
-                  You may terminate your account at any time by disconnecting your GitHub OAuth connection and requesting profile data removal via <code className="text-zinc-200 font-mono">support@firstissue.dev</code>.
+                  You may terminate your account at any time by disconnecting your GitHub OAuth connection and requesting profile data removal via{" "}
+                  <code className="text-[#DAFA9C] font-mono text-xs">support@firstissue.dev</code>.
                 </p>
               </div>
             </section>
 
             {/* Section 12 */}
-            <section id="governing-law" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  12
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Governing Law &amp; Dispute Resolution
-                </h2>
-              </div>
+            <section
+              id="governing-law"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Governing Law &amp; Dispute Resolution
+              </h2>
 
-              <div className="space-y-4 text-xs sm:text-sm text-zinc-400 leading-relaxed">
+              <div className="space-y-4 text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] text-pretty">
                 <p>
                   These Terms shall be governed by and construed in accordance with the substantive laws of applicable international commerce, without giving effect to any conflict of law principles.
                 </p>
@@ -521,44 +529,44 @@ const TermsPage = () => {
             </section>
 
             {/* Section 13 */}
-            <section id="modifications" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  13
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Modifications to Service &amp; Terms
-                </h2>
-              </div>
+            <section
+              id="modifications"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Modifications to Service &amp; Terms
+              </h2>
 
-              <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                We reserve the right to modify or replace these Terms at our discretion. Material changes will be indicated by updating the "Effective Date" at the top of this document. Continued use of FirstIssue.dev following notice of changes constitutes your acceptance of the revised Terms.
+              <p className="text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[54ch] text-pretty">
+                We reserve the right to modify or replace these Terms at our discretion. Material changes will be indicated by updating the &quot;Effective Date&quot; at the top of this document. Continued use of FirstIssue.dev following notice of changes constitutes your acceptance of the revised Terms.
               </p>
             </section>
 
             {/* Section 14 */}
-            <section id="contact" className="scroll-mt-24 rounded-2xl bg-zinc-900/20 border border-zinc-800/60 p-6 sm:p-8">
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-xs font-semibold text-zinc-300">
-                  14
-                </span>
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
-                  Contact &amp; Legal Notices
-                </h2>
-              </div>
+            <section
+              id="contact"
+              className="scroll-mt-24 pt-10 border-t border-[#22242A]"
+            >
+              <h2 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight mb-4 text-balance">
+                Contact &amp; Legal Notices
+              </h2>
 
-              <div className="space-y-4 text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                <p>
+              <div className="space-y-4 text-[15px] sm:text-base text-[#A8ADB6] leading-[1.7] max-w-[56ch] text-pretty">
+                <p className="max-w-[54ch]">
                   For questions, legal inquiries, copyright notices (DMCA), or clarifications regarding these Terms of Service, please contact our team directly:
                 </p>
 
-                <div className="p-4 rounded-xl bg-[#0B0C10]/80 border border-zinc-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="p-4 rounded-[4px] bg-[#141518] border border-[#2B2E36] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div>
-                    <h4 className="text-sm font-bold text-white mb-1">Legal Counsel &amp; Operations</h4>
-                    <p className="text-xs text-zinc-400 font-mono">Direct email contact:</p>
+                    <h3 className="text-sm font-bold text-[#F4F4F0] mb-1">
+                      Legal Counsel &amp; Operations
+                    </h3>
+                    <p className="text-xs text-[#8C929C] font-mono">
+                      Direct email contact:
+                    </p>
                     <a
                       href="mailto:support@firstissue.dev"
-                      className="text-xs font-mono font-bold text-[#00ADB5] hover:underline flex items-center gap-1.5 mt-1"
+                      className="text-xs font-mono font-bold text-[#DAFA9C] hover:underline flex items-center gap-1.5 mt-1"
                     >
                       <Mail className="w-3.5 h-3.5" />
                       support@firstissue.dev
@@ -567,19 +575,18 @@ const TermsPage = () => {
 
                   <Link
                     to="/privacy"
-                    className="px-4 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-mono font-medium border border-zinc-800 transition-all flex items-center gap-1.5 shrink-0"
+                    className="px-4 py-2 rounded-[4px] bg-[#17181B] hover:border-[#3A3E48] text-[#F4F4F0] text-xs font-mono font-medium border border-[#2B2E36] transition-colors flex items-center gap-1.5 shrink-0"
                   >
                     <span>Read Privacy Policy</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <ChevronRight className="w-3.5 h-3.5 text-[#DAFA9C]" />
                   </Link>
                 </div>
               </div>
             </section>
           </div>
         </div>
-      </div>
+      </main>
 
-      {/* Footer */}
       <Footer />
     </div>
   );

@@ -17,7 +17,7 @@ const TECH_SUGGESTIONS = [
   "Docker", "Kubernetes", "AWS", "GCP", "Azure",
   "Git", "CI/CD", "Linux",
   "Machine Learning", "TensorFlow", "PyTorch",
-  "Solidity", "Web3", "Cloudflare"
+  "Cloudflare"
 ];
 
 const TechStackInput = ({ value = [], onChange }) => {
@@ -50,7 +50,6 @@ const TechStackInput = ({ value = [], onChange }) => {
     if (e.key === "Enter") {
       e.preventDefault();
       if (inputValue.trim()) {
-        // If there's a matching suggestion, use it (preserves casing)
         const match = filteredSuggestions.find(
           (s) => s.toLowerCase() === inputValue.trim().toLowerCase()
         );
@@ -61,7 +60,6 @@ const TechStackInput = ({ value = [], onChange }) => {
     }
   };
 
-  // Close suggestions on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (containerRef.current && !containerRef.current.contains(e.target)) {
@@ -74,35 +72,40 @@ const TechStackInput = ({ value = [], onChange }) => {
 
   return (
     <div ref={containerRef} className="relative">
-      <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-1.5">
+      <label
+        htmlFor="profile-tech-stack"
+        className="block text-xs font-semibold text-[#A8ADB6] uppercase tracking-wider mb-1.5"
+      >
         Tech Stack
       </label>
-      <p className="text-[10px] text-zinc-550 mb-2">
-        Add your skills to get better SmartMatch recommendations
+      <p className="text-xs text-[#8C929C] mb-2">
+        Add languages or frameworks to improve SmartMatch issue recommendations.
       </p>
 
-      {/* Tags display */}
-      <div className="flex flex-wrap gap-1.5 mb-2">
-        {value.map((tag) => (
-          <span
-            key={tag}
-            className="inline-flex items-center gap-1 px-2.5 py-1 bg-zinc-900 text-zinc-300 border border-zinc-800/80 rounded-md text-xs font-medium"
-          >
-            {tag}
-            <button
-              type="button"
-              onClick={() => removeTag(tag)}
-              className="p-0.5 hover:bg-zinc-800 rounded transition-colors text-zinc-400 hover:text-white"
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {value.map((tag) => (
+            <span
+              key={tag}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#17181B] text-[#F4F4F0] border border-[#2B2E36] rounded-[4px] text-xs font-mono"
             >
-              <X className="w-3 h-3" />
-            </button>
-          </span>
-        ))}
-      </div>
+              {tag}
+              <button
+                type="button"
+                onClick={() => removeTag(tag)}
+                aria-label={`Remove ${tag}`}
+                className="p-0.5 hover:bg-[#1C1E23] rounded-[4px] transition-colors text-[#8C929C] hover:text-[#F4F4F0]"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
 
-      {/* Input */}
       <div className="relative">
         <input
+          id="profile-tech-stack"
           ref={inputRef}
           type="text"
           value={inputValue}
@@ -112,39 +115,37 @@ const TechStackInput = ({ value = [], onChange }) => {
           }}
           onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
-          placeholder={value.length === 0 ? "e.g., React, Node.js, Python..." : "Add more..."}
-          className="w-full px-3 py-2 bg-zinc-900/40 border border-zinc-800/80 rounded text-zinc-150 placeholder-zinc-650 focus:outline-none focus:border-zinc-700 transition-all text-xs"
+          placeholder={value.length === 0 ? "e.g., React, Node.js, Python..." : "Add technology..."}
+          className="w-full px-3 py-2 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors text-xs"
         />
       </div>
 
-      {/* Suggestions dropdown */}
       {showSuggestions && inputValue && filteredSuggestions.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-zinc-950 border border-zinc-800 rounded-md shadow-xl overflow-hidden max-h-48 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-[#17181B] border border-[#2B2E36] rounded-[4px] shadow-xl overflow-hidden max-h-48 overflow-y-auto">
           {filteredSuggestions.map((suggestion) => (
             <button
               key={suggestion}
               type="button"
               onClick={() => addTag(suggestion)}
-              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-zinc-300 hover:bg-white/[0.02] hover:text-white transition-colors text-left"
+              className="w-full flex items-center gap-2 px-3 py-2 text-xs text-[#A8ADB6] hover:bg-[#1C1E23] hover:text-[#F4F4F0] transition-colors text-left"
             >
-              <Plus className="w-3 h-3 text-zinc-400 flex-shrink-0" />
+              <Plus className="w-3 h-3 text-[#DAFA9C] shrink-0" />
               {suggestion}
             </button>
           ))}
         </div>
       )}
 
-      {/* Quick-add popular tags when empty */}
       {value.length === 0 && !inputValue && (
-        <div className="mt-2">
-          <p className="text-[9px] text-zinc-550 uppercase tracking-wider mb-1.5 font-semibold">Popular</p>
+        <div className="mt-2.5">
+          <p className="text-xs text-[#8C929C] mb-1.5 font-mono">Quick add:</p>
           <div className="flex flex-wrap gap-1.5">
             {["React", "TypeScript", "Node.js", "Python", "Next.js", "Tailwind CSS"].map((tech) => (
               <button
                 key={tech}
                 type="button"
                 onClick={() => addTag(tech)}
-                className="px-2 py-0.5 text-[10px] bg-zinc-900 border border-zinc-800 text-zinc-450 hover:bg-zinc-850 hover:text-white rounded-md transition-colors"
+                className="px-2.5 py-1 text-xs bg-[#141518] border border-[#2B2E36] text-[#A8ADB6] hover:bg-[#1C1E23] hover:text-[#F4F4F0] rounded-[4px] transition-colors"
               >
                 + {tech}
               </button>
@@ -172,7 +173,6 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
 
   useEffect(() => {
     if (isOpen && githubProfile) {
-      // Fetch existing profile data from profiles table
       const fetchProfileData = async () => {
         try {
           let { data, error: fetchErr } = await supabase
@@ -181,7 +181,12 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
             .eq("id", user.id)
             .single();
 
-          if (fetchErr && (fetchErr.message?.toLowerCase().includes("college") || fetchErr.code === "PGRST204" || fetchErr.code === "42703")) {
+          if (
+            fetchErr &&
+            (fetchErr.message?.toLowerCase().includes("college") ||
+              fetchErr.code === "PGRST204" ||
+              fetchErr.code === "42703")
+          ) {
             const fallback = await supabase
               .from("profiles")
               .select("name, bio, location, company, website, tech_stack")
@@ -229,7 +234,6 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
     setSuccess(false);
 
     try {
-      // Update profile in database
       const payload = {
         id: user.id,
         name: formData.name,
@@ -242,21 +246,20 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
         updated_at: new Date().toISOString(),
       };
 
-      let { error: updateError } = await supabase.from("profiles").upsert(
-        payload,
-        {
-          onConflict: "id",
-        },
-      );
+      let { error: updateError } = await supabase.from("profiles").upsert(payload, {
+        onConflict: "id",
+      });
 
-      if (updateError && (updateError.message?.toLowerCase().includes("college") || updateError.code === "PGRST204" || updateError.code === "42703")) {
+      if (
+        updateError &&
+        (updateError.message?.toLowerCase().includes("college") ||
+          updateError.code === "PGRST204" ||
+          updateError.code === "42703")
+      ) {
         delete payload.college;
-        const retry = await supabase.from("profiles").upsert(
-          payload,
-          {
-            onConflict: "id",
-          },
-        );
+        const retry = await supabase.from("profiles").upsert(payload, {
+          onConflict: "id",
+        });
         updateError = retry.error;
       }
 
@@ -264,12 +267,10 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
 
       setSuccess(true);
 
-      // Call onSave callback to refresh parent data
       if (onSave) {
         onSave(formData);
       }
 
-      // Close modal after 1 second
       setTimeout(() => {
         onClose();
         setSuccess(false);
@@ -285,70 +286,85 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="bg-zinc-950 border border-zinc-800 rounded-lg w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
-        {/* Header - Fixed */}
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800/60 flex-shrink-0">
-          <h2 className="text-xs font-bold text-white uppercase tracking-wider">Edit Profile</h2>
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/75"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-profile-modal-title"
+    >
+      <div className="bg-[#141518] border border-[#2B2E36] rounded-[4px] w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between p-5 border-b border-[#22242A] flex-shrink-0">
+          <h2
+            id="edit-profile-modal-title"
+            className="text-xs font-mono font-semibold text-[#F4F4F0] uppercase tracking-wider"
+          >
+            Edit Profile
+          </h2>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 text-zinc-400 hover:text-white hover:bg-white/5 rounded transition-colors"
+            aria-label="Close edit profile modal"
+            className="p-1.5 text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#1C1E23] rounded-[4px] transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Form - Scrollable Content */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
           <div className="p-5 space-y-4 overflow-y-auto flex-1">
             {error && (
-              <div className="p-3.5 bg-red-500/5 border border-red-550/20 rounded text-red-400 text-xs font-medium">
+              <div className="p-3 bg-[#F87171]/10 border border-[#F87171]/30 rounded-[4px] text-[#F87171] text-xs font-medium">
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="p-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded text-emerald-400 text-xs font-medium flex items-center gap-2">
+              <div className="p-3 bg-[#34D399]/10 border border-[#34D399]/30 rounded-[4px] text-[#34D399] text-xs font-medium flex items-center gap-2">
                 <Check className="w-3.5 h-3.5" />
-                Profile updated successfully!
+                Profile updated.
               </div>
             )}
 
-            {/* Name */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+              <label
+                htmlFor="edit-profile-name"
+                className="block text-xs font-semibold text-[#A8ADB6] uppercase tracking-wider mb-1.5"
+              >
                 Full Name
               </label>
               <input
+                id="edit-profile-name"
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Your full name"
-                className="w-full px-3 py-2 bg-zinc-900/40 border border-zinc-800/80 rounded text-zinc-150 placeholder-zinc-600 focus:outline-none focus:border-zinc-705 transition-all text-xs"
+                className="w-full px-3 py-2 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors text-xs"
               />
             </div>
 
-            {/* Bio */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+              <label
+                htmlFor="edit-profile-bio"
+                className="block text-xs font-semibold text-[#A8ADB6] uppercase tracking-wider mb-1.5"
+              >
                 Bio
               </label>
               <textarea
+                id="edit-profile-bio"
                 name="bio"
                 value={formData.bio}
                 onChange={handleChange}
-                placeholder="Tell us about yourself"
+                placeholder="Short engineering bio"
                 rows={3}
                 maxLength={160}
-                className="w-full px-3 py-2 bg-zinc-900/40 border border-zinc-800/80 rounded text-zinc-150 placeholder-zinc-650 focus:outline-none focus:border-zinc-705 transition-all resize-none text-xs"
+                className="w-full px-3 py-2 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors resize-none text-xs"
               />
-              <p className="text-[10px] text-zinc-500 mt-1 font-mono">
+              <p className="text-xs text-[#8C929C] mt-1 font-mono tabular-nums">
                 {formData.bio.length}/160 characters
               </p>
             </div>
 
-            {/* Tech Stack */}
             <TechStackInput
               value={formData.tech_stack}
               onChange={(newStack) =>
@@ -356,88 +372,97 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
               }
             />
 
-            {/* College Name */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
-                College Name
+              <label
+                htmlFor="edit-profile-college"
+                className="block text-xs font-semibold text-[#A8ADB6] uppercase tracking-wider mb-1.5"
+              >
+                College or University
               </label>
               <input
+                id="edit-profile-college"
                 type="text"
                 name="college"
                 value={formData.college}
                 onChange={handleChange}
-                placeholder="Your college or university"
-                className="w-full px-3 py-2 bg-zinc-900/40 border border-zinc-800/80 rounded text-zinc-150 placeholder-zinc-600 focus:outline-none focus:border-zinc-705 transition-all text-xs"
+                placeholder="Your school or university"
+                className="w-full px-3 py-2 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors text-xs"
               />
             </div>
 
-            {/* Location */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+              <label
+                htmlFor="edit-profile-location"
+                className="block text-xs font-semibold text-[#A8ADB6] uppercase tracking-wider mb-1.5"
+              >
                 Location
               </label>
               <input
+                id="edit-profile-location"
                 type="text"
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
                 placeholder="City, Country"
-                className="w-full px-3 py-2 bg-zinc-900/40 border border-zinc-800/80 rounded text-zinc-150 placeholder-zinc-600 focus:outline-none focus:border-zinc-705 transition-all text-xs"
+                className="w-full px-3 py-2 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors text-xs"
               />
             </div>
 
-            {/* Company */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
-                Company
+              <label
+                htmlFor="edit-profile-company"
+                className="block text-xs font-semibold text-[#A8ADB6] uppercase tracking-wider mb-1.5"
+              >
+                Company or Lab
               </label>
               <input
+                id="edit-profile-company"
                 type="text"
                 name="company"
                 value={formData.company}
                 onChange={handleChange}
-                placeholder="Your company or organization"
-                className="w-full px-3 py-2 bg-zinc-900/40 border border-zinc-800/80 rounded text-zinc-150 placeholder-zinc-600 focus:outline-none focus:border-zinc-705 transition-all text-xs"
+                placeholder="Organization"
+                className="w-full px-3 py-2 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors text-xs"
               />
             </div>
 
-            {/* Website */}
             <div>
-              <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
+              <label
+                htmlFor="edit-profile-website"
+                className="block text-xs font-semibold text-[#A8ADB6] uppercase tracking-wider mb-1.5"
+              >
                 Website
               </label>
               <input
+                id="edit-profile-website"
                 type="url"
                 name="website"
                 value={formData.website}
                 onChange={handleChange}
-                placeholder="https://yourwebsite.com"
-                className="w-full px-3 py-2 bg-zinc-900/40 border border-zinc-800/80 rounded text-zinc-150 placeholder-zinc-600 focus:outline-none focus:border-zinc-705 transition-all text-xs"
+                placeholder="https://yoursite.dev"
+                className="w-full px-3 py-2 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors text-xs"
               />
             </div>
 
-            {/* Note */}
-            <div className="p-3 bg-zinc-900 border border-zinc-800/60 rounded">
-              <p className="text-[11px] text-zinc-400">
-                <strong>Note:</strong> This updates your FirstIssue.dev profile.
-                Your GitHub profile remains unchanged.
+            <div className="p-3 bg-[#17181B] border border-[#22242A] rounded-[4px]">
+              <p className="text-xs text-[#A8ADB6]">
+                <strong className="text-[#F4F4F0]">Note:</strong> Updates apply only to your FirstIssue.dev profile; your GitHub account details remain unchanged.
               </p>
             </div>
           </div>
 
-          {/* Actions - Fixed at Bottom */}
-          <div className="flex gap-3 p-5 border-t border-zinc-800/60 flex-shrink-0 bg-zinc-950">
+          <div className="flex gap-3 p-5 border-t border-[#22242A] flex-shrink-0 bg-[#0F0F0F]">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-2 bg-transparent hover:bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white rounded text-xs font-semibold transition-colors"
+              className="flex-1 py-2.5 bg-[#141518] hover:bg-[#1C1E23] border border-[#2B2E36] text-[#A8ADB6] hover:text-[#F4F4F0] rounded-[4px] text-xs font-semibold transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={saving || success}
-              className="flex-1 py-2 bg-white hover:bg-zinc-200 text-black rounded text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] text-xs font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {saving ? (
                 <>
@@ -447,7 +472,7 @@ const EditProfileModal = ({ isOpen, onClose, user, githubProfile, onSave }) => {
               ) : success ? (
                 <>
                   <Check className="w-3.5 h-3.5" />
-                  Saved!
+                  Saved
                 </>
               ) : (
                 "Save Changes"

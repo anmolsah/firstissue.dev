@@ -1,13 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useSupporter } from '../contexts/SupporterContext';
-import { useSmartMatch } from '../hooks/useSmartMatch';
-import { useRateLimiter } from '../hooks/useRateLimiter';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSupporter } from "../contexts/SupporterContext";
+import { useSmartMatch } from "../hooks/useSmartMatch";
+import { useRateLimiter } from "../hooks/useRateLimiter";
 import {
-  Sparkles,
   Lock,
   Loader2,
-  ExternalLink,
   RefreshCw,
   Star,
   Bookmark,
@@ -18,7 +16,6 @@ import {
   Crown,
   AlertCircle,
   Clock,
-  BrainCircuit,
   ShieldAlert,
   Tag,
   Radar,
@@ -26,78 +23,68 @@ import {
   BarChart3,
   Search,
   Gauge,
-  Wand2,
   GitPullRequest,
-} from 'lucide-react';
-import { withUTM } from '../utils/utm';
-import { trackIssueClick } from '../utils/analytics';
+} from "lucide-react";
+import { withUTM } from "../utils/utm";
+import { trackIssueClick } from "../utils/analytics";
 
 const LABEL_OPTIONS = [
-  { id: 'good first issue', label: 'Good First Issue', color: 'emerald' },
-  { id: 'help wanted', label: 'Help Wanted', color: 'blue' },
-  { id: 'beginner', label: 'Beginner', color: 'purple' },
-  { id: 'easy', label: 'Easy', color: 'green' },
-  { id: 'starter', label: 'Starter', color: 'cyan' },
-  { id: 'documentation', label: 'Documentation', color: 'yellow' },
+  { id: "good first issue", label: "Good First Issue" },
+  { id: "help wanted", label: "Help Wanted" },
+  { id: "beginner", label: "Beginner" },
+  { id: "easy", label: "Easy" },
+  { id: "starter", label: "Starter" },
+  { id: "documentation", label: "Documentation" },
 ];
 
-const DEFAULT_LABELS = ['good first issue', 'help wanted'];
+const DEFAULT_LABELS = ["good first issue", "help wanted"];
 
-// Get/set label preferences from localStorage
 const getStoredLabels = () => {
   try {
-    const stored = localStorage.getItem('smartmatch_labels');
+    const stored = localStorage.getItem("smartmatch_labels");
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
-  } catch {}
+  } catch {
+    /* ignore storage read errors */
+  }
   return DEFAULT_LABELS;
 };
 
 const setStoredLabels = (labels) => {
   try {
-    localStorage.setItem('smartmatch_labels', JSON.stringify(labels));
-  } catch {}
+    localStorage.setItem("smartmatch_labels", JSON.stringify(labels));
+  } catch {
+    /* ignore storage write errors */
+  }
 };
+
+const LOADING_STATUSES = [
+  { text: "Scanning your GitHub repositories", Icon: Radar },
+  { text: "Mapping primary languages & frameworks", Icon: Layers },
+  { text: "Analyzing contribution history", Icon: BarChart3 },
+  { text: "Querying unassigned open issues", Icon: Search },
+  { text: "Scoring stack and difficulty fit", Icon: Gauge },
+];
 
 const SmartMatchLoadingScreen = () => {
   const [progress, setProgress] = useState(0);
   const [statusIndex, setStatusIndex] = useState(0);
-  const [prevStatusIndex, setPrevStatusIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  const statuses = [
-    { text: "Scanning your repositories", Icon: Radar },
-    { text: "Mapping your tech stack", Icon: Layers },
-    { text: "Analyzing contribution patterns", Icon: BarChart3 },
-    { text: "Searching open issues", Icon: Search },
-    { text: "Scoring match quality", Icon: Gauge },
-    { text: "Curating your results", Icon: Wand2 },
-  ];
 
   useEffect(() => {
     const timer = setInterval(() => {
       setProgress((old) => {
         if (old >= 98) return 98;
-        // Slow down as we approach higher values for realism
         const remaining = 98 - old;
-        const diff = Math.random() * Math.min(remaining * 0.08, 4) + 0.3;
+        const diff = Math.random() * Math.min(remaining * 0.08, 4) + 0.4;
         return Math.min(old + diff, 98);
       });
     }, 250);
 
     const statusTimer = setInterval(() => {
-      setPrevStatusIndex((prev) => prev);
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setStatusIndex((prev) => {
-          setPrevStatusIndex(prev);
-          return (prev + 1) % statuses.length;
-        });
-        setTimeout(() => setIsTransitioning(false), 50);
-      }, 300);
-    }, 3000);
+      setStatusIndex((prev) => (prev + 1) % LOADING_STATUSES.length);
+    }, 2600);
 
     return () => {
       clearInterval(timer);
@@ -106,179 +93,41 @@ const SmartMatchLoadingScreen = () => {
   }, []);
 
   const progressPercent = Math.floor(progress);
+  const CurrentIcon = LOADING_STATUSES[statusIndex].Icon;
 
   return (
-    <div className="flex flex-col items-center justify-center py-20 min-h-[480px] relative overflow-hidden select-none">
-      {/* ─── Background ambient effects ─── */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-600/[0.07] rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 left-1/3 w-[300px] h-[300px] bg-blue-600/[0.05] rounded-full blur-[100px] sm-loading-float" />
-        <div className="absolute top-1/4 right-1/4 w-[200px] h-[200px] bg-violet-500/[0.04] rounded-full blur-[80px] sm-loading-float-delayed" />
-      </div>
-
-      {/* ─── Floating particles ─── */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute rounded-full sm-loading-particle"
-            style={{
-              width: `${2 + Math.random() * 3}px`,
-              height: `${2 + Math.random() * 3}px`,
-              left: `${10 + Math.random() * 80}%`,
-              top: `${10 + Math.random() * 80}%`,
-              background: i % 2 === 0
-                ? 'rgba(168, 85, 247, 0.4)'
-                : 'rgba(96, 165, 250, 0.4)',
-              animationDelay: `${i * 0.8}s`,
-              animationDuration: `${4 + Math.random() * 3}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* ─── Neural Core Visualization ─── */}
-      <div className="relative mb-14">
-        {/* Outermost ring – slow orbit */}
-        <div className="w-44 h-44 rounded-full flex items-center justify-center relative">
-          {/* Outer ring track */}
-          <div className="absolute inset-0 rounded-full border border-white/[0.04]" />
-
-          {/* Orbiting dot 1 – outer */}
-          <div className="absolute inset-0 sm-loading-orbit" style={{ animationDuration: '6s' }}>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-purple-400 shadow-[0_0_12px_4px_rgba(168,85,247,0.5)]" />
-          </div>
-
-          {/* Orbiting dot 2 – outer, opposite */}
-          <div className="absolute inset-0 sm-loading-orbit" style={{ animationDuration: '6s', animationDelay: '-3s' }}>
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-400/70 shadow-[0_0_10px_3px_rgba(96,165,250,0.4)]" />
-          </div>
-
-          {/* Middle ring */}
-          <div className="w-32 h-32 rounded-full flex items-center justify-center relative">
-            <div className="absolute inset-0 rounded-full border border-white/[0.06]" />
-
-            {/* Orbiting dot – middle */}
-            <div className="absolute inset-0 sm-loading-orbit-reverse" style={{ animationDuration: '4s' }}>
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-violet-300 shadow-[0_0_8px_3px_rgba(196,167,255,0.4)]" />
+    <div className="flex flex-col items-center justify-center py-16 min-h-[420px] px-4">
+      <div className="w-full max-w-md bg-[#141518] border border-[#2B2E36] rounded-[4px] p-6 sm:p-8 space-y-6">
+        <div className="flex items-center justify-between border-b border-[#22242A] pb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] flex items-center justify-center text-[#DAFA9C]">
+              <Loader2 className="w-4 h-4 animate-spin" />
             </div>
-
-            {/* Scanning arc – middle ring */}
-            <div className="absolute inset-0 sm-loading-orbit" style={{ animationDuration: '3s' }}>
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 128 128">
-                <defs>
-                  <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="rgba(168,85,247,0)" />
-                    <stop offset="100%" stopColor="rgba(168,85,247,0.5)" />
-                  </linearGradient>
-                </defs>
-                <circle cx="64" cy="64" r="62" fill="none" stroke="url(#arcGrad)" strokeWidth="1.5" strokeDasharray="60 330" strokeLinecap="round" />
-              </svg>
-            </div>
-
-            {/* Inner core */}
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-600/25 via-blue-600/15 to-violet-600/25 flex items-center justify-center border border-white/10 relative sm-loading-core-pulse">
-              {/* Core glow ring */}
-              <div className="absolute inset-0 rounded-full shadow-[0_0_50px_-5px_rgba(168,85,247,0.3),inset_0_0_20px_-5px_rgba(168,85,247,0.15)]" />
-
-              {/* Brain icon */}
-              <BrainCircuit className="w-9 h-9 text-purple-300/90 relative z-10" />
-
-              {/* Inner sparkle effect */}
-              <div className="absolute inset-0 rounded-full overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.05] to-transparent sm-loading-shine" />
-              </div>
+            <div>
+              <h3 className="text-sm font-semibold text-[#F4F4F0]">Running Smart Match</h3>
+              <p className="text-xs font-mono text-[#8C929C]">GitHub GraphQL + AI Scoring</p>
             </div>
           </div>
+          <span className="text-xl font-bold font-mono tabular-nums text-[#DAFA9C]">
+            {progressPercent}%
+          </span>
         </div>
 
-        {/* Data stream lines (decorative) */}
-        <div className="absolute top-1/2 -left-8 w-6 h-px sm-loading-data-stream" style={{ animationDelay: '0s' }}>
-          <div className="h-full bg-gradient-to-r from-transparent to-purple-500/30" />
-        </div>
-        <div className="absolute top-1/2 -right-8 w-6 h-px sm-loading-data-stream" style={{ animationDelay: '1.5s' }}>
-          <div className="h-full bg-gradient-to-l from-transparent to-blue-500/30" />
-        </div>
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 w-px h-6 sm-loading-data-stream-v" style={{ animationDelay: '0.7s' }}>
-          <div className="w-full h-full bg-gradient-to-b from-transparent to-violet-500/30" />
-        </div>
-      </div>
-
-      {/* ─── Text Content ─── */}
-      <div className="text-center mb-10 space-y-3 relative z-10">
-        <h3 className="text-[22px] font-bold text-white tracking-tight">
-          AI Matching in Progress
-        </h3>
-        <p className="text-zinc-400 text-sm max-w-[320px] mx-auto leading-relaxed">
-          Comparing your GitHub contributions against thousands of open issues to find the perfect fit.
+        <p className="text-xs text-[#A8ADB6] leading-relaxed">
+          Comparing your recent commits and repository languages against active unassigned issues.
         </p>
-      </div>
 
-      {/* ─── Premium Progress Section ─── */}
-      <div className="w-full max-w-md mx-auto relative z-10 px-4">
-        {/* Progress bar container */}
-        <div className="relative mb-5">
-          {/* Track */}
-          <div className="w-full h-[6px] rounded-full bg-white/[0.04] border border-white/[0.04] overflow-hidden backdrop-blur-sm">
-            {/* Fill */}
+        <div className="space-y-3">
+          <div className="w-full h-1.5 rounded-[2px] bg-[#0B0C0E] border border-[#22242A] overflow-hidden">
             <div
-              className="h-full rounded-full relative transition-all duration-500 ease-out"
-              style={{
-                width: `${progress}%`,
-                background: 'linear-gradient(90deg, #7c3aed, #6366f1, #3b82f6, #6366f1, #7c3aed)',
-                backgroundSize: '200% 100%',
-                animation: 'sm-loading-gradient-shift 3s ease infinite',
-              }}
-            >
-              {/* Moving highlight on the fill */}
-              <div className="absolute inset-0 rounded-full overflow-hidden">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)',
-                    animation: 'sm-loading-bar-shine 2s ease-in-out infinite',
-                  }}
-                />
-              </div>
-              {/* Glow at the leading edge */}
-              <div className="absolute right-0 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-blue-400/40 blur-[6px]" />
-            </div>
-          </div>
-        </div>
-
-        {/* Status row */}
-        <div className="flex items-center justify-between">
-          {/* Animated status text with crossfade */}
-          <div className="flex items-center gap-2.5 min-w-0 flex-1 mr-4">
-            <div className="relative h-5 flex-1 overflow-hidden">
-              <div
-                className="absolute inset-0 flex items-center gap-2 transition-all duration-300"
-                style={{
-                  opacity: isTransitioning ? 0 : 1,
-                  transform: isTransitioning ? 'translateY(-8px)' : 'translateY(0)',
-                }}
-              >
-                {React.createElement(statuses[statusIndex].Icon, { className: 'w-3.5 h-3.5 text-purple-400 flex-shrink-0' })}
-                <span className="text-[11px] font-semibold text-zinc-400 tracking-wide truncate">
-                  {statuses[statusIndex].text}
-                </span>
-              </div>
-            </div>
+              className="h-full bg-[#DAFA9C] transition-all duration-300 ease-out"
+              style={{ width: `${progress}%` }}
+            />
           </div>
 
-          {/* Percentage */}
-          <div className="flex items-baseline gap-0.5 tabular-nums">
-            <span
-              className="text-2xl font-black tracking-tighter"
-              style={{
-                background: 'linear-gradient(135deg, #e9d5ff, #c4b5fd, #93c5fd)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              {progressPercent}
-            </span>
-            <span className="text-xs font-bold text-zinc-500">%</span>
+          <div className="flex items-center gap-2 text-xs font-mono text-[#A8ADB6]">
+            <CurrentIcon className="w-3.5 h-3.5 text-[#DAFA9C] shrink-0" />
+            <span className="truncate">{LOADING_STATUSES[statusIndex].text}</span>
           </div>
         </div>
       </div>
@@ -286,26 +135,21 @@ const SmartMatchLoadingScreen = () => {
   );
 };
 
-// Label preference selector component
 const LabelPreferences = ({ selectedLabels, onToggle }) => {
   return (
     <div className="flex flex-wrap gap-1.5">
       {LABEL_OPTIONS.map((opt) => {
         const isSelected = selectedLabels.includes(opt.id);
-        const colorMap = {
-          emerald: isSelected ? 'bg-emerald-500/5 text-emerald-400 border-emerald-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
-          blue: isSelected ? 'bg-blue-500/5 text-blue-400 border-blue-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
-          purple: isSelected ? 'bg-purple-500/5 text-purple-300 border-purple-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
-          green: isSelected ? 'bg-green-500/5 text-green-300 border-green-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
-          cyan: isSelected ? 'bg-cyan-500/5 text-cyan-300 border-cyan-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
-          yellow: isSelected ? 'bg-yellow-500/5 text-yellow-300 border-yellow-500/20' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/60 hover:border-zinc-750',
-        };
-
         return (
           <button
             key={opt.id}
+            type="button"
             onClick={() => onToggle(opt.id)}
-            className={`text-[10px] font-medium px-2 py-0.5 rounded border transition-all cursor-pointer ${colorMap[opt.color]}`}
+            className={`text-xs font-mono px-2.5 py-1 rounded-[4px] border transition-colors cursor-pointer ${
+              isSelected
+                ? "bg-[#17181B] text-[#DAFA9C] border-[#DAFA9C]/50 font-medium"
+                : "bg-[#0B0C0E] text-[#8C929C] border-[#22242A] hover:border-[#3A3E48] hover:text-[#F4F4F0]"
+            }`}
           >
             {opt.label}
           </button>
@@ -319,25 +163,31 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
   const navigate = useNavigate();
   const { isSupporter, loading: supporterLoading } = useSupporter();
   const [preferredLabels, setPreferredLabels] = useState(getStoredLabels);
-  
-  const { matches, userProfile, loading, error, fetchMatches, refresh, lastAnalyzedAt, isCached, limited, totalAvailable } = useSmartMatch(
-    username,
-    token,
-    { userId, preferredLabels }
-  );
-  
+
+  const {
+    matches,
+    userProfile,
+    loading,
+    error,
+    fetchMatches,
+    refresh,
+    lastAnalyzedAt,
+    isCached,
+    limited,
+    totalAvailable,
+  } = useSmartMatch(username, token, { userId, preferredLabels });
+
   const { isRateLimited, remainingCooldown, checkRateLimit, recordAttempt } = useRateLimiter({
     maxAttempts: 2,
-    windowMs: 5 * 60 * 1000,   // 5-minute window
-    cooldownMs: 60 * 1000,      // 60-second cooldown
+    windowMs: 5 * 60 * 1000,
+    cooldownMs: 60 * 1000,
   });
 
   const handleLabelToggle = (labelId) => {
-    setPreferredLabels(prev => {
+    setPreferredLabels((prev) => {
       let next;
       if (prev.includes(labelId)) {
-        next = prev.filter(l => l !== labelId);
-        // Don't allow empty — keep at least one
+        next = prev.filter((l) => l !== labelId);
         if (next.length === 0) return prev;
       } else {
         next = [...prev, labelId];
@@ -365,61 +215,57 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
     }
   }, [isSupporter, username]);
 
-  // Format time ago
   const getTimeAgo = (timestamp) => {
-    if (!timestamp) return '';
+    if (!timestamp) return "";
     const seconds = Math.floor((Date.now() - timestamp) / 1000);
-    if (seconds < 60) return 'just now';
+    if (seconds < 60) return "just now";
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes}m ago`;
     const hours = Math.floor(minutes / 60);
     return `${hours}h ago`;
   };
 
-  // ── Free preview intro for non-supporters (before their first run) ──
-  // Everyone gets a taste of Smart Match: we run the AI and reveal their top 2
-  // matches free. Supporters skip this (they auto-load the full list); free
-  // users who already ran fall through to the results + upgrade card below.
+  // Free preview intro for non-supporters
   if (!supporterLoading && !isSupporter && (!matches || matches.length === 0) && !loading) {
     return (
-      <div className="relative py-8">
-        <div className="bg-zinc-950/30 border border-zinc-800/60 rounded-xl p-8 max-w-md mx-auto text-center">
-          <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-[#00ADB5]/10 flex items-center justify-center border border-[#00ADB5]/25 text-[#00ADB5] shadow-[0_0_20px_rgba(0,173,181,0.15)]">
+      <div className="py-8">
+        <div className="bg-[#141518] border border-[#2B2E36] rounded-[4px] p-6 sm:p-8 max-w-md mx-auto">
+          <div className="w-11 h-11 mb-4 rounded-[4px] bg-[#0B0C0E] flex items-center justify-center border border-[#2B2E36] text-[#DAFA9C]">
             <GitPullRequest className="w-5 h-5" />
           </div>
 
-          <h3 className="text-lg font-bold text-white mb-2 tracking-tight">
-            Try AI Smart Matching — Free
+          <h3 className="text-lg font-semibold text-[#F4F4F0] mb-2 tracking-tight">
+            Preview AI Smart Matching
           </h3>
-          <p className="text-xs text-zinc-400 mb-6 leading-relaxed">
-            We'll analyze your GitHub profile, tech stack, and experience level and surface your{' '}
-            <span className="text-white font-semibold">top 2 matched issues</span> — on us.
-            Supporters unlock the full AI-ranked list and unlimited re-analysis.
+          <p className="text-xs sm:text-sm text-[#A8ADB6] mb-5 leading-relaxed">
+            Analyze your GitHub repositories and surface your{" "}
+            <span className="text-[#F4F4F0] font-medium">top 2 matched issues</span> for free. Supporters unlock the full ranked queue and unlimited re-scans.
           </p>
 
-          <div className="space-y-2.5 mb-6 text-left">
+          <ul className="space-y-2 mb-6">
             {[
-              'AI-analyzed tech stack matching',
-              'Personalized difficulty scoring',
-              'Specific "why this match" reasoning',
+              "Matches stack from your actual GitHub repos",
+              "Scores codebase scope against your experience",
+              "Includes concrete reasoning for each match",
             ].map((feature, i) => (
-              <div key={i} className="flex items-center gap-2 text-xs text-zinc-300">
-                <Zap className="w-3.5 h-3.5 text-[#00ADB5] flex-shrink-0" />
-                {feature}
-              </div>
+              <li key={i} className="flex items-center gap-2 text-xs text-[#A8ADB6]">
+                <Zap className="w-3.5 h-3.5 text-[#DAFA9C] shrink-0" />
+                <span>{feature}</span>
+              </li>
             ))}
-          </div>
+          </ul>
 
           {isRateLimited ? (
-            <div className="inline-flex items-center gap-2 text-amber-400 text-sm mb-1">
+            <div className="inline-flex items-center gap-2 text-[#F59E0B] text-xs font-mono mb-2">
               <ShieldAlert className="w-4 h-4" />
               Try again in {remainingCooldown}s
             </div>
           ) : (
             <button
+              type="button"
               onClick={handleAnalyze}
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-[#00ADB5] hover:bg-[#00c2cb] text-[#08090C] rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(0,173,181,0.25)] hover:shadow-[0_0_30px_rgba(0,173,181,0.4)] cursor-pointer disabled:opacity-50 text-sm"
+              className="w-full flex items-center justify-center gap-2 px-5 py-2.5 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] font-semibold transition-colors cursor-pointer disabled:opacity-50 text-xs min-h-[44px]"
             >
               <GitPullRequest className="w-4 h-4" />
               Get my 2 free matches
@@ -427,126 +273,120 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
           )}
 
           <button
-            onClick={() => navigate('/support')}
-            className="mt-3 block w-full text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors cursor-pointer"
+            type="button"
+            onClick={() => navigate("/support")}
+            className="mt-3 block w-full text-center text-xs text-[#8C929C] hover:text-[#F4F4F0] transition-colors cursor-pointer font-mono"
           >
-            or unlock unlimited matches — $9/mo
+            or unlock full queue — $9/mo
           </button>
         </div>
       </div>
     );
   }
 
-  // ── Loading State ──
   if (loading && (!matches || matches.length === 0)) {
     return <SmartMatchLoadingScreen />;
   }
 
-  // ── Error State ──
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center py-20">
-        <div className="w-14 h-14 rounded-2xl bg-red-500/10 flex items-center justify-center border border-red-500/20 mb-4">
-          <AlertCircle className="w-7 h-7 text-red-400" />
+      <div className="flex flex-col items-center justify-center py-16 bg-[#141518] border border-[#2B2E36] rounded-[4px] px-4">
+        <div className="w-12 h-12 rounded-[4px] bg-[#F87171]/10 flex items-center justify-center border border-[#F87171]/30 mb-4">
+          <AlertCircle className="w-6 h-6 text-[#F87171]" />
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">Something went wrong</h3>
-        <p className="text-sm text-gray-400 mb-4 text-center max-w-sm">{error}</p>
+        <h3 className="text-base font-semibold text-[#F4F4F0] mb-1.5">Smart Match failed</h3>
+        <p className="text-xs text-[#A8ADB6] mb-5 text-center max-w-sm">{error}</p>
         <button
+          type="button"
           onClick={refresh}
-          className="flex items-center gap-2 px-4 py-2 bg-[#15161E] border border-white/10 text-white rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 bg-[#17181B] border border-[#2B2E36] hover:border-[#3A3E48] text-[#F4F4F0] rounded-[4px] transition-colors cursor-pointer text-xs font-medium"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="w-3.5 h-3.5" />
           Try Again
         </button>
       </div>
     );
   }
 
-  // ── Results ──
   return (
     <div>
-      {/* Profile Summary + Label Preferences + Re-analyze */}
       {userProfile && (
-        <div className="bg-zinc-950/30 border border-zinc-800/60 rounded-xl p-4 mb-6">
+        <div className="bg-[#141518] border border-[#2B2E36] rounded-[4px] p-4 sm:p-5 mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800/60 flex items-center justify-center flex-shrink-0 text-purple-400">
-                <Target className="w-4.5 h-4.5" />
+              <div className="w-9 h-9 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] flex items-center justify-center shrink-0 text-[#DAFA9C]">
+                <Target className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-xs font-semibold text-white">Your Tech Profile</h3>
-                <div className="flex flex-wrap gap-1.5 mt-1">
-                  {userProfile.techStack && userProfile.techStack.length > 0 ? (
-                    userProfile.techStack.map((tech) => (
-                      <span
-                        key={tech}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-350 border border-zinc-800"
-                      >
-                        {tech}
-                      </span>
-                    ))
-                  ) : (
-                    userProfile.topLanguages.map((lang) => (
-                      <span
-                        key={lang.language}
-                        className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-350 border border-zinc-800"
-                      >
-                        {lang.language}
-                      </span>
-                    ))
-                  )}
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-900 text-zinc-350 border border-zinc-800">
+                <h3 className="text-xs font-mono uppercase tracking-wider text-[#F4F4F0]">
+                  Detected Stack Profile
+                </h3>
+                <div className="flex flex-wrap gap-1.5 mt-1.5">
+                  {userProfile.techStack && userProfile.techStack.length > 0
+                    ? userProfile.techStack.map((tech) => (
+                        <span
+                          key={tech}
+                          className="text-xs font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#A8ADB6] border border-[#22242A]"
+                        >
+                          {tech}
+                        </span>
+                      ))
+                    : userProfile.topLanguages.map((lang) => (
+                        <span
+                          key={lang.language}
+                          className="text-xs font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#A8ADB6] border border-[#22242A]"
+                        >
+                          {lang.language}
+                        </span>
+                      ))}
+                  <span className="text-xs font-mono px-2 py-0.5 rounded-[4px] bg-[#17181B] text-[#DAFA9C] border border-[#2B2E36]">
                     {userProfile.experienceLevel}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t border-zinc-800/60 sm:border-0">
-              {/* Cache info */}
+            <div className="flex items-center justify-between sm:justify-end gap-3 pt-3 sm:pt-0 border-t border-[#22242A] sm:border-0">
               {lastAnalyzedAt && (
-                <span className="flex items-center gap-1 text-[11px] font-mono text-zinc-550">
-                  <Clock className="w-3 h-3" />
+                <span className="flex items-center gap-1.5 text-xs font-mono text-[#8C929C] tabular-nums">
+                  <Clock className="w-3.5 h-3.5" />
                   {getTimeAgo(lastAnalyzedAt)}
                 </span>
               )}
-              {/* Re-analyze button */}
               {isRateLimited ? (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-zinc-900 text-amber-500 border border-amber-500/20 rounded">
+                <div className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono bg-[#0B0C0E] text-[#F59E0B] border border-[#F59E0B]/30 rounded-[4px] tabular-nums">
                   <ShieldAlert className="w-3.5 h-3.5" />
                   Wait {remainingCooldown}s
                 </div>
               ) : (
                 <button
+                  type="button"
                   onClick={handleRefresh}
                   disabled={loading}
-                  className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-white text-black hover:bg-zinc-200 border border-zinc-800 rounded transition-colors cursor-pointer disabled:opacity-50"
+                  className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] transition-colors cursor-pointer disabled:opacity-50"
                   title="Re-analyze your profile and find new matches"
                 >
-                  <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
-                  {loading ? 'Analyzing...' : 'Re-analyze'}
+                  <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                  {loading ? "Analyzing..." : "Re-analyze"}
                 </button>
               )}
             </div>
           </div>
 
-          {/* Label Preferences */}
-          <div className="mt-3 pt-3 border-t border-zinc-800/60">
+          <div className="mt-4 pt-3.5 border-t border-[#22242A]">
             <div className="flex items-center gap-2 mb-2 select-none">
-              <Tag className="w-3 h-3 text-zinc-500" />
-              <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest">Issue Labels</span>
+              <Tag className="w-3.5 h-3.5 text-[#8C929C]" />
+              <span className="text-[11px] font-mono text-[#8C929C] uppercase tracking-wider">
+                Issue Labels
+              </span>
             </div>
-            <LabelPreferences
-              selectedLabels={preferredLabels}
-              onToggle={handleLabelToggle}
-            />
+            <LabelPreferences selectedLabels={preferredLabels} onToggle={handleLabelToggle} />
           </div>
         </div>
       )}
 
-      {/* Matched Issues Grid */}
       {matches && matches.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {matches.map((issue) => (
             <SmartMatchCard
               key={issue.id}
@@ -555,69 +395,70 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
               onToggleBookmark={() => onToggleBookmark?.(issue)}
             />
           ))}
-          {/* Free preview: lock the remaining matches behind an upgrade. */}
           {limited && (
             <UpgradeMatchCard
               moreCount={totalAvailable ? Math.max(totalAvailable - matches.length, 0) : null}
-              onUpgrade={() => navigate('/support')}
+              onUpgrade={() => navigate("/support")}
             />
           )}
         </div>
       ) : (
-        <div className="text-center py-20">
-          <GitPullRequest className="w-12 h-12 text-[#00ADB5]/40 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-white mb-2">No matches yet</h3>
-          <p className="text-sm text-gray-500 mb-6">Click the button below to analyze your profile and find matching issues.</p>
+        <div className="text-center py-16 bg-[#141518] border border-[#2B2E36] rounded-[4px] px-4">
+          <GitPullRequest className="w-10 h-10 text-[#DAFA9C] mx-auto mb-3" />
+          <h3 className="text-base font-semibold text-[#F4F4F0] mb-1.5">No matches generated yet</h3>
+          <p className="text-xs text-[#A8ADB6] mb-5">
+            Run a quick scan of your public GitHub repos to rank matching open issues.
+          </p>
           {isRateLimited && (
-            <div className="flex items-center gap-2 text-amber-400 text-sm mb-4">
+            <div className="inline-flex items-center gap-2 text-[#F59E0B] text-xs font-mono mb-4">
               <ShieldAlert className="w-4 h-4" />
               Rate limited — try again in {remainingCooldown}s
             </div>
           )}
-          <button
-            onClick={handleAnalyze}
-            disabled={loading || isRateLimited}
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#00ADB5] hover:bg-[#00c2cb] text-[#08090C] rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(0,173,181,0.25)] hover:shadow-[0_0_30px_rgba(0,173,181,0.4)] cursor-pointer disabled:opacity-50"
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : isRateLimited ? (
-              <ShieldAlert className="w-4 h-4" />
-            ) : (
-              <GitPullRequest className="w-4 h-4" />
-            )}
-            {loading ? 'Analyzing...' : isRateLimited ? `Wait ${remainingCooldown}s` : 'Analyze My Profile'}
-          </button>
+          <div>
+            <button
+              type="button"
+              onClick={handleAnalyze}
+              disabled={loading || isRateLimited}
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] font-semibold transition-colors cursor-pointer disabled:opacity-50 text-xs"
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : isRateLimited ? (
+                <ShieldAlert className="w-4 h-4" />
+              ) : (
+                <GitPullRequest className="w-4 h-4" />
+              )}
+              {loading ? "Analyzing..." : isRateLimited ? `Wait ${remainingCooldown}s` : "Analyze My Profile"}
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
 };
 
-// ── Smart Match Issue Card ──
 const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   const matchPercentage = Math.round((issue.matchScore || 0) * 100);
 
-  // Color-code match scores
-  const getScoreColor = (pct) => {
-    if (pct >= 80) return { text: 'text-emerald-400', bg: 'bg-emerald-500/5', border: 'border-emerald-500/25' };
-    if (pct >= 50) return { text: 'text-amber-400', bg: 'bg-amber-500/5', border: 'border-amber-500/25' };
-    return { text: 'text-zinc-400', bg: 'bg-white/5', border: 'border-zinc-800' };
+  const getScoreStyle = (pct) => {
+    if (pct >= 80) return "text-[#34D399] border-[#34D399]/35 bg-[#34D399]/10";
+    if (pct >= 50) return "text-[#F59E0B] border-[#F59E0B]/35 bg-[#F59E0B]/10";
+    return "text-[#A8ADB6] border-[#2B2E36] bg-[#0B0C0E]";
   };
 
-  const scoreColor = getScoreColor(matchPercentage);
-
-  // Format freshness
   const getFreshness = () => {
     if (issue.created_days_ago != null) {
-      if (issue.created_days_ago === 0) return 'Today';
-      if (issue.created_days_ago === 1) return '1d ago';
+      if (issue.created_days_ago === 0) return "Today";
+      if (issue.created_days_ago === 1) return "1d ago";
       return `${issue.created_days_ago}d ago`;
     }
     if (issue.created_at) {
-      const days = Math.floor((Date.now() - new Date(issue.created_at).getTime()) / (1000 * 60 * 60 * 24));
-      if (days === 0) return 'Today';
-      if (days === 1) return '1d ago';
+      const days = Math.floor(
+        (Date.now() - new Date(issue.created_at).getTime()) / (1000 * 60 * 60 * 24)
+      );
+      if (days === 0) return "Today";
+      if (days === 1) return "1d ago";
       return `${days}d ago`;
     }
     return null;
@@ -626,140 +467,142 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   const freshness = getFreshness();
 
   return (
-    <div className="group flex flex-col h-full bg-zinc-950/25 border border-zinc-800/60 rounded-xl p-6 transition-all duration-300 hover:border-zinc-750 hover:bg-white/[0.01]">
-      {/* Card Header: AI Match & Bookmark */}
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex flex-col gap-1.5">
-          <div className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded ${scoreColor.bg} border ${scoreColor.border} w-fit`}>
-            <BrainCircuit className={`w-3.5 h-3.5 ${scoreColor.text}`} />
-            <span className="text-[10px] font-bold text-white tracking-wider uppercase">AI Match</span>
-            <span className="w-1 h-1 rounded-full bg-white/20" />
-            <span className={`text-[10px] font-bold font-mono ${scoreColor.text}`}>{matchPercentage}%</span>
-          </div>
+    <div className="group flex flex-col h-full bg-[#141518] border border-[#2B2E36] hover:border-[#3A3E48] rounded-[4px] p-5 transition-colors">
+      <div className="flex items-start justify-between mb-4">
+        <div
+          className={`flex items-center gap-2 px-2.5 py-1 rounded-[4px] border text-xs font-mono tabular-nums ${getScoreStyle(
+            matchPercentage
+          )}`}
+        >
+          <span>MATCH SCORE</span>
+          <span className="font-semibold">{matchPercentage}%</span>
         </div>
-        
+
         <button
+          type="button"
+          aria-label={isBookmarked ? "Remove bookmark" : "Bookmark issue"}
           onClick={(e) => {
             e.preventDefault();
             onToggleBookmark?.();
           }}
-          className={`p-1.5 rounded transition-all duration-200 ${
+          className={`p-1.5 rounded-[4px] border transition-colors cursor-pointer ${
             isBookmarked
-              ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-              : 'text-zinc-500 hover:text-white hover:bg-white/5 border border-transparent'
+              ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/40"
+              : "bg-[#0B0C0E] text-[#8C929C] hover:text-[#F4F4F0] border-[#22242A] hover:border-[#3A3E48]"
           }`}
         >
           {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
         </button>
       </div>
 
-      {/* Repo Metadata */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-5 h-5 rounded bg-zinc-900 border border-zinc-800/60 flex items-center justify-center overflow-hidden">
-          <img 
-            src={`https://github.com/${issue.repo.split('/')[0]}.png`} 
-            alt="" 
+      <div className="flex items-center gap-2 mb-2.5 text-xs font-mono text-[#8C929C]">
+        <div className="w-5 h-5 rounded-[2px] bg-[#0B0C0E] border border-[#22242A] overflow-hidden shrink-0">
+          <img
+            src={`https://github.com/${issue.repo.split("/")[0]}.png`}
+            alt=""
             className="w-full h-full object-cover"
-            onError={(e) => { e.target.style.display = 'none'; }}
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
           />
         </div>
-        <span className="text-xs font-mono font-medium text-zinc-400 truncate hover:text-white transition-colors">{issue.repo}</span>
-        {/* Repo stars */}
+        <span className="text-[#A8ADB6] truncate">{issue.repo}</span>
         {issue.repo_stars != null && (
-          <span className="flex items-center gap-0.5 text-[10px] font-mono text-zinc-550 ml-auto">
-            <Star className="w-3 h-3 text-zinc-650" />
-            {issue.repo_stars >= 1000 ? `${(issue.repo_stars / 1000).toFixed(1)}k` : issue.repo_stars}
+          <span className="flex items-center gap-1 ml-auto tabular-nums">
+            <Star className="w-3 h-3" />
+            {issue.repo_stars >= 1000
+              ? `${(issue.repo_stars / 1000).toFixed(1)}k`
+              : issue.repo_stars}
           </span>
         )}
-        {/* Freshness */}
         {freshness && (
-          <span className="flex items-center gap-0.5 text-[10px] font-mono text-zinc-550">
+          <span className="flex items-center gap-1 tabular-nums">
             <Clock className="w-3 h-3" />
             {freshness}
           </span>
         )}
       </div>
 
-      {/* Title */}
-      <h3 className="text-base font-semibold text-white mb-3 leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-purple-400 transition-colors">
+      <h3 className="text-[15px] font-semibold text-[#F4F4F0] mb-3 leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-[#DAFA9C] transition-colors">
         <a
-          href={withUTM(issue.url, { medium: 'smart_match', content: 'title_click' })}
+          href={withUTM(issue.url, { medium: "smart_match", content: "title_click" })}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => trackIssueClick({ issueUrl: issue.url, source: 'smart_match', repo: issue.repo, action: 'title_click' })}
+          onClick={() =>
+            trackIssueClick({
+              issueUrl: issue.url,
+              source: "smart_match",
+              repo: issue.repo,
+              action: "title_click",
+            })
+          }
         >
           {issue.title}
         </a>
       </h3>
 
-      {/* AI Insight Section */}
       {issue.matchReason && (
-        <div className="mb-6 p-4 rounded-lg bg-white/[0.01] border border-zinc-800/60 relative overflow-hidden">
-          <div className="text-[9px] font-bold text-zinc-500 uppercase tracking-widest mb-1.5 flex items-center gap-1">
-            <Sparkles className="w-3 h-3" />
-            Why this match?
+        <div className="mb-5 p-3.5 rounded-[4px] bg-[#0B0C0E] border border-[#22242A]">
+          <div className="text-[11px] font-mono text-[#DAFA9C] uppercase tracking-wider mb-1">
+            Why this matches your repos
           </div>
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            {issue.matchReason}
-          </p>
-          {/* Subtle gradient accent — color matches score */}
-          <div className={`absolute top-0 left-0 w-1 h-full ${
-            matchPercentage >= 80 ? 'bg-emerald-500/30' :
-            matchPercentage >= 50 ? 'bg-amber-500/30' : 'bg-zinc-550/30'
-          }`} />
+          <p className="text-xs text-[#A8ADB6] leading-relaxed">{issue.matchReason}</p>
         </div>
       )}
 
-      {/* Tags & Actions */}
-      <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-800/60">
+      <div className="flex items-center justify-between mt-auto pt-3.5 border-t border-[#22242A] gap-2">
         <div className="flex flex-wrap gap-1.5">
           {issue.labels?.slice(0, 2).map((label, i) => (
             <span
               key={i}
-              className="text-[9px] px-2 py-0.5 rounded-full bg-white/[0.02] text-zinc-400 border border-zinc-800 uppercase tracking-wider font-semibold"
+              className="text-[11px] font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#A8ADB6] border border-[#22242A]"
             >
               {label}
             </span>
           ))}
         </div>
-        
+
         <a
-          href={withUTM(issue.url, { medium: 'smart_match', content: 'view_issue_btn' })}
+          href={withUTM(issue.url, { medium: "smart_match", content: "view_issue_btn" })}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 text-xs font-bold text-white hover:text-purple-400 transition-colors group/link"
-          onClick={() => trackIssueClick({ issueUrl: issue.url, source: 'smart_match', repo: issue.repo, action: 'view_issue' })}
+          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#DAFA9C] hover:underline shrink-0"
+          onClick={() =>
+            trackIssueClick({
+              issueUrl: issue.url,
+              source: "smart_match",
+              repo: issue.repo,
+              action: "view_issue",
+            })
+          }
         >
-          View Issue
-          <ArrowRight className="w-3.5 h-3.5 transform group-hover/link:translate-x-0.5 transition-transform" />
+          Open Issue
+          <ArrowRight className="w-3.5 h-3.5" />
         </a>
       </div>
     </div>
   );
 };
 
-// ── Upgrade card shown after the free preview matches ──
 const UpgradeMatchCard = ({ moreCount, onUpgrade }) => (
-  <div className="relative flex flex-col items-center justify-center text-center h-full min-h-[280px] bg-zinc-950/25 border border-purple-500/20 rounded-xl p-6 overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-blue-600/5 pointer-events-none" />
-    <div className="relative z-10 flex flex-col items-center">
-      <div className="w-11 h-11 mb-4 rounded-xl bg-purple-950/40 flex items-center justify-center border border-purple-500/30 text-purple-300">
-        <Lock className="w-5 h-5" />
-      </div>
-      <h3 className="text-base font-bold text-white mb-1.5">
-        {moreCount ? `${moreCount}+ more matches` : 'More matches'} locked
-      </h3>
-      <p className="text-xs text-zinc-400 mb-5 leading-relaxed max-w-[210px]">
-        You're seeing your top 2 free matches. Unlock the full AI-ranked list and unlimited re-analysis.
-      </p>
-      <button
-        onClick={onUpgrade}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-white text-black rounded font-semibold hover:bg-zinc-200 transition-all text-xs cursor-pointer"
-      >
-        <Crown className="w-4 h-4" />
-        Become a Supporter — $9/mo
-      </button>
+  <div className="flex flex-col items-center justify-center text-center h-full min-h-[280px] bg-[#141518] border border-[#DAFA9C]/35 rounded-[4px] p-6">
+    <div className="w-10 h-10 mb-4 rounded-[4px] bg-[#0B0C0E] flex items-center justify-center border border-[#2B2E36] text-[#DAFA9C]">
+      <Lock className="w-5 h-5" />
     </div>
+    <h3 className="text-base font-semibold text-[#F4F4F0] mb-1.5">
+      {moreCount ? `${moreCount}+ additional matches` : "Full match queue locked"}
+    </h3>
+    <p className="text-xs text-[#A8ADB6] mb-5 leading-relaxed max-w-[230px]">
+      Core previews your top 2 matched issues. Upgrade to unlock the full ranked list and unlimited re-scans.
+    </p>
+    <button
+      type="button"
+      onClick={onUpgrade}
+      className="inline-flex items-center gap-2 px-4 py-2 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] font-semibold transition-colors text-xs cursor-pointer"
+    >
+      <Crown className="w-4 h-4" />
+      Become a Supporter — $9/mo
+    </button>
   </div>
 );
 

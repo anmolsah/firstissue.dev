@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import {
-  BookOpen,
   GitFork,
   Terminal,
   GitBranch,
@@ -12,23 +11,21 @@ import {
   Check,
   ExternalLink,
   Sprout,
-  ArrowRight,
-  Sparkles,
   HelpCircle,
-  AlertCircle,
-  Users,
-  ShieldCheck
+  ShieldCheck,
+  Clock,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const ContributionBookPage = () => {
   const { user } = useAuth();
-  
-  // Extract github username if logged in, otherwise default to placeholder
+
   const initialUsername = user?.user_metadata?.user_name || "";
   const [username, setUsername] = useState(initialUsername || "your-username");
   const [fullName, setFullName] = useState(user?.user_metadata?.full_name || "Your Full Name");
-  const [personalMessage, setPersonalMessage] = useState("Excited to make my first open source contribution! 🌱");
+  const [personalMessage, setPersonalMessage] = useState(
+    "Excited to make my first open source contribution."
+  );
   const [copiedIndex, setCopiedIndex] = useState(null);
 
   const cleanUsername = username.trim() || "your-username";
@@ -55,175 +52,173 @@ const ContributionBookPage = () => {
   }`;
 
   return (
-    <div className="min-h-screen bg-[#0B0C10] text-[#EEEEEE] pt-20 sm:pt-24 pb-16 sm:pb-20 px-3.5 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Ambience */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-10 left-1/4 w-[500px] h-[300px] bg-emerald-500/5 rounded-full blur-[130px]" />
-        <div className="absolute top-40 right-1/4 w-[400px] h-[300px] bg-blue-500/5 rounded-full blur-[120px]" />
-      </div>
-
-      <div className="max-w-4xl mx-auto relative z-10">
-        {/* Breadcrumb & Navigation */}
-        <div className="flex items-center gap-2 text-xs text-zinc-500 mb-6">
-          <Link to="/" className="hover:text-zinc-300 transition-colors">
+    <main className="min-h-screen bg-[#0F0F0F] text-[#F4F4F0] pt-[96px] pb-20 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        {/* Breadcrumb */}
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-mono text-[#8C929C] mb-6">
+          <Link to="/" className="hover:text-[#F4F4F0] transition-colors">
             Home
           </Link>
           <span>/</span>
-          <span className="text-zinc-300">Contribution Book</span>
-        </div>
+          <span className="text-[#A8ADB6]">Contribution Book</span>
+        </nav>
 
-        {/* Hero Banner */}
-        <div className="text-center max-w-2xl mx-auto mb-10 sm:mb-12">
-
-          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white mb-3 sm:mb-4">
-            The Contribution{" "}
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-              Book
-            </span>
+        {/* Hero Header */}
+        <div className="max-w-2xl mb-10">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#F4F4F0] mb-3 text-balance">
+            The Contribution Book
           </h1>
-
-          <p className="text-sm sm:text-base text-zinc-400 leading-relaxed">
-            Welcome to your very first open source contribution! Follow these 7 easy steps
-            to submit a pull request and permanently plant your leaf on the{" "}
-            <Link to="/#user-count-section" className="text-emerald-400 hover:underline">
+          <p className="text-sm sm:text-base text-[#A8ADB6] leading-relaxed max-w-[60ch] text-pretty">
+            Follow seven exact git steps to fork this repository, add your developer card to{" "}
+            <code className="font-mono text-xs text-[#F4F4F0] bg-[#141518] px-1.5 py-0.5 rounded-[4px] border border-[#22242A]">
+              src/data/contributors.json
+            </code>
+            , and appear on the{" "}
+            <Link to="/#user-count-section" className="text-[#DAFA9C] hover:underline">
               Contribution Tree
             </Link>
             .
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-6 text-xs text-zinc-400">
-            <span className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded-md flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              100% Beginner Friendly
+          <div className="flex flex-wrap items-center gap-2.5 mt-5 text-xs text-[#A8ADB6]">
+            <span className="px-2.5 py-1 bg-[#141518] border border-[#2B2E36] rounded-[4px] flex items-center gap-1.5 font-mono">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#34D399]" />
+              Beginner friendly
             </span>
-            <span className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded-md flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              Takes ~5 Minutes
+            <span className="px-2.5 py-1 bg-[#141518] border border-[#2B2E36] rounded-[4px] flex items-center gap-1.5 font-mono">
+              <Clock className="w-3.5 h-3.5 text-[#DAFA9C]" />
+              Takes ~5 min
             </span>
-            <span className="px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded-md flex items-center gap-1.5">
-              <Sprout className="w-3.5 h-3.5 text-teal-400" />
-              Earns Contributor Badge
+            <span className="px-2.5 py-1 bg-[#141518] border border-[#2B2E36] rounded-[4px] flex items-center gap-1.5 font-mono">
+              <Sprout className="w-3.5 h-3.5 text-[#34D399]" />
+              Unlocks First Leaf badge
             </span>
           </div>
         </div>
 
         {/* Dynamic Personalization Box */}
-        <div className="bg-zinc-900/70 border border-zinc-800/90 rounded-xl p-5 mb-10 shadow-xl backdrop-blur-md">
-          <div className="flex items-center gap-2 mb-3 text-xs font-bold text-zinc-300 uppercase tracking-wider">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
+        <div className="bg-[#141518] border border-[#2B2E36] rounded-[4px] p-5 mb-10">
+          <div className="flex items-center gap-2 mb-2 text-xs font-mono font-semibold text-[#F4F4F0] uppercase tracking-wider">
+            <Terminal className="w-4 h-4 text-[#DAFA9C]" />
             Personalize Your Git Commands
           </div>
-          <p className="text-xs text-zinc-400 mb-4">
-            Enter your GitHub username below. All the terminal commands throughout this guide
-            will update automatically so you can copy and paste with zero errors!
+          <p className="text-xs sm:text-sm text-[#A8ADB6] mb-4 max-w-[60ch] text-pretty">
+            Enter your GitHub handle once below. Every shell command and JSON snippet updates automatically.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[11px] font-semibold text-zinc-400 mb-1">
-                Your GitHub Username
+              <label
+                htmlFor="cb-github-username"
+                className="block text-xs font-medium text-[#A8ADB6] mb-1.5"
+              >
+                GitHub Username
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500 font-mono">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs text-[#8C929C] font-mono">
                   @
                 </span>
                 <input
+                  id="cb-github-username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9-_]/g, ""))}
                   placeholder="e.g. torvalds"
-                  className="w-full pl-7 pr-3 py-2 text-xs bg-[#0B0C10] border border-zinc-700/80 rounded-lg text-white font-mono placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-all"
+                  className="w-full pl-7 pr-3 py-2 text-sm bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-[#F4F4F0] font-mono placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-zinc-400 mb-1">
-                Your Display Name
+              <label
+                htmlFor="cb-full-name"
+                className="block text-xs font-medium text-[#A8ADB6] mb-1.5"
+              >
+                Display Name
               </label>
               <input
+                id="cb-full-name"
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="e.g. Ada Lovelace"
-                className="w-full px-3 py-2 text-xs bg-[#0B0C10] border border-zinc-700/80 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-all"
+                className="w-full px-3 py-2 text-sm bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors"
               />
             </div>
           </div>
         </div>
 
-        {/* Step by Step Walkthrough */}
-        {/* Step by Step Walkthrough */}
-        <div className="space-y-4 sm:space-y-6">
+        {/* 7 Step Walkthrough */}
+        <div className="divide-y divide-[#22242A] border-t border-[#22242A]">
           {/* Step 1: Fork */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
+          <div className="py-6">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-[#DAFA9C] font-mono font-semibold text-sm flex items-center justify-center shrink-0 tabular-nums">
                 1
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                  <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                    <GitFork className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <h2 className="text-base font-semibold text-[#F4F4F0] flex items-center gap-2">
+                    <GitFork className="w-4 h-4 text-[#DAFA9C] shrink-0" />
                     <span>Fork the Repository</span>
-                  </h3>
+                  </h2>
                   <a
                     href={`${repoUrl}/fork`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-md transition-all self-start sm:self-auto"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#F4F4F0] bg-[#17181B] hover:bg-[#1C1E23] border border-[#2B2E36] hover:border-[#3A3E48] rounded-[4px] transition-colors self-start sm:self-auto"
                   >
-                    <span>Click to Fork on GitHub</span>
-                    <ExternalLink className="w-3 h-3 text-zinc-400" />
+                    <span>Fork on GitHub</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-[#A8ADB6]" />
                   </a>
                 </div>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Forking creates an exact copy of the <strong>firstissue.dev</strong> codebase under your personal
-                  GitHub account. Click the button above to create your fork.
+                <p className="text-sm text-[#A8ADB6] leading-relaxed max-w-[60ch] text-pretty">
+                  Forking creates a writable copy of <strong className="text-[#F4F4F0]">firstissue.dev</strong> under your personal GitHub account.
                 </p>
               </div>
             </div>
           </div>
 
           {/* Step 2: Clone */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
+          <div className="py-6">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-[#DAFA9C] font-mono font-semibold text-sm flex items-center justify-center shrink-0 tabular-nums">
                 2
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 mb-2">
-                  <Terminal className="w-4 h-4 text-cyan-400 flex-shrink-0" />
-                  <span>Clone your fork to your computer</span>
-                </h3>
-                <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
-                  Open your terminal or command prompt, and paste this command to download your copy:
+                <h2 className="text-base font-semibold text-[#F4F4F0] flex items-center gap-2 mb-2">
+                  <Terminal className="w-4 h-4 text-[#A8ADB6] shrink-0" />
+                  <span>Clone your fork locally</span>
+                </h2>
+                <p className="text-sm text-[#A8ADB6] mb-3 leading-relaxed max-w-[60ch] text-pretty">
+                  Open your terminal and clone your fork into a local working directory:
                 </p>
 
-                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300 w-full max-w-full overflow-hidden">
+                <div className="relative bg-[#141518] border border-[#2B2E36] rounded-[4px] p-3.5 font-mono text-xs text-[#F4F4F0]">
                   <button
+                    type="button"
+                    aria-label="Copy clone command"
                     onClick={() =>
                       copyToClipboard(
                         `git clone https://github.com/${cleanUsername}/firstissue.dev.git\ncd firstissue.dev`,
                         2
                       )
                     }
-                    className="absolute right-2 top-2 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all z-10"
-                    title="Copy command"
+                    className="absolute right-2.5 top-2.5 p-1.5 rounded-[4px] bg-[#0B0C0E] hover:bg-[#1C1E23] border border-[#2B2E36] text-[#A8ADB6] hover:text-[#F4F4F0] transition-colors cursor-pointer"
                   >
                     {copiedIndex === 2 ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-[#34D399]" />
                     ) : (
                       <Copy className="w-3.5 h-3.5" />
                     )}
                   </button>
-                  <div className="overflow-x-auto pr-8">
-                    <div className="text-zinc-500 select-none"># Clone your fork</div>
-                    <div className="text-emerald-400 whitespace-nowrap">
+                  <div className="overflow-x-auto pr-10 space-y-1">
+                    <div className="text-[#8C929C] select-none"># Clone your fork</div>
+                    <div className="text-[#34D399] whitespace-nowrap">
                       git clone https://github.com/{cleanUsername}/firstissue.dev.git
                     </div>
-                    <div className="text-zinc-500 select-none mt-1"># Navigate into the project folder</div>
-                    <div className="text-white whitespace-nowrap">cd firstissue.dev</div>
+                    <div className="text-[#8C929C] select-none pt-1"># Enter directory</div>
+                    <div className="text-[#F4F4F0] whitespace-nowrap">cd firstissue.dev</div>
                   </div>
                 </div>
               </div>
@@ -231,104 +226,105 @@ const ContributionBookPage = () => {
           </div>
 
           {/* Step 3: Branch */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
+          <div className="py-6">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-[#DAFA9C] font-mono font-semibold text-sm flex items-center justify-center shrink-0 tabular-nums">
                 3
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 mb-2">
-                  <GitBranch className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                  <span>Create a new branch</span>
-                </h3>
-                <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
-                  In Git, you always make changes in a separate branch instead of <code className="text-zinc-300">main</code>:
+                <h2 className="text-base font-semibold text-[#F4F4F0] flex items-center gap-2 mb-2">
+                  <GitBranch className="w-4 h-4 text-[#DAFA9C] shrink-0" />
+                  <span>Create a feature branch</span>
+                </h2>
+                <p className="text-sm text-[#A8ADB6] mb-3 leading-relaxed max-w-[60ch] text-pretty">
+                  Keep changes isolated from <code className="text-[#F4F4F0] font-mono text-xs">main</code> on a dedicated branch:
                 </p>
 
-                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300 w-full max-w-full overflow-hidden">
+                <div className="relative bg-[#141518] border border-[#2B2E36] rounded-[4px] p-3.5 font-mono text-xs">
                   <button
-                    onClick={() =>
-                      copyToClipboard(`git switch -c add-${cleanUsername}`, 3)
-                    }
-                    className="absolute right-2 top-2 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all z-10"
+                    type="button"
+                    aria-label="Copy branch command"
+                    onClick={() => copyToClipboard(`git switch -c add-${cleanUsername}`, 3)}
+                    className="absolute right-2.5 top-2.5 p-1.5 rounded-[4px] bg-[#0B0C0E] hover:bg-[#1C1E23] border border-[#2B2E36] text-[#A8ADB6] hover:text-[#F4F4F0] transition-colors cursor-pointer"
                   >
                     {copiedIndex === 3 ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-[#34D399]" />
                     ) : (
                       <Copy className="w-3.5 h-3.5" />
                     )}
                   </button>
-                  <div className="overflow-x-auto pr-8">
-                    <div className="text-purple-400 whitespace-nowrap">git switch -c add-{cleanUsername}</div>
+                  <div className="overflow-x-auto pr-10">
+                    <div className="text-[#DAFA9C] whitespace-nowrap">git switch -c add-{cleanUsername}</div>
                   </div>
                 </div>
-                <div className="mt-2 text-[11px] text-zinc-500">
-                  Tip: If your Git version does not support <code>git switch</code>, use{" "}
-                  <code className="text-zinc-400">git checkout -b add-{cleanUsername}</code>
-                </div>
+                <p className="mt-2 text-xs text-[#8C929C]">
+                  Older Git versions: <code className="text-[#A8ADB6]">git checkout -b add-{cleanUsername}</code>
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Step 4: Add name to contributors.json */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700 overflow-hidden">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
+          {/* Step 4: Edit contributors.json */}
+          <div className="py-6 overflow-hidden">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-[#DAFA9C] font-mono font-semibold text-sm flex items-center justify-center shrink-0 tabular-nums">
                 4
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm sm:text-base font-bold text-white flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
-                  <FileCode2 className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                  <span>Add yourself to</span>
-                  <code className="text-[11px] sm:text-xs bg-zinc-800 px-1.5 py-0.5 rounded text-amber-300 font-mono break-all">
+                <h2 className="text-base font-semibold text-[#F4F4F0] flex flex-wrap items-center gap-1.5 mb-2">
+                  <FileCode2 className="w-4 h-4 text-[#F59E0B] shrink-0" />
+                  <span>Add your entry to</span>
+                  <code className="text-xs bg-[#141518] px-1.5 py-0.5 rounded-[4px] border border-[#22242A] text-[#F59E0B] font-mono break-all">
                     src/data/contributors.json
                   </code>
-                </h3>
-                <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
-                  Open <strong className="text-zinc-200">src/data/contributors.json</strong> in your editor.
-                  Customize your message below, then copy this block and paste it inside the JSON list:
+                </h2>
+                <p className="text-sm text-[#A8ADB6] mb-3 leading-relaxed max-w-[60ch] text-pretty">
+                  Open <strong className="text-[#F4F4F0]">src/data/contributors.json</strong>, customize your quote below, and append the JSON object to the array:
                 </p>
 
                 <div className="mb-3">
-                  <label className="block text-[11px] font-semibold text-zinc-400 mb-1">
-                    Your Personal Contributor Message / Quote
+                  <label
+                    htmlFor="cb-personal-message"
+                    className="block text-xs font-medium text-[#A8ADB6] mb-1.5"
+                  >
+                    Contributor Message
                   </label>
                   <input
+                    id="cb-personal-message"
                     type="text"
                     value={personalMessage}
                     onChange={(e) => setPersonalMessage(e.target.value)}
-                    placeholder="e.g. My first PR! Hello open source world 🌱"
-                    className="w-full max-w-full px-3 py-2 text-xs bg-[#0B0C10] border border-zinc-700/80 rounded-lg text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500 transition-all"
+                    placeholder="e.g. My first PR — hello open source"
+                    className="w-full px-3 py-2 text-sm bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors"
                   />
                 </div>
 
-                {/* Responsive IDE Code Preview Card */}
-                <div className="w-full max-w-full rounded-lg border border-zinc-800 bg-[#0d0e12] overflow-hidden">
-                  <div className="flex items-center justify-between px-3 py-2 bg-zinc-950/80 border-b border-zinc-800/80 text-[11px] font-mono text-zinc-400">
-                    <div className="flex items-center gap-1.5 truncate">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" />
-                      <span className="truncate text-zinc-300">src/data/contributors.json</span>
+                <div className="w-full rounded-[4px] border border-[#2B2E36] bg-[#141518] overflow-hidden">
+                  <div className="flex items-center justify-between px-3.5 py-2 bg-[#17181B] border-b border-[#22242A] text-xs font-mono text-[#A8ADB6]">
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="w-2 h-2 rounded-full bg-[#34D399] shrink-0" />
+                      <span className="truncate text-[#F4F4F0]">src/data/contributors.json</span>
                     </div>
                     <button
+                      type="button"
                       onClick={() => copyToClipboard(jsonSnippet, 4)}
-                      className="px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all flex items-center gap-1.5 flex-shrink-0 text-[11px]"
-                      title="Copy JSON snippet"
+                      className="px-2.5 py-1 rounded-[4px] bg-[#0B0C0E] hover:bg-[#1C1E23] border border-[#2B2E36] text-[#F4F4F0] transition-colors flex items-center gap-1.5 shrink-0 text-xs cursor-pointer"
                     >
                       {copiedIndex === 4 ? (
                         <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                          <span className="text-emerald-400 font-semibold">Copied!</span>
+                          <Check className="w-3.5 h-3.5 text-[#34D399]" />
+                          <span className="text-[#34D399]">Copied</span>
                         </>
                       ) : (
                         <>
                           <Copy className="w-3.5 h-3.5" />
-                          <span className="hidden xs:inline sm:inline">Copy snippet</span>
+                          <span>Copy snippet</span>
                         </>
                       )}
                     </button>
                   </div>
-                  <div className="p-3 overflow-x-auto max-w-full">
-                    <pre className="text-[11px] sm:text-xs text-emerald-300 font-mono whitespace-pre leading-relaxed">
+                  <div className="p-3.5 overflow-x-auto bg-[#0B0C0E]">
+                    <pre className="text-xs text-[#34D399] font-mono whitespace-pre leading-relaxed">
                       {jsonSnippet}
                     </pre>
                   </div>
@@ -337,41 +333,43 @@ const ContributionBookPage = () => {
             </div>
           </div>
 
-          {/* Step 5: Commit changes */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
+          {/* Step 5: Commit */}
+          <div className="py-6">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-[#DAFA9C] font-mono font-semibold text-sm flex items-center justify-center shrink-0 tabular-nums">
                 5
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 mb-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                  <span>Stage and commit your changes</span>
-                </h3>
-                <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
-                  Stage the modified <code className="text-zinc-300">contributors.json</code> and commit it with a clear message:
+                <h2 className="text-base font-semibold text-[#F4F4F0] flex items-center gap-2 mb-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#34D399] shrink-0" />
+                  <span>Stage and commit your change</span>
+                </h2>
+                <p className="text-sm text-[#A8ADB6] mb-3 leading-relaxed max-w-[60ch] text-pretty">
+                  Stage <code className="text-[#F4F4F0] font-mono text-xs">contributors.json</code> and commit with a Conventional Commit message:
                 </p>
 
-                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300 w-full max-w-full overflow-hidden">
+                <div className="relative bg-[#141518] border border-[#2B2E36] rounded-[4px] p-3.5 font-mono text-xs">
                   <button
+                    type="button"
+                    aria-label="Copy commit commands"
                     onClick={() =>
                       copyToClipboard(
                         `git add src/data/contributors.json\ngit commit -m "feat(community): add ${cleanUsername} to contribution tree"`,
                         5
                       )
                     }
-                    className="absolute right-2 top-2 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all z-10"
+                    className="absolute right-2.5 top-2.5 p-1.5 rounded-[4px] bg-[#0B0C0E] hover:bg-[#1C1E23] border border-[#2B2E36] text-[#A8ADB6] hover:text-[#F4F4F0] transition-colors cursor-pointer"
                   >
                     {copiedIndex === 5 ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-[#34D399]" />
                     ) : (
                       <Copy className="w-3.5 h-3.5" />
                     )}
                   </button>
-                  <div className="overflow-x-auto pr-8">
-                    <div className="text-white whitespace-nowrap">git add src/data/contributors.json</div>
-                    <div className="text-emerald-400 mt-1 whitespace-nowrap">
-                      git commit -m "feat(community): add {cleanUsername} to contribution tree"
+                  <div className="overflow-x-auto pr-10 space-y-1">
+                    <div className="text-[#F4F4F0] whitespace-nowrap">git add src/data/contributors.json</div>
+                    <div className="text-[#34D399] whitespace-nowrap">
+                      git commit -m &quot;feat(community): add {cleanUsername} to contribution tree&quot;
                     </div>
                   </div>
                 </div>
@@ -380,130 +378,128 @@ const ContributionBookPage = () => {
           </div>
 
           {/* Step 6: Push */}
-          <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-xl p-4 sm:p-6 transition-all hover:border-zinc-700">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
+          <div className="py-6">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-[#DAFA9C] font-mono font-semibold text-sm flex items-center justify-center shrink-0 tabular-nums">
                 6
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 mb-2">
-                  <Terminal className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                  <span>Push changes to your GitHub fork</span>
-                </h3>
-                <p className="text-xs text-zinc-400 mb-3 leading-relaxed">
-                  Push your branch to GitHub using the command below:
+                <h2 className="text-base font-semibold text-[#F4F4F0] flex items-center gap-2 mb-2">
+                  <Terminal className="w-4 h-4 text-[#A8ADB6] shrink-0" />
+                  <span>Push your branch to GitHub</span>
+                </h2>
+                <p className="text-sm text-[#A8ADB6] mb-3 leading-relaxed max-w-[60ch] text-pretty">
+                  Push the new branch upstream to your fork:
                 </p>
 
-                <div className="relative group bg-[#0d0e12] border border-zinc-800 rounded-lg p-3 font-mono text-xs text-zinc-300 w-full max-w-full overflow-hidden">
+                <div className="relative bg-[#141518] border border-[#2B2E36] rounded-[4px] p-3.5 font-mono text-xs">
                   <button
-                    onClick={() =>
-                      copyToClipboard(`git push -u origin add-${cleanUsername}`, 6)
-                    }
-                    className="absolute right-2 top-2 p-1.5 rounded bg-zinc-800/80 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all z-10"
+                    type="button"
+                    aria-label="Copy push command"
+                    onClick={() => copyToClipboard(`git push -u origin add-${cleanUsername}`, 6)}
+                    className="absolute right-2.5 top-2.5 p-1.5 rounded-[4px] bg-[#0B0C0E] hover:bg-[#1C1E23] border border-[#2B2E36] text-[#A8ADB6] hover:text-[#F4F4F0] transition-colors cursor-pointer"
                   >
                     {copiedIndex === 6 ? (
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-[#34D399]" />
                     ) : (
                       <Copy className="w-3.5 h-3.5" />
                     )}
                   </button>
-                  <div className="overflow-x-auto pr-8">
-                    <div className="text-cyan-400 whitespace-nowrap">git push -u origin add-{cleanUsername}</div>
+                  <div className="overflow-x-auto pr-10">
+                    <div className="text-[#DAFA9C] whitespace-nowrap">git push -u origin add-{cleanUsername}</div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Step 7: Pull Request */}
-          <div className="bg-gradient-to-r from-emerald-950/20 via-zinc-900/40 to-teal-950/20 border border-emerald-500/30 rounded-xl p-4 sm:p-6 transition-all">
-            <div className="flex items-start gap-3 sm:gap-4">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-emerald-400 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center flex-shrink-0">
+          {/* Step 7: Submit PR */}
+          <div className="py-6">
+            <div className="flex items-start gap-4">
+              <div className="w-8 h-8 rounded-[4px] bg-[#DAFA9C] text-[#0F0F0F] font-mono font-bold text-sm flex items-center justify-center shrink-0 tabular-nums">
                 7
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2">
-                  <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
-                    <Sprout className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span>Submit Your Pull Request!</span>
-                  </h3>
+                  <h2 className="text-base font-semibold text-[#F4F4F0] flex items-center gap-2">
+                    <Sprout className="w-4 h-4 text-[#34D399] shrink-0" />
+                    <span>Open your Pull Request</span>
+                  </h2>
                   <a
                     href={`${repoUrl}/compare`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-black bg-gradient-to-r from-emerald-400 to-teal-300 hover:from-emerald-300 hover:to-teal-200 rounded-lg shadow-lg shadow-emerald-900/20 transition-all self-start sm:self-auto flex-shrink-0"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-[#0F0F0F] bg-[#DAFA9C] hover:bg-[#C7F275] rounded-[4px] transition-colors self-start sm:self-auto shrink-0"
                   >
                     <span>Open Pull Request</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Go to GitHub and click <strong>Compare & pull request</strong>. Write a short title like{" "}
-                  <code className="text-emerald-300 font-mono">"Add @{cleanUsername} to Contribution Tree"</code> and submit!
-                  Once merged, your leaf will grow onto the live website tree!
+                <p className="text-sm text-[#A8ADB6] leading-relaxed max-w-[60ch] text-pretty">
+                  Click <strong className="text-[#F4F4F0]">Compare &amp; pull request</strong> on GitHub, title it{" "}
+                  <code className="text-[#DAFA9C] font-mono text-xs">
+                    &quot;Add @{cleanUsername} to Contribution Tree&quot;
+                  </code>
+                  , and submit. Once merged, your node appears on the live Contribution Tree.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Live Leaf Preview Card */}
-        <div className="mt-12 bg-[#0d0f14] border border-zinc-800 rounded-xl p-6 text-center relative overflow-hidden">
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold text-zinc-400 mb-3 uppercase tracking-wider">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-            Your Leaf Preview
-          </div>
-          <p className="text-xs text-zinc-400 mb-6">
-            Here is how your leaf will look once your PR is approved and merged:
+        {/* Live Leaf Preview */}
+        <div className="mt-8 pt-8 border-t border-[#22242A] text-center">
+          <p className="text-sm text-[#A8ADB6] mb-5">
+            Preview of your contributor card after your PR merges:
           </p>
 
-          <div className="inline-block bg-[#12141a] border border-zinc-700/80 rounded-xl p-4 shadow-xl text-left max-w-sm w-full mx-auto">
+          <div className="bg-[#141518] border border-[#2B2E36] rounded-[4px] p-5 text-left max-w-sm w-full mx-auto">
             <div className="flex items-start gap-3 mb-3">
               <div className="relative">
                 <img
                   src={`https://github.com/${cleanUsername}.png`}
                   alt={fullName}
-                  className="w-12 h-12 rounded-full object-cover border border-emerald-400/50 bg-zinc-800"
+                  className="w-12 h-12 rounded-[4px] object-cover bg-[#0B0C0E]"
                   onError={(e) => {
                     e.target.src = `https://avatar.vercel.sh/${cleanUsername}`;
                   }}
                 />
-                <div className="absolute -bottom-1 -right-1 bg-[#0B0C10] border border-emerald-500/40 rounded-full p-0.5 text-emerald-400">
-                  <Sprout className="w-2.5 h-2.5" />
+                <div className="absolute -bottom-1 -right-1 bg-[#141518] border border-[#34D399]/50 rounded-[4px] p-0.5 text-[#34D399]">
+                  <Sprout className="w-3 h-3" />
                 </div>
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-bold text-white truncate">{fullName}</h4>
-                <p className="text-xs text-emerald-400 font-mono">@{cleanUsername}</p>
-                <p className="text-[10px] text-zinc-500 mt-0.5">Joined on {currentDate}</p>
+                <h2 className="text-sm font-semibold text-[#F4F4F0] truncate">{fullName}</h2>
+                <p className="text-xs text-[#DAFA9C] font-mono">@{cleanUsername}</p>
+                <p className="text-xs text-[#8C929C] font-mono mt-0.5 tabular-nums">Joined {currentDate}</p>
               </div>
             </div>
 
-            <div className="bg-zinc-900/90 rounded-lg p-2.5 border border-zinc-800 text-xs text-zinc-300 italic">
-              "{personalMessage}"
+            <div className="pt-3 border-t border-[#22242A] text-xs text-[#A8ADB6]">
+              &ldquo;{personalMessage}&rdquo;
             </div>
           </div>
         </div>
 
-        {/* FAQ Section */}
-        <div className="mt-12 border-t border-zinc-900 pt-10">
-          <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-            <HelpCircle className="w-4 h-4 text-emerald-400" />
-            Frequently Asked Questions
-          </h3>
+        {/* FAQ */}
+        <div className="mt-10 border-t border-[#22242A] pt-8">
+          <h2 className="text-lg font-semibold text-[#F4F4F0] mb-4 flex items-center gap-2 text-balance">
+            <HelpCircle className="w-4 h-4 text-[#DAFA9C]" />
+            Common Questions
+          </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-zinc-400">
-            <div className="bg-zinc-900/30 border border-zinc-800/60 p-4 rounded-lg">
-              <h5 className="font-semibold text-zinc-200 mb-1">
-                What if I get a git authentication error when pushing?
-              </h5>
-              <p className="leading-relaxed">
-                GitHub requires an SSH key or Personal Access Token (PAT). Check out GitHub's official guide on{" "}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-[#A8ADB6]">
+            <div className="bg-[#141518] border border-[#2B2E36] p-4 rounded-[4px]">
+              <h3 className="font-semibold text-[#F4F4F0] mb-1.5">
+                Git asks for credentials or rejects HTTPS push
+              </h3>
+              <p className="text-xs text-[#A8ADB6] leading-relaxed text-pretty">
+                GitHub requires an SSH key or Personal Access Token for git push. Follow GitHub&apos;s guide on{" "}
                 <a
                   href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-emerald-400 hover:underline"
+                  className="text-[#DAFA9C] hover:underline"
                 >
                   connecting with SSH
                 </a>
@@ -511,19 +507,18 @@ const ContributionBookPage = () => {
               </p>
             </div>
 
-            <div className="bg-zinc-900/30 border border-zinc-800/60 p-4 rounded-lg">
-              <h5 className="font-semibold text-zinc-200 mb-1">
-                How soon will my leaf appear on the tree?
-              </h5>
-              <p className="leading-relaxed">
-                As soon as our maintainers review and merge your pull request, the live site is redeployed and your
-                leaf will be visible immediately!
+            <div className="bg-[#141518] border border-[#2B2E36] p-4 rounded-[4px]">
+              <h3 className="font-semibold text-[#F4F4F0] mb-1.5">
+                When does my leaf appear on the Contribution Tree?
+              </h3>
+              <p className="text-xs text-[#A8ADB6] leading-relaxed text-pretty">
+                As soon as a maintainer merges your pull request into main, production rebuilds automatically and renders your node live.
               </p>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 };
 

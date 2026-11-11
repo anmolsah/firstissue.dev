@@ -216,13 +216,13 @@ const MonthMasterBadge = ({ earned = false, onClick, variant = "card" }) => {
         </svg>
       ) : (
         // Locked State
-        <div className="w-24 h-24 rounded-full bg-[#0A0B10]/20 border border-white/[0.03] flex items-center justify-center relative group-hover:bg-white/[0.02] transition-all duration-300">
+        <div className="w-24 h-24 rounded-full bg-[#0B0C0E]/70 border border-[#22242A] flex items-center justify-center relative group-hover:bg-white/[0.02] transition-all duration-300">
           <svg viewBox="0 0 200 200" className="w-full h-full opacity-20 filter grayscale">
             <polygon points="100,32 158,62 158,138 100,168 42,138 42,62" fill="#1E293B" stroke="#475569" strokeWidth="3.5" />
             <path d="M 100 135 C 72 135 68 105 82 82 C 78 75 100 42 100 42 C 100 42 122 75 112 102 C 128 135 100 135 Z" fill="#475569" />
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full bg-[#0b0c10]/90 border border-white/5 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
+            <div className="w-10 h-10 rounded-full bg-[#141518] border border-[#2B2E36] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
               <Lock className="w-4 h-4 text-gray-500" />
             </div>
           </div>

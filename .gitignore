@@ -19,6 +19,8 @@ SCALABILITY_ANALYSIS.md
 CONTRIBUTION_GRAPH_WORKFLOW.md
 scalable.md
 CLAUDE.md
+DESIGN.md
+PRODUCT.md
 
 # Editor directories and files
 .vscode/*
@@ -30,3 +32,10 @@ CLAUDE.md
 *.njsproj
 *.sln
 *.sw?
+
+
+#AI tool local state
+.agent/
+.agents/
+.impeccable/
+.taste-skill/

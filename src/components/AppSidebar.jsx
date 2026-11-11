@@ -6,8 +6,9 @@ import {
   User,
   BookOpen,
   BotMessageSquare,
-  Sprout
+  Sprout,
 } from "lucide-react";
+import { BrandLogo } from "./BrandMark";
 
 /**
  * Reusable Sidebar Component
@@ -77,20 +78,17 @@ const AppSidebar = ({ children, className = "" }) => {
   ];
 
   return (
-    <aside className={`w-64 border-r border-zinc-800/60 bg-[#0B0C10] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto ${className}`}>
-      <div className="p-6">
-        {/* Logo */}
-        <Link to="/" className="flex items-center space-x-2 group mb-8">
-          <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400 group-hover:to-white transition-all duration-300">
-            FirstIssue.dev
-          </span>
+    <aside className={`w-64 border-r border-[#22242A] bg-[#0F0F0F] hidden lg:flex flex-col fixed h-full z-20 overflow-y-auto ${className}`}>
+      <div className="p-5">
+        <Link to="/" className="inline-flex items-center mb-7 hover:opacity-90 transition-opacity">
+          <BrandLogo size="sm" />
         </Link>
 
         {/* Custom Content (Profile card, stats, etc.) */}
         {children}
 
         {/* Navigation */}
-        <nav className="space-y-1 mt-6">
+        <nav aria-label="Workspace navigation" className="space-y-1 mt-6">
           {navigationItems.map((item) => (
             <NavItem
               key={item.id}
@@ -106,20 +104,31 @@ const AppSidebar = ({ children, className = "" }) => {
   );
 };
 
-const NavItem = ({ icon: Icon, label, active, to }) => (
-  <Link
-    to={to}
-    className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded border text-xs font-medium transition-all ${
-      active
-        ? "bg-white/[0.04] text-white border-zinc-800/80 font-semibold"
-        : "text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.02] border-transparent"
-    }`}
-  >
-    <Icon
-      className={`w-4 h-4 transition-colors ${active ? "text-white" : "text-zinc-500"}`}
-    />
-    {label}
-  </Link>
-);
+const NavItem = ({ icon, label, active, to }) => {
+  const Icon = icon;
+  return (
+    <Link
+      to={to}
+      aria-current={active ? "page" : undefined}
+      className={`w-full flex items-center justify-between gap-2.5 px-3 py-2 rounded-[4px] border text-[13px] font-medium transition-colors ${
+        active
+          ? "bg-[#17181B] text-[#F4F4F0] border-[#2B2E36] font-semibold"
+          : "text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#141518] border-transparent"
+      }`}
+    >
+      <span className="flex items-center gap-2.5 min-w-0">
+        <Icon
+          className={`w-4 h-4 shrink-0 transition-colors ${
+            active ? "text-[#DAFA9C]" : "text-[#8C929C]"
+          }`}
+        />
+        <span className="truncate">{label}</span>
+      </span>
+      {active && (
+        <span className="w-1.5 h-1.5 rounded-full bg-[#DAFA9C] shrink-0" aria-hidden="true" />
+      )}
+    </Link>
+  );
+};
 
 export default AppSidebar;

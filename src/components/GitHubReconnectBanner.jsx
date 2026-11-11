@@ -61,45 +61,44 @@ const GitHubReconnectBanner = () => {
   }
 
   return (
-    <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-b border-blue-500/30">
+    <div className="bg-[#17181B] border-b border-[#F59E0B]/40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="flex-shrink-0">
-              <AlertCircle className="w-5 h-5 text-blue-400" />
-            </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+            <AlertCircle className="w-4 h-4 text-[#F59E0B] shrink-0 mt-0.5 sm:mt-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm text-white font-medium">
-                Action Required: Reconnect Your GitHub Account
+              <p className="text-[13px] text-[#F4F4F0] font-semibold">
+                Reconnect your GitHub account to sync PRs
               </p>
-              <p className="text-xs text-gray-300 mt-0.5">
-                We've upgraded our GitHub integration with better permissions.
-                Please reconnect to continue syncing your contributions.
+              <p className="text-xs text-[#A8ADB6] mt-0.5">
+                Refresh your GitHub OAuth session so pull requests and attestations stay up to date.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
             <button
+              type="button"
               onClick={handleReconnect}
               disabled={reconnecting}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-500 transition-colors disabled:opacity-85 disabled:cursor-wait"
+              className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] text-xs font-semibold transition-colors disabled:opacity-70 disabled:cursor-wait"
             >
               {reconnecting ? (
                 <>
-                  <Loader2 className="w-4 h-4 text-white animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   <span>Connecting...</span>
                 </>
               ) : (
                 <>
-                  <Github className="w-4 h-4" />
-                  <span>Reconnect Now</span>
+                  <Github className="w-3.5 h-3.5" />
+                  <span>Reconnect GitHub</span>
                 </>
               )}
             </button>
             <button
+              type="button"
               onClick={handleDismiss}
-              className="p-2 text-gray-400 hover:text-white transition-colors"
-              aria-label="Dismiss"
+              className="p-2 text-[#8C929C] hover:text-[#F4F4F0] hover:bg-[#1C1E23] rounded-[4px] transition-colors"
+              aria-label="Dismiss reconnect banner"
             >
               <X className="w-4 h-4" />
             </button>

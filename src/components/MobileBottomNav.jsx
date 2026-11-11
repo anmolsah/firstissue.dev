@@ -33,13 +33,18 @@ const MobileBottomNav = () => {
   };
 
   return (
-    <div className="mobile-bottom-nav lg:hidden">
-      <div className="flex items-center justify-around py-2 px-2">
+    <nav
+      aria-label="Mobile workspace navigation"
+      className="mobile-bottom-nav lg:hidden bg-[#0F0F0F]/95 border-t border-[#22242A] backdrop-blur-sm"
+    >
+      <div className="flex items-center justify-around py-1.5 px-1">
         {navItems.map((item) => {
           const active = isActive(item.path);
           return (
             <button
               key={item.path}
+              type="button"
+              aria-current={active ? "page" : undefined}
               onClick={() => {
                 if (active && item.path === "/profile") {
                   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -47,19 +52,21 @@ const MobileBottomNav = () => {
                   navigate(item.path);
                 }
               }}
-              className={`flex flex-col items-center gap-0.5 px-2.5 py-1 rounded transition-colors cursor-pointer min-w-0 ${
-                active ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+              className={`min-h-[44px] flex flex-col items-center justify-center gap-0.5 px-2.5 py-1 rounded-[4px] transition-colors cursor-pointer min-w-0 ${
+                active
+                  ? "text-[#DAFA9C] bg-[#17181B]"
+                  : "text-[#8C929C] hover:text-[#F4F4F0]"
               }`}
             >
-              <item.icon className="w-4 h-4" />
-              <span className="text-[9px] font-semibold uppercase tracking-wider">
+              <item.icon className="w-4 h-4 shrink-0" />
+              <span className="text-[11px] font-medium tracking-tight">
                 {item.label}
               </span>
             </button>
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };
 

@@ -1,29 +1,117 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @import "tailwindcss";
 
-/* Custom xs breakpoint for extra small screens */
 @custom-media --xs (min-width: 480px);
 
 @theme {
   --breakpoint-xs: 480px;
+  --font-sans: "Host Grotesk", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
 :root {
-  --color-dark: #222831;
-  --color-dark-secondary: #393e46;
-  --color-accent: #00adb5;
-  --color-accent-hover: #00969e;
-  --color-light: #eeeeee;
-  --color-light-muted: #b8b8b8;
+  --bg-ground: #0f0f0f;
+  --bg-surface: #141518;
+  --bg-elevated: #17181b;
+  --bg-hover: #1c1e23;
+  --bg-inset: #0b0c0e;
+  --border-subtle: #22242a;
+  --border-default: #2b2e36;
+  --border-strong: #3a3e48;
+  --text-primary: #f4f4f0;
+  --text-secondary: #a8adb6;
+  --text-muted: #8c929c;
+  --accent: #dafa9c;
+  --accent-hover: #c7f275;
+  --accent-ink: #0f0f0f;
+  --status-ready: #34d399;
+  --status-review: #f59e0b;
+  --status-error: #f87171;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+
+html {
+  background-color: var(--bg-ground);
+  color: var(--text-primary);
+  color-scheme: dark;
 }
 
 body {
-  font-family: "Inter", system-ui, -apple-system, sans-serif;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  background-color: var(--color-dark);
-  color: var(--color-light);
+  font-family: "Host Grotesk", system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-ground);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+code,
+pre,
+kbd,
+samp,
+.font-mono {
+  font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Custom scrollbar matching soot steel palette */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-ground);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-strong);
+}
+
+/* Hide scrollbar utilities */
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.scrollbar-none,
+.no-scrollbar,
+.scrollbar-hide {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+/* Accessible selection & focus */
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 0;
+  border-color: var(--accent);
+}
+
+/* Text truncation helpers */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -38,143 +126,6 @@ body {
   overflow: hidden;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--color-dark);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--color-dark-secondary);
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-accent);
-}
-
-/* Hide scrollbar utilities */
-.scrollbar-none::-webkit-scrollbar,
-.no-scrollbar::-webkit-scrollbar {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-
-.scrollbar-none,
-.no-scrollbar {
-  -ms-overflow-style: none !important;
-  scrollbar-width: none !important;
-}
-
-/* Smooth transitions for all interactive elements */
-* {
-  transition-property: color, background-color, border-color,
-    text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter,
-    backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-/* Premium gradient text */
-.gradient-text {
-  background: linear-gradient(
-    135deg,
-    var(--color-accent) 0%,
-    #00d4de 50%,
-    var(--color-light) 100%
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* Glow effects */
-.glow-accent {
-  box-shadow: 0 0 20px rgba(0, 173, 181, 0.3);
-}
-
-.glow-accent-hover:hover {
-  box-shadow: 0 0 30px rgba(0, 173, 181, 0.5);
-}
-
-/* Glass morphism effect */
-.glass {
-  background: rgba(57, 62, 70, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(238, 238, 238, 0.1);
-}
-
-.glass-dark {
-  background: rgba(34, 40, 49, 0.8);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(238, 238, 238, 0.05);
-}
-
-/* Card hover effect */
-.card-hover {
-  transition: all 0.3s ease;
-}
-
-.card-hover:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-}
-
-/* Button styles */
-.btn-primary {
-  background: linear-gradient(135deg, var(--color-accent) 0%, #00969e 100%);
-  color: var(--color-dark);
-  font-weight: 600;
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #00c4ce 0%, var(--color-accent) 100%);
-  transform: scale(1.02);
-}
-
-/* Input focus styles */
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: var(--color-accent) !important;
-  box-shadow: 0 0 0 3px rgba(0, 173, 181, 0.2);
-}
-
-/* Selection color */
-::selection {
-  background: var(--color-accent);
-  color: var(--color-dark);
-}
-
-/* Responsive utilities */
-@media (max-width: 479px) {
-  .hide-xs {
-    display: none !important;
-  }
-}
-
-@media (min-width: 480px) {
-  .show-xs {
-    display: block !important;
-  }
-}
-
-/* Touch-friendly tap targets */
-@media (hover: none) and (pointer: coarse) {
-  button,
-  a,
-  [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
-
-/* Prevent text overflow */
 .truncate-responsive {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -182,627 +133,17 @@ textarea:focus {
   max-width: 100%;
 }
 
-/* Safe area padding for mobile devices */
-@supports (padding: max(0px)) {
-  .safe-area-inset {
-    padding-left: max(1rem, env(safe-area-inset-left));
-    padding-right: max(1rem, env(safe-area-inset-right));
-  }
-}
-
-/* Custom animations for user count section */
-@keyframes float-slow {
-  0%, 100% {
-    transform: translateY(0px) translateX(0px);
-    opacity: 0.6;
-  }
-  50% {
-    transform: translateY(-20px) translateX(10px);
-    opacity: 0.3;
-  }
-}
-
-@keyframes float-medium {
-  0%, 100% {
-    transform: translateY(0px) translateX(0px);
-    opacity: 0.5;
-  }
-  50% {
-    transform: translateY(-15px) translateX(-10px);
-    opacity: 0.8;
-  }
-}
-
-@keyframes float-fast {
-  0%, 100% {
-    transform: translateY(0px) translateX(0px);
-    opacity: 0.4;
-  }
-  50% {
-    transform: translateY(-25px) translateX(15px);
-    opacity: 0.7;
-  }
-}
-
-@keyframes bounce-slow {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-
-.animate-float-slow {
-  animation: float-slow 6s ease-in-out infinite;
-}
-
-.animate-float-medium {
-  animation: float-medium 4s ease-in-out infinite;
-}
-
-.animate-float-fast {
-  animation: float-fast 3s ease-in-out infinite;
-}
-
-.animate-bounce-slow {
-  animation: bounce-slow 2s ease-in-out infinite;
-}
-
-/* ============================================
-   Badge System — Clean, Polished Animations
-   ============================================ */
-
-/* Subtle shimmer for earned badge cards */
-@keyframes shimmer {
-  0% { transform: translateX(-100%); }
-  100% { transform: translateX(100%); }
-}
-
-.animate-shimmer {
-  animation: shimmer 3s infinite;
-}
-
-/* Smooth badge glow — single purpose, not stacked */
-@keyframes badge-glow-pulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
-}
-
-.animate-badge-glow {
-  animation: badge-glow-pulse 3s ease-in-out infinite;
-}
-
-/* Badge card shine on hover */
-@keyframes badge-card-shine {
-  0% { transform: translateX(-100%) rotate(12deg); }
-  100% { transform: translateX(200%) rotate(12deg); }
-}
-
-/* ============================================
-   Badge Modal — Smooth Enter/Exit
-   ============================================ */
-
-@keyframes badge-modal-backdrop-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes badge-modal-in {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-@keyframes badge-modal-out {
-  from {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: scale(0.95) translateY(10px);
-  }
-}
-
-.animate-badge-modal-backdrop {
-  animation: badge-modal-backdrop-in 0.2s ease-out forwards;
-}
-
-.animate-badge-modal-in {
-  animation: badge-modal-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-badge-modal-out {
-  animation: badge-modal-out 0.2s ease-in forwards;
-}
-
-/* Badge icon float in modal */
-@keyframes badge-icon-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-.animate-badge-float {
-  animation: badge-icon-float 3s ease-in-out infinite;
-}
-
-/* Rarity ring glow for showcase */
-@keyframes rarity-ring-glow {
-  0%, 100% { box-shadow: 0 0 20px currentColor; opacity: 0.5; }
-  50% { box-shadow: 0 0 40px currentColor; opacity: 0.8; }
-}
-
-.animate-rarity-glow {
-  animation: rarity-ring-glow 2.5s ease-in-out infinite;
-}
-
-/* ============================================
-   Badge Notification — Clean Slide In
-   ============================================ */
-
-@keyframes notification-slide-in {
-  from {
-    transform: translateX(100%) scale(0.95);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes notification-slide-out {
-  from {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%) scale(0.95);
-    opacity: 0;
-  }
-}
-
-.animate-notification-in {
-  animation: notification-slide-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-notification-out {
-  animation: notification-slide-out 0.3s ease-in forwards;
-}
-
-/* Progress bar for notification auto-close */
-@keyframes progress-bar {
-  0% { width: 100%; }
-  100% { width: 0%; }
-}
-
-.animate-progress-bar {
-  animation: progress-bar 6s linear forwards;
-}
-
-/* Confetti fallback for notification */
-@keyframes confetti {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(300px) rotate(720deg);
-    opacity: 0;
-  }
-}
-
-.animate-confetti {
-  animation: confetti 3s ease-out forwards;
-}
-
-/* ============================================
-   Mobile Bottom Navigation
-   ============================================ */
-
-.mobile-bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 40;
-  background: rgba(11, 12, 16, 0.95);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-
-/* Hide scrollbar for heatmap on mobile */
-.heatmap-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.heatmap-scroll {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-/* ============================================
-   Badge Card Hover Shine
-   ============================================ */
-
-.badge-card-shine {
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    105deg,
-    transparent 40%,
-    rgba(255, 255, 255, 0.06) 45%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.06) 55%,
-    transparent 60%
-  );
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
-}
-
-.group:hover .badge-card-shine {
-  opacity: 1;
-  animation: badge-card-shine 0.8s ease-out forwards;
-}
-
-/* ============================================
-   Responsive Heatmap
-   ============================================ */
-
-@media (max-width: 767px) {
-  .heatmap-container {
-    max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-}
-
-/* ============================================
-   Smart Analysis Wire Animation
-   ============================================ */
-
-@keyframes wire-flow {
-  to { stroke-dashoffset: -20; }
-}
-
-@keyframes float-slow-custom {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
-@keyframes bar-fill {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-
-@keyframes pulse-subtle-anim {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-.animate-wire-flow {
-  animation: wire-flow 2s linear infinite;
-}
-
-.animate-wire-flow-delay {
-  animation: wire-flow 2s linear infinite 0.7s;
-}
-
-.animate-wire-flow-delay2 {
-  animation: wire-flow 2s linear infinite 1.4s;
-}
-
-.animate-float-slow {
-  animation: float-slow-custom 4s ease-in-out infinite;
-}
-
-.animate-float-slow-delay {
-  animation: float-slow-custom 4s ease-in-out infinite 1s;
-}
-
-.animate-float-slow-delay2 {
-  animation: float-slow-custom 4s ease-in-out infinite 2s;
-}
-
-.animate-bar-fill {
-  transform-origin: left;
-  animation: bar-fill 1.5s ease-out forwards;
-}
-
-.animate-bar-fill-delay {
-  transform-origin: left;
-  animation: bar-fill 1.5s ease-out 0.3s forwards;
-}
-
-.animate-bar-fill-delay2 {
-  transform-origin: left;
-  animation: bar-fill 1.5s ease-out 0.6s forwards;
-}
-
-.animate-pulse-subtle {
-  animation: pulse-subtle-anim 3s ease-in-out infinite;
-}
-
-/* Scrollbar Hide Utility */
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
-
-/* Mask Fade Utility for scrolling containers */
+/* Mask fade & infinite auto-moving marquee tracks */
 .mask-fade-right {
-  mask-image: linear-gradient(to right, black 80%, transparent 100%);
+  mask-image: linear-gradient(to right, black 82%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 82%, transparent 100%);
 }
 
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.marquee-mask {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
 }
 
-.reveal {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.reveal.active {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ============================================
-   Curation Scanner Animations
-   ============================================ */
-@keyframes laser-sweep {
-  0%, 100% {
-    top: 0%;
-    opacity: 0;
-  }
-  10%, 90% {
-    opacity: 1;
-  }
-  50% {
-    top: 100%;
-    opacity: 1;
-  }
-}
-
-@keyframes stamp-pop {
-  0% {
-    opacity: 0;
-    transform: scale(3) rotate(-15deg);
-    filter: blur(4px);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(0.9) rotate(-8deg);
-    filter: blur(0px);
-  }
-  70% {
-    transform: scale(1.1) rotate(-12deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(-10deg);
-  }
-}
-
-@keyframes reject-shake {
-  0%, 100% { transform: translateX(0) rotate(0deg); }
-  20%, 60% { transform: translateX(-4px) rotate(-1deg); }
-  40%, 80% { transform: translateX(4px) rotate(1deg); }
-}
-
-@keyframes border-pulse-emerald {
-  0%, 100% {
-    border-color: rgba(16, 185, 129, 0.1);
-    box-shadow: 0 0 0px rgba(16, 185, 129, 0);
-  }
-  50% {
-    border-color: rgba(16, 185, 129, 0.4);
-    box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
-  }
-}
-
-@keyframes border-pulse-red {
-  0%, 100% {
-    border-color: rgba(239, 68, 68, 0.05);
-  }
-  50% {
-    border-color: rgba(239, 68, 68, 0.25);
-  }
-}
-
-.animate-laser-sweep {
-  animation: laser-sweep 5s ease-in-out infinite;
-}
-
-.animate-stamp-pop {
-  animation: stamp-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-.animate-reject-shake {
-  animation: reject-shake 3s ease-in-out infinite;
-}
-
-.animate-pulse-emerald-border {
-  animation: border-pulse-emerald 4s ease-in-out infinite;
-}
-
-.animate-pulse-red-border {
-  animation: border-pulse-red 4s ease-in-out infinite;
-}
-
-/* ============================================
-   Proof of Work Card Animations
-   ============================================ */
-@keyframes float-3d {
-  0%, 100% {
-    transform: translateY(0px) rotateX(4deg) rotateY(-8deg);
-  }
-  50% {
-    transform: translateY(-8px) rotateX(-4deg) rotateY(8deg);
-  }
-}
-
-@keyframes sheen-sweep {
-  0% {
-    left: -150%;
-  }
-  25%, 100% {
-    left: 150%;
-  }
-}
-
-.animate-float-3d {
-  animation: float-3d 6s ease-in-out infinite;
-}
-
-.animate-sheen-sweep {
-  animation: sheen-sweep 6s ease-in-out infinite;
-}
-
-/* Vercel Grid background layout overlay */
-.vercel-grid {
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 0%, #000 60%, transparent 100%);
-}
-
-
-/* ============================================
-   Smart Match — Premium Loading Animations
-   ============================================ */
-
-/* Orbiting dots — clockwise */
-@keyframes sm-loading-orbit {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-.sm-loading-orbit {
-  animation: sm-loading-orbit 6s linear infinite;
-}
-
-/* Orbiting dots — counter-clockwise */
-@keyframes sm-loading-orbit-reverse {
-  from { transform: rotate(360deg); }
-  to   { transform: rotate(0deg); }
-}
-.sm-loading-orbit-reverse {
-  animation: sm-loading-orbit-reverse 4s linear infinite;
-}
-
-/* Core breathing pulse */
-@keyframes sm-loading-core-pulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 0 50px -5px rgba(168,85,247,0.25); }
-  50%      { transform: scale(1.04); box-shadow: 0 0 60px -5px rgba(168,85,247,0.4); }
-}
-.sm-loading-core-pulse {
-  animation: sm-loading-core-pulse 3s ease-in-out infinite;
-}
-
-/* Inner shine sweep */
-@keyframes sm-loading-shine {
-  0%   { transform: translateX(-120%) rotate(-30deg); }
-  100% { transform: translateX(120%) rotate(-30deg); }
-}
-.sm-loading-shine {
-  animation: sm-loading-shine 4s ease-in-out infinite;
-}
-
-/* Floating ambient blobs */
-@keyframes sm-loading-float {
-  0%, 100% { transform: translate(0, 0); }
-  50%      { transform: translate(15px, -20px); }
-}
-.sm-loading-float {
-  animation: sm-loading-float 8s ease-in-out infinite;
-}
-.sm-loading-float-delayed {
-  animation: sm-loading-float 8s ease-in-out infinite;
-  animation-delay: -4s;
-}
-
-/* Tiny floating particles */
-@keyframes sm-loading-particle {
-  0%   { opacity: 0; transform: translateY(0) scale(0.5); }
-  20%  { opacity: 1; transform: translateY(-10px) scale(1); }
-  80%  { opacity: 0.6; transform: translateY(-40px) scale(0.8); }
-  100% { opacity: 0; transform: translateY(-60px) scale(0.3); }
-}
-.sm-loading-particle {
-  animation: sm-loading-particle 5s ease-in-out infinite;
-}
-
-/* Data stream lines — horizontal */
-@keyframes sm-loading-data-stream {
-  0%, 100% { opacity: 0; transform: scaleX(0.3); }
-  50%      { opacity: 1; transform: scaleX(1); }
-}
-.sm-loading-data-stream {
-  animation: sm-loading-data-stream 3s ease-in-out infinite;
-}
-
-/* Data stream lines — vertical */
-@keyframes sm-loading-data-stream-v {
-  0%, 100% { opacity: 0; transform: scaleY(0.3); }
-  50%      { opacity: 1; transform: scaleY(1); }
-}
-.sm-loading-data-stream-v {
-  animation: sm-loading-data-stream-v 3s ease-in-out infinite;
-}
-
-/* Progress bar gradient animation */
-@keyframes sm-loading-gradient-shift {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* Progress bar shine sweep */
-@keyframes sm-loading-bar-shine {
-  0%   { transform: translateX(-100%); }
-  100% { transform: translateX(200%); }
-}
-
-/* Contribution Kit modal entrance */
-@keyframes ck-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-.animate-in-fade {
-  animation: ck-fade 0.15s ease-out;
-}
-@keyframes ck-pop {
-  from { opacity: 0; transform: translateY(12px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-.animate-in-pop {
-  animation: ck-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Infinite Marquee Animations for Trusted By Showcases */
 @keyframes marquee-left {
   0% {
     transform: translateX(0%);
@@ -837,7 +178,234 @@ textarea:focus {
   animation-play-state: paused;
 }
 
-.marquee-mask {
-  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
-  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+/* Safe area padding */
+@supports (padding: max(0px)) {
+  .safe-area-inset {
+    padding-left: max(1rem, env(safe-area-inset-left));
+    padding-right: max(1rem, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-friendly tap targets on coarse pointers */
+@media (hover: none) and (pointer: coarse) {
+  button,
+  a,
+  [role="button"] {
+    min-height: 44px;
+  }
+}
+
+/* Mobile bottom bar */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: rgba(15, 15, 15, 0.96);
+  border-top: 1px solid var(--border-default);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Responsive heatmap scroll */
+@media (max-width: 767px) {
+  .heatmap-container {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+.heatmap-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.heatmap-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* badge & modal enter/exit — clean exponential deceleration */
+@keyframes modal-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-surface-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modal-surface-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.animate-badge-modal-backdrop {
+  animation: modal-backdrop-in 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-badge-modal-in {
+  animation: modal-surface-in 220ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-badge-modal-out {
+  animation: modal-surface-out 160ms ease-in forwards;
+}
+
+@keyframes notification-slide-in {
+  from {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes notification-slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(16px);
+    opacity: 0;
+  }
+}
+
+.animate-notification-in {
+  animation: notification-slide-in 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-notification-out {
+  animation: notification-slide-out 180ms ease-in forwards;
+}
+
+@keyframes progress-bar {
+  0% { width: 100%; }
+  100% { width: 0%; }
+}
+
+.animate-progress-bar {
+  animation: progress-bar 6s linear forwards;
+}
+
+@keyframes ck-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-in-fade {
+  animation: ck-fade 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes ck-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2.8s ease-in-out infinite;
+}
+
+@keyframes stamp-pop {
+  0% {
+    opacity: 0;
+    transform: scale(1.18) rotate(-4deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(-4deg);
+  }
+}
+
+.animate-stamp-pop {
+  animation: stamp-pop 280ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes wire-flow {
+  to { stroke-dashoffset: -20; }
+}
+
+.animate-wire-flow {
+  animation: wire-flow 2s linear infinite;
+}
+
+@keyframes pulse-subtle-anim {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.72; }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle-anim 2.6s ease-in-out infinite;
+}
+
+/* Subtle metallic card sheen */
+@keyframes sheen-sweep {
+  0% { left: -140%; }
+  30%, 100% { left: 150%; }
+}
+
+.animate-sheen-sweep {
+  animation: sheen-sweep 7s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+
+.badge-card-shine {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    105deg,
+    transparent 42%,
+    rgba(244, 244, 240, 0.05) 50%,
+    transparent 58%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+.group:hover .badge-card-shine {
+  opacity: 1;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  * {
+    scroll-behavior: auto !important;
+  }
 }

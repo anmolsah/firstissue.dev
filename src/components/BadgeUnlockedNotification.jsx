@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Award, X, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, Brain } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 
-// Badge icon mapping
 const BADGE_ICONS = {
   'first-contribution': Star,
   'first-merge': GitMerge,
@@ -22,20 +21,17 @@ const BADGE_ICONS = {
 };
 
 const BadgeUnlockedNotification = ({ badge, onClose }) => {
-  const [phase, setPhase] = useState('entering'); // 'entering' | 'visible' | 'exiting'
+  const [phase, setPhase] = useState('entering');
   const rarityInfo = getBadgeRarityInfo(badge.rarity);
   const BadgeIcon = BADGE_ICONS[badge.id] || Award;
 
   const handleDismiss = useCallback(() => {
     setPhase('exiting');
-    setTimeout(onClose, 300);
+    setTimeout(onClose, 250);
   }, [onClose]);
 
   useEffect(() => {
-    // Enter animation
     const enterTimer = setTimeout(() => setPhase('visible'), 50);
-
-    // Auto close after 6 seconds
     const closeTimer = setTimeout(() => {
       handleDismiss();
     }, 6000);
@@ -46,9 +42,10 @@ const BadgeUnlockedNotification = ({ badge, onClose }) => {
     };
   }, [handleDismiss]);
 
-  const animClass = phase === 'entering'
-    ? 'translate-x-full opacity-0 scale-95'
-    : phase === 'exiting'
+  const animClass =
+    phase === 'entering'
+      ? 'translate-x-full opacity-0 scale-95'
+      : phase === 'exiting'
       ? 'animate-notification-out'
       : 'animate-notification-in';
 
@@ -58,57 +55,46 @@ const BadgeUnlockedNotification = ({ badge, onClose }) => {
       role="alert"
       aria-live="polite"
     >
-      <div className="relative bg-[#1a1b26] border border-white/10 rounded-xl p-4 shadow-2xl overflow-hidden">
-        {/* Subtle rarity glow along top edge */}
-        <div className={`absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r ${
-          badge.rarity === 'legendary' ? 'from-amber-400 via-yellow-400 to-orange-400' :
-          badge.rarity === 'epic' ? 'from-purple-400 via-violet-400 to-purple-400' :
-          badge.rarity === 'rare' ? 'from-blue-400 via-indigo-400 to-blue-400' :
-          badge.rarity === 'uncommon' ? 'from-green-400 via-emerald-400 to-green-400' :
-          'from-gray-400 via-gray-300 to-gray-400'
-        }`} />
+      <div className="relative bg-[#17181B] border border-[#2B2E36] rounded-[4px] p-4 shadow-2xl overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-[2px] bg-[#DAFA9C]" />
 
-        {/* Close Button */}
         <button
+          type="button"
           onClick={handleDismiss}
-          className="absolute top-3 right-3 p-1 text-gray-500 hover:text-white transition-colors rounded-md hover:bg-white/5"
-          aria-label="Dismiss"
+          className="absolute top-3 right-3 p-1 text-[#8C929C] hover:text-[#F4F4F0] transition-colors rounded-[4px] hover:bg-[#1C1E23]"
+          aria-label="Dismiss notification"
         >
           <X className="w-4 h-4" />
         </button>
 
-        {/* Content */}
         <div className="flex items-start gap-3 pr-6">
-          {/* Badge Icon */}
-          <div className="relative flex-shrink-0">
-            <div className={`w-14 h-14 rounded-xl flex items-center justify-center ${rarityInfo.bgColor} border ${rarityInfo.borderColor}`}>
-              <BadgeIcon className={`w-7 h-7 ${rarityInfo.color}`} />
-            </div>
-            {/* Small checkmark */}
-            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full flex items-center justify-center border-2 border-[#1a1b26]">
-              <span className="text-white text-[10px]">✓</span>
+          <div className="relative shrink-0">
+            <div
+              className={`w-12 h-12 rounded-[4px] flex items-center justify-center ${rarityInfo.bgColor} border ${rarityInfo.borderColor}`}
+            >
+              <BadgeIcon className={`w-6 h-6 ${rarityInfo.color}`} />
             </div>
           </div>
 
-          {/* Text */}
-          <div className="flex-1 min-w-0 pt-0.5">
-            <p className="text-xs font-bold text-amber-400 mb-1">
-              🎉 Badge Unlocked!
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-mono font-semibold text-[#DAFA9C] uppercase tracking-wider mb-0.5">
+              Badge Unlocked
             </p>
-            <h4 className="text-white font-semibold text-sm mb-0.5 truncate">{badge.name}</h4>
-            <p className="text-xs text-gray-400 line-clamp-2">{badge.description}</p>
+            <h4 className="text-[#F4F4F0] font-semibold text-sm mb-0.5 truncate">
+              {badge.name}
+            </h4>
+            <p className="text-xs text-[#A8ADB6] line-clamp-2">{badge.description}</p>
 
-            {/* Rarity */}
-            <div className={`inline-flex items-center gap-1.5 mt-2 px-2 py-0.5 rounded-full text-[10px] font-semibold ${rarityInfo.bgColor} ${rarityInfo.color} border ${rarityInfo.borderColor}`}>
-              <span className="w-1.5 h-1.5 rounded-full bg-current" />
+            <div
+              className={`inline-flex items-center gap-1.5 mt-2 px-2 py-0.5 rounded-[4px] text-[11px] font-mono ${rarityInfo.bgColor} ${rarityInfo.color} border ${rarityInfo.borderColor}`}
+            >
               {rarityInfo.label}
             </div>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-white/5">
-          <div className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-progress-bar" />
+        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#22242A]">
+          <div className="h-full bg-[#DAFA9C] animate-progress-bar" />
         </div>
       </div>
     </div>

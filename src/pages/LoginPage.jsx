@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useRateLimiter } from "../hooks/useRateLimiter";
-import { Github, AlertCircle, Command, Loader2, ShieldAlert } from "lucide-react";
+import { Github, AlertCircle, Loader2, ShieldAlert } from "lucide-react";
+import { BrandLogo } from "../components/BrandMark";
 
 const LoginPage = () => {
   const { signInWithGitHub, user, loading: authLoading } = useAuth();
@@ -33,7 +34,6 @@ const LoginPage = () => {
         setError(error.message);
         setLoading(false);
       }
-      // On success, keep loading=true while the browser redirects to GitHub OAuth
     } catch (err) {
       setError(err?.message || "Failed to initiate GitHub sign-in");
       setLoading(false);
@@ -41,76 +41,96 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#0B0C10] px-4">
-      {/* Logo and Branding */}
+    <main className="min-h-screen flex flex-col items-center justify-center bg-[#0F0F0F] px-4 py-12">
+      {/* Logo */}
       <div className="text-center mb-8">
-        <Link to="/" className="flex items-center justify-center space-x-2 group mb-2">
-          <span className="text-3xl font-bold tracking-tight text-white transition-all duration-300">
-            FirstIssue.dev
-          </span>
+        <Link to="/" className="inline-flex items-center justify-center mb-3 hover:opacity-90 transition-opacity">
+          <BrandLogo size="lg" />
         </Link>
-        <p className="text-xs text-zinc-550 font-mono uppercase tracking-wider">The premier portal for open-source excellence</p>
+        <p className="text-xs text-[#8C929C] font-mono uppercase tracking-wider">
+          Open-source issue dispatch &amp; PR proof workspace
+        </p>
       </div>
 
       {/* Login Card */}
-      <div className="w-full max-w-sm bg-zinc-950/25 border border-zinc-800/80 rounded-lg p-6">
-        <div className="text-center mb-6">
-          <h2 className="text-xl font-bold tracking-tight text-white mb-1">Welcome back</h2>
-          <p className="text-xs text-zinc-400">Connect your GitHub to start contributing</p>
+      <div className="w-full max-w-sm bg-[#141518] border border-[#2B2E36] rounded-[4px] p-6">
+        <div className="mb-6">
+          <h1 className="text-xl font-semibold tracking-tight text-[#F4F4F0] mb-1 text-balance">
+            Sign in with GitHub
+          </h1>
+          <p className="text-sm text-[#A8ADB6] text-pretty">
+            Authenticate your GitHub handle to match issues, track PR status, and verify merges.
+          </p>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-950/20 border border-red-900/40 rounded flex items-center gap-2.5">
-            <AlertCircle className="h-4 w-4 text-red-400 flex-shrink-0" />
-            <span className="text-red-400 text-xs">{error}</span>
+          <div
+            role="alert"
+            className="mb-4 p-3 bg-[#F87171]/10 border border-[#F87171]/40 rounded-[4px] flex items-center gap-2.5"
+          >
+            <AlertCircle className="h-4 w-4 text-[#F87171] shrink-0" />
+            <span className="text-[#F87171] text-xs">{error}</span>
           </div>
         )}
 
         {isRateLimited && (
-          <div className="mb-4 p-3 bg-amber-950/20 border border-amber-900/40 rounded flex items-center gap-2.5">
-            <ShieldAlert className="h-4 w-4 text-amber-400 flex-shrink-0" />
-            <span className="text-amber-400 text-xs">Too many attempts. Try again in {remainingCooldown}s</span>
+          <div
+            role="status"
+            className="mb-4 p-3 bg-[#F59E0B]/10 border border-[#F59E0B]/40 rounded-[4px] flex items-center gap-2.5"
+          >
+            <ShieldAlert className="h-4 w-4 text-[#F59E0B] shrink-0" />
+            <span className="text-[#F59E0B] text-xs tabular-nums">
+              Too many attempts. Try again in {remainingCooldown}s
+            </span>
           </div>
         )}
 
         <button
+          type="button"
           onClick={handleGitHubSignIn}
           disabled={loading || isRateLimited}
-          className="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-white hover:bg-zinc-200 text-black text-xs font-semibold rounded transition-all disabled:opacity-85 disabled:cursor-wait"
+          className="w-full flex items-center justify-center gap-2.5 px-4 py-2.5 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] text-sm font-semibold rounded-[4px] transition-colors disabled:opacity-70 disabled:cursor-wait cursor-pointer min-h-[44px]"
         >
           {loading ? (
             <>
-              <Loader2 className="h-4 w-4 text-black animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               <span>Connecting to GitHub...</span>
             </>
           ) : isRateLimited ? (
             <>
-              <ShieldAlert className="h-4 w-4 text-amber-500" />
-              <span>Wait {remainingCooldown}s...</span>
+              <ShieldAlert className="h-4 w-4" />
+              <span className="tabular-nums">Wait {remainingCooldown}s...</span>
             </>
           ) : (
             <>
-              <Github className="h-4 w-4 text-black fill-black" />
-              <span>Sign in with GitHub</span>
+              <Github className="h-4 w-4" />
+              <span>Continue with GitHub</span>
             </>
           )}
         </button>
 
-        <div className="mt-5 text-center">
-          <p className="text-[10px] text-zinc-500 leading-relaxed">
-            By signing in, you agree to our{" "}
-            <Link to="/terms" className="text-zinc-400 hover:text-white underline font-mono transition-colors">Terms</Link>
-            {" "}and{" "}
-            <Link to="/privacy" className="text-zinc-400 hover:text-white underline font-mono transition-colors">Privacy Policy</Link>.
+        <div className="mt-5 pt-4 border-t border-[#22242A] text-center">
+          <p className="text-xs text-[#8C929C] leading-relaxed">
+            By continuing, you agree to our{" "}
+            <Link to="/terms" className="text-[#A8ADB6] hover:text-[#F4F4F0] underline transition-colors">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link to="/privacy" className="text-[#A8ADB6] hover:text-[#F4F4F0] underline transition-colors">
+              Privacy Policy
+            </Link>
+            .
           </p>
         </div>
       </div>
 
       {/* Footer Links */}
-      <div className="mt-12 flex items-center gap-6 text-[10px] font-semibold text-zinc-550 font-mono uppercase tracking-widest">
-        <Link to="/docs" className="hover:text-zinc-400 transition-colors">Docs</Link>
+      <div className="mt-8 flex items-center gap-6 text-xs font-mono text-[#8C929C]">
+        <Link to="/docs" className="hover:text-[#F4F4F0] transition-colors">
+          Documentation
+        </Link>
       </div>
-    </div>
+    </main>
   );
 };
 

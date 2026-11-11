@@ -207,14 +207,14 @@ const ProlificContributorBadge = ({ earned = false, onClick, variant = "card" })
         </svg>
       ) : (
         // Locked State
-        <div className="w-24 h-24 rounded-full bg-[#0A0B10]/20 border border-white/[0.03] flex items-center justify-center relative group-hover:bg-white/[0.02] transition-all duration-300">
+        <div className="w-24 h-24 rounded-full bg-[#0B0C0E]/70 border border-[#22242A] flex items-center justify-center relative group-hover:bg-white/[0.02] transition-all duration-300">
           <svg viewBox="0 0 200 200" className="w-full h-full opacity-20 filter grayscale">
             <polygon points="100,35 155,65 155,135 100,165 45,135 45,65" fill="#1E293B" stroke="#475569" strokeWidth="3" />
             <path d="M 78 82 L 64 100 L 78 118 M 122 82 L 136 100 L 122 118" fill="none" stroke="#64748B" strokeWidth="3" strokeLinecap="round" />
             <text x="100" y="114" fontFamily="sans-serif" fontSize="44" fontWeight="900" fill="#64748B" textAnchor="middle">25</text>
           </svg>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full bg-[#0b0c10]/90 border border-white/5 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
+            <div className="w-10 h-10 rounded-full bg-[#141518] border border-[#2B2E36] flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
               <Lock className="w-4 h-4 text-gray-500" />
             </div>
           </div>

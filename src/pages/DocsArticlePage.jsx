@@ -5,20 +5,16 @@ import {
   ChevronRight,
   Menu,
   X,
-  Search,
-  Clock,
-  User,
   ArrowLeft,
-  ArrowRight,
-  BookOpen,
   Copy,
   Check,
-  ExternalLink,
   ThumbsUp,
   ThumbsDown,
   Loader2,
+  Link2,
 } from "lucide-react";
 import Footer from "../components/Footer";
+import TechnicalDiagram from "../components/diagrams/TechnicalDiagrams";
 import { docContent } from "../data/docContent";
 import { supabase } from "../lib/supabase";
 
@@ -51,29 +47,29 @@ const DocsArticlePage = () => {
   const articleId = `${section}/${article}`;
 
   useEffect(() => {
-    // Reset state when navigating to a different article
     setVote(null);
     setVoteStats({ up: 0, down: 0 });
     setVotingType(null);
 
     fetchVotes();
-    // Check local storage for previous vote
     const savedVote = localStorage.getItem(`docs-vote-${articleId}`);
     if (savedVote) setVote(savedVote);
   }, [articleId]);
 
-  // Dynamically set page title and description for SEO
   useEffect(() => {
     if (currentArticle) {
       document.title = `${currentArticle.title} | FirstIssue.dev Docs`;
       const metaDesc = document.querySelector('meta[name="description"]');
       if (metaDesc) {
-        metaDesc.setAttribute("content", currentArticle.description || `Read about ${currentArticle.title} on the FirstIssue.dev developer guides.`);
+        metaDesc.setAttribute(
+          "content",
+          currentArticle.description ||
+            `Read about ${currentArticle.title} on the FirstIssue.dev developer guides.`,
+        );
       }
     }
   }, [currentArticle]);
 
-  // Scroll to hash element if it exists in the URL (e.g. for linking directly to section)
   useEffect(() => {
     if (location.hash && currentArticle) {
       const timer = setTimeout(() => {
@@ -82,17 +78,16 @@ const DocsArticlePage = () => {
         if (element) {
           element.scrollIntoView({ behavior: "smooth" });
         }
-      }, 400); // 400ms delay to allow DOM & markdown to fully render and lay out
+      }, 400);
       return () => clearTimeout(timer);
     }
   }, [location.hash, currentArticle]);
 
-  // Set up intersection observer for scroll spy
   useEffect(() => {
     if (!currentArticle) return;
-    
+
     const h2s = currentArticle.content.filter(
-      (block) => block.type === "heading" && block.level === 2
+      (block) => block.type === "heading" && block.level === 2,
     );
 
     if (h2s.length === 0) return;
@@ -105,7 +100,7 @@ const DocsArticlePage = () => {
           }
         });
       },
-      { rootMargin: "-80px 0px -70% 0px", threshold: 0.1 }
+      { rootMargin: "-80px 0px -70% 0px", threshold: 0.1 },
     );
 
     h2s.forEach((heading) => {
@@ -132,7 +127,7 @@ const DocsArticlePage = () => {
           if (curr.vote_type === "down") acc.down++;
           return acc;
         },
-        { up: 0, down: 0 }
+        { up: 0, down: 0 },
       );
       setVoteStats(stats);
     } catch (error) {
@@ -163,14 +158,14 @@ const DocsArticlePage = () => {
 
   const getDynamicUpdatedDate = (staticDate) => {
     const now = new Date();
-    if (staticDate.includes("day")) {
+    if (staticDate?.includes("day")) {
       const days = parseInt(staticDate) || 1;
       now.setDate(now.getDate() - days);
-    } else if (staticDate.includes("week")) {
+    } else if (staticDate?.includes("week")) {
       const weeks = parseInt(staticDate) || 1;
       now.setDate(now.getDate() - weeks * 7);
     }
-    
+
     return now.toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",
@@ -180,164 +175,163 @@ const DocsArticlePage = () => {
 
   if (!currentArticle) {
     return (
-      <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">
+      <main className="min-h-screen bg-[#0F0F0F] flex items-center justify-center px-4 text-[#F4F4F0]">
+        <div className="text-center max-w-md p-8 bg-[#141518] border border-[#2B2E36] rounded-[4px]">
+          <h1 className="text-2xl font-bold text-[#F4F4F0] mb-3 text-balance">
             Article Not Found
           </h1>
-          <p className="text-gray-400 mb-6">
-            The documentation article you're looking for doesn't exist.
+          <p className="text-sm text-[#A8ADB6] mb-6 text-pretty">
+            The documentation article you&apos;re looking for doesn&apos;t exist.
           </p>
           <Link
             to="/docs"
-            className="px-6 py-3 bg-[#12131a] border border-zinc-800 text-white rounded-md font-medium hover:bg-zinc-900 transition-colors"
+            className="inline-flex items-center justify-center px-5 py-2.5 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] text-xs font-semibold transition-colors"
           >
             Back to Documentation
           </Link>
         </div>
-      </div>
+      </main>
     );
   }
 
   const CodeBlock = ({ children, language = "bash", id }) => (
-    <div className="relative border border-zinc-800/80 bg-[#12131a] rounded-lg overflow-hidden group my-6 w-full max-w-full">
-      <div className="flex items-center justify-between bg-zinc-950/30 px-4 py-1.5 border-b border-zinc-800/40">
-        <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-wider">
+    <div className="relative border border-[#2B2E36] bg-[#0B0C0E] rounded-[4px] overflow-hidden my-6 w-full max-w-full">
+      <div className="flex items-center justify-between bg-[#141518] px-4 py-2 border-b border-[#22242A]">
+        <span className="text-xs text-[#8C929C] font-mono uppercase tracking-wider">
           {language}
         </span>
         <button
+          type="button"
           onClick={() => copyToClipboard(children, id)}
-          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-200 transition-colors py-0.5 px-2 bg-zinc-900/40 border border-zinc-800/60 rounded hover:bg-zinc-900"
+          aria-label={`Copy ${language} snippet`}
+          className="flex items-center gap-1.5 text-xs font-mono text-[#A8ADB6] hover:text-[#F4F4F0] transition-colors py-0.5 px-2 bg-[#17181B] border border-[#2B2E36] rounded-[4px] cursor-pointer"
         >
           {copiedCode === id ? (
             <>
-              <Check className="w-3 h-3 text-emerald-400" />
-              <span className="text-[11px] text-emerald-400 font-medium">Copied</span>
+              <Check className="w-3 h-3 text-[#34D399]" />
+              <span className="text-[#34D399] font-medium">Copied</span>
             </>
           ) : (
             <>
               <Copy className="w-3 h-3" />
-              <span className="text-[11px]">Copy</span>
+              <span>Copy</span>
             </>
           )}
         </button>
       </div>
-      <pre className="p-4 overflow-x-auto font-mono text-[13px] text-zinc-300 leading-relaxed bg-[#12131a] w-full max-w-full">
+      <pre className="p-4 overflow-x-auto font-mono text-[13px] text-[#F4F4F0] leading-relaxed bg-[#0B0C0E] w-full max-w-full">
         <code className="block w-full overflow-x-auto">{children}</code>
       </pre>
     </div>
   );
 
   const h2Headings = currentArticle.content.filter(
-    (block) => block.type === "heading" && block.level === 2
+    (block) => block.type === "heading" && block.level === 2,
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] overflow-x-hidden text-zinc-200">
+    <div className="min-h-screen bg-[#0F0F0F] overflow-x-hidden text-[#F4F4F0] font-sans">
       {/* Header */}
-      <div className="border-b border-[#1e1f2e] bg-[#12131a]/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-8xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-2">
-            {/* Breadcrumbs */}
-            <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-zinc-400 min-w-0 overflow-hidden">
-              <Link
-                to="/docs"
-                className="hover:text-white transition-colors flex-shrink-0 inline-flex items-center"
-              >
-                <Home className="w-3.5 h-3.5" />
-              </Link>
-              <ChevronRight className="w-3 h-3 text-zinc-700 flex-shrink-0" />
-              <Link
-                to="/docs"
-                className="hover:text-white transition-colors hidden sm:inline-block"
-              >
-                Docs
-              </Link>
-              <ChevronRight className="w-3 h-3 text-zinc-700 flex-shrink-0 hidden sm:inline-block" />
-              <Link
-                to={`/docs/${section}`}
-                className="hover:text-white transition-colors inline-block truncate max-w-[150px]"
-              >
-                {sectionData?.title}
-              </Link>
-              <ChevronRight className="w-3 h-3 text-zinc-700 flex-shrink-0" />
-              <span className="text-zinc-100 font-medium truncate max-w-[250px]">{currentArticle.title}</span>
-            </div>
-            
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 text-zinc-400 hover:text-white transition-colors flex-shrink-0 -mr-2"
-              aria-label="Toggle menu"
+      <header className="border-b border-[#22242A] bg-[#0F0F0F] sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm text-[#A8ADB6] min-w-0 overflow-hidden font-mono">
+            <Link
+              to="/docs"
+              aria-label="Documentation home"
+              className="hover:text-[#DAFA9C] transition-colors shrink-0 inline-flex items-center"
             >
-              {sidebarOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
+              <Home className="w-3.5 h-3.5" />
+            </Link>
+            <ChevronRight className="w-3 h-3 text-[#8C929C] shrink-0" />
+            <Link
+              to="/docs"
+              className="hover:text-[#F4F4F0] transition-colors hidden sm:inline-block"
+            >
+              Docs
+            </Link>
+            <ChevronRight className="w-3 h-3 text-[#8C929C] shrink-0 hidden sm:inline-block" />
+            <Link
+              to={`/docs/${section}`}
+              className="hover:text-[#F4F4F0] transition-colors inline-block truncate max-w-[150px]"
+            >
+              {sectionData?.title}
+            </Link>
+            <ChevronRight className="w-3 h-3 text-[#8C929C] shrink-0" />
+            <span className="text-[#F4F4F0] font-medium truncate max-w-[260px]">
+              {currentArticle.title}
+            </span>
           </div>
-        </div>
-      </div>
 
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden p-2 text-[#A8ADB6] hover:text-[#F4F4F0] rounded-[4px] hover:bg-[#17181B] transition-colors shrink-0 -mr-2 cursor-pointer"
+            aria-label="Toggle documentation menu"
+            aria-expanded={sidebarOpen}
+          >
+            {sidebarOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+          </button>
+        </div>
+      </header>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex flex-col lg:flex-row gap-8 justify-between">
           {/* Mobile Sidebar Overlay */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              className="fixed inset-0 bg-black/75 z-40 lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
           )}
 
           {/* Sidebar (Left Column) */}
-          <div
+          <aside
             className={`
               fixed lg:static inset-y-0 left-0 z-50 lg:z-0
-              w-64 flex-shrink-0
-              bg-[#0a0a0f] lg:bg-transparent
+              w-64 shrink-0
+              bg-[#0F0F0F] lg:bg-transparent
               transform transition-transform duration-300 ease-in-out
               ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
               overflow-y-auto lg:overflow-visible
-              border-r border-[#1e1f2e] lg:border-0
+              border-r border-[#22242A] lg:border-0
             `}
           >
             <div className="lg:sticky lg:top-24 p-6 lg:p-0">
-              {/* Back to Docs */}
               <Link
                 to="/docs"
-                className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors mb-6"
+                className="flex items-center gap-2 text-[#A8ADB6] hover:text-[#DAFA9C] transition-colors mb-6 text-xs font-mono"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span className="text-sm font-medium">Back to Docs</span>
+                <span>Back to Docs</span>
               </Link>
 
-              {/* Section Navigation */}
               {sectionData && (
                 <div className="space-y-2">
-                  <div className="px-3 py-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                  <div className="px-2.5 py-1 text-xs font-mono font-semibold text-[#8C929C] uppercase tracking-wider">
                     {sectionData.title}
                   </div>
-                  <div className="space-y-1">
+                  <nav aria-label="Section articles" className="space-y-1">
                     {Object.entries(docContent[section] || {}).map(
                       ([key, articleData]) => {
-                        if (
-                          key === "title" ||
-                          key === "icon" ||
-                          key === "color"
-                        )
+                        if (key === "title" || key === "icon" || key === "color") {
                           return null;
-                        
+                        }
+
                         const isCurrent = key === article;
                         return (
                           <Link
                             key={key}
                             to={`/docs/${section}/${key}`}
                             onClick={() => setSidebarOpen(false)}
-                            className={`block px-3 py-1.5 text-sm rounded-md transition-all border ${
+                            aria-current={isCurrent ? "page" : undefined}
+                            className={`block px-2.5 py-1.5 text-xs rounded-[4px] transition-colors border ${
                               isCurrent
-                                ? "text-blue-400 bg-blue-500/5 border-zinc-800/60 font-medium"
-                                : "text-zinc-400 hover:text-zinc-100 hover:bg-[#12131a] border-transparent hover:border-zinc-800/50"
+                                ? "text-[#DAFA9C] bg-[#17181B] border-[#DAFA9C]/50 font-semibold"
+                                : "text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#141518] border-transparent hover:border-[#2B2E36]"
                             }`}
                           >
                             {articleData.title}
@@ -345,47 +339,49 @@ const DocsArticlePage = () => {
                         );
                       },
                     )}
-                  </div>
+                  </nav>
                 </div>
               )}
             </div>
-          </div>
+          </aside>
 
           {/* Main Article Container (Center Column) */}
-          <div className="flex-1 min-w-0 max-w-[760px] mx-auto lg:mx-0 w-full overflow-hidden">
+          <main className="flex-1 min-w-0 max-w-[740px] mx-auto lg:mx-0 w-full overflow-hidden">
             <article>
               {/* Article Header */}
               <div className="mb-8">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-xs text-zinc-400 font-semibold uppercase tracking-wider px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded">
+                <div className="flex items-center gap-3 mb-4 font-mono">
+                  <span className="text-xs text-[#DAFA9C] font-semibold uppercase tracking-wider px-2.5 py-0.5 bg-[#141518] border border-[#2B2E36] rounded-[4px]">
                     {sectionData?.title}
                   </span>
-                  <span className="text-zinc-600">•</span>
-                  <span className="text-xs text-zinc-500 font-medium">{currentArticle.readTime}</span>
+                  <span className="text-[#3A3E48]">·</span>
+                  <span className="text-xs text-[#8C929C] font-medium">
+                    {currentArticle.readTime}
+                  </span>
                 </div>
 
-                <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-[#F4F4F0] tracking-tight mb-3 text-balance">
                   {currentArticle.title}
                 </h1>
 
                 {currentArticle.description && (
-                  <p className="text-lg text-zinc-400 mb-6 leading-relaxed">
+                  <p className="text-base sm:text-lg text-[#A8ADB6] mb-6 max-w-[54ch] leading-relaxed text-pretty">
                     {currentArticle.description}
                   </p>
                 )}
 
-                <div className="flex flex-wrap items-center gap-4 text-xs text-zinc-500 pb-6 border-b border-zinc-800/60">
+                <div className="flex flex-wrap items-center gap-4 text-xs text-[#8C929C] font-mono pb-6 border-b border-[#22242A]">
                   <span>Updated {getDynamicUpdatedDate(currentArticle.updated)}</span>
                   {currentArticle.difficulty && (
                     <>
-                      <span className="text-zinc-700">•</span>
+                      <span className="text-[#3A3E48]">·</span>
                       <span
-                        className={`px-2 py-0.5 rounded text-[11px] font-medium border ${
+                        className={`px-2 py-0.5 rounded-[4px] text-xs font-semibold border ${
                           currentArticle.difficulty === "Beginner"
-                            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400"
+                            ? "bg-[#34D399]/10 border-[#34D399]/30 text-[#34D399]"
                             : currentArticle.difficulty === "Intermediate"
-                              ? "bg-amber-500/5 border-amber-500/20 text-amber-400"
-                              : "bg-red-500/5 border-red-500/20 text-red-400"
+                              ? "bg-[#F59E0B]/10 border-[#F59E0B]/30 text-[#F59E0B]"
+                              : "bg-[#F87171]/10 border-[#F87171]/30 text-[#F87171]"
                         }`}
                       >
                         {currentArticle.difficulty}
@@ -396,37 +392,47 @@ const DocsArticlePage = () => {
               </div>
 
               {/* Article Content */}
-              <div className="prose prose-invert max-w-none w-full break-words">
+              <div className="max-w-none w-full break-words">
                 {currentArticle.content.map((block, index) => {
                   switch (block.type) {
                     case "heading": {
                       const HeadingTag = `h${block.level}`;
-                      const headingId = block.level === 2 
-                        ? block.text.toLowerCase().replace(/[^a-z0-9]+/g, "-")
-                        : undefined;
+                      const headingId =
+                        block.level === 2
+                          ? block.text.toLowerCase().replace(/[^a-z0-9]+/g, "-")
+                          : undefined;
                       return (
-                        <div key={index} className="group relative">
+                        <div
+                          key={index}
+                          className={`group relative flex items-center gap-2 ${
+                            block.level === 2
+                              ? "mt-9 mb-4 border-b border-[#22242A] pb-2"
+                              : block.level === 3
+                                ? "mt-6 mb-3"
+                                : "mt-4 mb-2"
+                          }`}
+                        >
                           <HeadingTag
                             id={headingId}
-                            className={`font-bold text-white mb-4 scroll-mt-24 flex items-center gap-2 ${
+                            className={`font-bold text-[#F4F4F0] scroll-mt-24 text-balance ${
                               block.level === 2
-                                ? "text-2xl mt-8 border-b border-zinc-800/40 pb-2"
+                                ? "text-2xl"
                                 : block.level === 3
-                                  ? "text-xl mt-6"
-                                  : "text-lg mt-4"
+                                  ? "text-xl"
+                                  : "text-lg"
                             }`}
                           >
                             {block.text}
-                            {block.level === 2 && headingId && (
-                              <a
-                                href={`#${headingId}`}
-                                className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-white transition-opacity ml-1.5"
-                                aria-label="Anchor link"
-                              >
-                                #
-                              </a>
-                            )}
                           </HeadingTag>
+                          {block.level === 2 && headingId && (
+                            <a
+                              href={`#${headingId}`}
+                              className="opacity-0 group-hover:opacity-100 focus:opacity-100 text-[#8C929C] hover:text-[#DAFA9C] transition-opacity p-1"
+                              aria-label={`Copy anchor link to ${block.text}`}
+                            >
+                              <Link2 className="w-4 h-4" />
+                            </a>
+                          )}
                         </div>
                       );
                     }
@@ -435,7 +441,7 @@ const DocsArticlePage = () => {
                       return (
                         <p
                           key={index}
-                          className="text-zinc-300 mb-4 leading-relaxed text-[15px] break-words"
+                          className="text-[#F4F4F0]/90 mb-4 leading-[1.7] text-base max-w-[54ch] break-words text-pretty"
                         >
                           {block.text}
                         </p>
@@ -444,10 +450,7 @@ const DocsArticlePage = () => {
                     case "code":
                       return (
                         <div key={index} className="mb-6 w-full max-w-full overflow-hidden">
-                          <CodeBlock
-                            language={block.language}
-                            id={`code-${index}`}
-                          >
+                          <CodeBlock language={block.language} id={`code-${index}`}>
                             {block.code}
                           </CodeBlock>
                         </div>
@@ -458,10 +461,15 @@ const DocsArticlePage = () => {
                       return (
                         <ListTag
                           key={index}
-                          className={`mb-4 space-y-2 ${block.ordered ? "list-decimal pl-5" : "list-disc pl-5"} text-[15px]`}
+                          className={`mb-5 space-y-2 max-w-[54ch] ${
+                            block.ordered ? "list-decimal pl-5" : "list-disc pl-5"
+                          } text-base`}
                         >
                           {block.items.map((item, itemIndex) => (
-                            <li key={itemIndex} className="text-zinc-300 pl-1 break-words">
+                            <li
+                              key={itemIndex}
+                              className="text-[#F4F4F0]/90 pl-1 break-words leading-[1.65] text-pretty"
+                            >
                               {item}
                             </li>
                           ))}
@@ -470,34 +478,73 @@ const DocsArticlePage = () => {
                     }
 
                     case "callout": {
-                      const borderLeftColor = 
-                        block.variant === "warning" ? "border-l-amber-500 bg-amber-500/5" :
-                        block.variant === "error" ? "border-l-red-500 bg-red-500/5" :
-                        block.variant === "success" ? "border-l-emerald-500 bg-emerald-500/5" :
-                        "border-l-blue-500 bg-blue-500/5";
+                      const variantStyles =
+                        block.variant === "warning"
+                          ? "border-[#F59E0B]/40 bg-[#F59E0B]/5 text-[#F59E0B]"
+                          : block.variant === "error"
+                            ? "border-[#F87171]/40 bg-[#F87171]/5 text-[#F87171]"
+                            : block.variant === "success"
+                              ? "border-[#34D399]/40 bg-[#34D399]/5 text-[#34D399]"
+                              : "border-[#DAFA9C]/40 bg-[#DAFA9C]/5 text-[#DAFA9C]";
+
+                      const tagLabel =
+                        block.variant === "warning"
+                          ? "CAUTION"
+                          : block.variant === "error"
+                            ? "CRITICAL"
+                            : block.variant === "success"
+                              ? "TIP"
+                              : "NOTE";
+
                       return (
                         <div
                           key={index}
-                          className={`p-4 rounded-r-lg border border-zinc-800/80 border-l-4 mb-6 ${borderLeftColor}`}
+                          className={`p-4 rounded-[4px] border mb-6 max-w-[56ch] ${variantStyles}`}
                         >
-                          <p className="font-semibold text-zinc-100 text-sm mb-1 break-words">{block.title}</p>
-                          <p className="text-sm text-zinc-300 leading-relaxed opacity-95 break-words">{block.text}</p>
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-xs font-mono font-bold uppercase tracking-wider">
+                              [{tagLabel}]
+                            </span>
+                            <p className="font-semibold text-[#F4F4F0] text-sm break-words">
+                              {block.title}
+                            </p>
+                          </div>
+                          <p className="text-sm text-[#A8ADB6] leading-relaxed max-w-[50ch] break-words text-pretty">
+                            {block.text}
+                          </p>
                         </div>
                       );
                     }
 
+                    case "diagram":
+                      return (
+                        <figure key={index} className="my-6">
+                          <TechnicalDiagram id={block.diagramId} />
+                          {block.caption && (
+                            <figcaption className="text-center text-xs text-[#8C929C] mt-2.5 font-mono max-w-[54ch] mx-auto text-pretty">
+                              {block.caption}
+                            </figcaption>
+                          )}
+                        </figure>
+                      );
+
                     case "image":
                       return (
-                        <div key={index} className="my-6 rounded-lg overflow-hidden border border-zinc-800/80 bg-[#12131a] p-2">
+                        <figure
+                          key={index}
+                          className="my-6 rounded-[4px] overflow-hidden border border-[#2B2E36] bg-[#141518] p-2"
+                        >
                           <img
                             src={block.src}
-                            alt={block.alt || "Documentation Image"}
-                            className="w-full h-auto rounded-md max-h-[500px] object-contain mx-auto"
+                            alt={block.alt || "Documentation illustration"}
+                            className="w-full h-auto rounded-[2px] max-h-[500px] object-contain mx-auto"
                           />
                           {block.caption && (
-                            <p className="text-center text-xs text-zinc-500 mt-2 font-mono">{block.caption}</p>
+                            <figcaption className="text-center text-xs text-[#8C929C] mt-2 font-mono max-w-[54ch] mx-auto text-pretty">
+                              {block.caption}
+                            </figcaption>
                           )}
-                        </div>
+                        </figure>
                       );
 
                     default:
@@ -507,81 +554,87 @@ const DocsArticlePage = () => {
               </div>
 
               {/* Article Footer (Helpful rating) */}
-              <div className="mt-12 pt-8 border-t border-zinc-800/60">
+              <div className="mt-12 pt-8 border-t border-[#22242A]">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
-                    <span className="text-sm text-zinc-500 font-medium">
+                    <span className="text-xs sm:text-sm text-[#A8ADB6] font-medium">
                       Was this article helpful?
                     </span>
                     <div className="flex items-center gap-2">
                       <button
+                        type="button"
+                        aria-label="Mark article helpful"
                         onClick={() => handleVote("up")}
                         disabled={vote !== null || votingType !== null}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-medium transition-all ${
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border text-xs font-mono font-medium transition-colors cursor-pointer ${
                           vote === "up"
-                            ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-400 font-semibold"
-                            : "bg-[#12131a] border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700"
+                            ? "bg-[#34D399]/10 border-[#34D399]/40 text-[#34D399] font-semibold"
+                            : "bg-[#141518] border-[#2B2E36] text-[#A8ADB6] hover:text-[#F4F4F0] hover:border-[#3A3E48]"
                         } disabled:cursor-default`}
                       >
                         {votingType === "up" ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
-                          <ThumbsUp className={`w-3.5 h-3.5 ${vote === "up" ? "fill-emerald-400/20" : ""}`} />
+                          <ThumbsUp className="w-3.5 h-3.5" />
                         )}
-                        <span>{voteStats.up}</span>
+                        <span className="tabular-nums">{voteStats.up}</span>
                       </button>
                       <button
+                        type="button"
+                        aria-label="Mark article unhelpful"
                         onClick={() => handleVote("down")}
                         disabled={vote !== null || votingType !== null}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-md border text-xs font-medium transition-all ${
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border text-xs font-mono font-medium transition-colors cursor-pointer ${
                           vote === "down"
-                            ? "bg-red-500/10 border-red-500/40 text-red-400 font-semibold"
-                            : "bg-[#12131a] border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700"
+                            ? "bg-[#F87171]/10 border-[#F87171]/40 text-[#F87171] font-semibold"
+                            : "bg-[#141518] border-[#2B2E36] text-[#A8ADB6] hover:text-[#F4F4F0] hover:border-[#3A3E48]"
                         } disabled:cursor-default`}
                       >
                         {votingType === "down" ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : (
-                          <ThumbsDown className={`w-3.5 h-3.5 ${vote === "down" ? "fill-red-400/20" : ""}`} />
+                          <ThumbsDown className="w-3.5 h-3.5" />
                         )}
-                        <span>{voteStats.down}</span>
+                        <span className="tabular-nums">{voteStats.down}</span>
                       </button>
                     </div>
                   </div>
                   {vote && (
-                    <span className="text-xs text-blue-400 animate-fade-in font-medium">
+                    <span className="text-xs font-mono text-[#DAFA9C] font-medium">
                       Thanks for your feedback!
                     </span>
                   )}
                 </div>
               </div>
             </article>
-          </div>
+          </main>
 
           {/* Table of Contents (Right Column) */}
           {h2Headings.length > 0 && (
-            <div className="hidden xl:block w-60 flex-shrink-0 sticky top-24 self-start">
-              <div className="pl-6 border-l border-zinc-800/80 space-y-3">
-                <h4 className="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+            <aside className="hidden xl:block w-60 shrink-0 sticky top-24 self-start">
+              <div className="p-4 rounded-[4px] bg-[#141518] border border-[#22242A] space-y-3">
+                <h2 className="text-xs font-mono font-semibold text-[#8C929C] uppercase tracking-wider">
                   On this page
-                </h4>
-                <ul className="space-y-2">
+                </h2>
+                <ul className="space-y-1.5">
                   {h2Headings.map((heading, i) => {
-                    const headingId = heading.text.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+                    const headingId = heading.text
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]+/g, "-");
                     const isActive = activeId === headingId;
                     return (
                       <li key={i}>
                         <a
                           href={`#${headingId}`}
-                          className={`block text-xs transition-colors py-0.5 ${
+                          className={`block text-xs transition-colors py-1 px-2 rounded-[4px] ${
                             isActive
-                              ? "text-blue-400 font-medium"
-                              : "text-zinc-500 hover:text-zinc-300"
+                              ? "text-[#DAFA9C] bg-[#17181B] font-semibold"
+                              : "text-[#A8ADB6] hover:text-[#F4F4F0]"
                           }`}
                           onClick={(e) => {
                             e.preventDefault();
                             document.getElementById(headingId)?.scrollIntoView({
-                              behavior: "smooth"
+                              behavior: "smooth",
                             });
                             setActiveId(headingId);
                           }}
@@ -593,7 +646,7 @@ const DocsArticlePage = () => {
                   })}
                 </ul>
               </div>
-            </div>
+            </aside>
           )}
         </div>
       </div>

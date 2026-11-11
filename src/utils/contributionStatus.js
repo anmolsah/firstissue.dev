@@ -52,9 +52,9 @@ export const getStatusDisplayConfig = (status) => {
         in_progress: {
             label: 'In Progress',
             emoji: '🔨',
-            color: 'text-purple-400',
-            bg: 'bg-purple-500/20',
-            borderColor: 'border-purple-500/30',
+            color: 'text-[#DAFA9C]',
+            bg: 'bg-[#DAFA9C]/15',
+            borderColor: 'border-[#DAFA9C]/30',
         },
         merged: {
             label: 'Merged',

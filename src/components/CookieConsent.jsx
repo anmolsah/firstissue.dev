@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { X, Cookie, ShieldCheck } from "lucide-react";
+import { X, ShieldCheck } from "lucide-react";
 
 const CookieConsent = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -8,7 +8,6 @@ const CookieConsent = () => {
   useEffect(() => {
     const consent = localStorage.getItem("cookie-consent");
     if (!consent) {
-      // Small delay to make it feel more natural
       const timer = setTimeout(() => {
         setIsVisible(true);
       }, 1500);
@@ -29,57 +28,53 @@ const CookieConsent = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 right-6 z-[100] animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out">
-      <div className="max-w-4xl mx-auto">
-        <div className="relative group">
-          {/* Backdrop Glow */}
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-[#00ADB5]/20 to-purple-500/20 rounded-2xl blur opacity-75 group-hover:opacity-100 transition duration-1000"></div>
-          
-          <div className="relative bg-[#1a1a24]/90 backdrop-blur-xl border border-white/10 p-6 md:p-8 rounded-2xl shadow-2xl flex flex-col md:flex-row items-center gap-6">
-            {/* Icon and Text */}
-            <div className="flex items-start gap-4 flex-1">
-              <div className="p-3 rounded-xl bg-[#00ADB5]/10 border border-[#00ADB5]/20 hidden md:block">
-                <Cookie className="w-6 h-6 text-[#00ADB5]" />
-              </div>
-              <div className="space-y-2 text-center md:text-left">
-                <h3 className="text-lg font-semibold text-white flex items-center justify-center md:justify-start gap-2">
-                  We use cookies <ShieldCheck className="w-4 h-4 text-[#00ADB5]" />
-                </h3>
-                <p className="text-gray-400 text-sm leading-relaxed max-w-2xl">
-                  We use cookies to keep you signed in and remember your preferences. 
-                  By clicking "Accept", you agree to our use of cookies. For more details, see our{" "}
-                  <Link 
-                    to="/privacy" 
-                    className="text-[#00ADB5] hover:text-[#00c2cb] underline underline-offset-4 decoration-[#00ADB5]/30 hover:decoration-[#00ADB5] transition-all"
-                  >
-                    Privacy Policy
-                  </Link>.
-                </p>
-              </div>
-            </div>
+    <div
+      role="region"
+      aria-label="Cookie preferences"
+      className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-md z-[90] animate-in-pop"
+    >
+      <div className="relative bg-[#17181B] border border-[#2B2E36] rounded-[4px] p-5 shadow-2xl">
+        <button
+          type="button"
+          onClick={() => setIsVisible(false)}
+          aria-label="Close cookie banner"
+          className="absolute top-3.5 right-3.5 p-1.5 text-[#8C929C] hover:text-[#F4F4F0] hover:bg-[#1C1E23] rounded-[4px] transition-colors"
+        >
+          <X className="w-4 h-4" />
+        </button>
 
-            {/* Actions */}
-            <div className="flex items-center gap-3 w-full md:w-auto">
-              <button
-                onClick={handleDecline}
-                className="flex-1 md:flex-none px-6 py-2.5 rounded-xl border border-white/10 text-gray-300 text-sm font-medium hover:bg-white/5 transition-colors whitespace-nowrap"
-              >
-                Decline
-              </button>
-              <button
-                onClick={handleAccept}
-                className="flex-1 md:flex-none px-8 py-2.5 rounded-xl bg-[#00ADB5] text-[#222831] text-sm font-bold hover:bg-[#00c2cb] transition-all shadow-[0_0_20px_rgba(0,173,181,0.3)] hover:shadow-[0_0_25px_rgba(0,173,181,0.5)] active:scale-95 whitespace-nowrap"
-              >
-                Accept All
-              </button>
-              <button 
-                onClick={() => setIsVisible(false)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors md:hidden"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+        <div className="pr-7 space-y-2">
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#F4F4F0]">
+            <ShieldCheck className="w-4 h-4 text-[#DAFA9C] shrink-0" />
+            <span>Session &amp; preferences cookies</span>
           </div>
+          <p className="text-xs text-[#A8ADB6] leading-relaxed">
+            We store essential session and filter preferences locally so you stay signed in. Read our{" "}
+            <Link
+              to="/privacy"
+              className="text-[#DAFA9C] hover:text-[#C7F275] underline underline-offset-4 transition-colors"
+            >
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2.5 mt-4">
+          <button
+            type="button"
+            onClick={handleDecline}
+            className="flex-1 px-3.5 py-2 rounded-[4px] bg-[#141518] border border-[#2B2E36] hover:border-[#3A3E48] text-[#A8ADB6] hover:text-[#F4F4F0] text-xs font-medium transition-colors"
+          >
+            Essential only
+          </button>
+          <button
+            type="button"
+            onClick={handleAccept}
+            className="flex-1 px-4 py-2 rounded-[4px] bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] text-xs font-semibold transition-colors"
+          >
+            Accept
+          </button>
         </div>
       </div>
     </div>

@@ -62,7 +62,7 @@ export const BADGE_DEFINITIONS = {
     type: 'BadgeClass',
     requirement: (stats) => stats.total >= 5,
     rarity: 'common',
-    color: 'purple'
+    color: 'lime'
   },
 
   CONTRIBUTOR_10: {
@@ -328,7 +328,7 @@ export const BADGE_DEFINITIONS = {
     type: 'BadgeClass',
     requirement: (stats) => Boolean(stats && (stats.hasTaughtFirstMate || checkHasTaughtFirstMate(stats.userId))),
     rarity: 'rare',
-    color: 'purple'
+    color: 'lime'
   }
 };
 
@@ -460,33 +460,33 @@ export function getBadgeRarityInfo(rarity) {
   const rarityConfig = {
     common: {
       label: 'Common',
-      color: 'text-gray-400',
-      bgColor: 'bg-gray-500/10',
-      borderColor: 'border-gray-500/20'
+      color: 'text-[#A8ADB6]',
+      bgColor: 'bg-[#17181B]',
+      borderColor: 'border-[#2B2E36]'
     },
     uncommon: {
       label: 'Uncommon',
-      color: 'text-green-400',
-      bgColor: 'bg-green-500/10',
-      borderColor: 'border-green-500/20'
+      color: 'text-[#34D399]',
+      bgColor: 'bg-[#34D399]/10',
+      borderColor: 'border-[#34D399]/30'
     },
     rare: {
       label: 'Rare',
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-500/10',
-      borderColor: 'border-blue-500/20'
+      color: 'text-sky-400',
+      bgColor: 'bg-sky-500/10',
+      borderColor: 'border-sky-500/30'
     },
     epic: {
       label: 'Epic',
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-500/10',
-      borderColor: 'border-purple-500/20'
+      color: 'text-orange-400',
+      bgColor: 'bg-orange-500/10',
+      borderColor: 'border-orange-500/30'
     },
     legendary: {
       label: 'Legendary',
-      color: 'text-amber-400',
-      bgColor: 'bg-amber-500/10',
-      borderColor: 'border-amber-500/20'
+      color: 'text-[#F59E0B]',
+      bgColor: 'bg-[#F59E0B]/10',
+      borderColor: 'border-[#F59E0B]/30'
     }
   };
 

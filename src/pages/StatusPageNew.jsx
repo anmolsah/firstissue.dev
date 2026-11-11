@@ -1,31 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useGitHubSync } from "../hooks/useGitHubSync";
 import { getContributionStatus, getStatusConfig } from "../services/githubSync";
 import { useBookmarks } from "../hooks/queries/useBookmarks";
 import AppSidebar from "../components/AppSidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
+import BrandMark from "../components/BrandMark";
 import {
-  CheckCircle,
   Clock,
   PlayCircle,
   AlertCircle,
   ExternalLink,
   TrendingUp,
   Search,
-  Compass,
-  Bookmark,
-  User,
-  Command,
-  Plus,
   Loader2,
   RefreshCw,
   GitPullRequest,
   GitMerge,
   XCircle,
   Github,
-  Calendar,
   Activity,
   ChevronLeft,
   ChevronRight,
@@ -38,7 +32,6 @@ const StatusPage = () => {
   const navigate = useNavigate();
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeNav, setActiveNav] = useState("status");
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
@@ -62,43 +55,43 @@ const StatusPage = () => {
       value: "all",
       label: "All",
       icon: Activity,
-      color: "text-white",
-      bg: "bg-blue-600",
+      color: "text-[#DAFA9C]",
+      bg: "bg-[#DAFA9C]/15",
     },
     {
       value: "saved",
       label: "Saved",
       icon: Clock,
-      color: "text-blue-400",
-      bg: "bg-blue-500/20",
+      color: "text-[#A8ADB6]",
+      bg: "bg-[#1C1E23]",
     },
     {
       value: "applied",
       label: "Applied",
       icon: AlertCircle,
-      color: "text-amber-400",
-      bg: "bg-amber-500/20",
+      color: "text-[#F59E0B]",
+      bg: "bg-[#F59E0B]/15",
     },
     {
       value: "in_progress",
       label: "In Progress",
       icon: PlayCircle,
-      color: "text-purple-400",
-      bg: "bg-purple-500/20",
+      color: "text-[#DAFA9C]",
+      bg: "bg-[#DAFA9C]/15",
     },
     {
       value: "merged",
       label: "Merged",
       icon: GitMerge,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/20",
+      color: "text-[#34D399]",
+      bg: "bg-[#34D399]/15",
     },
     {
       value: "closed",
       label: "Closed",
       icon: XCircle,
-      color: "text-red-400",
-      bg: "bg-red-500/20",
+      color: "text-[#F87171]",
+      bg: "bg-[#F87171]/15",
     },
   ];
 
@@ -112,7 +105,6 @@ const StatusPage = () => {
 
   // Combine contributions and bookmarks
   const allItems = React.useMemo(() => {
-    // Map bookmarks to contribution shape
     const bookmarkedContributions = bookmarks.map((b) => ({
       ...b,
       id: b.id,
@@ -120,21 +112,19 @@ const StatusPage = () => {
       github_repo_name: b.repo_name?.split("/")?.[1] || b.repo_name,
       github_repo_owner: b.repo_name?.split("/")?.[0] || "",
       is_bookmark: true,
-      // Status mapping
       status: b.status || "saved",
       created_at: b.created_at,
     }));
 
-    // Deduplicate: if an issue is both bookmarked and in contributions, 
-    // prefer the contribution data as it has more GitHub metadata
     const contributionUrls = new Set(contributions.map((c) => c.issue_url));
     const uniqueBookmarks = bookmarkedContributions.filter(
-      (b) => !contributionUrls.has(b.issue_url)
+      (b) => !contributionUrls.has(b.issue_url),
     );
 
-    // Merge and sort by date
     return [...contributions, ...uniqueBookmarks].sort(
-      (a, b) => new Date(b.created_at || b.pr_created_at) - new Date(a.created_at || a.pr_created_at)
+      (a, b) =>
+        new Date(b.created_at || b.pr_created_at) -
+        new Date(a.created_at || a.pr_created_at),
     );
   }, [contributions, bookmarks]);
 
@@ -161,7 +151,6 @@ const StatusPage = () => {
   const getFilteredContributions = () => {
     let filtered = allItems;
 
-    // Filter by status
     if (selectedStatus !== "all") {
       filtered = filtered.filter((item) => {
         const status = item.is_bookmark ? item.status : getContributionStatus(item);
@@ -169,7 +158,6 @@ const StatusPage = () => {
       });
     }
 
-    // Filter by search query
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -209,39 +197,39 @@ const StatusPage = () => {
     await sync();
   };
 
-  // Reset to page 1 when filters or search change
-  // NOTE: This useEffect MUST be before the early return to maintain
-  // consistent hook call order across renders (React rules of hooks).
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedStatus, searchQuery]);
 
   if (loading) {
     return (
-      <div className="flex bg-[#0B0C10] min-h-screen items-center justify-center">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-        <span className="ml-3 text-gray-400">Loading contributions...</span>
+      <div className="flex bg-[#0F0F0F] min-h-screen items-center justify-center">
+        <Loader2 className="w-7 h-7 text-[#DAFA9C] animate-spin" />
+        <span className="ml-3 text-[#A8ADB6] text-xs font-mono">Loading contributions...</span>
       </div>
     );
   }
 
-  const successRate = stats.total > 0
-    ? Math.round((stats.merged / stats.total) * 100)
-    : 0;
+  const successRate =
+    stats.total > 0 ? Math.round((stats.merged / stats.total) * 100) : 0;
   const filteredContributions = getFilteredContributions();
 
-  // Pagination logic
-  const totalPages = Math.max(1, Math.ceil(filteredContributions.length / ITEMS_PER_PAGE));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredContributions.length / ITEMS_PER_PAGE),
+  );
   const safePage = Math.min(currentPage, totalPages);
   const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
-  const paginatedContributions = filteredContributions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const paginatedContributions = filteredContributions.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE,
+  );
 
-  // Generate visible page numbers (show max 5 pages around current)
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
     let start = Math.max(1, safePage - Math.floor(maxVisible / 2));
-    let end = Math.min(totalPages, start + maxVisible - 1);
+    const end = Math.min(totalPages, start + maxVisible - 1);
     start = Math.max(1, end - maxVisible + 1);
     for (let i = start; i <= end; i++) {
       pages.push(i);
@@ -250,58 +238,67 @@ const StatusPage = () => {
   };
 
   return (
-    <div className="flex bg-[#0B0C10] min-h-screen text-[#EEEEEE] font-sans">
+    <div className="flex bg-[#0F0F0F] min-h-screen text-[#F4F4F0] font-sans">
       <AppSidebar />
 
-      {/* Main Content */}
       <main className="flex-1 lg:ml-64 min-w-0 pb-20 lg:pb-0">
         {/* Top Header */}
-        <header className="h-14 sm:h-16 border-b border-zinc-800/60 bg-[#0B0C10]/80 backdrop-blur-md sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6">
-          <div className="flex flex-1 items-center max-w-xl relative">
-            <Search className="absolute left-3 w-3.5 h-3.5 text-zinc-500" />
-            <input
-              type="text"
-              placeholder="Search contributions..."
-              className="w-full bg-zinc-950/40 border border-zinc-800/80 rounded-md py-1.5 pl-9 pr-4 text-xs text-zinc-300 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 transition-all placeholder:text-zinc-650"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+        <header className="h-14 sm:h-16 border-b border-[#22242A] bg-[#0F0F0F]/95 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between gap-3 px-4 sm:px-6">
+          <div className="flex items-center gap-3 flex-1 max-w-xl">
+            <Link
+              to="/"
+              className="lg:hidden shrink-0"
+              aria-label="FirstIssue.dev home"
+            >
+              <BrandMark size="sm" />
+            </Link>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8C929C] pointer-events-none" />
+              <input
+                type="text"
+                aria-label="Search tracked contributions"
+                placeholder="Search contributions by title or repo..."
+                className="w-full bg-[#141518] border border-[#2B2E36] rounded-[4px] py-2 pl-9 pr-4 text-xs text-[#F4F4F0] focus:outline-none focus:border-[#DAFA9C] transition-colors placeholder:text-[#8C929C]"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
 
-          <div className="flex items-center gap-4 ml-4">
-            <div className="flex items-center gap-3 pl-4 border-l border-zinc-800/60">
-              <div className="text-right hidden sm:block">
-                <p className="text-xs font-semibold text-white leading-tight">
-                  {user?.user_metadata?.user_name ||
-                    user?.email?.split("@")[0] ||
-                    "User"}
-                </p>
-              </div>
-              <div className="w-8 h-8 rounded-full border border-zinc-800 p-[1px] bg-zinc-900 overflow-hidden flex items-center justify-center">
-                <img
-                  src={
-                    user?.user_metadata?.avatar_url ||
-                    `https://ui-avatars.com/api/?name=${user?.email || "User"}`
-                  }
-                  alt="Avatar"
-                  className="w-full h-full rounded-full object-cover"
-                />
-              </div>
+          <div className="flex items-center gap-3 pl-3 border-l border-[#22242A] shrink-0">
+            <div className="text-right hidden sm:block">
+              <p className="text-xs font-semibold text-[#F4F4F0] leading-tight">
+                {user?.user_metadata?.user_name ||
+                  user?.email?.split("@")[0] ||
+                  "User"}
+              </p>
+            </div>
+            <div className="w-8 h-8 rounded-[4px] border border-[#2B2E36] bg-[#141518] overflow-hidden flex items-center justify-center shrink-0">
+              <img
+                src={
+                  user?.user_metadata?.avatar_url ||
+                  `https://ui-avatars.com/api/?name=${user?.email || "User"}`
+                }
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </header>
 
         {/* Content Body */}
-        <div className="p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
+        <div className="p-4 sm:p-6 lg:p-8 max-w-5xl pb-24 lg:pb-8">
           {/* Sync Status Bar */}
-          <div className="bg-zinc-950/20 rounded-xl p-4 border border-zinc-800/60 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="bg-[#141518] rounded-[4px] p-4 border border-[#2B2E36] mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800/60 flex items-center justify-center text-zinc-400 flex-shrink-0">
+              <div className="w-9 h-9 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] flex items-center justify-center text-[#A8ADB6] shrink-0">
                 <Github className="w-4 h-4" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white uppercase tracking-wider">GitHub Contributions</p>
-                <p className="text-[11px] text-zinc-500 font-mono mt-0.5">
+                <p className="text-xs font-mono font-bold text-[#F4F4F0] uppercase tracking-wider">
+                  GitHub Contribution Pipeline
+                </p>
+                <p className="text-[11px] text-[#8C929C] font-mono mt-0.5 tabular-nums">
                   {lastSynced
                     ? `Last synced ${formatDate(lastSynced)}`
                     : "Not synced yet"}
@@ -309,9 +306,10 @@ const StatusPage = () => {
               </div>
             </div>
             <button
+              type="button"
               onClick={handleSync}
               disabled={syncing}
-              className="flex items-center justify-center gap-1.5 px-4 py-1.5 bg-white hover:bg-zinc-200 text-black rounded font-semibold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] font-semibold text-xs transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto cursor-pointer"
             >
               <RefreshCw
                 className={`w-3.5 h-3.5 ${syncing ? "animate-spin" : ""}`}
@@ -321,24 +319,31 @@ const StatusPage = () => {
           </div>
 
           {syncError && (
-            <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-4 mb-6">
-              <div className="flex items-start justify-between gap-4">
+            <div
+              role="alert"
+              className="bg-[#141518] border border-[#F87171]/40 rounded-[4px] p-4 mb-6"
+            >
+              <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                 <div className="flex-1">
-                  <p className="font-semibold text-red-400 text-sm mb-1">Sync Error</p>
-                  <p className="text-xs text-red-300/95 leading-relaxed">{syncError}</p>
+                  <p className="font-semibold text-[#F87171] text-sm mb-1">
+                    Sync Error
+                  </p>
+                  <p className="text-xs text-[#F4F4F0]/90 leading-relaxed">
+                    {syncError}
+                  </p>
                   {syncError.includes("token") && (
-                    <p className="text-[10px] text-red-400/50 mt-1 leading-normal">
+                    <p className="text-[11px] text-[#8C929C] mt-1 leading-normal">
                       Your GitHub connection may have expired or lacks required permissions.
                     </p>
                   )}
                 </div>
                 {syncError.includes("token") && (
                   <button
+                    type="button"
                     onClick={() => {
-                      // Trigger GitHub reconnection
                       window.location.href = `${window.location.origin}/login`;
                     }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-red-950/20 hover:bg-red-950/40 border border-red-500/35 text-red-400 rounded text-xs font-semibold transition-colors whitespace-nowrap"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#F87171]/10 hover:bg-[#F87171]/20 border border-[#F87171]/40 text-[#F87171] rounded-[4px] text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer"
                   >
                     <Github className="w-3.5 h-3.5" />
                     Reconnect GitHub
@@ -349,29 +354,29 @@ const StatusPage = () => {
           )}
 
           {/* Progress Card */}
-          <div className="bg-zinc-950/20 rounded-xl p-6 border border-zinc-800/60 mb-6">
+          <div className="bg-[#141518] rounded-[4px] p-5 sm:p-6 border border-[#2B2E36] mb-6">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h2 className="text-lg font-bold text-white mb-1 tracking-tight">
+                <h1 className="text-lg sm:text-xl font-bold text-[#F4F4F0] mb-1 tracking-tight">
                   Your Progress
-                </h2>
-                <p className="text-xs text-zinc-400">
-                  {stats.merged || 0} merged out of {stats.total} contributions
+                </h1>
+                <p className="text-xs text-[#A8ADB6] tabular-nums">
+                  {stats.merged || 0} merged out of {stats.total} tracked contributions
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-3xl font-bold text-white font-mono leading-none mb-1">
+                <div className="text-3xl font-bold text-[#F4F4F0] font-mono leading-none mb-1.5 tabular-nums">
                   {successRate}%
                 </div>
-                <div className="flex items-center justify-end text-zinc-500 text-[10px] uppercase font-bold tracking-wider gap-1.5">
-                  <TrendingUp className="w-3.5 h-3.5 text-zinc-555" />
-                  Success Rate
+                <div className="flex items-center justify-end text-[#8C929C] text-[11px] font-mono uppercase font-semibold tracking-wider gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-[#34D399]" />
+                  Merge Rate
                 </div>
               </div>
             </div>
-            <div className="w-full bg-zinc-900 rounded-full h-1.5 border border-zinc-800/60 overflow-hidden">
+            <div className="w-full bg-[#0B0C0E] rounded-[2px] h-2 border border-[#22242A] overflow-hidden">
               <div
-                className="bg-white rounded-full h-1.5 transition-all duration-500"
+                className="bg-[#DAFA9C] h-full transition-all duration-500"
                 style={{ width: `${successRate}%` }}
               />
             </div>
@@ -381,55 +386,70 @@ const StatusPage = () => {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-6">
             {statusOptions
               .slice(1)
-              .map(({ value, label, icon: Icon, color, bg }) => {
+              .map(({ value, label, icon, color, bg }) => {
+                const Icon = icon;
                 const count = stats[value] || 0;
                 const isActive = selectedStatus === value;
                 return (
-                  <div
+                  <button
                     key={value}
-                    className={`bg-zinc-950/25 rounded-xl p-4 border transition-all duration-200 cursor-pointer ${
-                      isActive ? "border-zinc-500 bg-white/[0.01]" : "border-zinc-800/60 hover:border-zinc-700/80 hover:bg-white/[0.005]"
-                    }`}
+                    type="button"
+                    aria-pressed={isActive}
                     onClick={() =>
                       setSelectedStatus(
                         selectedStatus === value ? "all" : value,
                       )
                     }
+                    className={`text-left rounded-[4px] p-4 border transition-colors cursor-pointer ${
+                      isActive
+                        ? "bg-[#17181B] border-[#DAFA9C]"
+                        : "bg-[#141518] border-[#2B2E36] hover:border-[#3A3E48] hover:bg-[#17181B]"
+                    }`}
                   >
                     <div
-                      className={`w-7 h-7 rounded bg-zinc-900 border border-zinc-800/60 flex items-center justify-center mb-3`}
+                      className={`w-7 h-7 rounded-[4px] ${bg} border border-[#2B2E36] flex items-center justify-center mb-3`}
                     >
                       <Icon className={`w-3.5 h-3.5 ${color}`} />
                     </div>
-                    <p className="text-zinc-550 text-[10px] font-bold uppercase tracking-wider mb-1 truncate">{label}</p>
-                    <span className="text-2xl font-bold text-white font-mono leading-none">
+                    <p className="text-[#8C929C] text-[11px] font-mono font-semibold uppercase tracking-wider mb-1 truncate">
+                      {label}
+                    </p>
+                    <span className="text-2xl font-bold text-[#F4F4F0] font-mono leading-none tabular-nums">
                       {count}
                     </span>
-                  </div>
+                  </button>
                 );
               })}
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex items-center gap-1.5 mb-6 overflow-x-auto pb-3 scrollbar-hide mask-fade-right -mx-4 px-4 sm:mx-0 sm:px-0">
+          <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
             {statusOptions.map(({ value, label, icon: Icon, color }) => {
               const count = value === "all" ? stats.total : stats[value] || 0;
               const isActive = selectedStatus === value;
               return (
                 <button
                   key={value}
+                  type="button"
+                  aria-pressed={isActive}
                   onClick={() => setSelectedStatus(value)}
-                  className={`flex items-center gap-2 px-3 py-1 rounded-md text-xs font-medium transition-all border whitespace-nowrap flex-shrink-0 ${
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] text-xs font-medium transition-colors border whitespace-nowrap shrink-0 cursor-pointer ${
                     isActive
-                      ? "bg-white/[0.04] text-white border-zinc-700/80 shadow-[0_1px_2px_rgba(0,0,0,0.5)]"
-                      : "bg-zinc-950/20 text-zinc-400 hover:text-zinc-150 border-zinc-850/60 hover:bg-white/[0.01]"
+                      ? "bg-[#17181B] text-[#F4F4F0] border-[#DAFA9C]"
+                      : "bg-[#141518] text-[#A8ADB6] hover:text-[#F4F4F0] border-[#2B2E36] hover:border-[#3A3E48]"
                   }`}
                 >
-                  {Icon && <Icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : color}`} />}
-                  {label}
+                  {Icon && (
+                    <Icon
+                      className={`w-3.5 h-3.5 ${isActive ? "text-[#DAFA9C]" : color}`}
+                    />
+                  )}
+                  <span>{label}</span>
                   <span
-                    className={`px-1.5 py-0.2 rounded font-mono text-[9px] font-bold border ${
-                      isActive ? "bg-white/10 text-white border-white/10" : "bg-zinc-900 text-zinc-550 border-zinc-850"
+                    className={`px-1.5 py-0.5 rounded-[2px] font-mono text-[11px] font-semibold border tabular-nums ${
+                      isActive
+                        ? "bg-[#DAFA9C]/15 text-[#DAFA9C] border-[#DAFA9C]/30"
+                        : "bg-[#0B0C0E] text-[#8C929C] border-[#22242A]"
                     }`}
                   >
                     {count}
@@ -441,37 +461,46 @@ const StatusPage = () => {
 
           {/* Contributions List */}
           {filteredContributions.length === 0 ? (
-            <div className="text-center py-12 sm:py-16 bg-zinc-950/20 rounded-xl border border-zinc-800/60 px-4">
-              <Github className="w-9 h-9 text-zinc-550 mx-auto mb-4 animate-pulse" />
-              <h3 className="text-sm font-semibold text-white mb-2">
+            <div className="text-center py-12 sm:py-16 bg-[#141518] rounded-[4px] border border-[#2B2E36] px-4">
+              <div className="w-10 h-10 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] flex items-center justify-center mx-auto mb-4 text-[#8C929C]">
+                <Github className="w-5 h-5" />
+              </div>
+              <h2 className="text-sm font-semibold text-[#F4F4F0] mb-2">
                 {selectedStatus === "all"
                   ? "No contributions yet"
                   : `No ${selectedStatus.replace("_", " ")} contributions`}
-              </h3>
-              <p className="text-xs text-zinc-400 mb-6 max-w-xs mx-auto leading-relaxed">
+              </h2>
+              <p className="text-xs text-[#8C929C] mb-6 max-w-xs mx-auto leading-relaxed">
                 {selectedStatus === "all"
-                  ? "Start contributing to open source projects and they'll appear here automatically."
+                  ? "Start contributing to open source projects and they will appear here automatically."
                   : `You don't have any ${selectedStatus.replace("_", " ")} contributions yet.`}
               </p>
               <button
+                type="button"
                 onClick={() => navigate("/explore")}
-                className="px-4 py-2 border border-zinc-800 bg-white text-black hover:bg-zinc-200 rounded text-xs font-semibold transition-colors"
+                className="px-4 py-2 bg-[#DAFA9C] text-[#0F0F0F] hover:bg-[#C7F275] rounded-[4px] text-xs font-semibold transition-colors cursor-pointer"
               >
                 Explore Issues
               </button>
             </div>
           ) : (
             <>
-              {/* Results count */}
               <div className="flex items-center justify-between mb-3">
-                <p className="text-[11px] text-zinc-500 font-mono">
-                  Showing {startIndex + 1}–{Math.min(startIndex + ITEMS_PER_PAGE, filteredContributions.length)} of {filteredContributions.length}
+                <p className="text-xs text-[#8C929C] font-mono tabular-nums">
+                  Showing {startIndex + 1}–
+                  {Math.min(
+                    startIndex + ITEMS_PER_PAGE,
+                    filteredContributions.length,
+                  )}{" "}
+                  of {filteredContributions.length}
                 </p>
               </div>
 
               <div className="space-y-3">
                 {paginatedContributions.map((item) => {
-                  const status = item.is_bookmark ? item.status : getContributionStatus(item);
+                  const status = item.is_bookmark
+                    ? item.status
+                    : getContributionStatus(item);
                   const statusConfig = getStatusConfig(status);
 
                   return (
@@ -488,67 +517,77 @@ const StatusPage = () => {
 
               {/* Pagination Controls */}
               {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-1.5 mt-6 pt-6 border-t border-zinc-800/60">
-                  {/* Previous */}
+                <div className="flex items-center justify-center gap-1.5 mt-6 pt-6 border-t border-[#22242A]">
                   <button
+                    type="button"
+                    aria-label="Previous page"
                     onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={safePage === 1}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all border border-zinc-800/60 bg-zinc-950/25 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-white/[0.02] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-zinc-400 disabled:hover:border-zinc-800/60 disabled:hover:bg-zinc-950/25"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium transition-colors border border-[#2B2E36] bg-[#141518] text-[#A8ADB6] hover:text-[#F4F4F0] hover:border-[#3A3E48] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Prev</span>
                   </button>
 
-                  {/* First page + ellipsis */}
                   {getPageNumbers()[0] > 1 && (
                     <>
                       <button
+                        type="button"
                         onClick={() => setCurrentPage(1)}
-                        className="w-8 h-8 flex items-center justify-center rounded-md text-xs font-mono font-bold transition-all border border-zinc-800/60 bg-zinc-950/25 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-white/[0.02]"
+                        className="w-8 h-8 flex items-center justify-center rounded-[4px] text-xs font-mono font-bold transition-colors border border-[#2B2E36] bg-[#141518] text-[#A8ADB6] hover:text-[#F4F4F0] hover:border-[#3A3E48] cursor-pointer"
                       >
                         1
                       </button>
                       {getPageNumbers()[0] > 2 && (
-                        <span className="w-8 h-8 flex items-center justify-center text-xs text-zinc-600 font-mono">…</span>
+                        <span className="w-8 h-8 flex items-center justify-center text-xs text-[#8C929C] font-mono">
+                          …
+                        </span>
                       )}
                     </>
                   )}
 
-                  {/* Page numbers */}
                   {getPageNumbers().map((page) => (
                     <button
                       key={page}
+                      type="button"
+                      aria-current={page === safePage ? "page" : undefined}
                       onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 flex items-center justify-center rounded-md text-xs font-mono font-bold transition-all border ${
+                      className={`w-8 h-8 flex items-center justify-center rounded-[4px] text-xs font-mono font-bold transition-colors border tabular-nums cursor-pointer ${
                         page === safePage
-                          ? "bg-white text-black border-white shadow-[0_0_12px_rgba(255,255,255,0.08)]"
-                          : "border-zinc-800/60 bg-zinc-950/25 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-white/[0.02]"
+                          ? "bg-[#DAFA9C] text-[#0F0F0F] border-[#DAFA9C]"
+                          : "border-[#2B2E36] bg-[#141518] text-[#A8ADB6] hover:text-[#F4F4F0] hover:border-[#3A3E48]"
                       }`}
                     >
                       {page}
                     </button>
                   ))}
 
-                  {/* Last page + ellipsis */}
                   {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
                     <>
-                      {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
-                        <span className="w-8 h-8 flex items-center justify-center text-xs text-zinc-600 font-mono">…</span>
+                      {getPageNumbers()[getPageNumbers().length - 1] <
+                        totalPages - 1 && (
+                        <span className="w-8 h-8 flex items-center justify-center text-xs text-[#8C929C] font-mono">
+                          …
+                        </span>
                       )}
                       <button
+                        type="button"
                         onClick={() => setCurrentPage(totalPages)}
-                        className="w-8 h-8 flex items-center justify-center rounded-md text-xs font-mono font-bold transition-all border border-zinc-800/60 bg-zinc-950/25 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-white/[0.02]"
+                        className="w-8 h-8 flex items-center justify-center rounded-[4px] text-xs font-mono font-bold transition-colors border border-[#2B2E36] bg-[#141518] text-[#A8ADB6] hover:text-[#F4F4F0] hover:border-[#3A3E48] cursor-pointer"
                       >
                         {totalPages}
                       </button>
                     </>
                   )}
 
-                  {/* Next */}
                   <button
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                    type="button"
+                    aria-label="Next page"
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(totalPages, p + 1))
+                    }
                     disabled={safePage === totalPages}
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all border border-zinc-800/60 bg-zinc-950/25 text-zinc-400 hover:text-white hover:border-zinc-700 hover:bg-white/[0.02] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-zinc-400 disabled:hover:border-zinc-800/60 disabled:hover:bg-zinc-950/25"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-[4px] text-xs font-medium transition-colors border border-[#2B2E36] bg-[#141518] text-[#A8ADB6] hover:text-[#F4F4F0] hover:border-[#3A3E48] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <span className="hidden sm:inline">Next</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -560,7 +599,6 @@ const StatusPage = () => {
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
     </div>
   );
@@ -575,59 +613,57 @@ const ContributionCard = ({
   formatDate,
 }) => {
   const StatusIcon =
-    statusConfig.icon === "📌"
+    status === "saved"
       ? Clock
-      : statusConfig.icon === "📝"
+      : status === "applied"
         ? AlertCircle
-        : statusConfig.icon === "🔨"
+        : status === "in_progress"
           ? PlayCircle
-          : statusConfig.icon === "✅"
+          : status === "merged"
             ? GitMerge
             : XCircle;
 
   return (
-    <div className="bg-zinc-950/25 rounded-xl p-4 sm:p-5 border border-zinc-800/60 hover:border-zinc-750 hover:bg-white/[0.005] transition-colors">
+    <div className="bg-[#141518] rounded-[4px] p-4 sm:p-5 border border-[#2B2E36] hover:border-[#3A3E48] transition-colors">
       <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-        {/* Content */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="text-xs font-mono font-bold text-zinc-400 hover:text-white transition-colors truncate max-w-[150px] sm:max-w-none">
+            <span className="text-xs font-mono font-bold text-[#A8ADB6] truncate max-w-[180px] sm:max-w-none">
               {contribution.github_repo_owner}/{contribution.github_repo_name}
             </span>
             {contribution.language && (
-              <span className="px-1.5 py-0.5 text-[9px] font-medium bg-zinc-900 text-zinc-500 rounded border border-zinc-850/80">
+              <span className="px-1.5 py-0.5 text-[11px] font-mono font-medium bg-[#0B0C0E] text-[#A8ADB6] rounded-[4px] border border-[#22242A]">
                 {contribution.language}
               </span>
             )}
             <div
-              className={`flex items-center gap-1 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded border ${statusConfig.bg} ${statusConfig.color}`}
-              style={{ borderColor: 'rgba(255,255,255,0.03)' }}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-mono font-semibold uppercase tracking-wider rounded-[4px] border border-[#2B2E36] ${statusConfig.bg} ${statusConfig.color}`}
             >
               <StatusIcon className="w-3 h-3" />
-              {statusConfig.label}
+              <span>{statusConfig.label}</span>
             </div>
           </div>
 
-          <h3 className="text-sm sm:text-base text-white font-semibold mb-2 line-clamp-2">
+          <h2 className="text-sm sm:text-base text-[#F4F4F0] font-semibold mb-2 line-clamp-2">
             {contribution.issue_title}
-          </h3>
+          </h2>
 
-          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[10px] sm:text-xs text-zinc-500 font-mono">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-[11px] sm:text-xs text-[#8C929C] font-mono tabular-nums">
             {contribution.is_assigned && (
               <div className="flex items-center gap-1.5">
-                <AlertCircle className="w-3 h-3 text-zinc-600" />
+                <AlertCircle className="w-3.5 h-3.5 text-[#8C929C]" />
                 <span>Assigned {formatDate(contribution.assigned_at)}</span>
               </div>
             )}
             {contribution.pr_created_at && (
               <div className="flex items-center gap-1.5">
-                <GitPullRequest className="w-3 h-3 text-zinc-600" />
+                <GitPullRequest className="w-3.5 h-3.5 text-[#8C929C]" />
                 <span>PR opened {formatDate(contribution.pr_created_at)}</span>
               </div>
             )}
             {contribution.pr_merged_at && (
-              <div className="flex items-center gap-1.5 text-emerald-400 font-medium">
-                <GitMerge className="w-3 h-3 text-emerald-500/80" />
+              <div className="flex items-center gap-1.5 text-[#34D399] font-medium">
+                <GitMerge className="w-3.5 h-3.5 text-[#34D399]" />
                 <span>Merged {formatDate(contribution.pr_merged_at)}</span>
               </div>
             )}
@@ -635,25 +671,37 @@ const ContributionCard = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1.5 self-end sm:self-auto pt-2 sm:pt-0 border-t border-zinc-800/60 sm:border-0 w-full sm:w-auto justify-end">
+        <div className="flex items-center gap-1.5 self-end sm:self-auto pt-2 sm:pt-0 border-t border-[#22242A] sm:border-0 w-full sm:w-auto justify-end">
           {contribution.pr_url && (
             <a
               href={contribution.pr_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1.5 text-zinc-500 hover:text-zinc-200 transition-colors rounded hover:bg-white/5 border border-transparent"
+              aria-label={`View pull request for ${contribution.issue_title}`}
+              className="p-2 text-[#8C929C] hover:text-[#F4F4F0] transition-colors rounded-[4px] hover:bg-[#1C1E23] border border-transparent hover:border-[#2B2E36]"
               title="View Pull Request"
             >
               <GitPullRequest className="w-4 h-4" />
             </a>
           )}
           <a
-            href={withUTM(contribution.issue_url, { medium: 'status', content: 'contribution_link' })}
+            href={withUTM(contribution.issue_url, {
+              medium: "status",
+              content: "contribution_link",
+            })}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 text-zinc-500 hover:text-white transition-colors rounded hover:bg-white/5 border border-transparent"
+            aria-label={`View issue ${contribution.issue_title} on GitHub`}
+            className="p-2 text-[#8C929C] hover:text-[#DAFA9C] transition-colors rounded-[4px] hover:bg-[#1C1E23] border border-transparent hover:border-[#2B2E36]"
             title="View Issue"
-            onClick={() => trackIssueClick({ issueUrl: contribution.issue_url, source: 'status', repo: extractRepo(contribution.issue_url), action: 'external_link' })}
+            onClick={() =>
+              trackIssueClick({
+                issueUrl: contribution.issue_url,
+                source: "status",
+                repo: extractRepo(contribution.issue_url),
+                action: "external_link",
+              })
+            }
           >
             <ExternalLink className="w-4 h-4" />
           </a>

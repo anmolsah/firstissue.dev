@@ -2,22 +2,17 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Search,
-  BookOpen,
   Zap,
   Users,
-  Wrench,
   AlertTriangle,
   FileText,
   Key,
-  Settings,
   ArrowRight,
   ChevronRight,
   Home,
   Menu,
   X,
   Terminal,
-  Shield,
-  Command,
   GitBranch,
   Code,
   HelpCircle,
@@ -30,6 +25,7 @@ import {
 } from "lucide-react";
 import Footer from "../components/Footer";
 import ContactFormModal from "../components/ContactFormModal";
+import { BrandLogo } from "../components/BrandMark";
 import { docContent } from "../data/docContent";
 
 const DocsPage = () => {
@@ -41,13 +37,16 @@ const DocsPage = () => {
     document.title = "Developer Documentation & Guides | FirstIssue.dev";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
-      metaDesc.setAttribute("content", "Access FirstIssue.dev developer documentation. Learn git workflows, GitHub labels, troubleshooting setup issues, and system architecture.");
+      metaDesc.setAttribute(
+        "content",
+        "Access FirstIssue.dev developer documentation. Learn git workflows, GitHub labels, troubleshooting setup issues, and system architecture.",
+      );
     }
   }, []);
 
   const getLatestUpdateDate = () => {
     let minDays = Infinity;
-    
+
     Object.keys(docContent).forEach((sectionKey) => {
       const section = docContent[sectionKey];
       Object.keys(section).forEach((articleKey) => {
@@ -75,7 +74,7 @@ const DocsPage = () => {
     if (minDays !== Infinity && minDays > 0) {
       date.setDate(date.getDate() - minDays);
     }
-    
+
     return date.toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",
@@ -88,9 +87,7 @@ const DocsPage = () => {
       id: "getting-started",
       title: "Getting Started",
       icon: Zap,
-      color: "text-blue-400",
-      bgColor: "bg-blue-500/10",
-      borderColor: "border-blue-500/20",
+      color: "text-[#DAFA9C]",
       description: "Learn how to get started with open source contributions",
       articles: [
         {
@@ -114,9 +111,7 @@ const DocsPage = () => {
       id: "contribution-guide",
       title: "Contribution Guide",
       icon: Users,
-      color: "text-purple-400",
-      bgColor: "bg-purple-500/10",
-      borderColor: "border-purple-500/20",
+      color: "text-[#34D399]",
       description: "Learn how to contribute effectively",
       articles: [
         { id: "workflow", title: "Contribution Workflow", readTime: "10 min" },
@@ -132,9 +127,7 @@ const DocsPage = () => {
       id: "finding-issues",
       title: "Finding Issues",
       icon: Terminal,
-      color: "text-green-400",
-      bgColor: "bg-green-500/10",
-      borderColor: "border-green-500/20",
+      color: "text-[#DAFA9C]",
       description: "Master finding the perfect issues for your skill level",
       articles: [
         { id: "using-filters", title: "Using Filters", readTime: "6 min" },
@@ -149,11 +142,8 @@ const DocsPage = () => {
       id: "git-commands",
       title: "Git Commands",
       icon: GitBranch,
-      color: "text-cyan-400",
-      bgColor: "bg-cyan-500/10",
-      borderColor: "border-cyan-500/20",
-      description:
-        "Essential Git commands for version control and collaboration",
+      color: "text-[#A8ADB6]",
+      description: "Essential Git commands for version control and collaboration",
       articles: [
         {
           id: "setup-configuration",
@@ -196,9 +186,7 @@ const DocsPage = () => {
       id: "troubleshooting",
       title: "Troubleshooting",
       icon: AlertTriangle,
-      color: "text-pink-400",
-      bgColor: "bg-pink-500/10",
-      borderColor: "border-pink-500/20",
+      color: "text-[#F59E0B]",
       description: "Common issues and solutions",
       articles: [
         {
@@ -213,9 +201,7 @@ const DocsPage = () => {
       id: "best-practices",
       title: "Best Practices",
       icon: Code,
-      color: "text-orange-400",
-      bgColor: "bg-orange-500/10",
-      borderColor: "border-orange-500/20",
+      color: "text-[#34D399]",
       description: "Best practices for open source contributions",
       articles: [
         {
@@ -239,9 +225,7 @@ const DocsPage = () => {
       id: "architecture-guide",
       title: "Architecture & Workflow",
       icon: Code,
-      color: "text-red-400",
-      bgColor: "bg-red-500/10",
-      borderColor: "border-red-500/20",
+      color: "text-[#DAFA9C]",
       description: "Platform workflow, database design, and system architecture",
       articles: [
         {
@@ -260,10 +244,9 @@ const DocsPage = () => {
       id: "open-source-programs",
       title: "Open Source Programs & Fellowships",
       icon: Award,
-      color: "text-amber-400",
-      bgColor: "bg-amber-500/10",
-      borderColor: "border-amber-500/20",
-      description: "Roadmap to Google Summer of Code, LFX Mentorship, Hacktoberfest, and Fellowships",
+      color: "text-[#F59E0B]",
+      description:
+        "Roadmap to Google Summer of Code, LFX Mentorship, Hacktoberfest, and Fellowships",
       articles: [
         {
           id: "gsoc-guide",
@@ -281,10 +264,9 @@ const DocsPage = () => {
       id: "licenses-and-legal",
       title: "Licenses, CLAs & Legal Guide",
       icon: ShieldCheck,
-      color: "text-emerald-400",
-      bgColor: "bg-emerald-500/10",
-      borderColor: "border-emerald-500/20",
-      description: "Permissive vs Copyleft licenses, CLAs, and Developer Certificate of Origin (DCO)",
+      color: "text-[#34D399]",
+      description:
+        "Permissive vs Copyleft licenses, CLAs, and Developer Certificate of Origin (DCO)",
       articles: [
         {
           id: "license-types",
@@ -302,10 +284,9 @@ const DocsPage = () => {
       id: "advanced-git-workflows",
       title: "Advanced Git & GitHub Mastery",
       icon: GitMerge,
-      color: "text-indigo-400",
-      bgColor: "bg-indigo-500/10",
-      borderColor: "border-indigo-500/20",
-      description: "Interactive rebase, squash commits, fork syncing, worktrees, and CI debugging",
+      color: "text-[#DAFA9C]",
+      description:
+        "Interactive rebase, squash commits, fork syncing, worktrees, and CI debugging",
       articles: [
         {
           id: "interactive-rebase-squash",
@@ -333,15 +314,14 @@ const DocsPage = () => {
       id: "reverse-engineering",
       title: "Reverse Engineering & Security",
       icon: Cpu,
-      color: "text-rose-400",
-      bgColor: "bg-rose-500/10",
-      borderColor: "border-rose-500/20",
+      color: "text-[#F87171]",
       description:
         "Understand software internals, clean room design, security analysis, and interoperability",
       articles: [
         {
           id: "intro-to-reverse-engineering",
-          title: "Introduction to Reverse Engineering: How Software Works Under the Hood",
+          title:
+            "Introduction to Reverse Engineering: How Software Works Under the Hood",
           readTime: "12 min",
         },
         {
@@ -426,76 +406,81 @@ const DocsPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] overflow-x-hidden text-zinc-200">
+    <div className="min-h-screen bg-[#0F0F0F] overflow-x-hidden text-[#F4F4F0] font-sans">
       {/* Header */}
-      <div className="border-b border-[#1e1f2e] bg-[#12131a]/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
-          <div className="flex items-center justify-between gap-2">
-            {/* Left side - Back button */}
-            <Link
-              to="/"
-              className="flex items-center gap-2 text-zinc-400 hover:text-white transition-colors flex-shrink-0"
-            >
-              <Home className="w-4 h-4" />
-              <span className="text-sm font-medium">Back to Home</span>
+      <header className="border-b border-[#22242A] bg-[#0F0F0F] sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Link to="/" className="hover:opacity-90 transition-opacity">
+              <BrandLogo size="sm" />
             </Link>
-            
-            {/* Mobile menu button */}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 text-zinc-400 hover:text-white transition-colors flex-shrink-0 -mr-2"
-              aria-label="Toggle menu"
+            <span className="hidden sm:inline-block w-px h-4 bg-[#22242A]" />
+            <Link
+              to="/explore"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-mono text-[#A8ADB6] hover:text-[#DAFA9C] transition-colors"
             >
-              {sidebarOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </button>
+              <Home className="w-3.5 h-3.5" />
+              <span>Issues Workspace</span>
+            </Link>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="lg:hidden p-2 text-[#A8ADB6] hover:text-[#F4F4F0] rounded-[4px] hover:bg-[#17181B] transition-colors shrink-0 -mr-2 cursor-pointer"
+            aria-label="Toggle documentation navigation"
+            aria-expanded={sidebarOpen}
+          >
+            {sidebarOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+          </button>
         </div>
-      </div>
+      </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Mobile Sidebar Overlay */}
           {sidebarOpen && (
             <div
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
+              className="fixed inset-0 bg-black/75 z-40 lg:hidden"
               onClick={() => setSidebarOpen(false)}
             />
           )}
 
           {/* Sidebar */}
-          <div
+          <aside
             className={`
               fixed lg:static inset-y-0 left-0 z-50 lg:z-0
-              w-64 flex-shrink-0
-              bg-[#0a0a0f] lg:bg-transparent
+              w-64 shrink-0
+              bg-[#0F0F0F] lg:bg-transparent
               transform transition-transform duration-300 ease-in-out
               ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
               overflow-y-auto lg:overflow-visible
-              border-r border-[#1e1f2e] lg:border-0
+              border-r border-[#22242A] lg:border-0
             `}
           >
             <div className="lg:sticky lg:top-24 p-6 lg:p-0">
               {/* Search */}
               <div className="relative mb-6">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8C929C] pointer-events-none" />
                 <input
                   type="text"
+                  aria-label="Search documentation"
                   placeholder="Search documentation..."
-                  className="w-full bg-[#12131a] border border-[#1e1f2e] rounded-md py-2 pl-10 pr-4 text-sm text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 transition-all"
+                  className="w-full bg-[#141518] border border-[#2B2E36] rounded-[4px] py-2 pl-9 pr-4 text-xs text-[#F4F4F0] placeholder:text-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
 
               {/* Navigation */}
-              <nav className="space-y-6">
+              <nav aria-label="Documentation sections" className="space-y-6">
                 {filteredSections.map((section) => (
                   <div key={section.id} className="space-y-2">
-                    <div className="px-3 py-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">
+                    <div className="px-2.5 py-1 text-xs font-mono font-semibold text-[#8C929C] uppercase tracking-wider">
                       {section.title}
                     </div>
                     <div className="space-y-1">
@@ -504,7 +489,7 @@ const DocsPage = () => {
                           key={article.id}
                           to={`/docs/${section.id}/${article.id}`}
                           onClick={() => setSidebarOpen(false)}
-                          className="block px-3 py-1.5 text-sm text-zinc-400 hover:text-zinc-100 hover:bg-[#12131a] border border-transparent hover:border-zinc-800/50 rounded-md transition-all"
+                          className="block px-2.5 py-1.5 text-xs text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#141518] border border-transparent hover:border-[#2B2E36] rounded-[4px] transition-colors"
                         >
                           {article.title}
                         </Link>
@@ -514,28 +499,23 @@ const DocsPage = () => {
                 ))}
               </nav>
             </div>
-          </div>
+          </aside>
 
           {/* Main Content */}
-          <div className="flex-1 min-w-0 w-full overflow-hidden">
+          <main className="flex-1 min-w-0 w-full overflow-hidden">
             {/* Hero Section */}
             <div className="mb-8 sm:mb-12">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-zinc-400 text-xs font-semibold uppercase tracking-wider mb-4 sm:mb-6">
-                <BookOpen className="w-3.5 h-3.5 text-zinc-400" />
-                Documentation
-              </div>
-
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3 sm:mb-4">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-[#F4F4F0] tracking-tight mb-3 sm:mb-4 text-balance">
                 FirstIssue.dev Documentation
               </h1>
-              <p className="text-lg text-zinc-400 mb-6 max-w-3xl leading-relaxed">
-                Guides, tutorials, and system references for open source contribution and community engagement.
+              <p className="text-base sm:text-lg text-[#A8ADB6] mb-6 max-w-[65ch] leading-relaxed text-pretty">
+                Guides, reference manuals, and architecture notes for open-source contribution workflows.
               </p>
 
               {/* Quick Stats */}
-              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-zinc-500 font-medium">
+              <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-[#8C929C] font-mono tabular-nums">
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-zinc-600" />
+                  <FileText className="w-4 h-4 text-[#8C929C]" />
                   <span>
                     {docSections.reduce(
                       (acc, section) => acc + section.articles.length,
@@ -545,11 +525,11 @@ const DocsPage = () => {
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-zinc-600" />
+                  <Clock className="w-4 h-4 text-[#8C929C]" />
                   <span>Updated {getLatestUpdateDate()}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Star className="w-4 h-4 text-zinc-600" />
+                  <Star className="w-4 h-4 text-[#8C929C]" />
                   <span>Community Maintained</span>
                 </div>
               </div>
@@ -557,22 +537,22 @@ const DocsPage = () => {
 
             {/* Documentation Categories */}
             <div className="mb-8 sm:mb-12">
-              <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 tracking-tight">
+              <h2 className="text-lg sm:text-xl font-bold text-[#F4F4F0] mb-4 sm:mb-6 tracking-tight text-balance">
                 Browse by Category
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
                 {filteredSections.map((section) => (
                   <div
                     key={section.id}
-                    className="p-5 sm:p-6 bg-[#12131a] border border-[#1e1f2e] rounded-lg hover:border-zinc-700 transition-all duration-200 group"
+                    className="p-5 sm:p-6 bg-[#141518] border border-[#2B2E36] rounded-[4px] hover:border-[#3A3E48] transition-colors group"
                   >
-                    <div className="w-8 h-8 rounded bg-zinc-900/80 border border-zinc-800/80 flex items-center justify-center mb-4 text-zinc-400">
-                      <section.icon className="w-4 h-4" />
+                    <div className="flex items-center gap-2.5 mb-2">
+                      <section.icon className={`w-4 h-4 shrink-0 ${section.color}`} />
+                      <h3 className="text-base font-semibold text-[#F4F4F0]">
+                        {section.title}
+                      </h3>
                     </div>
-                    <h3 className="text-base font-semibold text-zinc-100 mb-2 group-hover:text-white transition-colors">
-                      {section.title}
-                    </h3>
-                    <p className="text-sm text-zinc-400 mb-4 leading-relaxed">
+                    <p className="text-xs sm:text-sm text-[#A8ADB6] mb-4 leading-relaxed text-pretty">
                       {section.description}
                     </p>
                     <div className="space-y-2.5">
@@ -580,10 +560,10 @@ const DocsPage = () => {
                         <Link
                           key={article.id}
                           to={`/docs/${section.id}/${article.id}`}
-                          className="flex items-center justify-between text-sm text-zinc-400 hover:text-zinc-100 transition-colors gap-2"
+                          className="flex items-center justify-between text-xs sm:text-sm text-[#A8ADB6] hover:text-[#DAFA9C] transition-colors gap-2"
                         >
                           <span className="truncate">{article.title}</span>
-                          <span className="text-xs text-zinc-600 flex-shrink-0">
+                          <span className="text-xs font-mono text-[#8C929C] shrink-0 tabular-nums">
                             {article.readTime}
                           </span>
                         </Link>
@@ -591,12 +571,10 @@ const DocsPage = () => {
                       {section.articles.length > 3 && (
                         <Link
                           to={`/docs/${section.id}`}
-                          className="flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300 font-medium transition-colors mt-2"
+                          className="inline-flex items-center gap-1 text-xs font-mono text-[#DAFA9C] hover:text-[#C7F275] font-medium transition-colors mt-2"
                         >
-                          <span>
-                            View all {section.articles.length} articles
-                          </span>
-                          <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
+                          <span>View all {section.articles.length} articles</span>
+                          <ArrowRight className="w-3.5 h-3.5 shrink-0" />
                         </Link>
                       )}
                     </div>
@@ -607,7 +585,7 @@ const DocsPage = () => {
 
             {/* Popular Articles */}
             <div className="mb-8 sm:mb-12">
-              <h2 className="text-lg sm:text-xl font-bold text-white mb-4 sm:mb-6 tracking-tight">
+              <h2 className="text-lg sm:text-xl font-bold text-[#F4F4F0] mb-4 sm:mb-6 tracking-tight text-balance">
                 Popular Articles
               </h2>
               <div className="space-y-2">
@@ -615,44 +593,43 @@ const DocsPage = () => {
                   <Link
                     key={index}
                     to={`/docs/${article.section}/${article.article}`}
-                    className="flex items-center gap-4 p-4 bg-[#12131a] border border-[#1e1f2e] rounded-lg hover:border-zinc-700 transition-all group"
+                    className="flex items-center gap-4 p-4 bg-[#141518] border border-[#2B2E36] rounded-[4px] hover:border-[#DAFA9C]/60 hover:bg-[#17181B] transition-colors group"
                   >
-                    <div className="w-8 h-8 bg-zinc-900 border border-zinc-800 rounded flex items-center justify-center flex-shrink-0 text-zinc-400">
-                      <article.icon className="w-4 h-4" />
-                    </div>
+                    <article.icon className="w-4 h-4 text-[#DAFA9C] shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-zinc-200 group-hover:text-white transition-colors truncate">
+                      <h3 className="text-sm font-medium text-[#F4F4F0] group-hover:text-[#DAFA9C] transition-colors truncate">
                         {article.title}
-                      </h4>
-                      <p className="text-xs text-zinc-500 mt-0.5">
-                        {article.readTime} • {article.updated.replace("Updated ", "")}
+                      </h3>
+                      <p className="text-xs text-[#8C929C] font-mono mt-0.5 tabular-nums">
+                        {article.readTime} · {article.updated.replace("Updated ", "")}
                       </p>
                     </div>
-                    <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-300 transition-colors flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 text-[#8C929C] group-hover:text-[#DAFA9C] transition-colors shrink-0" />
                   </Link>
                 ))}
               </div>
             </div>
 
             {/* Help Section */}
-            <div className="bg-[#12131a] border border-[#1e1f2e] rounded-lg p-6 sm:p-8 text-center">
-              <HelpCircle className="w-10 h-10 text-zinc-400 mx-auto mb-4" />
-              <h3 className="text-lg font-bold text-white mb-2 tracking-tight">
-                Need Assistance?
-              </h3>
-              <p className="text-sm text-zinc-400 mb-6 max-w-md mx-auto leading-relaxed">
-                Contact our support team for specialized guidance on setup, workflows, or platform issues.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                <button
-                  onClick={() => setIsContactModalOpen(true)}
-                  className="w-full sm:w-auto px-5 py-2 bg-zinc-100 hover:bg-zinc-200 text-black rounded-md font-medium text-sm transition-colors"
-                >
-                  Contact Support
-                </button>
+            <div className="bg-[#141518] border border-[#2B2E36] rounded-[4px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#F4F4F0] mb-1 tracking-tight flex items-center gap-2">
+                  <HelpCircle className="w-4 h-4 text-[#DAFA9C] shrink-0" />
+                  <span>Need Assistance?</span>
+                </h2>
+                <p className="text-xs sm:text-sm text-[#A8ADB6] max-w-[54ch] leading-relaxed text-pretty">
+                  Contact our support team for specialized guidance on setup, workflows, or platform issues.
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsContactModalOpen(true)}
+                className="w-full sm:w-auto px-5 py-2.5 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] font-semibold text-xs transition-colors cursor-pointer shrink-0 min-h-[40px]"
+              >
+                Contact Support
+              </button>
             </div>
-          </div>
+          </main>
         </div>
       </div>
 

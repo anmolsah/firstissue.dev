@@ -1,20 +1,18 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Star, ArrowRight } from 'lucide-react';
 
 const ComparisonSection = () => {
   const platforms = [
     {
       name: 'FirstIssue.dev',
       highlighted: true,
-      function: 'Discovery & Tracking',
+      function: 'Discovery & PR Verification',
       features: {
         languageFiltering: true,
         difficultyLabels: true,
         statusTracking: true,
         personalStats: true,
-        educationalRoadmaps: true
-      }
+        educationalRoadmaps: true,
+      },
     },
     {
       name: 'GoodFirstIssue.dev',
@@ -24,76 +22,81 @@ const ComparisonSection = () => {
         difficultyLabels: true,
         statusTracking: false,
         personalStats: false,
-        educationalRoadmaps: false
-      }
+        educationalRoadmaps: false,
+      },
     },
     {
       name: 'Up-for-Grabs.net',
-      function: 'Project Curation',
+      function: 'Project Directory',
       features: {
         languageFiltering: true,
         difficultyLabels: false,
         statusTracking: false,
         personalStats: false,
-        educationalRoadmaps: false
-      }
+        educationalRoadmaps: false,
+      },
     },
     {
       name: 'CodeTriage',
-      function: 'Email Subscriptions',
+      function: 'Email Digests',
       features: {
         languageFiltering: true,
         difficultyLabels: false,
         statusTracking: false,
         personalStats: false,
-        educationalRoadmaps: false
-      }
-    }
+        educationalRoadmaps: false,
+      },
+    },
   ];
 
   const featureLabels = [
-    { key: 'function', label: 'Primary Function' },
+    { key: 'function', label: 'Primary Role' },
     { key: 'languageFiltering', label: 'Language Filtering' },
-    { key: 'difficultyLabels', label: 'Difficulty Labels' },
-    { key: 'statusTracking', label: 'Status Tracking' },
-    { key: 'personalStats', label: 'Personal Stats Profile' },
-    { key: 'educationalRoadmaps', label: 'Educational Roadmaps' }
+    { key: 'difficultyLabels', label: 'Starter & Difficulty Tags' },
+    { key: 'statusTracking', label: 'Live PR Status Tracking' },
+    { key: 'personalStats', label: 'Verified Proof of Work' },
+    { key: 'educationalRoadmaps', label: 'Repo Setup Kits & Docs' },
   ];
 
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-zinc-900/60">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 border-t border-[#22242A] bg-[#0F0F0F]">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-16">
-          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-3">
-            Feature Comparison Matrix
+        <div className="max-w-xl mb-10">
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F4F4F0] mb-2 text-balance">
+            How FirstIssue.dev compares to standard directories
           </h2>
-          <p className="text-zinc-400 max-w-lg mx-auto text-xs sm:text-sm leading-relaxed">
-            To choose the right tool, evaluate how they handle your workflow from discovery to completion.
+          <p className="text-[#A8ADB6] text-xs sm:text-sm leading-relaxed text-pretty">
+            Standard issue aggregators stop at links. FirstIssue.dev pairs active tickets with Contribution Kits and verified merge credentials.
           </p>
         </div>
 
-        {/* Desktop Table View - Hidden on Mobile */}
-        <div className="hidden lg:block bg-transparent border border-zinc-800/60 rounded-xl overflow-hidden mb-12 max-w-5xl mx-auto">
+        {/* Desktop Table */}
+        <div className="hidden lg:block bg-[#141518] border border-[#2B2E36] rounded-[4px] overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-zinc-800/60">
-                  <th className="text-left p-4 text-xs font-bold uppercase tracking-wider text-zinc-400 bg-white/[0.01] min-w-[200px]">
-                    Feature / Platform
+                <tr className="border-b border-[#2B2E36] bg-[#17181B]">
+                  <th className="p-4 text-xs font-mono font-semibold uppercase tracking-wider text-[#A8ADB6] min-w-[220px]">
+                    Capability
                   </th>
-                  {platforms.map((platform, idx) => (
+                  {platforms.map((platform) => (
                     <th
-                      key={idx}
-                      className="p-4 text-center border-l border-zinc-800/60 min-w-[180px] bg-white/[0.01]"
+                      key={platform.name}
+                      className={`p-4 text-center border-l border-[#22242A] min-w-[180px] ${
+                        platform.highlighted ? 'bg-[#1C1E23]' : ''
+                      }`}
                     >
                       <div className="flex flex-col items-center gap-1.5">
-                        <span className={`text-sm font-extrabold ${platform.highlighted ? "text-white" : "text-zinc-400"}`}>
+                        <span
+                          className={`text-sm font-semibold ${
+                            platform.highlighted ? 'text-[#F4F4F0]' : 'text-[#A8ADB6]'
+                          }`}
+                        >
                           {platform.name}
                         </span>
                         {platform.highlighted && (
-                          <span className="text-[9px] text-blue-400 font-bold px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 rounded-full">
-                            RECOMMENDED
+                          <span className="text-xs font-mono text-[#0F0F0F] font-semibold px-2 py-0.5 bg-[#DAFA9C] rounded-[4px]">
+                            COMPLETE WORKFLOW
                           </span>
                         )}
                       </div>
@@ -104,26 +107,41 @@ const ComparisonSection = () => {
               <tbody>
                 {featureLabels.map((feature, idx) => (
                   <tr
-                    key={idx}
-                    className={`${idx !== featureLabels.length - 1 ? 'border-b border-zinc-800/60' : ''} hover:bg-white/[0.01] transition-colors`}
+                    key={feature.key}
+                    className={`${
+                      idx !== featureLabels.length - 1
+                        ? 'border-b border-[#22242A]'
+                        : ''
+                    } hover:bg-[#17181B] transition-colors`}
                   >
-                    <td className="p-4 text-xs font-semibold text-zinc-300">
+                    <td className="p-4 text-xs font-medium text-[#F4F4F0]">
                       {feature.label}
                     </td>
-                    {platforms.map((platform, pIdx) => (
-                      <td key={pIdx} className="p-4 text-center border-l border-zinc-800/60 text-zinc-300">
+                    {platforms.map((platform) => (
+                      <td
+                        key={`${platform.name}-${feature.key}`}
+                        className={`p-4 text-center border-l border-[#22242A] ${
+                          platform.highlighted ? 'bg-[#1C1E23]/60' : ''
+                        }`}
+                      >
                         {feature.key === 'function' ? (
-                          <span className={platform.highlighted ? 'text-white font-bold text-xs' : 'text-zinc-500 text-xs'}>
+                          <span
+                            className={`text-xs font-mono ${
+                              platform.highlighted
+                                ? 'text-[#DAFA9C] font-semibold'
+                                : 'text-[#8C929C]'
+                            }`}
+                          >
                             {platform.function}
                           </span>
+                        ) : platform.features[feature.key] ? (
+                          <span className="text-[#34D399] font-semibold text-sm" aria-label="Included">
+                            ✓
+                          </span>
                         ) : (
-                          <div className="flex items-center justify-center">
-                            {platform.features[feature.key] ? (
-                              <span className="text-emerald-400 font-bold text-sm">✓</span>
-                            ) : (
-                              <span className="text-zinc-600 font-bold text-sm">—</span>
-                            )}
-                          </div>
+                          <span className="text-[#8C929C] font-mono text-sm" aria-label="Not included">
+                            —
+                          </span>
                         )}
                       </td>
                     ))}
@@ -134,51 +152,51 @@ const ComparisonSection = () => {
           </div>
         </div>
 
-        {/* Mobile Card View - Visible only on Mobile/Tablet */}
-        <div className="lg:hidden space-y-4 mb-12 max-w-xl mx-auto">
-          {platforms.map((platform, idx) => (
+        {/* Mobile Cards */}
+        <div className="lg:hidden space-y-4">
+          {platforms.map((platform) => (
             <div
-              key={idx}
-              className={`rounded-xl border p-5 ${
+              key={platform.name}
+              className={`rounded-[4px] border p-5 ${
                 platform.highlighted
-                  ? 'bg-white/[0.02] border-zinc-700/80 shadow-lg'
-                  : 'bg-transparent border-zinc-800/60'
+                  ? 'bg-[#17181B] border-[#DAFA9C]/60'
+                  : 'bg-[#141518] border-[#22242A]'
               }`}
             >
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-base font-extrabold text-white">{platform.name}</h3>
-                  {platform.highlighted && (
-                    <span className="inline-block mt-1 text-[9px] text-blue-400 font-bold px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 rounded-full">
-                      RECOMMENDED
-                    </span>
-                  )}
-                </div>
+              <div className="flex items-center justify-between gap-2 mb-4 pb-3 border-b border-[#22242A]">
+                <h3 className="text-base font-semibold text-[#F4F4F0]">
+                  {platform.name}
+                </h3>
+                {platform.highlighted && (
+                  <span className="text-xs font-mono text-[#0F0F0F] font-semibold px-2 py-0.5 bg-[#DAFA9C] rounded-[4px]">
+                    COMPLETE WORKFLOW
+                  </span>
+                )}
               </div>
 
               <div className="space-y-2.5">
                 {featureLabels.map((feature, fIdx) => (
                   <div
-                    key={fIdx}
+                    key={feature.key}
                     className={`flex items-center justify-between py-1.5 ${
-                      fIdx !== featureLabels.length - 1 ? 'border-b border-zinc-900/60' : ''
+                      fIdx !== featureLabels.length - 1
+                        ? 'border-b border-[#22242A]'
+                        : ''
                     }`}
                   >
-                    <span className="text-xs text-zinc-400">
+                    <span className="text-xs text-[#A8ADB6]">
                       {feature.label}
                     </span>
                     {feature.key === 'function' ? (
-                      <span className="text-xs font-semibold text-white">
+                      <span className="text-xs font-mono font-medium text-[#F4F4F0]">
                         {platform.function}
                       </span>
+                    ) : platform.features[feature.key] ? (
+                      <span className="text-[#34D399] font-semibold text-xs">
+                        ✓
+                      </span>
                     ) : (
-                      <div className="flex items-center">
-                        {platform.features[feature.key] ? (
-                          <span className="text-emerald-400 font-bold text-xs">✓</span>
-                        ) : (
-                          <span className="text-zinc-600 font-bold text-xs">—</span>
-                        )}
-                      </div>
+                      <span className="text-[#8C929C] text-xs">—</span>
                     )}
                   </div>
                 ))}

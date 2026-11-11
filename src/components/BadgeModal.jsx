@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Calendar, CheckCircle, Lock, Share2, Award, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, ExternalLink, Brain } from 'lucide-react';
+import { X, Calendar, CheckCircle, Lock, Share2, Award, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, Brain } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 import BadgeShareModal from './BadgeShareModal';
 import FirstContributionBadge from './badges/FirstContributionBadge';
@@ -20,7 +20,6 @@ import CenturionBadge from './badges/CenturionBadge';
 import MergeLegendBadge from './badges/MergeLegendBadge';
 import FirstMateMentorBadge from './badges/FirstMateMentorBadge';
 
-// Badge icon mapping
 const BADGE_ICONS = {
   'first-contribution': Star,
   'first-merge': GitMerge,
@@ -39,50 +38,16 @@ const BADGE_ICONS = {
   'firstmate-mentor': Brain,
 };
 
-// Rarity gradient configs for the large showcase icon
-const RARITY_GRADIENTS = {
-  common: {
-    ring: 'from-gray-400 to-gray-600',
-    glow: 'shadow-[0_0_60px_rgba(156,163,175,0.2)]',
-    bg: 'from-gray-500/20 to-gray-600/10',
-  },
-  uncommon: {
-    ring: 'from-green-400 to-emerald-600',
-    glow: 'shadow-[0_0_60px_rgba(34,197,94,0.25)]',
-    bg: 'from-green-500/20 to-emerald-600/10',
-  },
-  rare: {
-    ring: 'from-blue-400 to-indigo-600',
-    glow: 'shadow-[0_0_60px_rgba(59,130,246,0.3)]',
-    bg: 'from-blue-500/20 to-indigo-600/10',
-  },
-  epic: {
-    ring: 'from-purple-400 to-violet-600',
-    glow: 'shadow-[0_0_60px_rgba(168,85,247,0.35)]',
-    bg: 'from-purple-500/20 to-violet-600/10',
-  },
-  legendary: {
-    ring: 'from-amber-300 via-yellow-400 to-orange-500',
-    glow: 'shadow-[0_0_80px_rgba(245,158,11,0.4)]',
-    bg: 'from-amber-500/20 to-yellow-600/10',
-  }
-};
-
 const BadgeModal = ({ badge, earned, onClose, username }) => {
   const [showShareModal, setShowShareModal] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
 
   const rarityInfo = getBadgeRarityInfo(badge.rarity);
   const BadgeIcon = BADGE_ICONS[badge.id] || Award;
-  const gradients = RARITY_GRADIENTS[badge.rarity] || RARITY_GRADIENTS.common;
 
-  // Close with animation
   const handleClose = useCallback(() => {
-    setIsClosing(true);
-    setTimeout(() => onClose(), 200);
+    onClose();
   }, [onClose]);
 
-  // Keyboard escape to close
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') handleClose();
@@ -91,7 +56,6 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [handleClose]);
 
-  // Prevent body scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => { document.body.style.overflow = ''; };
@@ -101,12 +65,8 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
 
   return (
     <>
-      {/* Backdrop */}
       <div
-        className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${
-          isClosing ? 'animate-badge-modal-out' : 'animate-badge-modal-backdrop'
-        }`}
-        style={{ backgroundColor: 'rgba(0, 0, 0, 0.8)', backdropFilter: 'blur(8px)' }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75"
         onClick={(e) => {
           if (e.target === e.currentTarget) handleClose();
         }}
@@ -114,133 +74,87 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
         aria-modal="true"
         aria-label={`${badge.name} badge details`}
       >
-        {/* Modal Content */}
         <div
-          className={`relative w-full max-w-md bg-zinc-950 rounded-lg border border-zinc-800/80 overflow-hidden max-h-[90vh] overflow-y-auto shadow-2xl ${
-            isClosing ? 'animate-badge-modal-out' : 'animate-badge-modal-in'
-          }`}
+          className="relative w-full max-w-md bg-[#141518] rounded-[4px] border border-[#2B2E36] overflow-hidden max-h-[90vh] overflow-y-auto shadow-2xl"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Close Button */}
           <button
+            type="button"
             onClick={handleClose}
-            className="absolute top-4 right-4 p-1.5 text-zinc-500 hover:text-white hover:bg-white/5 rounded transition-colors z-10"
-            aria-label="Close modal"
+            className="absolute top-4 right-4 p-1.5 text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#1C1E23] rounded-[4px] transition-colors z-10"
+            aria-label="Close badge details"
           >
             <X className="w-4 h-4" />
           </button>
 
-          {/* ── Badge Showcase Area ── */}
-          <div className="relative pt-10 pb-8 px-6 flex flex-col items-center">
-            {/* Background glow */}
-            <div className={`absolute inset-0 bg-gradient-to-b ${gradients.bg} to-transparent opacity-60`} />
-
-            {/* Large badge icon with rarity ring */}
-            <div className="relative z-10 animate-badge-float">
-              {/* Glow ring */}
-              <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${gradients.ring} blur-xl opacity-30 animate-badge-glow`} />
-
-              {/* Main icon circle */}
-              <div className={`relative w-28 h-28 sm:w-30 sm:h-30 rounded-full flex items-center justify-center ${gradients.glow}`}>
-                {/* Gradient border ring */}
-                <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${gradients.ring} p-[2px]`}>
-                  <div className="w-full h-full rounded-full bg-zinc-950 flex items-center justify-center">
-                    {earned ? (
-                      badge.id === 'first-contribution' ? (
-                        <FirstContributionBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'first-merge' ? (
-                        <FirstMergeBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'contributor-5' ? (
-                        <ActiveContributorBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'contributor-10' ? (
-                        <DedicatedContributorBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'contributor-25' ? (
-                        <ProlificContributorBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'contributor-50' ? (
-                        <EliteContributorBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'contributor-100' ? (
-                        <CenturionBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'merge-master-5' ? (
-                        <MergeMasterBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'early-adopter' ? (
-                        <EarlyAdopterBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'merge-master-10' ? (
-                        <MergeChampionBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'merge-master-25' ? (
-                        <MergeLegendBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'streak-7' ? (
-                        <WeekWarriorBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'streak-30' ? (
-                        <MonthMasterBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'perfect-score' ? (
-                        <PerfectScoreBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'pow-1' ? (
-                        <VerifiedContributorBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'pow-10' ? (
-                        <ImpactMakerBadge earned={earned} variant="raw" />
-                      ) : badge.id === 'firstmate-mentor' ? (
-                        <FirstMateMentorBadge earned={earned} variant="raw" />
-                      ) : (
-                        <BadgeIcon className={`w-11 h-11 ${rarityInfo.color}`} />
-                      )
-                    ) : (
-                      <Lock className="w-10 h-10 text-zinc-600" />
-                    )}
-                  </div>
-                </div>
-              </div>
-
+          <div className="relative pt-10 pb-6 px-6 flex flex-col items-center bg-[#0F0F0F] border-b border-[#22242A]">
+            <div className={`relative w-28 h-28 rounded-full flex items-center justify-center bg-[#141518] border-2 ${rarityInfo.borderColor}`}>
+              {earned ? (
+                badge.id === 'first-contribution' ? <FirstContributionBadge earned={earned} variant="raw" /> :
+                badge.id === 'first-merge' ? <FirstMergeBadge earned={earned} variant="raw" /> :
+                badge.id === 'contributor-5' ? <ActiveContributorBadge earned={earned} variant="raw" /> :
+                badge.id === 'contributor-10' ? <DedicatedContributorBadge earned={earned} variant="raw" /> :
+                badge.id === 'contributor-25' ? <ProlificContributorBadge earned={earned} variant="raw" /> :
+                badge.id === 'contributor-50' ? <EliteContributorBadge earned={earned} variant="raw" /> :
+                badge.id === 'contributor-100' ? <CenturionBadge earned={earned} variant="raw" /> :
+                badge.id === 'merge-master-5' ? <MergeMasterBadge earned={earned} variant="raw" /> :
+                badge.id === 'early-adopter' ? <EarlyAdopterBadge earned={earned} variant="raw" /> :
+                badge.id === 'merge-master-10' ? <MergeChampionBadge earned={earned} variant="raw" /> :
+                badge.id === 'merge-master-25' ? <MergeLegendBadge earned={earned} variant="raw" /> :
+                badge.id === 'streak-7' ? <WeekWarriorBadge earned={earned} variant="raw" /> :
+                badge.id === 'streak-30' ? <MonthMasterBadge earned={earned} variant="raw" /> :
+                badge.id === 'perfect-score' ? <PerfectScoreBadge earned={earned} variant="raw" /> :
+                badge.id === 'pow-1' ? <VerifiedContributorBadge earned={earned} variant="raw" /> :
+                badge.id === 'pow-10' ? <ImpactMakerBadge earned={earned} variant="raw" /> :
+                badge.id === 'firstmate-mentor' ? <FirstMateMentorBadge earned={earned} variant="raw" /> :
+                <BadgeIcon className={`w-10 h-10 ${rarityInfo.color}`} />
+              ) : (
+                <Lock className="w-9 h-9 text-[#8C929C]" />
+              )}
             </div>
 
-            {/* Badge Name */}
-            <h2 className={`relative z-10 mt-5 text-xl sm:text-2xl font-bold text-center tracking-tight ${
-              earned ? 'text-white' : 'text-zinc-500'
+            <h2 className={`mt-5 text-xl font-semibold text-center tracking-tight ${
+              earned ? 'text-[#F4F4F0]' : 'text-[#8C929C]'
             }`}>
               {badge.name}
             </h2>
 
-            {/* Rarity Pill */}
-            <div className={`relative z-10 mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${rarityInfo.bgColor} ${rarityInfo.color} border ${rarityInfo.borderColor}`}>
-              <span className={`w-1.5 h-1.5 rounded-full bg-current ${earned ? 'animate-badge-glow' : ''}`} />
+            <div className={`mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-[4px] text-xs font-mono uppercase tracking-wider ${rarityInfo.bgColor} ${rarityInfo.color} border ${rarityInfo.borderColor}`}>
               {rarityInfo.label}
             </div>
           </div>
 
-          {/* ── Content Area ── */}
-          <div className="px-6 pb-6 space-y-4">
-            {/* Description */}
-            <p className="text-xs text-zinc-400 text-center leading-relaxed">
+          <div className="p-6 space-y-4">
+            <p className="text-xs text-[#A8ADB6] text-center leading-relaxed">
               {badge.description}
             </p>
 
-            {/* How to Earn */}
-            <div className="bg-zinc-900/30 rounded border border-zinc-800/60 p-4">
-              <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-2">
-                How to Earn
+            <div className="bg-[#0B0C0E] rounded-[4px] border border-[#22242A] p-4">
+              <h3 className="text-xs font-mono text-[#8C929C] uppercase tracking-wider mb-2">
+                Criteria
               </h3>
-              <div className="flex items-start gap-3">
-                <div className={`w-4 h-4 rounded-full flex-shrink-0 mt-0.5 flex items-center justify-center ${
-                  earned ? 'bg-emerald-500/20' : 'bg-zinc-800'
+              <div className="flex items-start gap-2.5">
+                <div className={`w-4 h-4 rounded-full shrink-0 mt-0.5 flex items-center justify-center ${
+                  earned ? 'bg-[#34D399]/20' : 'bg-[#17181B]'
                 }`}>
                   {earned ? (
-                    <CheckCircle className="w-2.5 h-2.5 text-emerald-400" />
+                    <CheckCircle className="w-3 h-3 text-[#34D399]" />
                   ) : (
-                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#8C929C]" />
                   )}
                 </div>
-                <p className={`text-xs ${earned ? 'text-zinc-300' : 'text-zinc-500'}`}>
+                <p className={`text-xs ${earned ? 'text-[#F4F4F0]' : 'text-[#A8ADB6]'}`}>
                   {badge.criteria.narrative}
                 </p>
               </div>
             </div>
 
-            {/* Earned Date */}
             {earned && badge.earnedAt && (
-              <div className="flex items-center gap-3 p-3 bg-emerald-950/10 border border-emerald-900/30 rounded">
-                <Calendar className="w-4 h-4 text-emerald-450 flex-shrink-0" />
+              <div className="flex items-center gap-3 p-3 bg-[#34D399]/10 border border-[#34D399]/30 rounded-[4px]">
+                <Calendar className="w-4 h-4 text-[#34D399] shrink-0" />
                 <div>
-                  <p className="text-[10px] text-emerald-450 font-bold uppercase tracking-wider">Earned</p>
-                  <p className="text-xs text-zinc-450 mt-0.5">
+                  <p className="text-xs font-mono text-[#34D399] uppercase tracking-wider">Earned</p>
+                  <p className="text-xs text-[#F4F4F0] mt-0.5 tabular-nums">
                     {new Date(badge.earnedAt).toLocaleDateString('en-US', {
                       year: 'numeric', month: 'long', day: 'numeric'
                     })}
@@ -249,22 +163,21 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
               </div>
             )}
 
-            {/* Not earned hint */}
             {!earned && (
-              <div className="flex items-center gap-3 p-3 bg-zinc-950/20 border border-zinc-850/60 rounded">
-                <Lock className="w-3.5 h-3.5 text-zinc-600 flex-shrink-0" />
-                <p className="text-xs text-zinc-550">
-                  Keep contributing to unlock this badge!
+              <div className="flex items-center gap-3 p-3 bg-[#0B0C0E] border border-[#22242A] rounded-[4px]">
+                <Lock className="w-3.5 h-3.5 text-[#8C929C] shrink-0" />
+                <p className="text-xs text-[#8C929C]">
+                  Complete the criteria above to unlock this badge.
                 </p>
               </div>
             )}
 
-            {/* Action Buttons */}
             {earned && (
-              <div className="flex gap-3 pt-1">
+              <div className="pt-1">
                 <button
+                  type="button"
                   onClick={() => setShowShareModal(true)}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-zinc-200 text-black rounded text-xs font-semibold transition-colors"
+                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] text-xs font-semibold transition-colors"
                 >
                   <Share2 className="w-3.5 h-3.5" />
                   Share Badge
@@ -272,18 +185,14 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
               </div>
             )}
 
-            {/* Footer */}
-            <div className="pt-3 border-t border-zinc-800/60 flex items-center justify-between">
-              <div>
-                <p className="text-[9px] text-zinc-650 uppercase font-bold tracking-wider">Issued by</p>
-                <p className="text-xs text-zinc-500 font-medium">{badge.issuer.name}</p>
-              </div>
+            <div className="pt-3 border-t border-[#22242A] flex items-center justify-between text-xs">
+              <span className="text-[#8C929C] font-mono uppercase">Issuer</span>
+              <span className="text-[#F4F4F0] font-medium">{badge.issuer.name}</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Share Modal */}
       {showShareModal && (
         <BadgeShareModal
           badge={badge}

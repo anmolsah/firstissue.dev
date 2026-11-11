@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useRateLimiter } from "../hooks/useRateLimiter";
 import { Mail, Lock, Github, AlertCircle, CheckCircle, ShieldAlert, Loader2 } from "lucide-react";
-import logo from "../assets/logo01.png";
+import { BrandLogo } from "../components/BrandMark";
 
 const SignupPage = () => {
   const { signUp, signInWithGitHub, user } = useAuth();
@@ -67,7 +67,6 @@ const SignupPage = () => {
         setError(error.message);
         setGithubLoading(false);
       }
-      // On success, keep githubLoading=true while the browser redirects to GitHub OAuth
     } catch (err) {
       setError(err?.message || "Failed to initiate GitHub sign-in");
       setGithubLoading(false);
@@ -79,93 +78,93 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-[#0F0F0F] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
       <div className="max-w-md w-full">
-        <div className="bg-[#393E46]/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-[#393E46] p-6 sm:p-8 shadow-xl">
-          <div className="text-center mb-6 sm:mb-8">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-2">
-              {/* <img src={logo} className="h-16 w-16" alt="Logo" /> */}
-            </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2">
-              <p className="text-2xl sm:text-3xl font-bold text-[#EEEEEE]/60 m-0 p-0">
-                Join
-              </p>
-              <p className="text-2xl sm:text-3xl font-bold text-[#00ADB5] m-0 p-0">
-                FirstIssue.dev
-              </p>
-            </div>
-            <p className="text-sm sm:text-base text-[#EEEEEE]/60 mt-2">
-              Start your open source contribution journey today
+        <div className="bg-[#141518] rounded-[4px] border border-[#2B2E36] p-6 sm:p-8">
+          <div className="text-center mb-6">
+            <Link to="/" className="inline-flex justify-center mb-4">
+              <BrandLogo size="md" />
+            </Link>
+            <h1 className="text-xl font-semibold text-[#F4F4F0]">Create your account</h1>
+            <p className="text-sm text-[#A8ADB6] mt-1">
+              Start matching beginner-friendly issues and verifying PRs
             </p>
           </div>
 
           {success && (
-            <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-lg flex items-center gap-2">
-              <CheckCircle className="h-5 w-5 text-emerald-400 flex-shrink-0" />
-              <span className="text-emerald-400 text-sm">
-                Account created successfully! Redirecting...
+            <div
+              role="status"
+              className="mb-5 p-3.5 bg-[#34D399]/10 border border-[#34D399]/40 rounded-[4px] flex items-center gap-2"
+            >
+              <CheckCircle className="h-4 w-4 text-[#34D399] shrink-0" />
+              <span className="text-[#34D399] text-sm">
+                Account created successfully. Redirecting...
               </span>
             </div>
           )}
 
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
-              <span className="text-red-400 text-sm">{error}</span>
+            <div
+              role="alert"
+              className="mb-5 p-3.5 bg-[#F87171]/10 border border-[#F87171]/40 rounded-[4px] flex items-center gap-2"
+            >
+              <AlertCircle className="h-4 w-4 text-[#F87171] shrink-0" />
+              <span className="text-[#F87171] text-sm">{error}</span>
             </div>
           )}
 
           {isRateLimited && (
-            <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-amber-400 flex-shrink-0" />
-              <span className="text-amber-400 text-sm">Too many attempts. Try again in {remainingCooldown}s</span>
+            <div
+              role="status"
+              className="mb-4 p-3 bg-[#F59E0B]/10 border border-[#F59E0B]/40 rounded-[4px] flex items-center gap-2"
+            >
+              <ShieldAlert className="h-4 w-4 text-[#F59E0B] shrink-0" />
+              <span className="text-[#F59E0B] text-sm tabular-nums">
+                Too many attempts. Try again in {remainingCooldown}s
+              </span>
             </div>
           )}
 
           <button
+            type="button"
             onClick={handleGitHubSignIn}
             disabled={githubLoading || loading || success || isRateLimited}
-            className="w-full mb-6 flex items-center justify-center gap-3 px-4 py-3 bg-[#222831] text-[#EEEEEE] rounded-lg font-medium hover:bg-[#222831]/80 border border-[#393E46] transition-colors disabled:opacity-85 disabled:cursor-wait"
+            className="w-full mb-5 flex items-center justify-center gap-2.5 px-4 py-2.5 bg-[#17181B] hover:bg-[#1C1E23] text-[#F4F4F0] rounded-[4px] font-medium text-sm border border-[#2B2E36] hover:border-[#3A3E48] transition-colors disabled:opacity-70 disabled:cursor-wait cursor-pointer min-h-[44px]"
           >
             {githubLoading ? (
               <>
-                <Loader2 className="h-5 w-5 text-white animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 <span>Connecting to GitHub...</span>
               </>
             ) : isRateLimited ? (
               <>
-                <ShieldAlert className="h-5 w-5 text-amber-400" />
-                <span>Wait {remainingCooldown}s...</span>
+                <ShieldAlert className="h-4 w-4 text-[#F59E0B]" />
+                <span className="tabular-nums">Wait {remainingCooldown}s...</span>
               </>
             ) : (
               <>
-                <Github className="h-5 w-5" />
+                <Github className="h-4 w-4" />
                 <span>Continue with GitHub</span>
               </>
             )}
           </button>
 
-          <div className="relative mb-6">
+          <div className="relative mb-5">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#393E46]"></div>
+              <div className="w-full border-t border-[#22242A]" />
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-[#393E46]/50 text-[#EEEEEE]/50">
-                Or sign up with email
-              </span>
+            <div className="relative flex justify-center text-xs font-mono">
+              <span className="px-2 bg-[#141518] text-[#8C929C]">or sign up with email</span>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-[#EEEEEE] mb-2"
-              >
+              <label htmlFor="email" className="block text-xs font-medium text-[#A8ADB6] mb-1.5">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#EEEEEE]/40" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C929C]" />
                 <input
                   id="email"
                   name="email"
@@ -173,21 +172,18 @@ const SignupPage = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40"
-                  placeholder="Enter your email"
+                  className="w-full pl-9 pr-3 py-2.5 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-sm text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors"
+                  placeholder="you@domain.com"
                 />
               </div>
             </div>
 
             <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-[#EEEEEE] mb-2"
-              >
+              <label htmlFor="password" className="block text-xs font-medium text-[#A8ADB6] mb-1.5">
                 Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#EEEEEE]/40" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C929C]" />
                 <input
                   id="password"
                   name="password"
@@ -195,24 +191,21 @@ const SignupPage = () => {
                   required
                   value={formData.password}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40"
-                  placeholder="Create a password"
+                  className="w-full pl-9 pr-3 py-2.5 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-sm text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors"
+                  placeholder="Minimum 6 characters"
                 />
               </div>
-              <p className="text-xs text-[#EEEEEE]/50 mt-1">
-                Must be at least 6 characters long
-              </p>
             </div>
 
             <div>
               <label
                 htmlFor="confirmPassword"
-                className="block text-sm font-medium text-[#EEEEEE] mb-2"
+                className="block text-xs font-medium text-[#A8ADB6] mb-1.5"
               >
                 Confirm Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#EEEEEE]/40" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8C929C]" />
                 <input
                   id="confirmPassword"
                   name="confirmPassword"
@@ -220,8 +213,8 @@ const SignupPage = () => {
                   required
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 bg-[#222831] border border-[#393E46] rounded-lg text-[#EEEEEE] placeholder-[#EEEEEE]/40"
-                  placeholder="Confirm your password"
+                  className="w-full pl-9 pr-3 py-2.5 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-sm text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none focus:border-[#DAFA9C] transition-colors"
+                  placeholder="Re-enter password"
                 />
               </div>
             </div>
@@ -229,19 +222,16 @@ const SignupPage = () => {
             <button
               type="submit"
               disabled={loading || success}
-              className="w-full px-4 py-3 bg-[#00ADB5] text-[#222831] rounded-lg font-medium hover:bg-[#00d4de] transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              className="w-full px-4 py-2.5 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer min-h-[44px]"
             >
               {loading ? "Creating Account..." : "Create Account"}
             </button>
           </form>
 
-          <div className="mt-8 text-center">
-            <p className="text-[#EEEEEE]/60">
+          <div className="mt-6 pt-4 border-t border-[#22242A] text-center">
+            <p className="text-xs text-[#A8ADB6]">
               Already have an account?{" "}
-              <Link
-                to="/login"
-                className="text-[#00ADB5] hover:text-[#00d4de] font-medium"
-              >
+              <Link to="/login" className="text-[#DAFA9C] hover:underline font-medium">
                 Sign in
               </Link>
             </p>

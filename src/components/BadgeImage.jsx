@@ -18,7 +18,6 @@ import CenturionBadge from './badges/CenturionBadge';
 import MergeLegendBadge from './badges/MergeLegendBadge';
 import FirstMateMentorBadge from './badges/FirstMateMentorBadge';
 
-// Badge icon mapping
 const BADGE_ICONS = {
   'first-contribution': Star,
   'first-merge': GitMerge,
@@ -37,61 +36,60 @@ const BADGE_ICONS = {
   'firstmate-mentor': Brain,
 };
 
-// Rarity color schemes
-const RARITY_COLORS = {
+const RARITY_STYLES = {
   common: {
-    bg: 'from-gray-600 to-gray-700',
-    border: 'border-gray-500',
-    glow: 'shadow-gray-500/50'
+    bg: 'bg-[#17181B]',
+    border: 'border-[#3A3E48]',
+    text: 'text-[#A8ADB6]',
   },
   uncommon: {
-    bg: 'from-green-600 to-green-700',
-    border: 'border-green-500',
-    glow: 'shadow-green-500/50'
+    bg: 'bg-[#141518]',
+    border: 'border-[#34D399]',
+    text: 'text-[#34D399]',
   },
   rare: {
-    bg: 'from-blue-600 to-blue-700',
-    border: 'border-blue-500',
-    glow: 'shadow-blue-500/50'
+    bg: 'bg-[#141518]',
+    border: 'border-sky-400',
+    text: 'text-sky-400',
   },
   epic: {
-    bg: 'from-purple-600 to-purple-700',
-    border: 'border-purple-500',
-    glow: 'shadow-purple-500/50'
+    bg: 'bg-[#141518]',
+    border: 'border-orange-400',
+    text: 'text-orange-400',
   },
   legendary: {
-    bg: 'from-amber-500 via-yellow-500 to-amber-600',
-    border: 'border-yellow-400',
-    glow: 'shadow-yellow-500/50'
-  }
+    bg: 'bg-[#141518]',
+    border: 'border-[#F59E0B]',
+    text: 'text-[#F59E0B]',
+  },
 };
 
 const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = false, showEarned = true }) => {
   const BadgeIcon = BADGE_ICONS[badge.id] || Award;
-  const colors = RARITY_COLORS[badge.rarity] || RARITY_COLORS.common;
-  
+  const colors = RARITY_STYLES[badge.rarity] || RARITY_STYLES.common;
+
   const sizeClasses = {
     small: 'w-32 h-32',
     medium: 'w-48 h-48',
-    large: 'w-64 h-64'
+    large: 'w-64 h-64',
   };
 
   const iconSizes = {
     small: 'w-12 h-12',
     medium: 'w-16 h-16',
-    large: 'w-24 h-24'
+    large: 'w-24 h-24',
   };
 
   return (
     <div className={`${sizeClasses[size]} relative`} id={`badge-${badge.id}`}>
-      {/* Badge Container */}
       <div className="w-full h-full relative">
-        {/* Glow Effect */}
         {!disableBlur && (
-          <div className={`absolute inset-0 bg-gradient-to-br ${colors.bg} rounded-full blur-2xl opacity-50 ${colors.glow}`} />
+          <div
+            className="hidden"
+            aria-hidden="true"
+          />
         )}
-        
-        {/* Main Badge Circle */}
+
         {badge.id === 'first-contribution' ? (
           <div className="w-full h-full flex items-center justify-center scale-125">
             <FirstContributionBadge earned={true} variant="raw" />
@@ -161,43 +159,26 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = f
             <FirstMateMentorBadge earned={true} variant="raw" />
           </div>
         ) : (
-          <div className={`relative w-full h-full rounded-full bg-gradient-to-br ${colors.bg} border-4 ${colors.border} shadow-2xl ${colors.glow} flex items-center justify-center overflow-hidden`}>
-            {/* Shine Effect */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/20 to-transparent" />
-            
-            {/* Legendary Sparkles */}
-            {badge.rarity === 'legendary' && (
-              <>
-                <Sparkles className="absolute top-4 right-4 w-6 h-6 text-yellow-300 animate-pulse" />
-                <Sparkles className="absolute bottom-4 left-4 w-4 h-4 text-yellow-300 animate-pulse" style={{ animationDelay: '0.5s' }} />
-              </>
-            )}
-            
-            {/* Icon */}
-            <BadgeIcon className={`${iconSizes[size]} text-white drop-shadow-lg`} />
-            
-            {/* Rarity Ring */}
-            <div className={`absolute inset-0 rounded-full border-2 ${colors.border} opacity-50`} />
+          <div className={`relative w-full h-full rounded-full ${colors.bg} border-4 ${colors.border} shadow-xl flex items-center justify-center overflow-hidden`}>
+            <BadgeIcon className={`${iconSizes[size]} text-[#F4F4F0]`} />
           </div>
         )}
 
-        {/* Badge Details */}
         {showDetails && (
-          <div className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-full text-center">
-            <h3 className="text-white font-bold text-lg mb-1 drop-shadow-lg">
+          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 w-full text-center">
+            <h3 className="text-[#F4F4F0] font-semibold text-base mb-0.5">
               {badge.name}
             </h3>
-            <p className={`text-xs font-semibold uppercase tracking-wider ${colors.border.replace('border-', 'text-')}`}>
+            <p className={`text-xs font-mono uppercase tracking-wider ${colors.text}`}>
               {badge.rarity}
             </p>
           </div>
         )}
       </div>
 
-      {/* Earned Date Badge */}
       {showEarned && badge.earnedAt && (
-        <div className="absolute -top-2 -right-2 bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border-2 border-white">
-          ✓ Earned
+        <div className="absolute -top-2 -right-2 bg-[#34D399] text-[#0F0F0F] text-xs font-mono font-semibold px-2.5 py-0.5 rounded-[4px] border border-[#0F0F0F]">
+          Earned
         </div>
       )}
     </div>

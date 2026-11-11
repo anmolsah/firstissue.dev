@@ -1,43 +1,57 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { Link } from "react-router-dom";
 import {
-  X, Wrench, Loader2, Crown, Lock, Copy, Check, FileCode2, ListChecks,
-  MessageSquarePlus, FileText, AlertTriangle, ShieldCheck, ScanLine, Sparkles,
-} from 'lucide-react';
-import toast from 'react-hot-toast';
-import { useAuth } from '../contexts/AuthContext';
-import { useSupporter } from '../contexts/SupporterContext';
-import { useContributionKit, parseIssueUrl } from '../hooks/useContributionKit';
-import { useKitQuota } from '../hooks/queries/useKitQuota';
+  X,
+  Wrench,
+  Loader2,
+  Crown,
+  Lock,
+  Copy,
+  Check,
+  FileCode2,
+  ListChecks,
+  MessageSquarePlus,
+  FileText,
+  AlertTriangle,
+  ShieldCheck,
+  ScanLine,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import { useAuth } from "../contexts/AuthContext";
+import { useSupporter } from "../contexts/SupporterContext";
+import { useContributionKit, parseIssueUrl } from "../hooks/useContributionKit";
+import { useKitQuota } from "../hooks/queries/useKitQuota";
 
-// ── Small copy-to-clipboard button ──
-const CopyButton = ({ text, label = 'Copy' }) => {
+const CopyButton = ({ text, label = "Copy" }) => {
   const [copied, setCopied] = useState(false);
   const onCopy = () => {
-    navigator.clipboard.writeText(text || '');
+    navigator.clipboard.writeText(text || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
   };
   return (
     <button
+      type="button"
       onClick={onCopy}
-      className={`inline-flex items-center gap-1 text-[10px] font-semibold transition-colors ${
-        copied ? 'text-emerald-400' : 'text-zinc-400 hover:text-white'
+      className={`inline-flex items-center gap-1.5 text-xs font-mono transition-colors ${
+        copied ? "text-[#34D399]" : "text-[#A8ADB6] hover:text-[#DAFA9C]"
       }`}
     >
-      {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-      <span>{copied ? 'Copied' : label}</span>
+      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+      <span>{copied ? "Copied" : label}</span>
     </button>
   );
 };
 
 const Section = ({ icon, title, action, children }) => (
-  <div className="border border-zinc-800/60 rounded-lg bg-zinc-950/30 overflow-hidden">
-    <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-800/60 bg-zinc-950/40">
+  <div className="border border-[#22242A] rounded-[4px] bg-[#141518] overflow-hidden">
+    <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#22242A] bg-[#17181B]">
       <div className="flex items-center gap-2">
-        {React.createElement(icon, { className: 'w-3.5 h-3.5 text-zinc-400' })}
-        <span className="text-[10px] font-bold font-mono uppercase tracking-wider text-zinc-300">{title}</span>
+        {React.createElement(icon, { className: "w-3.5 h-3.5 text-[#DAFA9C]" })}
+        <span className="text-xs font-mono uppercase tracking-wider text-[#F4F4F0]">
+          {title}
+        </span>
       </div>
       {action}
     </div>
@@ -45,11 +59,10 @@ const Section = ({ icon, title, action, children }) => (
   </div>
 );
 
-// ── Pre-submit diff review (supporter-only) ──
 const PreSubmitReview = ({ issue }) => {
   const { isSupporter } = useSupporter();
   const { reviewDiff } = useContributionKit();
-  const [diff, setDiff] = useState('');
+  const [diff, setDiff] = useState("");
   const [loading, setLoading] = useState(false);
   const [review, setReview] = useState(null);
 
@@ -66,7 +79,7 @@ const PreSubmitReview = ({ issue }) => {
       });
       setReview(result);
     } catch (e) {
-      toast.error(e.message || 'Review failed. Please try again.');
+      toast.error(e.message || "Review failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -74,21 +87,20 @@ const PreSubmitReview = ({ issue }) => {
 
   if (!isSupporter) {
     return (
-      <Section icon={ScanLine} title="Pre-submit review">
+      <Section icon={ScanLine} title="Pre-submit diff review">
         <div className="flex flex-col items-center text-center py-3 gap-3">
-          <div className="p-2 rounded-lg border border-amber-900/40 bg-amber-950/20 text-amber-400">
+          <div className="p-2.5 rounded-[4px] border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B]">
             <Lock className="w-4 h-4" />
           </div>
-          <p className="text-xs text-zinc-400 max-w-sm leading-relaxed">
-            Paste your diff and have a senior-maintainer AI flag what would get your PR rejected —{' '}
-            <span className="text-white font-semibold">before</span> you open it. Available to Supporters.
+          <p className="text-xs text-[#A8ADB6] max-w-sm leading-relaxed">
+            Paste your <code className="font-mono text-[#F4F4F0]">git diff</code> to check conventions, missing tests, and edge cases <span className="text-[#F4F4F0] font-semibold">before</span> opening a PR.
           </p>
           <Link
             to="/support"
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-zinc-200 text-black rounded text-xs font-semibold transition-all"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] text-xs font-semibold transition-colors"
           >
             <Crown className="w-3.5 h-3.5" />
-            Unlock — $9/mo
+            Supporter Plan — $9/mo
           </Link>
         </div>
       </Section>
@@ -96,60 +108,94 @@ const PreSubmitReview = ({ issue }) => {
   }
 
   const verdictStyle = {
-    'likely-accept': { text: 'text-emerald-400', bg: 'bg-emerald-950/20', border: 'border-emerald-900/40', label: 'Likely to be accepted' },
-    'needs-work': { text: 'text-amber-400', bg: 'bg-amber-950/20', border: 'border-amber-900/40', label: 'Needs work first' },
-    'likely-reject': { text: 'text-red-400', bg: 'bg-red-950/20', border: 'border-red-900/40', label: 'Likely to be rejected' },
+    "likely-accept": {
+      text: "text-[#34D399]",
+      bg: "bg-[#34D399]/10",
+      border: "border-[#34D399]/30",
+      label: "Likely to be accepted",
+    },
+    "needs-work": {
+      text: "text-[#F59E0B]",
+      bg: "bg-[#F59E0B]/10",
+      border: "border-[#F59E0B]/30",
+      label: "Needs work first",
+    },
+    "likely-reject": {
+      text: "text-[#F87171]",
+      bg: "bg-[#F87171]/10",
+      border: "border-[#F87171]/30",
+      label: "Likely to be rejected",
+    },
   };
   const sevStyle = {
-    high: 'text-red-400 border-red-900/40 bg-red-950/20',
-    medium: 'text-amber-400 border-amber-900/40 bg-amber-950/20',
-    low: 'text-zinc-400 border-zinc-800 bg-zinc-900/40',
+    high: "text-[#F87171] border-[#F87171]/30 bg-[#F87171]/10",
+    medium: "text-[#F59E0B] border-[#F59E0B]/30 bg-[#F59E0B]/10",
+    low: "text-[#A8ADB6] border-[#2B2E36] bg-[#17181B]",
   };
 
   return (
-    <Section icon={ScanLine} title="Pre-submit review">
+    <Section icon={ScanLine} title="Pre-submit diff review">
       <textarea
         value={diff}
         onChange={(e) => setDiff(e.target.value)}
-        placeholder="Paste your `git diff` here…"
+        placeholder="Paste your `git diff` output here..."
+        aria-label="Paste your git diff"
         rows={5}
-        className="w-full bg-zinc-950 border border-zinc-800 focus:border-zinc-700 rounded-lg px-3 py-2.5 text-[11px] font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none resize-y"
+        className="w-full bg-[#0B0C0E] border border-[#2B2E36] focus:border-[#DAFA9C] rounded-[4px] px-3 py-2.5 text-xs font-mono text-[#F4F4F0] placeholder-[#8C929C] focus:outline-none resize-y"
       />
       <div className="flex justify-end mt-2.5">
         <button
+          type="button"
           onClick={runReview}
           disabled={loading || !diff.trim()}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-zinc-200 text-black rounded text-xs font-semibold transition-all disabled:opacity-30 disabled:pointer-events-none"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] text-xs font-semibold transition-colors disabled:opacity-40 disabled:pointer-events-none"
         >
-          {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ScanLine className="w-3.5 h-3.5" />}
-          {loading ? 'Reviewing…' : 'Review my diff'}
+          {loading ? (
+            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+          ) : (
+            <ScanLine className="w-3.5 h-3.5" />
+          )}
+          {loading ? "Reviewing..." : "Review diff"}
         </button>
       </div>
 
       {review && (
         <div className="mt-4 space-y-3">
           {(() => {
-            const v = verdictStyle[review.verdict] || verdictStyle['needs-work'];
+            const v = verdictStyle[review.verdict] || verdictStyle["needs-work"];
             return (
-              <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${v.border} ${v.bg}`}>
+              <div
+                className={`flex items-center gap-2 px-3 py-2 rounded-[4px] border ${v.border} ${v.bg}`}
+              >
                 <ShieldCheck className={`w-4 h-4 ${v.text}`} />
-                <span className={`text-xs font-bold ${v.text}`}>{v.label}</span>
+                <span className={`text-xs font-semibold ${v.text}`}>
+                  {v.label}
+                </span>
               </div>
             );
           })()}
-          {review.summary && <p className="text-xs text-zinc-400 leading-relaxed">{review.summary}</p>}
+          {review.summary && (
+            <p className="text-xs text-[#A8ADB6] leading-relaxed">
+              {review.summary}
+            </p>
+          )}
           {Array.isArray(review.findings) && review.findings.length > 0 ? (
             <ul className="space-y-2">
               {review.findings.map((f, i) => (
-                <li key={i} className={`flex items-start gap-2 px-3 py-2 rounded-lg border text-xs ${sevStyle[f.severity] || sevStyle.low}`}>
-                  <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                  <span className="text-zinc-200 leading-relaxed">{f.note}</span>
+                <li
+                  key={i}
+                  className={`flex items-start gap-2 px-3 py-2 rounded-[4px] border text-xs ${
+                    sevStyle[f.severity] || sevStyle.low
+                  }`}
+                >
+                  <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                  <span className="text-[#F4F4F0] leading-relaxed">{f.note}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-xs text-emerald-400 flex items-center gap-1.5">
-              <Check className="w-3.5 h-3.5" /> No blocking issues spotted — looks good to ship.
+            <p className="text-xs text-[#34D399] flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5" /> No blocking issues detected.
             </p>
           )}
         </div>
@@ -162,7 +208,10 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
   const { user } = useAuth();
   const { isSupporter } = useSupporter();
   const { generateKit } = useContributionKit();
-  const { remaining, limit, applyServerQuota, markExhausted } = useKitQuota(user?.id, { enabled: !isSupporter });
+  const { remaining, limit, applyServerQuota, markExhausted } = useKitQuota(
+    user?.id,
+    { enabled: !isSupporter }
+  );
 
   const [loading, setLoading] = useState(false);
   const [kit, setKit] = useState(null);
@@ -173,7 +222,9 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
     if (!issue?.url) return;
     const parsed = parseIssueUrl(issue.url);
     if (!parsed) {
-      setError("This doesn't look like a GitHub issue link, so a kit can't be generated for it.");
+      setError(
+        "This does not look like a GitHub issue link, so a kit cannot be generated for it."
+      );
       return;
     }
     setLoading(true);
@@ -190,18 +241,17 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
       setKit(res.kit);
       applyServerQuota(res.quota);
     } catch (e) {
-      if (e.status === 429 || e.code === 'monthly_limit_reached') {
+      if (e.status === 429 || e.code === "monthly_limit_reached") {
         markExhausted(e.limit);
         setLimitReached(true);
       } else {
-        setError(e.message || 'Something went wrong generating your kit.');
+        setError(e.message || "Something went wrong generating your kit.");
       }
     } finally {
       setLoading(false);
     }
   }, [issue, generateKit, applyServerQuota, markExhausted]);
 
-  // Generate as soon as the modal opens for a new issue.
   useEffect(() => {
     if (isOpen && issue) {
       setKit(null);
@@ -212,12 +262,13 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, issue?.url]);
 
-  // Close on Escape.
   useEffect(() => {
     if (!isOpen) return;
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, onClose]);
 
   if (!isOpen) return null;
@@ -225,160 +276,199 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
   return createPortal(
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-start sm:items-center justify-center p-0 sm:p-4 animate-in-fade"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="kit-modal-title"
+      className="fixed inset-0 z-[100] bg-black/75 flex items-start sm:items-center justify-center p-0 sm:p-4 animate-in-fade"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full sm:max-w-2xl bg-[#0B0C10] border border-zinc-800 sm:rounded-2xl shadow-2xl flex flex-col max-h-screen sm:max-h-[90vh] overflow-hidden animate-in-pop"
+        className="w-full sm:max-w-2xl bg-[#0F0F0F] border border-[#2B2E36] sm:rounded-[4px] shadow-2xl flex flex-col max-h-screen sm:max-h-[90vh] overflow-hidden animate-in-pop"
       >
-          {/* Header */}
-          <div className="flex items-start justify-between gap-3 p-5 border-b border-zinc-800/60 bg-zinc-950/40 shrink-0">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="p-2 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 shrink-0">
-                <Wrench className="w-4 h-4" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
-                  Contribution Kit
-                  <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                </h2>
-                <p className="text-[11px] text-zinc-500 truncate max-w-[22rem]">{issue?.title}</p>
-              </div>
+        <div className="flex items-start justify-between gap-3 p-5 border-b border-[#22242A] bg-[#141518] shrink-0">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="p-2 rounded-[4px] bg-[#17181B] border border-[#2B2E36] text-[#DAFA9C] shrink-0">
+              <Wrench className="w-4 h-4" />
             </div>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/5 transition-colors shrink-0"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="min-w-0">
+              <h2
+                id="kit-modal-title"
+                className="text-sm font-semibold text-[#F4F4F0]"
+              >
+                Contribution Kit
+              </h2>
+              <p className="text-xs text-[#8C929C] truncate max-w-[22rem]">
+                {issue?.title}
+              </p>
+            </div>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close Contribution Kit"
+            className="p-1.5 rounded-[4px] text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#1C1E23] transition-colors shrink-0"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
-            {!isSupporter && !limitReached && (
-              <div className="flex items-center justify-between text-[11px] text-zinc-500 font-mono">
-                <span>{remaining} of {limit} free kit{limit === 1 ? '' : 's'} left this month</span>
-                <Link to="/support" className="text-zinc-400 hover:text-white transition-colors">Go unlimited →</Link>
+        <div className="flex-1 overflow-y-auto p-5 space-y-4">
+          {!isSupporter && !limitReached && (
+            <div className="flex items-center justify-between text-xs text-[#8C929C] font-mono tabular-nums">
+              <span>
+                {remaining} of {limit} free kit{limit === 1 ? "" : "s"} left this month
+              </span>
+              <Link
+                to="/support"
+                className="text-[#DAFA9C] hover:text-[#C7F275] transition-colors"
+              >
+                Go unlimited -&gt;
+              </Link>
+            </div>
+          )}
+
+          {loading && (
+            <div className="flex flex-col items-center justify-center py-16 gap-3">
+              <Loader2 className="w-6 h-6 text-[#DAFA9C] animate-spin" />
+              <p className="text-xs font-mono text-[#A8ADB6]">
+                Inspecting repository files and building Contribution Kit...
+              </p>
+            </div>
+          )}
+
+          {limitReached && !loading && (
+            <div className="flex flex-col items-center text-center py-12 gap-4">
+              <div className="p-3 rounded-[4px] border border-[#F59E0B]/30 bg-[#F59E0B]/10 text-[#F59E0B]">
+                <Lock className="w-5 h-5" />
               </div>
-            )}
-
-            {loading && (
-              <div className="flex flex-col items-center justify-center py-16 gap-4">
-                <Loader2 className="w-7 h-7 text-purple-400 animate-spin" />
-                <p className="text-xs text-zinc-400">Reading the repo and building your kit…</p>
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-[#F4F4F0]">
+                  Monthly free kit limit reached
+                </h3>
+                <p className="text-xs text-[#A8ADB6] max-w-sm leading-relaxed">
+                  Free allowances reset on the 1st of each month. Supporters get unlimited kits and pre-submit diff reviews.
+                </p>
               </div>
-            )}
+              <Link
+                to="/support"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] text-xs font-semibold transition-colors"
+              >
+                <Crown className="w-3.5 h-3.5" /> Supporter Plan — $9/mo
+              </Link>
+            </div>
+          )}
 
-            {limitReached && !loading && (
-              <div className="flex flex-col items-center text-center py-12 gap-4">
-                <div className="p-3 rounded-xl border border-amber-900/40 bg-amber-950/20 text-amber-400">
-                  <Lock className="w-6 h-6" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-base font-bold text-white">You're out of free kits this month</h3>
-                  <p className="text-xs text-zinc-400 max-w-sm leading-relaxed">
-                    Your free allowance resets on the 1st. Supporters generate unlimited Contribution Kits and get pre-submit diff reviews.
+          {error && !loading && (
+            <div className="flex flex-col items-center text-center py-12 gap-4">
+              <div className="p-3 rounded-[4px] border border-[#F87171]/30 bg-[#F87171]/10 text-[#F87171]">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <p className="text-xs text-[#A8ADB6] max-w-sm leading-relaxed">
+                {error}
+              </p>
+              <button
+                type="button"
+                onClick={load}
+                className="px-4 py-2 bg-[#141518] border border-[#2B2E36] hover:border-[#3A3E48] text-[#F4F4F0] rounded-[4px] text-xs font-semibold transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {kit && !loading && (
+            <>
+              {kit.summary && (
+                <Section icon={FileText} title="Issue summary">
+                  <p className="text-xs text-[#F4F4F0] leading-relaxed">
+                    {kit.summary}
                   </p>
-                </div>
-                <Link
-                  to="/support"
-                  className="inline-flex items-center gap-1.5 px-4 py-2 bg-white hover:bg-zinc-200 text-black rounded text-xs font-semibold transition-all"
-                >
-                  <Crown className="w-3.5 h-3.5" /> Become a Supporter — $9/mo
-                </Link>
-              </div>
-            )}
+                </Section>
+              )}
 
-            {error && !loading && (
-              <div className="flex flex-col items-center text-center py-12 gap-4">
-                <div className="p-3 rounded-xl border border-red-900/40 bg-red-950/20 text-red-400">
-                  <AlertTriangle className="w-6 h-6" />
-                </div>
-                <p className="text-xs text-zinc-400 max-w-sm leading-relaxed">{error}</p>
-                <button
-                  onClick={load}
-                  className="px-4 py-2 bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 rounded text-xs font-semibold transition-all"
-                >
-                  Try again
-                </button>
-              </div>
-            )}
+              {Array.isArray(kit.setupSteps) && kit.setupSteps.length > 0 && (
+                <Section icon={ListChecks} title="Local setup steps">
+                  <ol className="space-y-2">
+                    {kit.setupSteps.map((step, i) => (
+                      <li
+                        key={i}
+                        className="flex gap-2.5 text-xs text-[#F4F4F0] leading-relaxed"
+                      >
+                        <span className="shrink-0 w-5 h-5 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] text-xs font-mono text-[#DAFA9C] flex items-center justify-center">
+                          {i + 1}
+                        </span>
+                        <span className="font-mono break-all">{step}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </Section>
+              )}
 
-            {kit && !loading && (
-              <>
-                {kit.summary && (
-                  <Section icon={FileText} title="What this issue wants">
-                    <p className="text-xs text-zinc-300 leading-relaxed">{kit.summary}</p>
-                  </Section>
-                )}
-
-                {Array.isArray(kit.setupSteps) && kit.setupSteps.length > 0 && (
-                  <Section icon={ListChecks} title="Setup steps">
-                    <ol className="space-y-2">
-                      {kit.setupSteps.map((step, i) => (
-                        <li key={i} className="flex gap-2.5 text-xs text-zinc-300 leading-relaxed">
-                          <span className="flex-shrink-0 w-4 h-4 rounded bg-zinc-900 border border-zinc-800 text-[9px] font-bold text-zinc-400 flex items-center justify-center mt-0.5">{i + 1}</span>
-                          <span className="font-mono">{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </Section>
-                )}
-
-                {Array.isArray(kit.filesToTouch) && kit.filesToTouch.length > 0 && (
-                  <Section icon={FileCode2} title="Files you'll likely touch">
+              {Array.isArray(kit.filesToTouch) &&
+                kit.filesToTouch.length > 0 && (
+                  <Section icon={FileCode2} title="Candidate files">
                     <ul className="space-y-2.5">
                       {kit.filesToTouch.map((f, i) => (
                         <li key={i} className="text-xs">
-                          <code className="px-1.5 py-0.5 bg-zinc-900 border border-zinc-800 rounded text-[11px] text-purple-300 font-mono">{f.path}</code>
-                          <p className="text-zinc-400 mt-1 leading-relaxed">{f.reason}</p>
+                          <code className="px-2 py-0.5 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-xs text-[#DAFA9C] font-mono">
+                            {f.path}
+                          </code>
+                          <p className="text-[#A8ADB6] mt-1 leading-relaxed">
+                            {f.reason}
+                          </p>
                         </li>
                       ))}
                     </ul>
                   </Section>
                 )}
 
-                {kit.claimComment && (
-                  <Section
-                    icon={MessageSquarePlus}
-                    title="Claim comment"
-                    action={<CopyButton text={kit.claimComment} />}
-                  >
-                    <p className="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap">{kit.claimComment}</p>
-                  </Section>
-                )}
+              {kit.claimComment && (
+                <Section
+                  icon={MessageSquarePlus}
+                  title="Claim comment"
+                  action={<CopyButton text={kit.claimComment} />}
+                >
+                  <p className="text-xs text-[#F4F4F0] leading-relaxed whitespace-pre-wrap">
+                    {kit.claimComment}
+                  </p>
+                </Section>
+              )}
 
-                {kit.prDescription && (
-                  <Section
-                    icon={FileText}
-                    title="PR description template"
-                    action={<CopyButton text={kit.prDescription} />}
-                  >
-                    <pre className="text-[11px] text-zinc-300 leading-relaxed whitespace-pre-wrap font-mono">{kit.prDescription}</pre>
-                  </Section>
-                )}
+              {kit.prDescription && (
+                <Section
+                  icon={FileText}
+                  title="PR description template"
+                  action={<CopyButton text={kit.prDescription} />}
+                >
+                  <pre className="text-xs text-[#F4F4F0] bg-[#0B0C0E] border border-[#22242A] p-3 rounded-[4px] leading-relaxed whitespace-pre-wrap font-mono">
+                    {kit.prDescription}
+                  </pre>
+                </Section>
+              )}
 
-                {Array.isArray(kit.gotchas) && kit.gotchas.length > 0 && (
-                  <Section icon={AlertTriangle} title="Gotchas in this repo">
-                    <ul className="space-y-2">
-                      {kit.gotchas.map((g, i) => (
-                        <li key={i} className="flex items-start gap-2 text-xs text-zinc-300 leading-relaxed">
-                          <AlertTriangle className="w-3.5 h-3.5 text-amber-400 mt-0.5 flex-shrink-0" />
-                          {g}
-                        </li>
-                      ))}
-                    </ul>
-                  </Section>
-                )}
+              {Array.isArray(kit.gotchas) && kit.gotchas.length > 0 && (
+                <Section icon={AlertTriangle} title="Repo gotchas">
+                  <ul className="space-y-2">
+                    {kit.gotchas.map((g, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-2 text-xs text-[#F4F4F0] leading-relaxed"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5 text-[#F59E0B] mt-0.5 shrink-0" />
+                        <span>{g}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </Section>
+              )}
 
-                {/* Pre-submit review is available once the kit is ready. */}
-                <PreSubmitReview issue={issue} />
-              </>
-            )}
-          </div>
+              <PreSubmitReview issue={issue} />
+            </>
+          )}
+        </div>
       </div>
     </div>,
-    document.body,
+    document.body
   );
 };
 

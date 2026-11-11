@@ -1,86 +1,70 @@
 import React, { useState } from "react";
-import { GraduationCap, Building2, Sparkles } from "lucide-react";
 
-// Top Leading Companies
 const COMPANIES = [
   {
     name: "GitHub",
     type: "Company",
     logo: "https://cdn.simpleicons.org/github/white",
-    fallbackColor: "from-zinc-700 to-zinc-900",
   },
   {
     name: "Google",
     type: "Company",
     logo: "/logos/google.svg",
-    fallbackColor: "from-blue-600 to-red-600",
   },
   {
     name: "Microsoft",
     type: "Company",
     logo: "/logos/microsoft.svg",
-    fallbackColor: "from-blue-500 to-amber-500",
   },
   {
     name: "Meta",
     type: "Company",
     logo: "/logos/meta.svg",
-    fallbackColor: "from-blue-600 to-indigo-700",
   },
   {
     name: "Amazon",
     type: "Company",
     logo: "/logos/amazon.svg",
-    fallbackColor: "from-amber-600 to-zinc-900",
   },
   {
     name: "Vercel",
     type: "Company",
     logo: "https://cdn.simpleicons.org/vercel/white",
-    fallbackColor: "from-zinc-200 to-zinc-800",
   },
   {
     name: "Supabase",
     type: "Company",
     logo: "https://cdn.simpleicons.org/supabase",
-    fallbackColor: "from-emerald-500 to-emerald-800",
   },
   {
     name: "Stripe",
     type: "Company",
     logo: "https://cdn.simpleicons.org/stripe/white",
-    fallbackColor: "from-indigo-600 to-purple-800",
   },
   {
     name: "Linear",
     type: "Company",
     logo: "https://cdn.simpleicons.org/linear/white",
-    fallbackColor: "from-indigo-500 to-zinc-900",
   },
   {
     name: "Docker",
     type: "Company",
     logo: "https://cdn.simpleicons.org/docker/2496ED",
-    fallbackColor: "from-sky-500 to-blue-700",
   },
   {
     name: "Postman",
     type: "Company",
     logo: "https://cdn.simpleicons.org/postman/FF6C37",
-    fallbackColor: "from-orange-500 to-orange-700",
   },
   {
     name: "Netflix",
     type: "Company",
     logo: "https://cdn.simpleicons.org/netflix/E50914",
-    fallbackColor: "from-red-600 to-zinc-950",
   },
 ];
 
-// Top Renowned Universities & Engineering Institutions
-// Logos fetched via Google's S2 Favicon API from each university's official domain —
-// CDN-backed, reliable, and always returns the official icon.
-const universityLogo = (domain) => `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+const universityLogo = (domain) =>
+  `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 
 const UNIVERSITIES = [
   {
@@ -169,35 +153,34 @@ const UNIVERSITIES = [
   },
 ];
 
-const LogoCard = ({ item, isUniversity = false }) => {
+const LogoCard = ({ item }) => {
   const [imageError, setImageError] = useState(false);
 
   return (
-    <div className="group relative flex items-center gap-3 px-4 py-2.5 mx-2 bg-white/[0.02] hover:bg-white/[0.06] border border-zinc-800/80 hover:border-zinc-700/90 rounded-xl transition-all duration-300 select-none shadow-sm flex-shrink-0 cursor-default">
-      {/* Logo container with fallback */}
-      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-zinc-900/90 border border-zinc-800 flex items-center justify-center p-1 flex-shrink-0 group-hover:scale-105 transition-transform overflow-hidden">
+    <div className="flex items-center gap-3 px-4 py-2.5 mr-3 bg-[#141518] border border-[#22242A] hover:border-[#3A3E48] rounded-[4px] transition-colors select-none shrink-0">
+      <div className="w-6 h-6 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] flex items-center justify-center p-1 shrink-0 overflow-hidden">
         {!imageError ? (
           <img
             src={item.logo}
             alt={`${item.name} logo`}
-            loading="lazy"
+            loading="eager"
+            decoding="async"
             onError={() => setImageError(true)}
-            className="w-full h-full object-contain filter group-hover:brightness-110 transition-all"
+            className="w-full h-full object-contain"
           />
         ) : (
-          <div className="text-[10px] font-mono font-bold text-zinc-300">
+          <span className="text-xs font-mono font-semibold text-[#A8ADB6]">
             {item.fallbackInitials || item.name.slice(0, 2).toUpperCase()}
-          </div>
+          </span>
         )}
       </div>
 
-      {/* Title & Subtitle */}
       <div className="flex flex-col text-left">
-        <span className="text-xs font-semibold text-zinc-200 group-hover:text-white transition-colors tracking-tight whitespace-nowrap">
+        <span className="text-xs font-semibold text-[#F4F4F0] tracking-tight whitespace-nowrap">
           {item.name}
         </span>
         {item.subtitle && (
-          <span className="text-[9px] text-zinc-500 font-mono line-clamp-1">
+          <span className="text-xs text-[#8C929C] font-mono whitespace-nowrap">
             {item.subtitle}
           </span>
         )}
@@ -208,34 +191,36 @@ const LogoCard = ({ item, isUniversity = false }) => {
 
 const TrustedByMarquee = () => {
   return (
-    <div className="mb-20 overflow-hidden relative">
-      {/* Header Label */}
-      <div className="text-center mb-6">
-        <p className="text-[9px] sm:text-[10px] font-bold text-zinc-500 tracking-[0.25em] uppercase flex items-center justify-center gap-2">
-          <span>TRUSTED BY DEVELOPERS &amp; STUDENTS FROM</span>
+    <section
+      aria-label="Organizations and universities represented by contributors"
+      className="py-10 border-y border-[#22242A] bg-[#0F0F0F] overflow-hidden"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-5">
+        <p className="text-xs font-mono font-medium text-[#8C929C] tracking-wider uppercase text-center">
+          Used by students and contributors across
         </p>
       </div>
 
-      {/* Marquee Track 1: Tech Companies (Slides Left) */}
-      <div className="relative w-full overflow-hidden marquee-mask py-2">
+      <div className="relative w-full overflow-hidden marquee-mask py-1">
         <div className="animate-marquee-left pause-hover">
-          {/* Double array to create seamless loop */}
-          {[...COMPANIES, ...COMPANIES].map((company, index) => (
-            <LogoCard key={`comp-${index}`} item={company} />
+          {[...COMPANIES, ...COMPANIES].map((company, idx) => (
+            <div key={`comp-${idx}`} aria-hidden={idx >= COMPANIES.length}>
+              <LogoCard item={company} />
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Marquee Track 2: Universities & IITs/NITs (Slides Right) */}
-      <div className="relative w-full overflow-hidden marquee-mask py-2 mt-1">
+      <div className="relative w-full overflow-hidden marquee-mask py-1 mt-2">
         <div className="animate-marquee-right pause-hover">
-          {/* Double array to create seamless loop */}
-          {[...UNIVERSITIES, ...UNIVERSITIES].map((uni, index) => (
-            <LogoCard key={`uni-${index}`} item={uni} isUniversity={true} />
+          {[...UNIVERSITIES, ...UNIVERSITIES].map((uni, idx) => (
+            <div key={`uni-${idx}`} aria-hidden={idx >= UNIVERSITIES.length}>
+              <LogoCard item={uni} />
+            </div>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
