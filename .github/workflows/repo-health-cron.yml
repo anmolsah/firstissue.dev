@@ -1,0 +1,19 @@
+name: Scheduled Repository Health Sync
+
+on:
+  schedule:
+    # Run daily at 03:00 UTC to keep repo maintainer health metrics fresh
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  sync-repo-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invoke sync-repo-health Edge Function
+        run: |
+          curl --fail-with-body -sS -X POST "${{ secrets.VITE_SUPABASE_URL }}/functions/v1/sync-repo-health" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -d '{"limit": 80}'
+

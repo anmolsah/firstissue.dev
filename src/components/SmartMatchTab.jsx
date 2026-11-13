@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { withUTM } from "../utils/utm";
 import { trackIssueClick } from "../utils/analytics";
+import { formatCompactNumber } from "../utils/issueQualityFilter";
 
 const LABEL_OPTIONS = [
   { id: "good first issue", label: "Good First Issue" },
@@ -175,7 +176,8 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
     isCached,
     limited,
     totalAvailable,
-  } = useSmartMatch(username, token, { userId, preferredLabels });
+    fallbackUsed,
+  } = useSmartMatch(username, token, { userId, preferredLabels, isSupporter });
 
   const { isRateLimited, remainingCooldown, checkRateLimit, recordAttempt } = useRateLimiter({
     maxAttempts: 2,
@@ -322,26 +324,32 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
                   Detected Stack Profile
                 </h3>
                 <div className="flex flex-wrap gap-1.5 mt-1.5">
-                  {userProfile.techStack && userProfile.techStack.length > 0
-                    ? userProfile.techStack.map((tech) => (
-                        <span
-                          key={tech}
-                          className="text-xs font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#A8ADB6] border border-[#22242A]"
-                        >
-                          {tech}
-                        </span>
-                      ))
-                    : userProfile.topLanguages.map((lang) => (
-                        <span
-                          key={lang.language}
-                          className="text-xs font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#A8ADB6] border border-[#22242A]"
-                        >
-                          {lang.language}
-                        </span>
-                      ))}
+                  {Array.from(
+                    new Set([
+                      ...(userProfile.techStack || []),
+                      ...(userProfile.detectedFrameworks || []),
+                      ...(userProfile.techStack?.length || userProfile.detectedFrameworks?.length
+                        ? []
+                        : (userProfile.topLanguages || []).map((lang) => lang.language)),
+                    ])
+                  )
+                    .slice(0, 10)
+                    .map((tech) => (
+                      <span
+                        key={tech}
+                        className="text-xs font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#A8ADB6] border border-[#22242A]"
+                      >
+                        {tech}
+                      </span>
+                    ))}
                   <span className="text-xs font-mono px-2 py-0.5 rounded-[4px] bg-[#17181B] text-[#DAFA9C] border border-[#2B2E36]">
                     {userProfile.experienceLevel}
                   </span>
+                  {typeof userProfile.externalPRCount === "number" && userProfile.externalPRCount > 0 && (
+                    <span className="text-xs font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#34D399] border border-[#34D399]/30 tabular-nums">
+                      {userProfile.externalPRCount} external PRs
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -382,6 +390,12 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
             </div>
             <LabelPreferences selectedLabels={preferredLabels} onToggle={handleLabelToggle} />
           </div>
+        </div>
+      )}
+
+      {fallbackUsed && matches && matches.length > 0 && (
+        <div className="mb-4 px-3.5 py-2.5 rounded-[4px] bg-[#141518] border border-[#F59E0B]/30 text-xs text-[#A8ADB6] font-mono">
+          AI explanation service timed out — showing deterministic ranking scored by stack fit, repo health, clarity, and claim risk.
         </div>
       )}
 
@@ -465,6 +479,7 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   };
 
   const freshness = getFreshness();
+  const starDisplay = formatCompactNumber(issue.repo_stars);
 
   return (
     <div className="group flex flex-col h-full bg-[#141518] border border-[#2B2E36] hover:border-[#3A3E48] rounded-[4px] p-5 transition-colors">
@@ -507,12 +522,10 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
           />
         </div>
         <span className="text-[#A8ADB6] truncate">{issue.repo}</span>
-        {issue.repo_stars != null && (
+        {starDisplay !== null && (
           <span className="flex items-center gap-1 ml-auto tabular-nums">
-            <Star className="w-3 h-3" />
-            {issue.repo_stars >= 1000
-              ? `${(issue.repo_stars / 1000).toFixed(1)}k`
-              : issue.repo_stars}
+            <Star className="w-3 h-3 text-[#DAFA9C]" />
+            {starDisplay}
           </span>
         )}
         {freshness && (
@@ -541,10 +554,29 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
         </a>
       </h3>
 
+      {issue.repo_health?.health_summary && (
+        <div
+          title={`Repo Health Score: ${issue.repo_health.health_score ?? "—"}/100`}
+          className="mb-3 px-2.5 py-1.5 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] flex items-center gap-2 text-xs font-mono text-[#A8ADB6] truncate"
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+              issue.repo_health.health_tier === "healthy"
+                ? "bg-[#34D399]"
+                : issue.repo_health.health_tier === "moderate"
+                  ? "bg-[#F59E0B]"
+                  : "bg-[#8C929C]"
+            }`}
+            aria-hidden="true"
+          />
+          <span className="truncate">{issue.repo_health.health_summary}</span>
+        </div>
+      )}
+
       {issue.matchReason && (
         <div className="mb-5 p-3.5 rounded-[4px] bg-[#0B0C0E] border border-[#22242A]">
-          <div className="text-[11px] font-mono text-[#DAFA9C] uppercase tracking-wider mb-1">
-            Why this matches your repos
+          <div className="text-xs font-mono text-[#DAFA9C] uppercase tracking-wider mb-1">
+            {issue.isAIRanked ? "Why this matches your repos" : "Profile & repo match"}
           </div>
           <p className="text-xs text-[#A8ADB6] leading-relaxed">{issue.matchReason}</p>
         </div>
@@ -552,10 +584,15 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
 
       <div className="flex items-center justify-between mt-auto pt-3.5 border-t border-[#22242A] gap-2">
         <div className="flex flex-wrap gap-1.5">
-          {issue.labels?.slice(0, 2).map((label, i) => (
+          {issue.taskType && (
+            <span className="text-xs font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#F4F4F0] border border-[#2B2E36]">
+              {issue.taskType}
+            </span>
+          )}
+          {issue.labels?.slice(0, issue.taskType ? 1 : 2).map((label, i) => (
             <span
               key={i}
-              className="text-[11px] font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#A8ADB6] border border-[#22242A]"
+              className="text-xs font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#A8ADB6] border border-[#22242A]"
             >
               {label}
             </span>

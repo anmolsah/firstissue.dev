@@ -60,3 +60,6 @@ verify_jwt = true
 
 [functions.github-sync]
 verify_jwt = true
+
+[functions.sync-repo-health]
+verify_jwt = true

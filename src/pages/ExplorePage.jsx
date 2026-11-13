@@ -7,7 +7,14 @@ import SmartMatchTab from "../components/SmartMatchTab";
 import AppSidebar from "../components/AppSidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
 import ContributionKitModal from "../components/ContributionKitModal";
-import { buildExcludedLabelsQuery, filterStaleIssues } from "../utils/issueQualityFilter";
+import {
+  buildGitHubIssueSearchQuery,
+  filterStaleIssues,
+  scoreIssueReadiness,
+  enrichAndSortIssues,
+  formatCompactNumber,
+} from "../utils/issueQualityFilter";
+import { getCache, setCache } from "../utils/cache";
 import {
   Search,
   Bookmark,
@@ -25,6 +32,9 @@ import {
   RefreshCw,
   SlidersHorizontal,
   X,
+  MessageSquare,
+  Sparkles,
+  Activity,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { withUTM } from "../utils/utm";
@@ -139,6 +149,9 @@ const ExplorePage = () => {
 
   useEffect(() => {
     if (user) fetchBookmarkedIssues();
+    if (selectedTab === "trusted" || selectedTab === "startups" || selectedTab === "smart") {
+      return;
+    }
 
     const timer = setTimeout(() => {
       resetAndFetch();
@@ -211,60 +224,287 @@ const ExplorePage = () => {
     });
   };
 
+  const getClientGithubHeaders = () => ({
+    Accept: "application/vnd.github.v3+json",
+    "User-Agent": "OpenSourceBuddy/1.0",
+    ...(import.meta.env.VITE_GITHUB_TOKEN && {
+      Authorization: `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
+    }),
+  });
+
+  const enrichClientIssuesWithRepoMeta = async (rawItems, minStarsInt) => {
+    const trustedStarMap = new Map(
+      (trustedRepos || []).map((repo) => [
+        repo.full_name || `${repo.owner}/${repo.name}`,
+        repo.stars,
+      ])
+    );
+
+    const repoNames = Array.from(
+      new Set(
+        rawItems
+          .map((item) => item.repository_url?.split("/").slice(-2).join("/"))
+          .filter(Boolean)
+      )
+    );
+
+    const metaMap = new Map();
+    const healthMap = new Map();
+    const uncached = [];
+
+    // Best-effort lookup from persisted Supabase repo_health table
+    if (repoNames.length > 0) {
+      try {
+        const { data: healthRows, error: healthErr } = await supabase
+          .from("repo_health")
+          .select("*")
+          .in("repo_full_name", repoNames);
+        if (!healthErr && Array.isArray(healthRows)) {
+          for (const row of healthRows) {
+            healthMap.set(row.repo_full_name, row);
+            metaMap.set(row.repo_full_name, {
+              stars: Number(row.stars ?? 0),
+              pushed_at: row.last_pushed_at ?? null,
+              archived: Boolean(row.is_archived),
+            });
+          }
+        }
+      } catch {
+        // Table may not be migrated yet; continue silently
+      }
+    }
+
+    for (const repoName of repoNames) {
+      if (metaMap.has(repoName)) continue;
+      const cached = getCache(`repo_meta_v1_${repoName}`);
+      if (cached && typeof cached.stars === "number") {
+        metaMap.set(repoName, cached);
+        continue;
+      }
+      if (trustedStarMap.has(repoName) && typeof trustedStarMap.get(repoName) === "number") {
+        const meta = { stars: trustedStarMap.get(repoName), pushed_at: null, archived: false };
+        metaMap.set(repoName, meta);
+        continue;
+      }
+      uncached.push(repoName);
+    }
+
+    const clientToken = import.meta.env.VITE_GITHUB_TOKEN;
+    if (uncached.length > 0 && clientToken) {
+      const chunk = uncached.slice(0, 30);
+      const fields = chunk
+        .map((fullName, idx) => {
+          const [owner, name] = fullName.split("/");
+          if (!/^[a-zA-Z0-9._-]+$/.test(owner) || !/^[a-zA-Z0-9._-]+$/.test(name)) return "";
+          return `r${idx}: repository(owner: "${owner}", name: "${name}") { stargazerCount pushedAt isArchived }`;
+        })
+        .filter(Boolean)
+        .join("\n");
+
+      if (fields) {
+        try {
+          const gqlRes = await fetch("https://api.github.com/graphql", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${clientToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ query: `query {\n${fields}\n}` }),
+          });
+          if (gqlRes.ok) {
+            const payload = await gqlRes.json();
+            const data = payload?.data || {};
+            chunk.forEach((fullName, idx) => {
+              const node = data[`r${idx}`];
+              if (!node) return;
+              const meta = {
+                stars: Number(node.stargazerCount ?? 0),
+                pushed_at: node.pushedAt ?? null,
+                archived: Boolean(node.isArchived),
+              };
+              metaMap.set(fullName, meta);
+              setCache(`repo_meta_v1_${fullName}`, meta, 6 * 60 * 60 * 1000);
+            });
+          }
+        } catch (err) {
+          console.warn("GraphQL repo metadata fallback skipped:", err);
+        }
+      }
+    } else if (uncached.length > 0 && minStarsInt > 0) {
+      // Only perform lightweight REST repo lookups when filtering by stars without a client token.
+      await Promise.all(
+        uncached.slice(0, 12).map(async (fullName) => {
+          try {
+            const res = await fetch(`https://api.github.com/repos/${fullName}`, {
+              headers: getClientGithubHeaders(),
+            });
+            if (!res.ok) return;
+            const repo = await res.json();
+            const meta = {
+              stars: Number(repo.stargazers_count ?? 0),
+              pushed_at: repo.pushed_at ?? null,
+              archived: Boolean(repo.archived),
+            };
+            metaMap.set(fullName, meta);
+            setCache(`repo_meta_v1_${fullName}`, meta, 6 * 60 * 60 * 1000);
+          } catch {
+            // Keep graceful fallback when GitHub unauthenticated limit is tight
+          }
+        })
+      );
+    }
+
+    return rawItems.map((item) => {
+      const repoName = item.repository_url?.split("/").slice(-2).join("/") || "";
+      const meta = metaMap.get(repoName);
+      const health = healthMap.get(repoName) || null;
+      if (!meta && !health) return item;
+      return {
+        ...item,
+        repo_stars: meta?.stars ?? item.repo_stars ?? null,
+        repo_pushed_at: meta?.pushed_at ?? item.repo_pushed_at ?? null,
+        repo_archived: meta?.archived ?? item.repo_archived ?? false,
+        repo_health: health || item.repo_health || null,
+      };
+    });
+  };
+
+  const findClientReposByStars = async (minStarsInt) => {
+    const cacheKey = `explore_repos_${filters.language || "all"}_${minStarsInt}`;
+    const cached = getCache(cacheKey);
+    if (Array.isArray(cached) && cached.length > 0) return cached;
+
+    const cleanLang = (filters.language || "").trim();
+    const langPart = cleanLang
+      ? /\s/.test(cleanLang)
+        ? `language:"${cleanLang}"`
+        : `language:${cleanLang}`
+      : "";
+
+    for (const extra of ["good-first-issues:>0", ""]) {
+      const repoQuery = `stars:>=${minStarsInt} archived:false is:public ${langPart} ${extra}`
+        .replace(/\s+/g, " ")
+        .trim();
+      try {
+        const res = await fetch(
+          `https://api.github.com/search/repositories?q=${encodeURIComponent(repoQuery)}&sort=stars&order=desc&per_page=15`,
+          { headers: getClientGithubHeaders() }
+        );
+        if (!res.ok) continue;
+        const data = await res.json();
+        const repos = (data.items || []).map((repo) => repo.full_name).filter(Boolean);
+        if (repos.length > 0) {
+          setCache(cacheKey, repos, 10 * 60 * 1000);
+          return repos;
+        }
+      } catch {
+        // Ignore transient repo lookup failure and fall back to unrestricted issue search
+      }
+    }
+
+    return [];
+  };
+
   const fetchIssues = async (page = 1, reset = false) => {
     if (page === 1) setLoading(true);
     else setLoadingMore(true);
+
+    const minStarsInt = Math.max(0, parseInt(filters.minStars, 10) || 0);
+    const isTrending = selectedTab === "trending";
+
     try {
-      const query = buildQuery();
-      const response = await fetch(
-        `https://api.github.com/search/issues?q=${encodeURIComponent(
-          query
-        )}&sort=${filters.sort}&order=desc&per_page=30&page=${page}`,
-        {
-          headers: {
-            Accept: "application/vnd.github.v3+json",
-            "User-Agent": "OpenSourceBuddy/1.0",
-            ...(import.meta.env.VITE_GITHUB_TOKEN && {
-              Authorization: `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
-            }),
+      let rawItems = [];
+      let rawCount = 0;
+      let rawTotalCount = 0;
+      let loadedViaEdge = false;
+
+      // 1. Try Supabase Edge Function (`exploreSearch`) for server-token GraphQL stars + Redis caching
+      try {
+        const { data: edgeData, error: edgeError } = await supabase.functions.invoke("github-data", {
+          body: {
+            action: "exploreSearch",
+            labels: filters.labels,
+            language: filters.language,
+            keywords: filters.keywords,
+            sort: filters.sort,
+            minStars: minStarsInt,
+            trending: isTrending,
+            page,
           },
+        });
+        if (!edgeError && edgeData && Array.isArray(edgeData.items)) {
+          rawItems = edgeData.items;
+          rawCount = Number(edgeData.raw_count ?? edgeData.items.length);
+          rawTotalCount = Number(edgeData.total_count ?? edgeData.items.length);
+          loadedViaEdge = true;
         }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-        const filteredIssues = filterStaleIssues(data.items || []);
-
-        if (reset) setIssues(filteredIssues);
-        else setIssues((prev) => [...prev, ...filteredIssues]);
-
-        setTotalCount(data.total_count);
-        setHasMore(filteredIssues.length === 30 && page * 30 < data.total_count);
-        setCurrentPage(page);
+      } catch {
+        // Fallback smoothly to direct GitHub Search API when Edge Function is unavailable
       }
+
+      // 2. Direct GitHub Search API fallback
+      if (!loadedViaEdge) {
+        let extraRepoQualifiers = [];
+        if (minStarsInt > 0 && !filters.keywords.trim()) {
+          extraRepoQualifiers = await findClientReposByStars(minStarsInt);
+        }
+
+        const query = buildGitHubIssueSearchQuery({
+          labels: filters.labels,
+          language: extraRepoQualifiers.length === 0 ? filters.language : "",
+          keywords: filters.keywords,
+          trending: isTrending,
+          trendingDays: 30,
+          extraRepoQualifiers,
+        });
+
+        const githubSort = isTrending
+          ? "interactions"
+          : filters.sort === "created"
+            ? "created"
+            : "updated";
+
+        const response = await fetch(
+          `https://api.github.com/search/issues?q=${encodeURIComponent(
+            query
+          )}&sort=${githubSort}&order=desc&per_page=30&page=${page}`,
+          { headers: getClientGithubHeaders() }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          const fetchedItems = data.items || [];
+          rawCount = fetchedItems.length;
+          rawTotalCount = Number(data.total_count ?? fetchedItems.length);
+          rawItems = await enrichClientIssuesWithRepoMeta(fetchedItems, minStarsInt);
+        }
+      }
+
+      const filteredIssues = filterStaleIssues(rawItems, { minStars: minStarsInt });
+      const preparedIssues = enrichAndSortIssues(filteredIssues, filters.sort);
+
+      if (reset) {
+        setIssues(preparedIssues);
+      } else {
+        setIssues((prev) => {
+          const seenIds = new Set(prev.map((item) => item.id));
+          const merged = [...prev, ...preparedIssues.filter((item) => !seenIds.has(item.id))];
+          return filters.sort === "best" || filters.sort === "health"
+            ? enrichAndSortIssues(merged, filters.sort)
+            : merged;
+        });
+      }
+
+      const cappedTotal = Math.min(rawTotalCount, 1000);
+      setTotalCount(cappedTotal);
+      setHasMore(rawCount === 30 && page * 30 < cappedTotal);
+      setCurrentPage(page);
     } catch (error) {
       console.error("Error fetching issues:", error);
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  };
-
-  const buildQuery = () => {
-    let query = `state:open type:issue is:public no:assignee ${buildExcludedLabelsQuery()}`;
-
-    if (filters.labels.length > 0) {
-      filters.labels.forEach((label) => (query += ` label:"${label}"`));
-    }
-    if (filters.language) query += ` language:${filters.language}`;
-    if (filters.keywords) query += ` ${filters.keywords}`;
-
-    const minStarsInt = parseInt(filters.minStars, 10);
-    if (minStarsInt > 0) {
-      query += ` stars:>=${minStarsInt}`;
-    }
-
-    return query;
   };
 
   const loadMore = () => {
@@ -610,7 +850,13 @@ const ExplorePage = () => {
                     className="flex items-center gap-2 px-3 py-2 bg-[#141518] border border-[#2B2E36] rounded-[4px] text-xs font-medium text-[#F4F4F0] hover:border-[#3A3E48] transition-colors cursor-pointer"
                   >
                     <span>
-                      {filters.sort === "updated" ? "Recently Updated" : "Recently Created"}
+                      {filters.sort === "best"
+                        ? "Best Readiness"
+                        : filters.sort === "health"
+                          ? "Repo Health"
+                          : filters.sort === "created"
+                            ? "Recently Created"
+                            : "Recently Updated"}
                     </span>
                     <ChevronDown
                       className={`w-3.5 h-3.5 text-[#8C929C] transition-transform ${
@@ -620,7 +866,37 @@ const ExplorePage = () => {
                   </button>
 
                   {sortDropdownOpen && (
-                    <div className="absolute right-0 mt-1.5 w-44 bg-[#17181B] border border-[#2B2E36] rounded-[4px] shadow-xl z-40 p-1 space-y-0.5">
+                    <div className="absolute right-0 mt-1.5 w-48 bg-[#17181B] border border-[#2B2E36] rounded-[4px] shadow-xl z-40 p-1 space-y-0.5">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFilters((prev) => ({ ...prev, sort: "best" }));
+                          setSortDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-1.5 rounded-[4px] text-xs transition-colors cursor-pointer flex items-center justify-between ${
+                          filters.sort === "best"
+                            ? "bg-[#1C1E23] text-[#DAFA9C] font-medium"
+                            : "text-[#A8ADB6] hover:bg-[#1C1E23] hover:text-[#F4F4F0]"
+                        }`}
+                      >
+                        <span>Best Readiness</span>
+                        <Sparkles className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setFilters((prev) => ({ ...prev, sort: "health" }));
+                          setSortDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-3 py-1.5 rounded-[4px] text-xs transition-colors cursor-pointer flex items-center justify-between ${
+                          filters.sort === "health"
+                            ? "bg-[#1C1E23] text-[#DAFA9C] font-medium"
+                            : "text-[#A8ADB6] hover:bg-[#1C1E23] hover:text-[#F4F4F0]"
+                        }`}
+                      >
+                        <span>Repo Health</span>
+                        <Activity className="w-3 h-3" />
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -902,6 +1178,18 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   const repoName = issue.repository_url.split("/").slice(-2).join("/");
   const timeAgo = formatTimeAgo(issue.created_at);
   const [kitOpen, setKitOpen] = useState(false);
+  const readiness = issue._readiness || scoreIssueReadiness(issue);
+  const starLabel = formatCompactNumber(issue.repo_stars);
+  const commentsCount = Number(issue.comments ?? 0);
+
+  const readinessToneClass =
+    readiness.tier === "strong"
+      ? "bg-[#DAFA9C]/10 text-[#DAFA9C] border-[#DAFA9C]/35"
+      : readiness.tier === "good"
+        ? "bg-[#34D399]/10 text-[#34D399] border-[#34D399]/30"
+        : "bg-[#0B0C0E] text-[#A8ADB6] border-[#22242A]";
+
+  const signalChips = readiness.signals.slice(0, 2);
 
   return (
     <div className="bg-[#141518] border border-[#2B2E36] hover:border-[#3A3E48] rounded-[4px] p-5 transition-colors group flex flex-col h-full">
@@ -927,15 +1215,29 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
             >
               {repoName}
             </a>
-            <div className="flex items-center gap-1 text-[11px] text-[#8C929C] font-mono mt-0.5 tabular-nums">
-              <Star className="w-3 h-3 text-[#8C929C]" />
-              <span>{issue.score ? Math.floor(issue.score) : "—"}</span>
+            <div className="flex items-center gap-2.5 text-xs text-[#8C929C] font-mono mt-0.5 tabular-nums">
+              {starLabel !== null && (
+                <span className="inline-flex items-center gap-1" title={`${issue.repo_stars} GitHub stars`}>
+                  <Star className="w-3 h-3 text-[#DAFA9C]" />
+                  <span>{starLabel}</span>
+                </span>
+              )}
+              <span className="inline-flex items-center gap-1" title={`${commentsCount} comments on issue`}>
+                <MessageSquare className="w-3 h-3 text-[#8C929C]" />
+                <span>{starLabel === null ? `${commentsCount} replies` : commentsCount}</span>
+              </span>
             </div>
           </div>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-[11px] text-[#8C929C] font-mono tabular-nums">{timeAgo}</span>
+          <span
+            title={readiness.reasons.join(" · ") || "Rule-based issue readiness score"}
+            className={`text-xs font-mono px-2 py-0.5 rounded-[4px] border tabular-nums select-none ${readinessToneClass}`}
+          >
+            Fit {readiness.score}
+          </span>
+          <span className="text-xs text-[#8C929C] font-mono tabular-nums">{timeAgo}</span>
           <button
             type="button"
             aria-label={isBookmarked ? "Remove bookmark" : "Bookmark issue"}
@@ -976,15 +1278,41 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
         </a>
       </h3>
 
-      <p className="text-xs text-[#A8ADB6] leading-relaxed mb-5 line-clamp-3 flex-1">
-        {issue.body ? issue.body.substring(0, 150) + "..." : "No description provided."}
+      <p className="text-xs text-[#A8ADB6] leading-relaxed mb-4 line-clamp-3 flex-1">
+        {readiness.summary || "No concise description provided — inspect the GitHub thread for context."}
       </p>
+
+      {issue.repo_health?.health_summary && (
+        <div
+          title={`Repo Health Score: ${issue.repo_health.health_score ?? "—"}/100`}
+          className="mb-4 px-2.5 py-1.5 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] flex items-center gap-2 text-xs font-mono text-[#A8ADB6] truncate"
+        >
+          <span
+            className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+              issue.repo_health.health_tier === "healthy"
+                ? "bg-[#34D399]"
+                : issue.repo_health.health_tier === "moderate"
+                  ? "bg-[#F59E0B]"
+                  : "bg-[#8C929C]"
+            }`}
+            aria-hidden="true"
+          />
+          <span className="truncate">{issue.repo_health.health_summary}</span>
+        </div>
+      )}
 
       <div className="flex items-center justify-between mt-auto pt-3.5 border-t border-[#22242A] gap-2">
         <div className="flex flex-wrap gap-1.5 min-w-0">
-          {issue.labels.slice(0, 2).map((label) => (
-            <Badge key={label.id} label={label.name} color={label.color} />
+          {readiness.taskType && (
+            <Badge label={readiness.taskType} tone="neutral" />
+          )}
+          {signalChips.map((signal) => (
+            <Badge key={signal.key} label={signal.label} tone={signal.tone} />
           ))}
+          {!readiness.taskType && signalChips.length === 0 &&
+            issue.labels.slice(0, 2).map((label) => (
+              <Badge key={label.id} label={label.name} tone="neutral" />
+            ))}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <button
@@ -1025,10 +1353,17 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   );
 };
 
-const Badge = ({ label }) => {
-  const display = label.length > 18 ? label.substring(0, 18) + "..." : label.toLowerCase();
+const Badge = ({ label, tone = "neutral" }) => {
+  const display = label.length > 18 ? label.substring(0, 18) + "..." : label;
+  const toneClass =
+    tone === "warn"
+      ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/30"
+      : tone === "positive"
+        ? "bg-[#34D399]/10 text-[#34D399] border-[#34D399]/30"
+        : "bg-[#0B0C0E] text-[#A8ADB6] border-[#22242A]";
+
   return (
-    <span className="text-[11px] font-mono px-2 py-0.5 rounded-[4px] bg-[#0B0C0E] text-[#A8ADB6] border border-[#22242A] select-none">
+    <span className={`text-xs font-mono px-2 py-0.5 rounded-[4px] border select-none ${toneClass}`}>
       {display}
     </span>
   );

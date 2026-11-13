@@ -1,14 +1,15 @@
 import { supabase } from '../lib/supabase';
+import {
+  rankCandidatesForUser,
+  buildDeterministicMatchResults,
+} from '../utils/smartMatchRanker';
 
 /**
  * Smart Match Service
- * Analyzes user's GitHub profile and calls xAI Grok via Edge Function
- * to provide personalized issue recommendations.
+ * Extracts developer profile, pre-ranks candidates using deterministic stack +
+ * repo_health + clarity + claim-risk scoring, then calls xAI Grok for final tie-breaking & reasoning.
  */
 
-/**
- * Fetch user's tech stack from their Supabase profile
- */
 export async function fetchUserTechStack(userId) {
   try {
     const { data, error } = await supabase
@@ -25,9 +26,6 @@ export async function fetchUserTechStack(userId) {
   }
 }
 
-/**
- * Extract user's tech stack from their GitHub repos
- */
 export async function extractUserProfile(username, token) {
   try {
     const { data, error } = await supabase.functions.invoke('github-data', {
@@ -44,9 +42,6 @@ export async function extractUserProfile(username, token) {
   }
 }
 
-/**
- * Fetch candidate issues from GitHub for matching
- */
 export async function fetchCandidateIssues(languages, token, preferredLabels) {
   try {
     const { data, error } = await supabase.functions.invoke('github-data', {
@@ -63,20 +58,51 @@ export async function fetchCandidateIssues(languages, token, preferredLabels) {
   }
 }
 
-/**
- * Call the Supabase Edge Function to get AI-ranked matches
- */
+async function attachSupabaseRepoHealth(candidates) {
+  const missingRepos = Array.from(
+    new Set(
+      candidates
+        .filter((issue) => !issue.repo_health && issue.repo)
+        .map((issue) => issue.repo)
+    )
+  );
+  if (missingRepos.length === 0) return candidates;
+
+  try {
+    const { data, error } = await supabase
+      .from('repo_health')
+      .select('*')
+      .in('repo_full_name', missingRepos);
+
+    if (error || !Array.isArray(data) || data.length === 0) return candidates;
+    const healthMap = new Map(data.map((row) => [row.repo_full_name, row]));
+
+    return candidates.map((issue) => {
+      const health = healthMap.get(issue.repo);
+      if (!health) return issue;
+      return {
+        ...issue,
+        repo_stars: issue.repo_stars ?? health.stars ?? null,
+        repo_pushed_at: issue.repo_pushed_at ?? health.last_pushed_at ?? null,
+        repo_archived: issue.repo_archived ?? Boolean(health.is_archived),
+        repo_health: health,
+      };
+    });
+  } catch {
+    return candidates;
+  }
+}
+
 export async function getAIMatchedIssues(userProfile, candidateIssues) {
   try {
     const { data, error } = await supabase.functions.invoke('smart-match', {
       body: {
         userProfile,
-        candidateIssues, // Send ALL candidates — no slicing
+        candidateIssues,
       }
     });
 
     if (error) {
-      // Try to read the response body for more details
       let details = error.message || 'Unknown error';
       try {
         if (error.context?.body) {
@@ -86,7 +112,7 @@ export async function getAIMatchedIssues(userProfile, candidateIssues) {
           const bodyJson = JSON.parse(bodyText);
           details = bodyJson.details || bodyJson.error || details;
         }
-      } catch (_) { /* ignore parse errors */ }
+      } catch { /* ignore parse errors */ }
       console.error('Smart Match edge function error:', details);
       throw new Error(`AI matching failed: ${details}`);
     }
@@ -96,18 +122,21 @@ export async function getAIMatchedIssues(userProfile, candidateIssues) {
       matches: data?.matches || [],
       limited: !!data?.limited,
       totalAvailable: data?.totalAvailable ?? null,
+      failed: false,
     };
   } catch (error) {
     console.error('Error getting AI matches:', error);
-    return { matches: [], limited: false, totalAvailable: null };
+    return { matches: [], limited: false, totalAvailable: null, failed: true };
   }
 }
 
-/**
- * Full smart match pipeline
- */
-export async function runSmartMatch(username, token, supabaseUrl, { userId, preferredLabels } = {}) {
-  // Step 1: Extract user profile from GitHub
+export async function runSmartMatch(
+  username,
+  token,
+  supabaseUrl,
+  { userId, preferredLabels, isSupporter = false } = {}
+) {
+  // Step 1: Extract user profile from GitHub (languages + manifest frameworks + external PRs)
   const userProfile = await extractUserProfile(username, token);
   if (!userProfile) throw new Error('Could not analyze GitHub profile');
 
@@ -116,51 +145,65 @@ export async function runSmartMatch(username, token, supabaseUrl, { userId, pref
   if (userId) {
     techStack = await fetchUserTechStack(userId);
   }
-  
-  // Merge tech stack into profile for AI
   userProfile.techStack = techStack;
 
-  console.log('[SmartMatch] User tech stack:', techStack);
-  console.log('[SmartMatch] Detected frameworks:', userProfile.detectedFrameworks);
+  // Step 3: Fetch broader candidate pool and backfill repo_health if needed
+  const rawCandidates = await fetchCandidateIssues(
+    userProfile.topLanguages,
+    token,
+    preferredLabels
+  );
+  if (rawCandidates.length === 0) throw new Error('No candidate issues found');
 
-  // Step 3: Fetch candidate issues with preferred labels
-  const candidates = await fetchCandidateIssues(userProfile.topLanguages, token, preferredLabels);
-  if (candidates.length === 0) throw new Error('No candidate issues found');
+  const enrichedCandidates = await attachSupabaseRepoHealth(rawCandidates);
 
-  console.log('[SmartMatch] Candidates fetched:', candidates.length);
+  // Step 4: Per-user deterministic pre-AI ranking (stack + repo health + clarity + claim risk + diversity)
+  const preRankedCandidates = rankCandidatesForUser(enrichedCandidates, userProfile, {
+    maxCandidates: 20,
+  });
+  if (preRankedCandidates.length === 0) throw new Error('No candidate issues found');
 
-  // Step 4: Get AI rankings. Free users receive only the top matches plus a
-  // `limited` flag and the total count available behind the paywall.
-  const { matches, limited, totalAvailable } = await getAIMatchedIssues(userProfile, candidates);
+  // Step 5: Send only the top 20 pre-ranked candidates to xAI Grok for explanation & final ordering
+  const { matches, limited, totalAvailable, failed } = await getAIMatchedIssues(
+    userProfile,
+    preRankedCandidates
+  );
 
-  console.log('[SmartMatch] AI returned', matches.length, 'matches', limited ? `(free preview of ${totalAvailable})` : '');
+  // Resilient deterministic fallback when AI service is unavailable
+  if (failed || matches.length === 0) {
+    const previewLimit = isSupporter ? null : 2;
+    const fallbackIssues = buildDeterministicMatchResults(preRankedCandidates, previewLimit);
+    return {
+      issues: fallbackIssues,
+      userProfile,
+      generatedAt: new Date().toISOString(),
+      limited: !isSupporter && preRankedCandidates.length > fallbackIssues.length,
+      totalAvailable: preRankedCandidates.length,
+      fallbackUsed: true,
+    };
+  }
 
-  // Step 5: Merge AI scores back into full issue data
+  // Step 6: Merge AI scores and explanations back into pre-ranked issues
   const matchMap = new Map(matches.map((m) => [String(m.issueId), m]));
 
-  let rankedIssues = candidates
+  let rankedIssues = preRankedCandidates
     .map((issue) => {
       const match = matchMap.get(String(issue.id));
       return {
         ...issue,
-        matchScore: match?.matchScore || 0,
-        matchReason: match?.reason || 'Could not be scored by AI',
+        matchScore: match?.matchScore ?? issue.preMatchScore,
+        matchReason:
+          match?.reason ||
+          (issue.preReasons?.length > 0
+            ? issue.preReasons.join(' · ')
+            : 'Matched on your repository stack'),
         isAIRanked: !!match,
       };
     })
-    .sort((a, b) => b.matchScore - a.matchScore)
-    // Cap at top 25 results
-    .slice(0, 25);
+    .sort((a, b) => b.matchScore - a.matchScore);
 
-  // In a free preview the server only scored/returned the top few matches, so
-  // keep only the AI-ranked issues — never pad the grid with 0%-scored ones.
   if (limited) {
     rankedIssues = rankedIssues.filter((issue) => issue.isAIRanked);
-  }
-
-  console.log('[SmartMatch] Final results:', rankedIssues.length);
-  if (rankedIssues.length > 0) {
-    console.log('[SmartMatch] Score range:', rankedIssues[0]?.matchScore, 'to', rankedIssues[rankedIssues.length - 1]?.matchScore);
   }
 
   return {
@@ -169,5 +212,6 @@ export async function runSmartMatch(username, token, supabaseUrl, { userId, pref
     generatedAt: new Date().toISOString(),
     limited,
     totalAvailable,
+    fallbackUsed: false,
   };
 }

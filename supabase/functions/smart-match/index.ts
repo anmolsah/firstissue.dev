@@ -12,6 +12,7 @@ import { isActiveSupporter } from "../_shared/supporter.ts";
 // candidate issues the AI scores for them.
 const FREE_PREVIEW_MATCHES = 2;
 const FREE_PREVIEW_CANDIDATES = 12;
+const SUPPORTER_MAX_CANDIDATES = 20;
 
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
@@ -54,9 +55,9 @@ serve(async (req: Request) => {
       );
     }
 
-    // Limit how many issues the AI scores for free users to contain cost.
+    // Limit how many pre-ranked issues the AI scores to contain cost & keep prompts crisp.
     const scoredCandidates = supporter
-      ? candidateIssues
+      ? candidateIssues.slice(0, SUPPORTER_MAX_CANDIDATES)
       : candidateIssues.slice(0, FREE_PREVIEW_CANDIDATES);
 
     const XAI_API_KEY = Deno.env.get("XAI_API_KEY");
@@ -99,7 +100,11 @@ Sort by matchScore descending. Include ALL issues from the input.`;
       : "";
     
     const frameworksDisplay = userProfile.detectedFrameworks && userProfile.detectedFrameworks.length > 0
-      ? `- Auto-detected Frameworks: ${userProfile.detectedFrameworks.join(", ")}`
+      ? `- Manifest & Topic Frameworks: ${userProfile.detectedFrameworks.join(", ")}`
+      : "";
+
+    const externalPrDisplay = typeof userProfile.externalPRCount === "number"
+      ? `- External Open-Source PR Contributions (12mo): ${userProfile.externalPRCount} (total PRs: ${userProfile.totalPRCount ?? userProfile.externalPRCount})`
       : "";
 
     const userPrompt = `## Developer Profile
@@ -107,18 +112,23 @@ Sort by matchScore descending. Include ALL issues from the input.`;
 - Top Languages: ${userProfile.topLanguages.map((l: any) => `${l.language} (${l.repoCount} repos)`).join(", ")}
 ${techStackDisplay}
 ${frameworksDisplay}
-- Topics: ${userProfile.topics.join(", ") || "none detected"}
+${externalPrDisplay}
+- Topics: ${(userProfile.topics || []).join(", ") || "none detected"}
 - Experience Level: ${userProfile.experienceLevel}
 - Total Repos: ${userProfile.repoCount}
 - Total Stars: ${userProfile.totalStars}
 
-## Candidate Issues (score each one)
+## Pre-Ranked Candidate Issues (score each one and explain specifically why it fits)
 ${scoredCandidates.map((issue: any, i: number) => {
-  const stars = issue.repo_stars ? `⭐${issue.repo_stars}` : '';
+  const stars = issue.repo_stars != null ? `Stars:${issue.repo_stars}` : '';
+  const health = issue.repo_health?.health_summary ? `Health:${issue.repo_health.health_summary}` : '';
   const age = issue.created_days_ago != null ? `${issue.created_days_ago}d old` : '';
   const comments = issue.comments != null ? `${issue.comments} comments` : '';
-  const meta = [stars, age, comments].filter(Boolean).join(', ');
-  return `${i + 1}. [ID: ${issue.id}] "${issue.title}" in ${issue.repo} (${meta}) | Labels: ${issue.labels.join(", ")} | ${issue.body?.substring(0, 200) || "no description"}`;
+  const taskType = issue.taskType ? `Type:${issue.taskType}` : '';
+  const preFit = issue.preScore != null ? `PreScore:${issue.preScore}/100` : '';
+  const meta = [stars, health, taskType, preFit, age, comments].filter(Boolean).join(', ');
+  const summaryText = (issue.cleanSummary || issue.body || "no description").substring(0, 260);
+  return `${i + 1}. [ID: ${issue.id}] "${issue.title}" in ${issue.repo} (${meta}) | Labels: ${(issue.labels || []).join(", ")} | ${summaryText}`;
 }).join("\n")}`;
 
     console.log("[SmartMatch] Sending", scoredCandidates.length, "issues to AI (supporter:", supporter, ")");
@@ -177,13 +187,28 @@ ${scoredCandidates.map((issue: any, i: number) => {
       );
     }
 
-    // Normalize: ensure issueId is a number and matchScore is a float
+    // Normalize and blend AI score with deterministic preMatchScore when supplied
+    const candidatePreScoreMap = new Map<string, number>();
+    for (const c of scoredCandidates) {
+      if (typeof c?.preMatchScore === "number") {
+        candidatePreScoreMap.set(String(c.id), c.preMatchScore);
+      }
+    }
+
     if (parsed.matches && Array.isArray(parsed.matches)) {
-      parsed.matches = parsed.matches.map((m: any) => ({
-        ...m,
-        issueId: Number(m.issueId) || m.issueId,
-        matchScore: parseFloat(m.matchScore) || 0,
-      }));
+      parsed.matches = parsed.matches.map((m: any) => {
+        const aiScore = Math.max(0, Math.min(1, parseFloat(m.matchScore) || 0));
+        const preScore = candidatePreScoreMap.get(String(m.issueId));
+        const blendedScore =
+          typeof preScore === "number"
+            ? Number(Math.max(0.05, Math.min(0.99, aiScore * 0.65 + preScore * 0.35)).toFixed(2))
+            : aiScore;
+        return {
+          ...m,
+          issueId: Number(m.issueId) || m.issueId,
+          matchScore: blendedScore,
+        };
+      });
     }
 
     console.log("Parsed matches count:", parsed.matches?.length);
