@@ -8,7 +8,6 @@ import {
   Check,
   ArrowRight,
   Bot,
-  Target,
   Brain,
   ShieldCheck,
   ChevronDown,
@@ -21,9 +20,10 @@ import {
   Lock,
   AlertCircle,
   CheckCircle,
+  Wrench,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import { FREE_DAILY_COPILOT_MESSAGES } from "../lib/limits";
+import { FREE_DAILY_COPILOT_MESSAGES, FREE_MONTHLY_KITS } from "../lib/limits";
 
 const SupportPage = () => {
   const { user } = useAuth();
@@ -52,7 +52,7 @@ const SupportPage = () => {
 
             if (existing) {
               console.log(`Supporter record found on attempt ${attempt}`, existing);
-              toast.success("Welcome, Supporter. Smart Match, unlimited FirstMate, and unlimited Proof of Work are unlocked.");
+              toast.success("Welcome, Supporter. Smart Match, unlimited Contribution Kits & Diff Review, unlimited FirstMate, and unlimited Proof of Work are unlocked.");
               refreshStatus();
               return;
             }
@@ -115,19 +115,18 @@ const SupportPage = () => {
       accent: "#DAFA9C",
     },
     {
+      icon: Wrench,
+      title: "Unlimited Contribution Kits & Diff Review",
+      description: `Core accounts include ${FREE_MONTHLY_KITS} Contribution Kit per month. Supporters generate unlimited repo setup kits and run pre-submit AI diff reviews before opening a PR.`,
+      accent: "#F59E0B",
+      badge: "INCLUDED",
+    },
+    {
       icon: ShieldCheck,
       title: "Unlimited Proof of Work",
       description:
         "Verify merged pull requests against GitHub APIs and generate unlimited SHA-256 attested cards on your public developer profile.",
       accent: "#34D399",
-      badge: "NEW",
-    },
-    {
-      icon: Target,
-      title: "Smart Difficulty Calibration",
-      description:
-        "Filter out issues that are too trivial or deeply entangled by scoring setup friction and codebase scope before you clone.",
-      accent: "#F59E0B",
     },
     {
       icon: Bot,
@@ -140,7 +139,7 @@ const SupportPage = () => {
   const faqs = [
     {
       q: "What benefits do I get as a Supporter?",
-      a: `Full access to AI Smart Match on the Explore page, unlimited FirstMate AI Copilot chat (Core accounts receive ${FREE_DAILY_COPILOT_MESSAGES} messages per day), and no 5-card limit on verified Proof of Work pull request attestations.`,
+      a: `Full access to AI Smart Match, unlimited AI Contribution Kits and pre-submit PR diff reviews (Core accounts include ${FREE_MONTHLY_KITS} kit per month), unlimited FirstMate AI Copilot chat (Core accounts receive ${FREE_DAILY_COPILOT_MESSAGES} messages per day), and no 5-card limit on verified Proof of Work pull request attestations.`,
     },
     {
       q: "How does Proof of Work verify pull requests?",
@@ -148,7 +147,7 @@ const SupportPage = () => {
     },
     {
       q: "What is included in the $0 Core tier?",
-      a: `Core accounts can browse curated beginner-friendly issues, bookmark and track PR statuses, verify up to 5 Proof of Work credentials, and send ${FREE_DAILY_COPILOT_MESSAGES} FirstMate messages per day (resetting at midnight UTC).`,
+      a: `Core accounts can browse curated beginner-friendly issues, generate ${FREE_MONTHLY_KITS} AI Contribution Kit per month, bookmark and track PR statuses, verify up to 5 Proof of Work credentials, and send ${FREE_DAILY_COPILOT_MESSAGES} FirstMate messages per day (resetting at midnight UTC).`,
     },
     {
       q: "Can I cancel my subscription anytime?",
@@ -162,7 +161,9 @@ const SupportPage = () => {
 
   const comparisonRows = [
     { feature: "Curated issue dispatch queue", free: "Yes", supporter: "Yes" },
-    { feature: "Contribution Kits & PR status tracker", free: "Yes", supporter: "Yes" },
+    { feature: "PR status & contribution tracker", free: "Yes", supporter: "Yes" },
+    { feature: "AI Contribution Kits", free: `${FREE_MONTHLY_KITS}/month`, supporter: "Unlimited" },
+    { feature: "Pre-submit PR diff review", free: "No", supporter: "Yes" },
     { feature: "Verified Proof of Work limit", free: "Up to 5", supporter: "Unlimited" },
     { feature: "FirstMate AI Copilot allowance", free: `${FREE_DAILY_COPILOT_MESSAGES}/day`, supporter: "Unlimited" },
     { feature: "AI Smart Matching by repo history", free: "No", supporter: "Yes" },
@@ -181,7 +182,7 @@ const SupportPage = () => {
           </h1>
 
           <p className="text-sm sm:text-base text-[#A8ADB6] mb-8 max-w-[62ch] mx-auto leading-relaxed text-pretty">
-            Most contributors stall between picking an issue and opening a clean pull request. Supporter pairs repository-matched AI discovery with unlimited FirstMate help and unlimited SHA-256 Proof of Work credentials.
+            Most contributors stall between picking an issue and opening a clean pull request. Supporter pairs repository-matched AI discovery with unlimited Contribution Kits, pre-submit PR diff reviews, unlimited FirstMate help, and unlimited SHA-256 Proof of Work credentials.
           </p>
 
           {isSupporter ? (

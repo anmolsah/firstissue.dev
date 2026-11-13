@@ -191,6 +191,72 @@ const TARGETS = [
     type: 'raw-md', category: 'Specs & Conventions', title: 'Conventional Commits 1.0.0 Specification' },
   { url: 'https://raw.githubusercontent.com/olivierlacan/keep-a-changelog/main/README.md',
     type: 'raw-md', category: 'Specs & Conventions', title: 'Keep a Changelog Guide & Specification' },
+
+  // ─── GitLab Official Docs (raw Markdown from gitlab-org/gitlab) ──────────
+  { url: 'https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/user/project/repository/forking_workflow.md',
+    type: 'gitlab-md', category: 'GitLab Docs', title: 'GitLab — Project Forking Workflow' },
+  { url: 'https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/user/project/merge_requests/index.md',
+    type: 'gitlab-md', category: 'GitLab Docs', title: 'GitLab — Merge Requests Overview' },
+  { url: 'https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/user/project/merge_requests/creating_merge_requests.md',
+    type: 'gitlab-md', category: 'GitLab Docs', title: 'GitLab — Creating Merge Requests' },
+  { url: 'https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/user/project/merge_requests/reviews/index.md',
+    type: 'gitlab-md', category: 'GitLab Docs', title: 'GitLab — Reviewing Merge Requests' },
+  { url: 'https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/user/project/merge_requests/conflicts.md',
+    type: 'gitlab-md', category: 'GitLab Docs', title: 'GitLab — Resolving Merge Conflicts' },
+  { url: 'https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/topics/git/git_rebase.md',
+    type: 'gitlab-md', category: 'GitLab Docs', title: 'GitLab — Git Rebase & Force Push' },
+  { url: 'https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/ci/quick_start/index.md',
+    type: 'gitlab-md', category: 'GitLab Docs', title: 'GitLab CI/CD — Quick Start (.gitlab-ci.yml)' },
+  { url: 'https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/user/project/protected_branches.md',
+    type: 'gitlab-md', category: 'GitLab Docs', title: 'GitLab — Protected Branches' },
+  { url: 'https://gitlab.com/gitlab-org/gitlab/-/raw/master/doc/development/contributing/merge_request_workflow.md',
+    type: 'gitlab-md', category: 'GitLab Docs', title: 'GitLab — Contributor Merge Request Workflow' },
+
+  // ─── Additional GitHub Docs (Actions, PR checkout, Releases, Supply Chain) ─
+  { url: 'https://docs.github.com/en/actions/monitoring-and-troubleshooting-workflows/troubleshooting-workflows/using-workflow-run-logs',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/checking-out-pull-requests-locally',
+    type: 'github-docs', category: 'GitHub Docs' },
+  { url: 'https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases',
+    type: 'github-docs', category: 'GitHub Docs' },
+
+  // ─── Forgejo / Codeberg Docs ──────────────────────────────────────────────
+  { url: 'https://codeberg.org/forgejo/docs/raw/branch/main/content/user/pull-requests.md',
+    type: 'gitlab-md', category: 'Codeberg & Forgejo', title: 'Forgejo / Codeberg — Pull Requests & Forks' },
+
+  // ─── Google Engineering Practices & Ecosystem Contributor Guides ───────────
+  { url: 'https://raw.githubusercontent.com/google/eng-practices/master/review/developer/index.md',
+    type: 'raw-md', category: 'Code Review & PR Craft', title: 'Google Eng Practices — PR Author Guide' },
+  { url: 'https://raw.githubusercontent.com/google/eng-practices/master/review/developer/cl-descriptions.md',
+    type: 'raw-md', category: 'Code Review & PR Craft', title: 'Google Eng Practices — Writing Clear PR Descriptions' },
+  { url: 'https://raw.githubusercontent.com/google/eng-practices/master/review/developer/small-cls.md',
+    type: 'raw-md', category: 'Code Review & PR Craft', title: 'Google Eng Practices — Keeping PRs Small & Focused' },
+  { url: 'https://raw.githubusercontent.com/nodejs/node/main/doc/contributing/pull-requests.md',
+    type: 'raw-md', category: 'Code Review & PR Craft', title: 'Node.js Contributing — Pull Request Lifecycle' },
+  { url: 'https://raw.githubusercontent.com/python/devguide/main/getting-started/pull-request-lifecycle.md',
+    type: 'raw-md', category: 'Code Review & PR Craft', title: 'Python Devguide — Pull Request Lifecycle' },
+  { url: 'https://raw.githubusercontent.com/cncf/contribute/main/README.md',
+    type: 'raw-md', category: 'Code Review & PR Craft', title: 'CNCF — Contributing to Cloud Native Projects' },
+
+  // ─── Open Source Programs (Google Summer of Code Guides) ───────────────────
+  { url: 'https://raw.githubusercontent.com/google/gsocguides/master/student/what-is-gsoc.md',
+    type: 'raw-md', category: 'OSS Programs (GSoC)', title: 'GSoC Guide — What is Google Summer of Code?' },
+  { url: 'https://raw.githubusercontent.com/google/gsocguides/master/student/finding-the-right-project.md',
+    type: 'raw-md', category: 'OSS Programs (GSoC)', title: 'GSoC Guide — Finding the Right Organization & Project' },
+  { url: 'https://raw.githubusercontent.com/google/gsocguides/master/student/writing-a-proposal.md',
+    type: 'raw-md', category: 'OSS Programs (GSoC)', title: 'GSoC Guide — Writing a Strong Proposal' },
+
+  // ─── Open Source Licenses, Governance & Tooling ───────────────────────────
+  { url: 'https://raw.githubusercontent.com/github/choosealicense.com/gh-pages/_licenses/mit.txt',
+    type: 'gitlab-md', category: 'Licenses & Governance', title: 'MIT License — Terms & Conditions' },
+  { url: 'https://raw.githubusercontent.com/github/choosealicense.com/gh-pages/_licenses/apache-2.0.txt',
+    type: 'gitlab-md', category: 'Licenses & Governance', title: 'Apache License 2.0 — Terms & Patent Grant' },
+  { url: 'https://raw.githubusercontent.com/github/choosealicense.com/gh-pages/_licenses/gpl-3.0.txt',
+    type: 'gitlab-md', category: 'Licenses & Governance', title: 'GNU GPL v3.0 — Copyleft Terms' },
+  { url: 'https://raw.githubusercontent.com/ContributorCovenant/contributor_covenant/release/content/version/2/1/code_of_conduct.md',
+    type: 'raw-md', category: 'Licenses & Governance', title: 'Contributor Covenant v2.1 Code of Conduct' },
+  { url: 'https://raw.githubusercontent.com/pre-commit/pre-commit/main/README.md',
+    type: 'raw-md', category: 'Specs & Conventions', title: 'pre-commit Hooks Framework Guide' },
 ];
 
 // =============================================================================
@@ -428,7 +494,7 @@ function parseGitBookHtml(html) {
 // =============================================================================
 // Shared Markdown Chunker (for GitHub Docs Markdown API responses)
 // =============================================================================
-function parseMarkdownIntoChunks(markdown, pageTitle, sourceUrl) {
+function parseMarkdownIntoChunks(markdown, pageTitle) {
   const lines = markdown.split('\n');
   const chunks = [];
   let currentHeader = pageTitle;
@@ -507,17 +573,34 @@ async function getEmbedding(text) {
   }
 }
 
+function cleanMarkdownFrontmatter(markdown) {
+  let cleaned = markdown.replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n?/, '');
+  // Strip GitLab-specific inline metadata / alert markers while keeping readable content
+  cleaned = cleaned
+    .replace(/^(?:stage|group|info|description):.*$/gm, '')
+    .replace(/^(?:DETAILS|FLAG|WARNING|NOTE|CAUTION):.*$/gm, '')
+    .replace(/\{\{<[\s\S]*?>\}\}/g, '')
+    .replace(/\{\{%[\s\S]*?%\}\}/g, '');
+  return cleaned.trim();
+}
+
 // =============================================================================
 // Main Scrape & Index Pipeline
 // =============================================================================
 async function scrapeAndIndex() {
+  const categoryArg = process.argv.find((a) => a.startsWith('--category='));
+  const categoryFilter = categoryArg ? categoryArg.split('=')[1].trim().toLowerCase() : '';
+  const activeTargets = categoryFilter
+    ? TARGETS.filter((t) => t.category.toLowerCase().includes(categoryFilter))
+    : TARGETS;
+
   console.log('=== Starting Web Documentation Scraper ===');
-  console.log(`Total targets: ${TARGETS.length} pages across ${[...new Set(TARGETS.map(t => t.category))].length} categories\n`);
+  console.log(`Total targets: ${activeTargets.length} pages across ${[...new Set(activeTargets.map(t => t.category))].length} categories\n`);
 
   // Group targets by category for logging
-  const categories = [...new Set(TARGETS.map(t => t.category))];
+  const categories = [...new Set(activeTargets.map(t => t.category))];
   for (const cat of categories) {
-    const count = TARGETS.filter(t => t.category === cat).length;
+    const count = activeTargets.filter(t => t.category === cat).length;
     console.log(`  📂 ${cat}: ${count} pages`);
   }
   console.log('');
@@ -525,9 +608,9 @@ async function scrapeAndIndex() {
   let totalSuccess = 0;
   let totalChunks = 0;
 
-  for (let idx = 0; idx < TARGETS.length; idx++) {
-    const target = TARGETS[idx];
-    console.log(`[${idx + 1}/${TARGETS.length}] [${target.category}] Fetching: ${target.url}...`);
+  for (let idx = 0; idx < activeTargets.length; idx++) {
+    const target = activeTargets[idx];
+    console.log(`[${idx + 1}/${activeTargets.length}] [${target.category}] Fetching: ${target.url}...`);
 
     try {
       let chunks = [];
@@ -535,12 +618,8 @@ async function scrapeAndIndex() {
       // ── GitHub Docs: Use their Markdown API (no HTML parsing needed) ──
       if (target.type === 'github-docs') {
         chunks = await fetchGithubDocsMarkdown(target.url);
-      } else if (target.type === 'raw-md') {
-        // ── Raw Markdown files (e.g. raw.githubusercontent.com specs/READMEs) ──
-        // No HTML parsing at all — fetch the .md and chunk it directly. This is
-        // the most robust source type, so prefer it for any doc that exposes
-        // clean Markdown. (Sites built on Hugo/Docusaurus shortcodes are NOT
-        // clean raw Markdown — use their rendered HTML or a dedicated parser.)
+      } else if (target.type === 'raw-md' || target.type === 'gitlab-md') {
+        // ── Raw Markdown files (GitHub raw, GitLab raw, Forgejo raw, ChooseALicense) ──
         const response = await fetch(target.url, {
           headers: { 'User-Agent': 'FirstIssueScraper/1.0 (https://firstissue.dev; bot)' }
         });
@@ -548,7 +627,10 @@ async function scrapeAndIndex() {
           console.error(`  [ERROR] Failed to fetch: Status ${response.status}`);
           continue;
         }
-        const markdown = await response.text();
+        let markdown = await response.text();
+        if (target.type === 'gitlab-md') {
+          markdown = cleanMarkdownFrontmatter(markdown);
+        }
         const titleMatch = markdown.match(/^#\s+(.+)$/m);
         const pageTitle = target.title || (titleMatch ? titleMatch[1].trim() : 'Documentation');
         chunks = parseMarkdownIntoChunks(markdown, pageTitle, target.url);
@@ -638,7 +720,7 @@ async function scrapeAndIndex() {
   }
 
   console.log('=== Web Documentation Scraper completed ===');
-  console.log(`Total: ${totalSuccess}/${totalChunks} chunks indexed across ${TARGETS.length} pages.`);
+  console.log(`Total: ${totalSuccess}/${totalChunks} chunks indexed across ${activeTargets.length} pages.`);
 }
 
 scrapeAndIndex().catch(err => {

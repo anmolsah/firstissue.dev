@@ -13,7 +13,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { message, history = [], learnedContext = [] } = await req.json();
+    const { message, history = [], learnedContext = [], issueContext = null } = await req.json();
 
     if (!message) {
       return new Response(
@@ -136,8 +136,8 @@ serve(async (req: Request) => {
     // but the anonymous user also has read permission on kb_chunks. We will use the request's client.
     const { data: chunks, error: rpcError } = await supabaseClient.rpc("match_kb_chunks", {
       query_embedding: queryEmbedding,
-      match_threshold: 0.3, // default threshold
-      match_count: 5 // retrieve top 5 results
+      match_threshold: 0.28, // broader recall across Git, GitHub, GitLab, Licenses & OSS docs
+      match_count: 10 // retrieve top 10 before source diversification
     });
 
     if (rpcError) {
@@ -179,32 +179,46 @@ serve(async (req: Request) => {
           .join("\n---\n")
       : "";
 
-    // 4. Construct Advanced FirstMate System Prompt
-    const contextText = chunks && chunks.length > 0
-      ? chunks
-          .filter((c: any) => c.similarity > 0.35)
+    // 4. Construct Advanced FirstMate System Prompt (diversified across sources)
+    const sourceChunkCounts: Record<string, number> = {};
+    const diversifiedChunks = (chunks || [])
+      .filter((c: any) => c.similarity > 0.30)
+      .filter((c: any) => {
+        const key = c.source || c.path || "unknown";
+        sourceChunkCounts[key] = (sourceChunkCounts[key] || 0) + 1;
+        return sourceChunkCounts[key] <= 2;
+      })
+      .slice(0, 6);
+
+    const contextText = diversifiedChunks.length > 0
+      ? diversifiedChunks
           .map((c: any) => `Source: ${c.source} | Title: ${c.title}\nContent:\n${c.content}`)
           .join("\n\n---\n\n")
       : "";
 
-    const systemPrompt = `You are FirstMate, an exceptionally advanced, expert AI copilot for FirstIssue.dev.
-You specialize in open source software development, Git version control, GitHub/GitLab collaboration workflows, codebase architectures, licenses (MIT, Apache, GPL, CLA, DCO), bug triage, CI/CD checks, and global open source programs (Google Summer of Code, LFX Mentorship, Hacktoberfest, Outreachy, MLH).
+    const issueContextBlock = issueContext && (issueContext.repo || issueContext.issueTitle)
+      ? `\n\nActive Issue Context:\n- Repository: ${issueContext.repo || "unknown"}\n- Issue: ${issueContext.issueTitle || "not provided"}${issueContext.language ? `\n- Primary Language: ${issueContext.language}` : ""}`
+      : "";
 
-Your mission is to provide the highest-quality, most accurate, and developer-friendly answers possible.
+    const systemPrompt = `You are FirstMate, an expert open-source engineering copilot for FirstIssue.dev.
+You have deep expertise across the full open-source contribution lifecycle:
+- Git internals & recovery: interactive rebase (\`git rebase -i\`), \`git reflog\`, \`git bisect\`, \`git worktree\`, \`git cherry-pick\`, GPG/SSH commit signing, and safe history rewrites (\`--force-with-lease\`).
+- Multi-platform collaboration: GitHub (Forks, Pull Requests, Draft PRs, \`gh\` CLI, GitHub Actions workflows, Dependabot, CODEOWNERS), GitLab (Merge Requests, \`glab\` CLI, push options like \`git push -o merge_request.create\`, \`.gitlab-ci.yml\` stages/artifacts, squash/rebase policies), and Codeberg/Forgejo.
+- Licensing & compliance: MIT, Apache-2.0 (patent grant), GPLv3/AGPL (copyleft), BSD, MPL-2.0, Contributor Covenant Code of Conduct, DCO (\`git commit -s\`), and CLAs.
+- PR craft & CI debugging: Conventional Commits, SemVer, Keep a Changelog, reproducing CI failures locally, writing focused small PRs, and responding professionally to maintainer review feedback.
+- Open-source programs: Google Summer of Code (GSoC) project selection & proposals, LFX Mentorship, Outreachy, Hacktoberfest, and MLH Fellowship.
 
 CRITICAL INSTRUCTIONS & RESPONSE STRUCTURE:
-1. Direct, Actionable Solutions: Start with a clear, direct answer and immediately provide copy-pasteable terminal commands or code snippets in syntax-highlighted code blocks (e.g. \`\`\`bash).
-2. Deep Step-by-Step Breakdown: Explain what each command flag or method does (e.g., explain why to use \`git push --force-with-lease\` instead of raw \`--force\`).
-3. Safety Warnings & Pro Tips: Explicitly flag potential data loss risks, remote branch collisions, or open source etiquette pitfalls.
-4. Self-Improvement & Continuous Learning: When learned community solutions are provided below, prioritize their insights to guarantee the latest best practices.
-5. Tone: Encouraging, precise, and professional. Avoid filler words.
-6. Documentation Citations: Cite referenced documents at the end under a "Sources:" heading formatted cleanly (e.g. "- [Guide Title](/docs/section/article)").
+1. Direct, Actionable Solution: Start with the clearest direct answer and copy-pasteable terminal commands or code snippets in syntax-highlighted code blocks (\`\`\`bash, \`\`\`yaml, etc.).
+2. Flag-by-Flag & Step-by-Step Breakdown: Explain why each command flag or config option is used instead of giving blind commands.
+3. Platform Differences When Relevant: If a workflow differs between GitHub and GitLab (e.g., Pull Request vs Merge Request, \`.github/workflows\` vs \`.gitlab-ci.yml\`, \`gh\` vs \`glab\`), briefly show both cleanly.
+4. Safety Warnings & Local Verification: Flag destructive operations (history rewrites, force pushes, hard resets) and include a quick command to verify the fix locally before pushing.
+5. Self-Improvement: When learned community solutions are provided below, incorporate their validated insights.
+6. Documentation Citations: Cite retrieved sources at the end under a "Sources:" heading using Markdown links.
 
-${contextText ? `Retrieved Documentation Knowledge:\n${contextText}` : "No specific vector document matched. Rely on your deep, comprehensive knowledge of Git, GitHub, and open-source ecosystems."}
-${learnedPromptBlock}`;
+${contextText ? `Retrieved Documentation Knowledge:\n${contextText}` : "No specific vector chunk matched above threshold. Rely on your comprehensive knowledge of Git, GitHub, GitLab, Forgejo, open-source licenses, CI/CD, and contribution best practices."}${issueContextBlock}${learnedPromptBlock}`;
 
     // 5. Call OpenRouter for chat completion
-    // Model used: google/gemini-2.5-flash (standard, fast, cheap) or meta-llama/llama-3.1-8b-instruct
     const completionModel = Deno.env.get("RAG_COMPLETION_MODEL") || "google/gemini-2.5-flash-lite";
     
     // Standardize history formatting to avoid issues
@@ -228,8 +242,8 @@ ${learnedPromptBlock}`;
           ...formattedHistory,
           { role: "user", content: message }
         ],
-        temperature: 0.4,
-        max_tokens: 1500
+        temperature: 0.35,
+        max_tokens: 2400
       })
     });
 
@@ -248,17 +262,15 @@ ${learnedPromptBlock}`;
     // 6. Gather sources/citations for the frontend
     const sources = [];
     const seenPaths = new Set();
-    if (chunks) {
-      for (const chunk of chunks) {
-        if (chunk.similarity > 0.38 && chunk.path && !seenPaths.has(chunk.path)) {
-          seenPaths.add(chunk.path);
-          sources.push({
-            source: chunk.source,
-            title: chunk.title,
-            path: chunk.path,
-            similarity: chunk.similarity
-          });
-        }
+    for (const chunk of diversifiedChunks) {
+      if (chunk.similarity > 0.32 && chunk.path && !seenPaths.has(chunk.path)) {
+        seenPaths.add(chunk.path);
+        sources.push({
+          source: chunk.source,
+          title: chunk.title,
+          path: chunk.path,
+          similarity: chunk.similarity
+        });
       }
     }
 
