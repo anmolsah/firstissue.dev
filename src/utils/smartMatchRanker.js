@@ -12,6 +12,7 @@ import {
   daysSince,
 } from "./issueQualityFilter.js";
 import { scoreRepoHealth } from "./repoHealth.js";
+import { scoreIssueAffinity } from "./userAffinity.js";
 
 const SKILL_ALIASES = {
   javascript: ["javascript", "js", "ecmascript", "es6"],
@@ -192,13 +193,27 @@ export function scoreSmartMatchCandidate(issue, userProfile = {}, now = Date.now
   // Bonus for vetted trusted repos
   const trustedBonus = issue.from_trusted_repo ? 3 : 0;
 
+  // 6. Optional Learned User Affinity (-15 to +18)
+  const affinity = scoreIssueAffinity(issue, userProfile?.affinity);
+  const affinityDelta = affinity.isDismissed ? -30 : affinity.delta;
+
   const rawTotal =
-    stack.score + repoHealthPts + clarityPts + freshnessPts + claimRiskPts + experiencePts + trustedBonus;
+    stack.score +
+    repoHealthPts +
+    clarityPts +
+    freshnessPts +
+    claimRiskPts +
+    experiencePts +
+    trustedBonus +
+    affinityDelta;
   const clampedBase = Math.max(5, Math.min(99, Math.round(rawTotal)));
 
   const reasons = [];
   if (stack.matchedSkills.length > 0) {
     reasons.push(`Matches ${stack.matchedSkills.slice(0, 3).join(", ")}`);
+  }
+  if (affinity.reasons.length > 0) {
+    reasons.push(affinity.reasons[0]);
   }
   if (issue.repo_health?.health_summary) {
     reasons.push(issue.repo_health.health_summary);
@@ -221,6 +236,7 @@ export function scoreSmartMatchCandidate(issue, userProfile = {}, now = Date.now
     cleanSummary: readiness.summary || extractCleanSummary(issue.body || "", 260),
     taskType: readiness.taskType,
     _readiness: readiness,
+    _affinity: affinity,
     preScoreBreakdown: {
       stackFit: stack.score,
       repoHealth: repoHealthPts,
@@ -229,6 +245,7 @@ export function scoreSmartMatchCandidate(issue, userProfile = {}, now = Date.now
       claimRisk: claimRiskPts,
       experienceFit: experiencePts,
       trustedBonus,
+      affinityDelta,
     },
     preReasons: reasons.slice(0, 3),
   };
@@ -240,13 +257,21 @@ export function scoreSmartMatchCandidate(issue, userProfile = {}, now = Date.now
  */
 export function rankCandidatesForUser(candidates, userProfile = {}, options = {}) {
   if (!Array.isArray(candidates) || candidates.length === 0) return [];
-  const { maxCandidates = 20, maxPerRepo = 3, now = Date.now() } = options;
+  const { maxCandidates = 20, maxPerRepo = 3, now = Date.now(), affinityProfile = null } = options;
+
+  const profileWithAffinity = affinityProfile
+    ? { ...userProfile, affinity: affinityProfile }
+    : userProfile;
 
   const scored = candidates
-    .filter((issue) => issue && !issue.is_assigned && !issue.repo_archived)
+    .filter((issue) => {
+      if (!issue || issue.is_assigned || issue.repo_archived) return false;
+      const affinity = scoreIssueAffinity(issue, profileWithAffinity?.affinity);
+      return !affinity.isDismissed;
+    })
     .map((issue) => ({
       ...issue,
-      ...scoreSmartMatchCandidate(issue, userProfile, now),
+      ...scoreSmartMatchCandidate(issue, profileWithAffinity, now),
     }))
     .sort((a, b) => b.preScore - a.preScore);
 

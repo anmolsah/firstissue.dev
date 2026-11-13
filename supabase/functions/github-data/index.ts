@@ -958,6 +958,64 @@ async function getContributionStats(username: string, token?: string) {
   return stats;
 }
 
+async function parseNaturalQuery(queryText: string) {
+  const clean = String(queryText || "").trim();
+  if (!clean) return { fallback: true };
+
+  const cacheKey = `nlq:v1:${clean.toLowerCase().slice(0, 120)}`;
+  const cached = await redisGet(cacheKey);
+  if (cached) return cached;
+
+  const XAI_API_KEY = Deno.env.get("XAI_API_KEY");
+  if (!XAI_API_KEY) {
+    return { fallback: true };
+  }
+
+  try {
+    const res = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${XAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "grok-4.3",
+        temperature: 0.1,
+        max_tokens: 220,
+        messages: [
+          {
+            role: "system",
+            content:
+              'Convert a developer open-source issue search sentence into strict JSON. Allowed languages: typescript, javascript, python, go, rust, java, c++, c#, php, swift, ruby, kotlin, dart, or "". Allowed labels: "good first issue", "help wanted", "beginner friendly", "documentation", "bug". Allowed sort: "best", "health", "updated", "created". Output ONLY JSON: {"language":"","labels":["good first issue"],"keywords":"","minStars":"0","sort":"best","summary":""}',
+          },
+          { role: "user", content: clean },
+        ],
+      }),
+    });
+
+    if (!res.ok) return { fallback: true };
+    const aiData = await res.json();
+    const content = aiData?.choices?.[0]?.message?.content;
+    if (!content) return { fallback: true };
+
+    const parsed = JSON.parse(content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim());
+    const normalized = {
+      fallback: false,
+      language: typeof parsed.language === "string" ? parsed.language.toLowerCase() : "",
+      labels: Array.isArray(parsed.labels) && parsed.labels.length > 0 ? parsed.labels : ["good first issue"],
+      keywords: typeof parsed.keywords === "string" ? parsed.keywords.trim() : "",
+      minStars: String(Math.max(0, Math.min(10000, parseInt(parsed.minStars || "0", 10) || 0))),
+      sort: ["best", "health", "updated", "created"].includes(parsed.sort) ? parsed.sort : "best",
+      summary: typeof parsed.summary === "string" ? parsed.summary.trim() : "",
+    };
+
+    await redisSet(cacheKey, normalized, 86400);
+    return normalized;
+  } catch {
+    return { fallback: true };
+  }
+}
+
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
@@ -1010,6 +1068,14 @@ serve(async (req: Request) => {
       if (!username) throw new Error("Missing username");
       const stats = await getContributionStats(username, token);
       return new Response(JSON.stringify({ stats }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action === "parseNaturalQuery") {
+      if (!body.query) throw new Error("Missing query");
+      const parsed = await parseNaturalQuery(body.query);
+      return new Response(JSON.stringify(parsed), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }

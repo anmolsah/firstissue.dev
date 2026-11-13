@@ -14,6 +14,19 @@ import {
   enrichAndSortIssues,
   formatCompactNumber,
 } from "../utils/issueQualityFilter";
+import {
+  EXPLORE_PRESETS,
+  looksLikeNaturalLanguage,
+  parseNaturalLanguageQuery,
+} from "../utils/naturalLanguageSearch";
+import { applyUserAffinity } from "../utils/userAffinity";
+import {
+  fetchUserAffinitySignals,
+  recordDismissal,
+  undoDismissal,
+  clearAllDismissals,
+  recordPositiveSignal,
+} from "../services/userSignals";
 import { getCache, setCache } from "../utils/cache";
 import {
   Search,
@@ -35,6 +48,10 @@ import {
   MessageSquare,
   Sparkles,
   Activity,
+  EyeOff,
+  Layers,
+  Wand2,
+  RotateCcw,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { withUTM } from "../utils/utm";
@@ -121,9 +138,34 @@ const ExplorePage = () => {
     minStars: "0",
   });
 
+  const [searchDraft, setSearchDraft] = useState("");
+  const [activePresetId, setActivePresetId] = useState(null);
+  const [nlSummary, setNlSummary] = useState("");
+  const [parsingIntent, setParsingIntent] = useState(false);
+
+  const [affinityProfile, setAffinityProfile] = useState(null);
+  const [dismissedUrls, setDismissedUrls] = useState(() => new Set());
+  const [lastDismissed, setLastDismissed] = useState(null);
+
+  const [similarSource, setSimilarSource] = useState(null);
+  const [similarIssues, setSimilarIssues] = useState([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
+
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const sortDropdownRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  useEffect(() => {
+    let active = true;
+    fetchUserAffinitySignals(user?.id).then(({ affinityProfile: prof, dismissedUrls: hidden }) => {
+      if (!active) return;
+      setAffinityProfile(prof);
+      setDismissedUrls(hidden);
+    });
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
 
   // Keyboard shortcut Cmd/Ctrl + K focuses search input
   useEffect(() => {
@@ -215,6 +257,9 @@ const ExplorePage = () => {
   };
 
   const handleClearFilters = () => {
+    setSearchDraft("");
+    setActivePresetId(null);
+    setNlSummary("");
     setFilters({
       language: "",
       labels: ["good first issue"],
@@ -222,6 +267,198 @@ const ExplorePage = () => {
       sort: "updated",
       minStars: "0",
     });
+  };
+
+  const handleSearchInputChange = (val) => {
+    setSearchDraft(val);
+    setActivePresetId(null);
+    if (!looksLikeNaturalLanguage(val)) {
+      setNlSummary("");
+      setFilters((prev) => ({ ...prev, keywords: val }));
+    }
+  };
+
+  const handleNaturalSearchSubmit = async (e) => {
+    if (e?.preventDefault) e.preventDefault();
+    const raw = searchDraft.trim();
+    if (!raw) {
+      setNlSummary("");
+      setFilters((prev) => ({ ...prev, keywords: "" }));
+      return;
+    }
+
+    if (!looksLikeNaturalLanguage(raw)) {
+      setNlSummary("");
+      setFilters((prev) => ({ ...prev, keywords: raw }));
+      return;
+    }
+
+    const localParsed = parseNaturalLanguageQuery(raw, filters);
+    setActivePresetId(localParsed.presetId || null);
+    setNlSummary(localParsed.summary || "");
+    setFilters(localParsed.filters);
+
+    // Optional AI enhancement if server Edge Function supports parseNaturalQuery
+    if (localParsed.matchedTokens.length <= 1) {
+      setParsingIntent(true);
+      try {
+        const { data, error } = await supabase.functions.invoke("github-data", {
+          body: { action: "parseNaturalQuery", query: raw },
+        });
+        if (!error && data && !data.fallback) {
+          setNlSummary(data.summary || localParsed.summary || "");
+          setFilters((prev) => ({
+            ...prev,
+            language: data.language ?? prev.language,
+            labels: Array.isArray(data.labels) && data.labels.length > 0 ? data.labels : prev.labels,
+            keywords: typeof data.keywords === "string" ? data.keywords : prev.keywords,
+            minStars: data.minStars || prev.minStars,
+            sort: data.sort || prev.sort,
+          }));
+        }
+      } catch {
+        // Keep fast deterministic parse result silently
+      } finally {
+        setParsingIntent(false);
+      }
+    }
+  };
+
+  const handleTogglePreset = (preset) => {
+    if (selectedTab === "trusted" || selectedTab === "startups" || selectedTab === "smart") {
+      setSelectedTab("all");
+    }
+
+    if (activePresetId === preset.id) {
+      setActivePresetId(null);
+      setSearchDraft("");
+      setNlSummary("");
+      setFilters((prev) => ({
+        ...prev,
+        labels: ["good first issue"],
+        keywords: "",
+        sort: "best",
+      }));
+      return;
+    }
+
+    setActivePresetId(preset.id);
+    setNlSummary(`Preset: ${preset.label}`);
+    setSearchDraft(preset.keywords || "");
+    setFilters((prev) => ({
+      ...prev,
+      labels: preset.labels,
+      keywords: preset.keywords,
+      sort: preset.sort || "best",
+      minStars: preset.minStars ?? prev.minStars,
+    }));
+  };
+
+  const handleDismissIssue = async (issue) => {
+    const issueUrl = issue.html_url;
+    setIssues((prev) => prev.filter((item) => item.html_url !== issueUrl));
+    setLastDismissed({ url: issueUrl, title: issue.title });
+    const nextSet = await recordDismissal({
+      userId: user?.id,
+      issue,
+      language: filters.language || null,
+    });
+    const updatedSet = new Set(nextSet);
+    setDismissedUrls(updatedSet);
+    setAffinityProfile((prev) => (prev ? { ...prev, dismissedUrls: updatedSet } : prev));
+  };
+
+  const handleUndoDismissal = async () => {
+    if (!lastDismissed?.url) return;
+    const nextSet = await undoDismissal({
+      userId: user?.id,
+      issueUrl: lastDismissed.url,
+    });
+    const updatedSet = new Set(nextSet);
+    setDismissedUrls(updatedSet);
+    setAffinityProfile((prev) => (prev ? { ...prev, dismissedUrls: updatedSet } : prev));
+    setLastDismissed(null);
+    resetAndFetch();
+  };
+
+  const handleResetDismissals = async () => {
+    const cleared = await clearAllDismissals({ userId: user?.id });
+    const updatedSet = new Set(cleared);
+    setDismissedUrls(updatedSet);
+    setAffinityProfile((prev) => (prev ? { ...prev, dismissedUrls: updatedSet } : prev));
+    setLastDismissed(null);
+    resetAndFetch();
+  };
+
+  const handleOpenSimilar = async (sourceIssue) => {
+    setSimilarSource(sourceIssue);
+    setLoadingSimilar(true);
+
+    const sourceRepo = sourceIssue.repository_url?.split("/").slice(-2).join("/") || "";
+    const sourceReadiness = sourceIssue._readiness || scoreIssueReadiness(sourceIssue);
+    const taskType = sourceReadiness.taskType;
+    const sourceLabels = (sourceIssue.labels || []).map((l) => l.name?.toLowerCase()).filter(Boolean);
+
+    const localSimilar = issues
+      .filter((candidate) => {
+        if (!candidate || candidate.id === sourceIssue.id) return false;
+        if (dismissedUrls.has(candidate.html_url)) return false;
+        const cRepo = candidate.repository_url?.split("/").slice(-2).join("/") || "";
+        const cType = (candidate._readiness || scoreIssueReadiness(candidate)).taskType;
+        const cLabels = (candidate.labels || []).map((l) => l.name?.toLowerCase());
+        return (
+          cRepo === sourceRepo ||
+          (taskType && cType === taskType) ||
+          cLabels.some((l) => sourceLabels.includes(l))
+        );
+      })
+      .slice(0, 4);
+
+    setSimilarIssues(localSimilar);
+
+    try {
+      const taskKeywords =
+        taskType === "Docs"
+          ? "documentation readme"
+          : taskType === "Tests"
+            ? "test coverage"
+            : taskType === "UI"
+              ? "ui css layout"
+              : taskType === "Bug fix"
+                ? "bug fix"
+                : "";
+
+      const query = buildGitHubIssueSearchQuery({
+        labels: ["good first issue", "help wanted"],
+        language: filters.language || "",
+        keywords: taskKeywords,
+      });
+
+      const res = await fetch(
+        `https://api.github.com/search/issues?q=${encodeURIComponent(query)}&sort=updated&order=desc&per_page=12`,
+        { headers: getClientGithubHeaders() }
+      );
+
+      if (res.ok) {
+        const data = await res.json();
+        const remoteItems = filterStaleIssues(data.items || []);
+        const combined = [...localSimilar];
+        const seenIds = new Set([sourceIssue.id, ...combined.map((i) => i.id)]);
+
+        for (const item of remoteItems) {
+          if (seenIds.has(item.id) || dismissedUrls.has(item.html_url)) continue;
+          seenIds.add(item.id);
+          combined.push(item);
+        }
+
+        const enriched = enrichAndSortIssues(combined, "best").slice(0, 4);
+        setSimilarIssues(enriched);
+      }
+    } catch {
+      // Keep local similar matches if remote lookup fails
+    } finally {
+      setLoadingSimilar(false);
+    }
   };
 
   const getClientGithubHeaders = () => ({
@@ -481,7 +718,11 @@ const ExplorePage = () => {
       }
 
       const filteredIssues = filterStaleIssues(rawItems, { minStars: minStarsInt });
-      const preparedIssues = enrichAndSortIssues(filteredIssues, filters.sort);
+      const preparedIssues = applyUserAffinity(
+        enrichAndSortIssues(filteredIssues, filters.sort),
+        filters.sort,
+        affinityProfile
+      );
 
       if (reset) {
         setIssues(preparedIssues);
@@ -490,7 +731,7 @@ const ExplorePage = () => {
           const seenIds = new Set(prev.map((item) => item.id));
           const merged = [...prev, ...preparedIssues.filter((item) => !seenIds.has(item.id))];
           return filters.sort === "best" || filters.sort === "health"
-            ? enrichAndSortIssues(merged, filters.sort)
+            ? applyUserAffinity(enrichAndSortIssues(merged, filters.sort), filters.sort, affinityProfile)
             : merged;
         });
       }
@@ -572,6 +813,12 @@ const ExplorePage = () => {
           status: "saved",
         });
         setBookmarkedIssues((prev) => new Set([...prev, issue.html_url]));
+        recordPositiveSignal({
+          userId: user.id,
+          issue,
+          feedback: "bookmarked",
+          language: detectedLanguage,
+        });
       }
     } catch (error) {
       console.error("Error managing bookmark:", error);
@@ -710,22 +957,39 @@ const ExplorePage = () => {
       <main className="flex-1 lg:ml-64 min-w-0 pb-20 lg:pb-0">
         {/* Sticky Top Header */}
         <header className="h-16 border-b border-[#22242A] bg-[#0F0F0F]/95 backdrop-blur-sm sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 gap-3">
-          <div className="flex flex-1 items-center max-w-xl relative">
+          <form onSubmit={handleNaturalSearchSubmit} className="flex flex-1 items-center max-w-xl relative">
             <Search className="absolute left-3 w-4 h-4 text-[#8C929C]" />
             <input
               ref={searchInputRef}
               type="text"
-              aria-label="Search repositories, issues or topics"
-              placeholder="Search repositories, issues or topics..."
-              className="w-full bg-[#141518] border border-[#2B2E36] rounded-[4px] py-2 pl-9 pr-14 text-xs text-[#F4F4F0] focus:outline-none focus:border-[#DAFA9C] transition-colors placeholder:text-[#8C929C]"
-              value={filters.keywords}
-              onChange={(e) => setFilters((prev) => ({ ...prev, keywords: e.target.value }))}
+              aria-label="Search repositories, issues or describe what you want to fix"
+              placeholder="Try 'small React UI bug' or search repos, issues..."
+              className={`w-full bg-[#141518] border border-[#2B2E36] rounded-[4px] py-2 pl-9 text-xs text-[#F4F4F0] focus:outline-none focus:border-[#DAFA9C] transition-colors placeholder:text-[#8C929C] ${
+                looksLikeNaturalLanguage(searchDraft) ? "pr-28" : "pr-14"
+              }`}
+              value={searchDraft}
+              onChange={(e) => handleSearchInputChange(e.target.value)}
             />
-            <div className="absolute right-2.5 hidden sm:flex items-center gap-0.5 border border-[#2B2E36] bg-[#0B0C0E] rounded-[4px] px-1.5 py-0.5 select-none pointer-events-none">
-              <Command className="w-2.5 h-2.5 text-[#8C929C]" />
-              <span className="text-[11px] text-[#8C929C] font-mono">K</span>
-            </div>
-          </div>
+            {looksLikeNaturalLanguage(searchDraft) ? (
+              <button
+                type="submit"
+                disabled={parsingIntent}
+                className="absolute right-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] text-xs font-semibold transition-colors cursor-pointer disabled:opacity-60"
+              >
+                {parsingIntent ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Wand2 className="w-3 h-3" />
+                )}
+                {parsingIntent ? "Parsing" : "Apply intent"}
+              </button>
+            ) : (
+              <div className="absolute right-2.5 hidden sm:flex items-center gap-0.5 border border-[#2B2E36] bg-[#0B0C0E] rounded-[4px] px-1.5 py-0.5 select-none pointer-events-none">
+                <Command className="w-2.5 h-2.5 text-[#8C929C]" />
+                <span className="text-[11px] text-[#8C929C] font-mono">K</span>
+              </div>
+            )}
+          </form>
 
           <div className="flex items-center gap-3">
             <button
@@ -781,7 +1045,7 @@ const ExplorePage = () => {
 
         {/* Content Body */}
         <div className="p-4 sm:p-6 lg:p-8">
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F4F4F0] mb-1">
                 Explore Issues
@@ -799,6 +1063,84 @@ const ExplorePage = () => {
                 </span>
               )}
           </div>
+
+          {(selectedTab === "all" || selectedTab === "trending") && (
+            <div className="mb-5 space-y-2.5">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-mono text-[#8C929C] mr-1 select-none">
+                  Quick intents:
+                </span>
+                {EXPLORE_PRESETS.map((preset) => {
+                  const active = activePresetId === preset.id;
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      onClick={() => handleTogglePreset(preset)}
+                      title={preset.description}
+                      className={`px-2.5 py-1 rounded-[4px] border text-xs font-medium transition-colors cursor-pointer ${
+                        active
+                          ? "bg-[#DAFA9C]/12 border-[#DAFA9C]/60 text-[#DAFA9C]"
+                          : "bg-[#141518] border-[#22242A] text-[#A8ADB6] hover:border-[#3A3E48] hover:text-[#F4F4F0]"
+                      }`}
+                    >
+                      {preset.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {(nlSummary || lastDismissed || dismissedUrls.size > 0) && (
+                <div className="flex flex-wrap items-center gap-2">
+                  {nlSummary && (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#141518] border border-[#DAFA9C]/35 text-xs text-[#F4F4F0]">
+                      <Wand2 className="w-3 h-3 text-[#DAFA9C] shrink-0" />
+                      <span>{nlSummary}</span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNlSummary("");
+                          setActivePresetId(null);
+                        }}
+                        aria-label="Clear interpreted summary"
+                        className="ml-1 text-[#8C929C] hover:text-[#F4F4F0] cursor-pointer"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+
+                  {lastDismissed ? (
+                    <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-xs text-[#A8ADB6]">
+                      <EyeOff className="w-3 h-3 text-[#8C929C] shrink-0" />
+                      <span className="max-w-[240px] truncate">
+                        Hidden &ldquo;{lastDismissed.title}&rdquo;
+                      </span>
+                      <button
+                        type="button"
+                        onClick={handleUndoDismissal}
+                        className="inline-flex items-center gap-1 text-[#DAFA9C] hover:underline font-medium cursor-pointer"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        Undo
+                      </button>
+                    </span>
+                  ) : (
+                    dismissedUrls.size > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleResetDismissals}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[4px] bg-[#141518] border border-[#22242A] hover:border-[#3A3E48] text-xs text-[#8C929C] hover:text-[#F4F4F0] transition-colors cursor-pointer"
+                      >
+                        <RotateCcw className="w-3 h-3" />
+                        {dismissedUrls.size} hidden · Reset
+                      </button>
+                    )
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Tabs & Sort */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -1083,14 +1425,18 @@ const ExplorePage = () => {
               ) : (
                 <>
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {issues.map((issue) => (
-                      <IssueCard
-                        key={issue.id}
-                        issue={issue}
-                        isBookmarked={bookmarkedIssues.has(issue.html_url)}
-                        onToggleBookmark={() => handleBookmark(issue)}
-                      />
-                    ))}
+                    {issues
+                      .filter((issue) => !dismissedUrls.has(issue.html_url))
+                      .map((issue) => (
+                        <IssueCard
+                          key={issue.id}
+                          issue={issue}
+                          isBookmarked={bookmarkedIssues.has(issue.html_url)}
+                          onToggleBookmark={() => handleBookmark(issue)}
+                          onDismiss={() => handleDismissIssue(issue)}
+                          onFindSimilar={() => handleOpenSimilar(issue)}
+                        />
+                      ))}
                   </div>
 
                   {issues.length === 0 && !loading && (
@@ -1136,6 +1482,19 @@ const ExplorePage = () => {
         </div>
       </main>
 
+      <SimilarIssuesModal
+        sourceIssue={similarSource}
+        issues={similarIssues}
+        loading={loadingSimilar}
+        onClose={() => setSimilarSource(null)}
+        onFilterPreset={(preset) => {
+          if (activePresetId !== preset.id) {
+            handleTogglePreset(preset);
+          }
+          setSimilarSource(null);
+        }}
+      />
+
       <MobileBottomNav />
     </div>
   );
@@ -1174,13 +1533,14 @@ const TabButton = ({ label, active, onClick, icon: Icon, isPremium }) => (
   </button>
 );
 
-const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
+const IssueCard = ({ issue, isBookmarked, onToggleBookmark, onDismiss, onFindSimilar }) => {
   const repoName = issue.repository_url.split("/").slice(-2).join("/");
   const timeAgo = formatTimeAgo(issue.created_at);
   const [kitOpen, setKitOpen] = useState(false);
   const readiness = issue._readiness || scoreIssueReadiness(issue);
   const starLabel = formatCompactNumber(issue.repo_stars);
   const commentsCount = Number(issue.comments ?? 0);
+  const affinityBoost = (issue._affinity?.delta ?? 0) >= 4;
 
   const readinessToneClass =
     readiness.tier === "strong"
@@ -1238,6 +1598,18 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
             Fit {readiness.score}
           </span>
           <span className="text-xs text-[#8C929C] font-mono tabular-nums">{timeAgo}</span>
+          <button
+            type="button"
+            aria-label="Not for me"
+            title="Hide issue & tune recommendations"
+            onClick={(e) => {
+              e.preventDefault();
+              onDismiss?.();
+            }}
+            className="p-1.5 rounded-[4px] border bg-[#0B0C0E] text-[#8C929C] hover:text-[#F4F4F0] border-[#22242A] hover:border-[#3A3E48] transition-colors cursor-pointer"
+          >
+            <EyeOff className="w-3.5 h-3.5" />
+          </button>
           <button
             type="button"
             aria-label={isBookmarked ? "Remove bookmark" : "Bookmark issue"}
@@ -1306,6 +1678,14 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
           {readiness.taskType && (
             <Badge label={readiness.taskType} tone="neutral" />
           )}
+          {affinityBoost && (
+            <Badge
+              key="affinity"
+              label="Tailored"
+              tone="positive"
+              title={issue._affinity?.reasons?.join(" · ") || "Matches your saved history"}
+            />
+          )}
           {signalChips.map((signal) => (
             <Badge key={signal.key} label={signal.label} tone={signal.tone} />
           ))}
@@ -1315,6 +1695,15 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
             ))}
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => onFindSimilar?.()}
+            title="Find similar issues"
+            className="inline-flex items-center gap-1 px-2 py-1.5 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] text-[#A8ADB6] hover:border-[#3A3E48] hover:text-[#F4F4F0] transition-colors text-xs font-medium cursor-pointer"
+          >
+            <Layers className="w-3 h-3" />
+            Similar
+          </button>
           <button
             type="button"
             onClick={() => setKitOpen(true)}
@@ -1353,7 +1742,7 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark }) => {
   );
 };
 
-const Badge = ({ label, tone = "neutral" }) => {
+const Badge = ({ label, tone = "neutral", title }) => {
   const display = label.length > 18 ? label.substring(0, 18) + "..." : label;
   const toneClass =
     tone === "warn"
@@ -1363,9 +1752,175 @@ const Badge = ({ label, tone = "neutral" }) => {
         : "bg-[#0B0C0E] text-[#A8ADB6] border-[#22242A]";
 
   return (
-    <span className={`text-xs font-mono px-2 py-0.5 rounded-[4px] border select-none ${toneClass}`}>
+    <span
+      title={title}
+      className={`text-xs font-mono px-2 py-0.5 rounded-[4px] border select-none ${toneClass}`}
+    >
       {display}
     </span>
+  );
+};
+
+const TASK_TO_PRESET_ID = {
+  Docs: "docs",
+  Tests: "tests",
+  UI: "ui",
+  "Bug fix": "bug",
+};
+
+const SimilarIssuesModal = ({ sourceIssue, issues, loading, onClose, onFilterPreset }) => {
+  useEffect(() => {
+    if (!sourceIssue) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [sourceIssue, onClose]);
+
+  if (!sourceIssue) return null;
+
+  const sourceRepo = sourceIssue.repository_url?.split("/").slice(-2).join("/") || "";
+  const sourceReadiness = sourceIssue._readiness || scoreIssueReadiness(sourceIssue);
+  const presetId = TASK_TO_PRESET_ID[sourceReadiness.taskType];
+  const matchingPreset = presetId ? EXPLORE_PRESETS.find((p) => p.id === presetId) : null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="similar-issues-title"
+    >
+      <div
+        className="w-full max-w-2xl bg-[#141518] border border-[#2B2E36] rounded-[4px] shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-5 py-4 border-b border-[#22242A] flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-xs font-mono text-[#DAFA9C] mb-1">
+              <Layers className="w-3.5 h-3.5 shrink-0" />
+              <span>SIMILAR ISSUES</span>
+              {sourceReadiness.taskType && (
+                <span className="px-1.5 py-0.5 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] text-[#A8ADB6]">
+                  {sourceReadiness.taskType}
+                </span>
+              )}
+            </div>
+            <h2 id="similar-issues-title" className="text-sm font-semibold text-[#F4F4F0] truncate">
+              {sourceIssue.title}
+            </h2>
+            <p className="text-xs font-mono text-[#8C929C] truncate mt-0.5">{sourceRepo}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close similar issues"
+            className="p-1.5 rounded-[4px] text-[#8C929C] hover:text-[#F4F4F0] hover:bg-[#1C1E23] cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-5 overflow-y-auto space-y-3">
+          {loading && issues.length === 0 ? (
+            <div className="py-10 flex items-center justify-center gap-2 text-xs text-[#A8ADB6]">
+              <Loader2 className="w-4 h-4 animate-spin text-[#DAFA9C]" />
+              Finding related issues...
+            </div>
+          ) : issues.length === 0 ? (
+            <div className="py-10 text-center bg-[#0B0C0E] border border-[#22242A] rounded-[4px] px-4">
+              <p className="text-xs text-[#A8ADB6]">
+                No close alternatives loaded yet for this repo or task type.
+              </p>
+            </div>
+          ) : (
+            issues.slice(0, 4).map((candidate) => {
+              const cRepo = candidate.repository_url?.split("/").slice(-2).join("/") || "";
+              const cReadiness = candidate._readiness || scoreIssueReadiness(candidate);
+              const cStars = formatCompactNumber(candidate.repo_stars);
+              return (
+                <div
+                  key={candidate.id}
+                  className="p-3.5 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] hover:border-[#3A3E48] transition-colors flex flex-col gap-2"
+                >
+                  <div className="flex items-center justify-between gap-2 text-xs font-mono">
+                    <span className="text-[#A8ADB6] truncate">{cRepo}</span>
+                    <div className="flex items-center gap-2 shrink-0 tabular-nums">
+                      {cStars !== null && (
+                        <span className="inline-flex items-center gap-1 text-[#8C929C]">
+                          <Star className="w-3 h-3 text-[#DAFA9C]" />
+                          {cStars}
+                        </span>
+                      )}
+                      <span className="px-1.5 py-0.5 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-[#DAFA9C]">
+                        Fit {cReadiness.score}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-start justify-between gap-3">
+                    <a
+                      href={withUTM(candidate.html_url, { medium: "explore", content: "similar_modal" })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() =>
+                        trackIssueClick({
+                          issueUrl: candidate.html_url,
+                          source: "explore_similar",
+                          repo: cRepo,
+                          action: "similar_issue_click",
+                        })
+                      }
+                      className="text-sm font-medium text-[#F4F4F0] hover:text-[#DAFA9C] transition-colors leading-snug"
+                    >
+                      {candidate.title}
+                    </a>
+                    <a
+                      href={withUTM(candidate.html_url, { medium: "explore", content: "similar_modal_ext" })}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Open ${cRepo} issue on GitHub`}
+                      className="p-1.5 rounded-[4px] text-[#8C929C] hover:text-[#F4F4F0] hover:bg-[#1C1E23] shrink-0"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                  {candidate.repo_health?.health_summary && (
+                    <p className="text-xs font-mono text-[#8C929C] truncate">
+                      {candidate.repo_health.health_summary}
+                    </p>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        <div className="px-5 py-3.5 border-t border-[#22242A] bg-[#0F0F0F] flex items-center justify-between gap-3">
+          {matchingPreset ? (
+            <button
+              type="button"
+              onClick={() => onFilterPreset?.(matchingPreset)}
+              className="px-3 py-1.5 rounded-[4px] bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] text-xs font-semibold transition-colors cursor-pointer"
+            >
+              Filter feed: {matchingPreset.label}
+            </button>
+          ) : (
+            <span className="text-xs text-[#8C929C]">
+              Showing up to 4 related issues
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-3 py-1.5 rounded-[4px] bg-[#141518] border border-[#2B2E36] hover:border-[#3A3E48] text-xs text-[#F4F4F0] cursor-pointer"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
 

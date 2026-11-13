@@ -3,6 +3,7 @@ import {
   rankCandidatesForUser,
   buildDeterministicMatchResults,
 } from '../utils/smartMatchRanker';
+import { fetchUserAffinitySignals } from './userSignals';
 
 /**
  * Smart Match Service
@@ -140,12 +141,13 @@ export async function runSmartMatch(
   const userProfile = await extractUserProfile(username, token);
   if (!userProfile) throw new Error('Could not analyze GitHub profile');
 
-  // Step 2: Fetch user's declared tech stack from Supabase profile
-  let techStack = [];
-  if (userId) {
-    techStack = await fetchUserTechStack(userId);
-  }
+  // Step 2: Fetch user's declared tech stack + learned affinity signals in parallel
+  const [techStack, signalsResult] = await Promise.all([
+    userId ? fetchUserTechStack(userId) : Promise.resolve([]),
+    fetchUserAffinitySignals(userId),
+  ]);
   userProfile.techStack = techStack;
+  userProfile.affinity = signalsResult?.affinityProfile || null;
 
   // Step 3: Fetch broader candidate pool and backfill repo_health if needed
   const rawCandidates = await fetchCandidateIssues(
@@ -157,9 +159,10 @@ export async function runSmartMatch(
 
   const enrichedCandidates = await attachSupabaseRepoHealth(rawCandidates);
 
-  // Step 4: Per-user deterministic pre-AI ranking (stack + repo health + clarity + claim risk + diversity)
+  // Step 4: Per-user deterministic pre-AI ranking (stack + repo health + clarity + claim risk + affinity + diversity)
   const preRankedCandidates = rankCandidatesForUser(enrichedCandidates, userProfile, {
     maxCandidates: 20,
+    affinityProfile: userProfile.affinity,
   });
   if (preRankedCandidates.length === 0) throw new Error('No candidate issues found');
 

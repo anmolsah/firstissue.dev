@@ -24,10 +24,17 @@ import {
   Search,
   Gauge,
   GitPullRequest,
+  EyeOff,
+  RotateCcw,
 } from "lucide-react";
 import { withUTM } from "../utils/utm";
 import { trackIssueClick } from "../utils/analytics";
 import { formatCompactNumber } from "../utils/issueQualityFilter";
+import {
+  getLocalDismissedUrls,
+  recordDismissal,
+  undoDismissal,
+} from "../services/userSignals";
 
 const LABEL_OPTIONS = [
   { id: "good first issue", label: "Good First Issue" },
@@ -164,6 +171,8 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
   const navigate = useNavigate();
   const { isSupporter, loading: supporterLoading } = useSupporter();
   const [preferredLabels, setPreferredLabels] = useState(getStoredLabels);
+  const [hiddenUrls, setHiddenUrls] = useState(() => getLocalDismissedUrls());
+  const [lastDismissed, setLastDismissed] = useState(null);
 
   const {
     matches,
@@ -204,6 +213,29 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
     recordAttempt();
     refresh();
   };
+
+  const handleDismissMatch = async (issue) => {
+    const issueUrl = issue.url;
+    setLastDismissed({ url: issueUrl, title: issue.title });
+    const nextSet = await recordDismissal({
+      userId,
+      issue,
+      language: issue.language || null,
+    });
+    setHiddenUrls(new Set(nextSet));
+  };
+
+  const handleUndoMatchDismissal = async () => {
+    if (!lastDismissed?.url) return;
+    const nextSet = await undoDismissal({
+      userId,
+      issueUrl: lastDismissed.url,
+    });
+    setHiddenUrls(new Set(nextSet));
+    setLastDismissed(null);
+  };
+
+  const visibleMatches = (matches || []).filter((issue) => !hiddenUrls.has(issue.url));
 
   const handleAnalyze = () => {
     if (!checkRateLimit()) return;
@@ -400,20 +432,57 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
       )}
 
       {matches && matches.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-          {matches.map((issue) => (
-            <SmartMatchCard
-              key={issue.id}
-              issue={issue}
-              isBookmarked={bookmarkedIssues?.has(issue.url)}
-              onToggleBookmark={() => onToggleBookmark?.(issue)}
-            />
-          ))}
-          {limited && (
-            <UpgradeMatchCard
-              moreCount={totalAvailable ? Math.max(totalAvailable - matches.length, 0) : null}
-              onUpgrade={() => navigate("/support")}
-            />
+        <div className="space-y-4">
+          {lastDismissed && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-xs text-[#A8ADB6]">
+              <EyeOff className="w-3.5 h-3.5 text-[#8C929C] shrink-0" />
+              <span className="max-w-[260px] truncate">
+                Hidden &ldquo;{lastDismissed.title}&rdquo;
+              </span>
+              <button
+                type="button"
+                onClick={handleUndoMatchDismissal}
+                className="inline-flex items-center gap-1 text-[#DAFA9C] hover:underline font-medium cursor-pointer"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Undo
+              </button>
+            </div>
+          )}
+
+          {visibleMatches.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {visibleMatches.map((issue) => (
+                <SmartMatchCard
+                  key={issue.id}
+                  issue={issue}
+                  isBookmarked={bookmarkedIssues?.has(issue.url)}
+                  onToggleBookmark={() => onToggleBookmark?.(issue)}
+                  onDismiss={() => handleDismissMatch(issue)}
+                />
+              ))}
+              {limited && (
+                <UpgradeMatchCard
+                  moreCount={totalAvailable ? Math.max(totalAvailable - matches.length, 0) : null}
+                  onUpgrade={() => navigate("/support")}
+                />
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-12 bg-[#141518] border border-[#2B2E36] rounded-[4px] px-4">
+              <p className="text-xs text-[#A8ADB6] mb-3">
+                All loaded matches are hidden from your feed.
+              </p>
+              <button
+                type="button"
+                onClick={handleRefresh}
+                disabled={loading || isRateLimited}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] hover:border-[#3A3E48] text-xs text-[#F4F4F0] cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Refresh matches
+              </button>
+            </div>
           )}
         </div>
       ) : (
@@ -452,7 +521,7 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
   );
 };
 
-const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
+const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark, onDismiss }) => {
   const matchPercentage = Math.round((issue.matchScore || 0) * 100);
 
   const getScoreStyle = (pct) => {
@@ -493,21 +562,35 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark }) => {
           <span className="font-semibold">{matchPercentage}%</span>
         </div>
 
-        <button
-          type="button"
-          aria-label={isBookmarked ? "Remove bookmark" : "Bookmark issue"}
-          onClick={(e) => {
-            e.preventDefault();
-            onToggleBookmark?.();
-          }}
-          className={`p-1.5 rounded-[4px] border transition-colors cursor-pointer ${
-            isBookmarked
-              ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/40"
-              : "bg-[#0B0C0E] text-[#8C929C] hover:text-[#F4F4F0] border-[#22242A] hover:border-[#3A3E48]"
-          }`}
-        >
-          {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
-        </button>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            aria-label="Not for me"
+            title="Hide match & tune recommendations"
+            onClick={(e) => {
+              e.preventDefault();
+              onDismiss?.();
+            }}
+            className="p-1.5 rounded-[4px] border bg-[#0B0C0E] text-[#8C929C] hover:text-[#F4F4F0] border-[#22242A] hover:border-[#3A3E48] transition-colors cursor-pointer"
+          >
+            <EyeOff className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            aria-label={isBookmarked ? "Remove bookmark" : "Bookmark issue"}
+            onClick={(e) => {
+              e.preventDefault();
+              onToggleBookmark?.();
+            }}
+            className={`p-1.5 rounded-[4px] border transition-colors cursor-pointer ${
+              isBookmarked
+                ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/40"
+                : "bg-[#0B0C0E] text-[#8C929C] hover:text-[#F4F4F0] border-[#22242A] hover:border-[#3A3E48]"
+            }`}
+          >
+            {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+          </button>
+        </div>
       </div>
 
       <div className="flex items-center gap-2 mb-2.5 text-xs font-mono text-[#8C929C]">
