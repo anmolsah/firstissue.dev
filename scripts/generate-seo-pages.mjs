@@ -66,7 +66,7 @@ async function fetchIssuesForLanguage(lang) {
   const issues = [];
 
   for (const label of LABELS) {
-    const q = `state:open type:issue label:"${label}" language:${lang.gh} is:public -label:duplicate -label:invalid`;
+    const q = `state:open type:issue label:"${label}" language:${lang.gh} is:public no:assignee -linked:pr archived:false -label:duplicate -label:invalid`;
     const url = `https://api.github.com/search/issues?q=${encodeURIComponent(q)}&sort=updated&order=desc&per_page=40`;
 
     let res;

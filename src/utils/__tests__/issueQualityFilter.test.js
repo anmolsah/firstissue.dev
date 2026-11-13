@@ -101,6 +101,26 @@ test("filterStaleIssues drops PRs, assigned, locked, archived, stale zero-commen
   );
 });
 
+test("buildGitHubIssueSearchQuery respects 256-char limit with many repos and filterStaleIssues drops noisy labels", () => {
+  const manyRepos = Array.from({ length: 15 }, (_, i) => `organization-name/project-repo-${i}`);
+  const q = buildGitHubIssueSearchQuery({
+    labels: ["good first issue", "help wanted", "documentation"],
+    language: "TypeScript",
+    keywords: "accessibility layout",
+    trending: true,
+    extraRepoQualifiers: manyRepos,
+    now: FIXED_NOW,
+  });
+  assert.ok(q.length <= 255, `Expected query <= 255 chars, got ${q.length}`);
+
+  const filtered = filterStaleIssues([
+    { id: 1, created_at: "2026-11-10T10:00:00Z", labels: [{ name: "good first issue" }] },
+    { id: 2, created_at: "2026-11-10T10:00:00Z", labels: [{ name: "blocked" }] },
+    { id: 3, created_at: "2026-11-10T10:00:00Z", labels: [{ name: "needs info" }] },
+  ], { now: FIXED_NOW });
+  assert.deepEqual(filtered.map((i) => i.id), [1]);
+});
+
 test("extractCleanSummary strips HTML comments, issue template headings, and code blocks", () => {
   const rawBody = `
 <!-- Please fill out this template -->

@@ -44,11 +44,16 @@ const FILE_PATH_REGEX =
 const SCOPE_CUE_REGEX =
   /(?:-\s*\[[ xX]\]|acceptance criteria|expected behavior|steps to reproduce|how to reproduce|requirements?:|^\s*\d+\.\s+\S)/im;
 
+export const QUERY_EXCLUDED_LABELS = ["wontfix", "invalid", "duplicate", "stale"];
+
+const EXCLUDED_LABEL_SET = new Set(EXCLUDED_LABELS.map((l) => l.toLowerCase()));
+
 /**
- * Builds the GitHub issue search query fragment for excluded low-quality labels.
+ * Builds the compact GitHub issue search query fragment for excluded low-quality labels.
+ * Kept short so queries with language, multiple labels, and repo filters stay under GitHub's 256-char limit.
  */
 export function buildExcludedLabelsQuery() {
-  return EXCLUDED_LABELS.map((l) => `-label:"${l}"`).join(" ");
+  return QUERY_EXCLUDED_LABELS.map((l) => (/\s/.test(l) ? `-label:"${l}"` : `-label:${l}`)).join(" ");
 }
 
 /**
@@ -88,6 +93,10 @@ export function buildGitHubIssueSearchQuery({
   extraRepoQualifiers = [],
   now = Date.now(),
 } = {}) {
+  const repoQuals = (Array.isArray(extraRepoQualifiers) ? extraRepoQualifiers : [])
+    .map((repo) => String(repo || "").trim())
+    .filter((repo) => /^[\w.-]+\/[\w.-]+$/.test(repo));
+
   const parts = [
     "state:open",
     "type:issue",
@@ -95,8 +104,12 @@ export function buildGitHubIssueSearchQuery({
     "no:assignee",
     "-linked:pr",
     "archived:false",
-    buildExcludedLabelsQuery(),
   ];
+
+  // When scoping by repo: qualifiers, save character budget and rely on filterStaleIssues for excluded labels
+  if (repoQuals.length === 0) {
+    parts.push(buildExcludedLabelsQuery());
+  }
 
   const cleanLabels = (Array.isArray(labels) ? labels : [])
     .map((l) => String(l || "").trim())
@@ -119,14 +132,20 @@ export function buildGitHubIssueSearchQuery({
     parts.push(`created:>=${sinceDate}`);
   }
 
-  const repoQuals = (Array.isArray(extraRepoQualifiers) ? extraRepoQualifiers : [])
-    .map((repo) => String(repo || "").trim())
-    .filter((repo) => /^[\w.-]+\/[\w.-]+$/.test(repo));
+  const cleanKeywords = String(keywords || "").trim();
+  const baseLength = parts.join(" ").length + (cleanKeywords ? cleanKeywords.length + 1 : 0);
+  let runningLength = baseLength;
+
+  let addedRepos = 0;
   for (const repo of repoQuals) {
-    parts.push(`repo:${repo}`);
+    if (addedRepos >= 8) break;
+    const term = `repo:${repo}`;
+    if (runningLength + term.length + 1 > 250) break;
+    parts.push(term);
+    runningLength += term.length + 1;
+    addedRepos += 1;
   }
 
-  const cleanKeywords = String(keywords || "").trim();
   if (cleanKeywords) {
     parts.push(cleanKeywords);
   }
@@ -135,7 +154,7 @@ export function buildGitHubIssueSearchQuery({
 }
 
 /**
- * Filters out claimed, locked, archived, PR-shaped, stale zero-comment, and under-min-star issues.
+ * Filters out claimed, locked, archived, PR-shaped, excluded-labeled, stale zero-comment, and under-min-star issues.
  */
 export function filterStaleIssues(issues, options = {}) {
   if (!Array.isArray(issues)) return [];
@@ -154,6 +173,9 @@ export function filterStaleIssues(issues, options = {}) {
     if (issue.locked || issue.repo_archived) return false;
     if (issue.assignee) return false;
     if (Array.isArray(issue.assignees) && issue.assignees.length > 0) return false;
+
+    const labelNames = getIssueLabelNames(issue);
+    if (labelNames.some((label) => EXCLUDED_LABEL_SET.has(label))) return false;
 
     const comments = Number(issue.comments ?? 0);
     if (daysSince(issue.created_at, now) > maxStaleDaysNoComments && comments === 0) {

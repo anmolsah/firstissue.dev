@@ -508,7 +508,7 @@ async function fetchIssues(languages: any[], token?: string, preferredLabels?: s
     : ["good first issue", "help wanted"];
 
   const langList = languages.slice(0, 3).map((l: any) => l.language.toLowerCase());
-  const cacheKey = `issues:v4:${langList.join('_')}:${[...labels].sort().join('_')}`;
+  const cacheKey = `issues:v5:${langList.join('_')}:${[...labels].sort().join('_')}`;
 
   // 1. Check Cache
   const cached = await redisGet(cacheKey);
@@ -523,9 +523,19 @@ async function fetchIssues(languages: any[], token?: string, preferredLabels?: s
 
   const ghToken = token || Deno.env.get("GITHUB_API_TOKEN");
 
+  const topLangs = langList.slice(0, 2).filter(Boolean);
+  const langParts = topLangs.map((l: string) => (/\s/.test(l) ? `language:"${l}"` : `language:${l}`));
+  const langFilter =
+    langParts.length === 1
+      ? langParts[0]
+      : langParts.length > 1
+        ? `(${langParts.join(' OR ')})`
+        : '';
+
   for (const label of labels) {
-    const langFilter = langList.map((l: string) => `language:${l}`).join(' ');
-    const query = `state:open type:issue label:"${label}" ${langFilter} is:public no:assignee -linked:pr archived:false -label:duplicate -label:invalid -label:wontfix -label:"won't fix" -label:stale -label:spam -label:blocked -label:"on hold" -label:"not planned" -label:"needs triage" -label:"cannot reproduce"`;
+    const query = `state:open type:issue label:"${label}" ${langFilter} is:public no:assignee -linked:pr archived:false -label:wontfix -label:invalid -label:duplicate -label:stale`
+      .replace(/\s+/g, ' ')
+      .trim();
 
     try {
       const response = await fetch(
@@ -555,12 +565,21 @@ async function fetchIssues(languages: any[], token?: string, preferredLabels?: s
     }
   }
 
-  // Pull additional vetted issues from matching trusted_repos
+  // Pull additional vetted issues from matching trusted_repos (capped to stay under 256-char limit)
   const trustedSlugs = await fetchTrustedRepoSlugsForLanguages(langList);
   if (trustedSlugs.length > 0) {
-    const repoFilter = trustedSlugs.map((slug) => `repo:${slug}`).join(' ');
     const labelUnion = `label:${labels.map((l) => `"${l}"`).join(',')}`;
-    const trustedQuery = `state:open type:issue ${labelUnion} ${repoFilter} is:public no:assignee -linked:pr archived:false`;
+    const baseTrusted = `state:open type:issue ${labelUnion} is:public no:assignee -linked:pr archived:false`;
+    const keptSlugs: string[] = [];
+    let len = baseTrusted.length;
+    for (const slug of trustedSlugs) {
+      const part = `repo:${slug}`;
+      if (len + part.length + 1 > 245) break;
+      keptSlugs.push(part);
+      len += part.length + 1;
+    }
+    const repoFilter = keptSlugs.join(' ');
+    const trustedQuery = `${baseTrusted} ${repoFilter}`.trim();
     try {
       const trustedRes = await fetch(
         `${GITHUB_API_BASE}/search/issues?q=${encodeURIComponent(trustedQuery)}&sort=updated&order=desc&per_page=25`,
@@ -619,10 +638,12 @@ async function fetchIssues(languages: any[], token?: string, preferredLabels?: s
     };
   });
 
-  // 4. Apply quality filters
+  // 4. Apply quality & excluded-label filters
   const filtered = formattedIssues.filter((issue: any) => {
     if (issue.is_assigned || issue.repo_archived) return false;
     if (issue.created_days_ago > 120 && issue.comments === 0) return false;
+    const lowerLabels = (issue.labels || []).map((l: string) => String(l).toLowerCase());
+    if (lowerLabels.some((l: string) => EXPLORE_EXCLUDED_LABEL_SET.has(l))) return false;
     return true;
   });
 
@@ -643,19 +664,28 @@ async function fetchIssues(languages: any[], token?: string, preferredLabels?: s
   return diverseIssues;
 }
 
+const EXPLORE_QUERY_EXCLUDED_LABELS = ["wontfix", "invalid", "duplicate", "stale"];
+
 const EXPLORE_EXCLUDED_LABELS = [
   "wontfix",
+  "won't fix",
   "invalid",
   "duplicate",
   "stale",
+  "spam",
   "blocked",
   "on hold",
+  "not planned",
   "need more info",
   "needs info",
   "needs-info",
+  "needs triage",
+  "cannot reproduce",
   "question",
   "discussion",
 ];
+
+const EXPLORE_EXCLUDED_LABEL_SET = new Set(EXPLORE_EXCLUDED_LABELS);
 
 async function fetchRepoMetaBatch(
   repos: string[],
@@ -685,7 +715,33 @@ async function fetchRepoMetaBatch(
   if (missing.length === 0) return result;
 
   const ghToken = token || Deno.env.get("GITHUB_API_TOKEN");
-  if (!ghToken) return result;
+  if (!ghToken) {
+    // Graceful unauthenticated REST fallback (capped & cached) so stars are still populated without a server token
+    await Promise.all(
+      missing.slice(0, 12).map(async (fullName) => {
+        try {
+          const res = await fetch(`${GITHUB_API_BASE}/repos/${fullName}`, {
+            headers: {
+              Accept: "application/vnd.github.v3+json",
+              "User-Agent": "firstissue.dev",
+            },
+          });
+          if (!res.ok) return;
+          const repo = await res.json();
+          const meta = {
+            stars: Number(repo.stargazers_count ?? 0),
+            pushed_at: repo.pushed_at ?? null,
+            archived: Boolean(repo.archived),
+          };
+          result[fullName] = meta;
+          await redisSet(`repo:meta:v1:${fullName}`, meta, 43200);
+        } catch {
+          // Ignore individual repo REST failure under tight rate limits
+        }
+      })
+    );
+    return result;
+  }
 
   // Query missing repos in chunks of 30 via GraphQL aliases.
   for (let i = 0; i < missing.length; i += 30) {
@@ -739,7 +795,7 @@ async function findStarredReposForExplore(
   ghToken?: string
 ): Promise<string[]> {
   const cleanLang = (language || "").trim();
-  const cacheKey = `explore:repos:v1:${cleanLang || "all"}:${minStars}`;
+  const cacheKey = `explore:repos:v2:${cleanLang || "all"}:${minStars}`;
   const cached = await redisGet(cacheKey);
   if (Array.isArray(cached) && cached.length > 0) return cached;
 
@@ -759,14 +815,28 @@ async function findStarredReposForExplore(
     const q = `stars:>=${minStars} archived:false is:public ${langPart} ${extra}`.replace(/\s+/g, " ").trim();
     try {
       const res = await fetch(
-        `${GITHUB_API_BASE}/search/repositories?q=${encodeURIComponent(q)}&sort=stars&order=desc&per_page=15`,
+        `${GITHUB_API_BASE}/search/repositories?q=${encodeURIComponent(q)}&sort=updated&order=desc&per_page=15`,
         { headers }
       );
       if (!res.ok) continue;
       const data = await res.json();
-      const repos = (data.items || []).map((r: any) => r.full_name).filter(Boolean);
-      if (repos.length > 0) {
-        await redisSet(cacheKey, repos, 1800);
+      const repoItems = (data.items || []).filter((r: any) => Boolean(r?.full_name));
+      if (repoItems.length > 0) {
+        const repos = repoItems.map((r: any) => r.full_name);
+        await Promise.all([
+          redisSet(cacheKey, repos, 1800),
+          ...repoItems.map((r: any) =>
+            redisSet(
+              `repo:meta:v1:${r.full_name}`,
+              {
+                stars: Number(r.stargazers_count ?? 0),
+                pushed_at: r.pushed_at ?? null,
+                archived: Boolean(r.archived),
+              },
+              43200
+            )
+          ),
+        ]);
         return repos;
       }
     } catch (e) {
@@ -805,7 +875,7 @@ async function exploreSearch({
     repoQualifiers = await findStarredReposForExplore(language, minStarsInt, ghToken);
   }
 
-  const excluded = EXPLORE_EXCLUDED_LABELS.map((l) => `-label:"${l}"`).join(" ");
+  const excluded = EXPLORE_QUERY_EXCLUDED_LABELS.map((l) => `-label:${l}`).join(" ");
   const parts = [
     "state:open",
     "type:issue",
@@ -813,8 +883,10 @@ async function exploreSearch({
     "no:assignee",
     "-linked:pr",
     "archived:false",
-    excluded,
   ];
+  if (repoQualifiers.length === 0) {
+    parts.push(excluded);
+  }
 
   const cleanLabels = (Array.isArray(labels) ? labels : [])
     .map((l) => String(l || "").trim())
@@ -835,11 +907,18 @@ async function exploreSearch({
     parts.push(`created:>=${sinceDate}`);
   }
 
+  const cleanKeywords = String(keywords || "").trim();
+  let runningLen = parts.join(" ").length + (cleanKeywords ? cleanKeywords.length + 1 : 0);
+  let addedRepos = 0;
   for (const repo of repoQualifiers) {
-    parts.push(`repo:${repo}`);
+    if (addedRepos >= 8) break;
+    const term = `repo:${repo}`;
+    if (runningLen + term.length + 1 > 245) break;
+    parts.push(term);
+    runningLen += term.length + 1;
+    addedRepos += 1;
   }
 
-  const cleanKeywords = String(keywords || "").trim();
   if (cleanKeywords) {
     parts.push(cleanKeywords);
   }
@@ -877,28 +956,38 @@ async function exploreSearch({
   const missingMetaRepos = repoNames.filter((r) => !healthMap[r]);
   const repoMeta = missingMetaRepos.length > 0 ? await fetchRepoMetaBatch(missingMetaRepos, ghToken) : {};
 
-  const items = rawItems
-    .map((issue: any) => {
-      const repoName = issue.repository_url?.split("/").slice(-2).join("/") || "";
-      const health = healthMap[repoName] || null;
-      const meta = repoMeta[repoName];
-      return {
-        ...issue,
-        repo_stars: health?.stars ?? meta?.stars ?? null,
-        repo_pushed_at: health?.last_pushed_at ?? meta?.pushed_at ?? null,
-        repo_archived: health?.is_archived ?? meta?.archived ?? false,
-        repo_health: health,
-      };
-    })
-    .filter((issue: any) => {
-      if (issue.pull_request || issue.locked || issue.repo_archived) return false;
-      if (issue.assignee || (Array.isArray(issue.assignees) && issue.assignees.length > 0)) return false;
-      if (daysSince(issue.created_at) > 180 && (issue.comments ?? 0) === 0) return false;
-      if (minStarsInt > 0 && typeof issue.repo_stars === "number" && issue.repo_stars < minStarsInt) {
+  const enrichedItems = rawItems.map((issue: any) => {
+    const repoName = issue.repository_url?.split("/").slice(-2).join("/") || "";
+    const health = healthMap[repoName] || null;
+    const meta = repoMeta[repoName];
+    return {
+      ...issue,
+      repo_stars: health?.stars ?? meta?.stars ?? null,
+      repo_pushed_at: health?.last_pushed_at ?? meta?.pushed_at ?? null,
+      repo_archived: health?.is_archived ?? meta?.archived ?? false,
+      repo_health: health,
+    };
+  });
+
+  const hasKnownStars = enrichedItems.some((item: any) => typeof item.repo_stars === "number");
+
+  const items = enrichedItems.filter((issue: any) => {
+    if (issue.pull_request || issue.locked || issue.repo_archived) return false;
+    if (issue.assignee || (Array.isArray(issue.assignees) && issue.assignees.length > 0)) return false;
+    const labelNames = (issue.labels || []).map((l: any) =>
+      String(typeof l === "string" ? l : l?.name || "").trim().toLowerCase()
+    );
+    if (labelNames.some((l: string) => EXPLORE_EXCLUDED_LABEL_SET.has(l))) return false;
+    if (daysSince(issue.created_at) > 180 && (issue.comments ?? 0) === 0) return false;
+    if (minStarsInt > 0) {
+      if (typeof issue.repo_stars === "number") {
+        if (issue.repo_stars < minStarsInt) return false;
+      } else if (hasKnownStars) {
         return false;
       }
-      return true;
-    });
+    }
+    return true;
+  });
 
   return {
     items,

@@ -570,7 +570,7 @@ const ExplorePage = () => {
     } else if (uncached.length > 0 && minStarsInt > 0) {
       // Only perform lightweight REST repo lookups when filtering by stars without a client token.
       await Promise.all(
-        uncached.slice(0, 12).map(async (fullName) => {
+        uncached.slice(0, 24).map(async (fullName) => {
           try {
             const res = await fetch(`https://api.github.com/repos/${fullName}`, {
               headers: getClientGithubHeaders(),
@@ -607,7 +607,7 @@ const ExplorePage = () => {
   };
 
   const findClientReposByStars = async (minStarsInt) => {
-    const cacheKey = `explore_repos_${filters.language || "all"}_${minStarsInt}`;
+    const cacheKey = `explore_repos_v2_${filters.language || "all"}_${minStarsInt}`;
     const cached = getCache(cacheKey);
     if (Array.isArray(cached) && cached.length > 0) return cached;
 
@@ -624,13 +624,25 @@ const ExplorePage = () => {
         .trim();
       try {
         const res = await fetch(
-          `https://api.github.com/search/repositories?q=${encodeURIComponent(repoQuery)}&sort=stars&order=desc&per_page=15`,
+          `https://api.github.com/search/repositories?q=${encodeURIComponent(repoQuery)}&sort=updated&order=desc&per_page=15`,
           { headers: getClientGithubHeaders() }
         );
         if (!res.ok) continue;
         const data = await res.json();
-        const repos = (data.items || []).map((repo) => repo.full_name).filter(Boolean);
-        if (repos.length > 0) {
+        const repoItems = (data.items || []).filter((repo) => Boolean(repo?.full_name));
+        if (repoItems.length > 0) {
+          const repos = repoItems.map((repo) => {
+            setCache(
+              `repo_meta_v1_${repo.full_name}`,
+              {
+                stars: Number(repo.stargazers_count ?? 0),
+                pushed_at: repo.pushed_at ?? null,
+                archived: Boolean(repo.archived),
+              },
+              6 * 60 * 60 * 1000
+            );
+            return repo.full_name;
+          });
           setCache(cacheKey, repos, 10 * 60 * 1000);
           return repos;
         }
@@ -717,7 +729,11 @@ const ExplorePage = () => {
         }
       }
 
-      const filteredIssues = filterStaleIssues(rawItems, { minStars: minStarsInt });
+      const hasResolvedStars = rawItems.some((item) => typeof item.repo_stars === "number");
+      const filteredIssues = filterStaleIssues(rawItems, {
+        minStars: minStarsInt,
+        requireKnownStars: minStarsInt > 0 && hasResolvedStars,
+      });
       const preparedIssues = applyUserAffinity(
         enrichAndSortIssues(filteredIssues, filters.sort),
         filters.sort,
