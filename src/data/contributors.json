@@ -80,13 +80,33 @@
     "branch": "center"
   },
     {
-    "id": "0704",
-    "name": "Kaushik Kumar",
-    "github": "Kaushik1234q",
-    "avatar": "https://github.com/Kaushik1234q.png",
-    "role": "Contributor",
-    "message": "Starting with my first contribution",
-    "joinedAt": "2026-10-28",
-    "branch": "center"
-  }
-]
+      "id": "0704",
+      "name": "Kaushik Kumar",
+      "github": "Kaushik1234q",
+      "avatar": "https://github.com/Kaushik1234q.png",
+      "role": "Contributor",
+      "message": "Starting with my first contribution",
+      "joinedAt": "2026-10-28",
+      "branch": "center"
+    },
+    {
+      "id": "10",
+      "name": "CoderVivek108",
+      "github": "CoderVivek108",
+      "avatar": "https://github.com/CoderVivek108.png",
+      "role": "Contributor",
+      "message": "Excited to make my first open source contribution! 🌱",
+      "joinedAt": "2026-11-23",
+      "branch": "center"
+    },
+    {
+      "id": "11",
+      "name": "Kuntal Kundu",
+      "github": "kundukuntal",
+      "avatar": "https://github.com/kundukuntal.png",
+      "role": "Contributor",
+      "message": "Excited to make my first open source contribution! 🌱",
+      "joinedAt": "2026-11-23",
+      "branch": "center"
+    }
+  ]

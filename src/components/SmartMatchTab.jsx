@@ -115,7 +115,6 @@ const SmartMatchLoadingScreen = () => {
             </div>
             <div>
               <h3 className="text-sm font-semibold text-[#F4F4F0]">Running Smart Match</h3>
-              <p className="text-xs font-mono text-[#8C929C]">GitHub GraphQL + AI Scoring</p>
             </div>
           </div>
           <span className="text-xl font-bold font-mono tabular-nums text-[#DAFA9C]">
@@ -155,11 +154,10 @@ const LabelPreferences = ({ selectedLabels, onToggle }) => {
             key={opt.id}
             type="button"
             onClick={() => onToggle(opt.id)}
-            className={`text-xs font-mono px-2.5 py-1 rounded-[4px] border transition-colors cursor-pointer ${
-              isSelected
+            className={`text-xs font-mono px-2.5 py-1 rounded-[4px] border transition-colors cursor-pointer ${isSelected
                 ? "bg-[#17181B] text-[#DAFA9C] border-[#DAFA9C]/50 font-medium"
                 : "bg-[#0B0C0E] text-[#8C929C] border-[#22242A] hover:border-[#3A3E48] hover:text-[#F4F4F0]"
-            }`}
+              }`}
           >
             {opt.label}
           </button>
@@ -603,11 +601,10 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark, onDismiss, onOp
               e.preventDefault();
               onToggleBookmark?.();
             }}
-            className={`p-1.5 rounded-[4px] border transition-colors cursor-pointer ${
-              isBookmarked
+            className={`p-1.5 rounded-[4px] border transition-colors cursor-pointer ${isBookmarked
                 ? "bg-[#F59E0B]/10 text-[#F59E0B] border-[#F59E0B]/40"
                 : "bg-[#0B0C0E] text-[#8C929C] hover:text-[#F4F4F0] border-[#22242A] hover:border-[#3A3E48]"
-            }`}
+              }`}
           >
             {isBookmarked ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
           </button>
@@ -664,13 +661,12 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark, onDismiss, onOp
           className="mb-3 px-2.5 py-1.5 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] flex items-center gap-2 text-xs font-mono text-[#A8ADB6] truncate"
         >
           <span
-            className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-              issue.repo_health.health_tier === "healthy"
+            className={`w-1.5 h-1.5 rounded-full shrink-0 ${issue.repo_health.health_tier === "healthy"
                 ? "bg-[#34D399]"
                 : issue.repo_health.health_tier === "moderate"
                   ? "bg-[#F59E0B]"
                   : "bg-[#8C929C]"
-            }`}
+              }`}
             aria-hidden="true"
           />
           <span className="truncate">{issue.repo_health.health_summary}</span>
