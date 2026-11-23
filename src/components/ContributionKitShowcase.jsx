@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { FREE_MONTHLY_KITS } from "../lib/limits";
 import {
   Wrench,
   FileText,
@@ -100,7 +101,7 @@ const ContributionKitShowcase = () => {
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <span className="text-xs text-[#8C929C] font-mono">
-                1 free kit / month · unlimited for Supporters
+                {FREE_MONTHLY_KITS} free kit{FREE_MONTHLY_KITS === 1 ? "" : "s"} / month · unlimited for Supporters
               </span>
             </div>
           </div>

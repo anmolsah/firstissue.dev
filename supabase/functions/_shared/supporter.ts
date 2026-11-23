@@ -15,7 +15,7 @@ export const FREE_DAILY_COPILOT_MESSAGES = 10;
 
 // Free accounts may generate this many Contribution Kits per calendar month.
 // Keep in sync with FREE_MONTHLY_KITS in src/lib/limits.js.
-export const FREE_MONTHLY_KITS = 1;
+export const FREE_MONTHLY_KITS = 5;
 
 /**
  * Determine whether a user currently has an active supporter entitlement.

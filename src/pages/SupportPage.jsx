@@ -117,7 +117,7 @@ const SupportPage = () => {
     {
       icon: Wrench,
       title: "Unlimited Contribution Kits & Diff Review",
-      description: `Core accounts include ${FREE_MONTHLY_KITS} Contribution Kit per month. Supporters generate unlimited repo setup kits and run pre-submit AI diff reviews before opening a PR.`,
+      description: `Core accounts include ${FREE_MONTHLY_KITS} Contribution Kit${FREE_MONTHLY_KITS === 1 ? "" : "s"} per month. Supporters generate unlimited repo setup kits and run pre-submit AI diff reviews before opening a PR.`,
       accent: "#F59E0B",
       badge: "INCLUDED",
     },
@@ -139,7 +139,7 @@ const SupportPage = () => {
   const faqs = [
     {
       q: "What benefits do I get as a Supporter?",
-      a: `Full access to AI Smart Match, unlimited AI Contribution Kits and pre-submit PR diff reviews (Core accounts include ${FREE_MONTHLY_KITS} kit per month), unlimited FirstMate AI Copilot chat (Core accounts receive ${FREE_DAILY_COPILOT_MESSAGES} messages per day), and no 5-card limit on verified Proof of Work pull request attestations.`,
+      a: `Full access to AI Smart Match, unlimited AI Contribution Kits and pre-submit PR diff reviews (Core accounts include ${FREE_MONTHLY_KITS} kit${FREE_MONTHLY_KITS === 1 ? "" : "s"} per month), unlimited FirstMate AI Copilot chat (Core accounts receive ${FREE_DAILY_COPILOT_MESSAGES} messages per day), and no 5-card limit on verified Proof of Work pull request attestations.`,
     },
     {
       q: "How does Proof of Work verify pull requests?",
@@ -147,7 +147,7 @@ const SupportPage = () => {
     },
     {
       q: "What is included in the $0 Core tier?",
-      a: `Core accounts can browse curated beginner-friendly issues, generate ${FREE_MONTHLY_KITS} AI Contribution Kit per month, bookmark and track PR statuses, verify up to 5 Proof of Work credentials, and send ${FREE_DAILY_COPILOT_MESSAGES} FirstMate messages per day (resetting at midnight UTC).`,
+      a: `Core accounts can browse curated beginner-friendly issues, generate ${FREE_MONTHLY_KITS} AI Contribution Kit${FREE_MONTHLY_KITS === 1 ? "" : "s"} per month, bookmark and track PR statuses, verify up to 5 Proof of Work credentials, and send ${FREE_DAILY_COPILOT_MESSAGES} FirstMate messages per day (resetting at midnight UTC).`,
     },
     {
       q: "Can I cancel my subscription anytime?",
