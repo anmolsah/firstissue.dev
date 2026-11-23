@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useBookmarks, useRemoveBookmark } from "../hooks/queries/useBookmarks";
 import DeleteConfirmationDialog from "../components/DeleteConfirmationDialog";
+import ContributionKitModal from "../components/ContributionKitModal";
 import AppSidebar from "../components/AppSidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
 import BrandMark from "../components/BrandMark";
@@ -15,6 +16,7 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  Wrench,
 } from "lucide-react";
 import { withUTM, extractRepo } from "../utils/utm";
 import { trackIssueClick } from "../utils/analytics";
@@ -28,6 +30,7 @@ const BookmarksPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortOrder, setSortOrder] = useState("desc");
+  const [kitIssue, setKitIssue] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState({
     isOpen: false,
     bookmarkId: null,
@@ -328,6 +331,25 @@ const BookmarksPage = () => {
                         {formatTimeAgo(bookmark.created_at)}
                       </span>
                       <div className="flex items-center gap-1.5">
+                        {bookmark.issue_url && /\/issues\/\d+/.test(bookmark.issue_url) && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setKitIssue({
+                                url: bookmark.issue_url,
+                                title: bookmark.title,
+                                body: "",
+                                repo: bookmark.repo_name || extractRepo(bookmark.issue_url),
+                                language: bookmark.language || "",
+                              })
+                            }
+                            title="Generate a Contribution Kit for this issue"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] text-[#F4F4F0] hover:border-[#DAFA9C]/60 hover:text-[#DAFA9C] transition-colors text-xs font-medium cursor-pointer"
+                          >
+                            <Wrench className="w-3 h-3" />
+                            <span>Kit</span>
+                          </button>
+                        )}
                         <a
                           href={withUTM(bookmark.issue_url, {
                             medium: "bookmarks",
@@ -430,6 +452,12 @@ const BookmarksPage = () => {
         loading={deleteDialog.loading}
         title="Remove Bookmark"
         message={`Are you sure you want to remove "${deleteDialog.bookmarkTitle}" from your bookmarks?`}
+      />
+
+      <ContributionKitModal
+        issue={kitIssue}
+        isOpen={Boolean(kitIssue)}
+        onClose={() => setKitIssue(null)}
       />
     </div>
   );

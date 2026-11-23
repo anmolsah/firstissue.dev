@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   X,
   Wrench,
@@ -16,6 +17,10 @@ import {
   AlertTriangle,
   ShieldCheck,
   ScanLine,
+  ExternalLink,
+  BotMessageSquare,
+  CheckCircle2,
+  Database,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
@@ -23,9 +28,10 @@ import { useSupporter } from "../contexts/SupporterContext";
 import { useContributionKit, parseIssueUrl } from "../hooks/useContributionKit";
 import { useKitQuota } from "../hooks/queries/useKitQuota";
 
-const CopyButton = ({ text, label = "Copy" }) => {
+const CopyButton = ({ text, label = "Copy", compact = false }) => {
   const [copied, setCopied] = useState(false);
-  const onCopy = () => {
+  const onCopy = (e) => {
+    e?.stopPropagation?.();
     navigator.clipboard.writeText(text || "");
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
@@ -34,26 +40,28 @@ const CopyButton = ({ text, label = "Copy" }) => {
     <button
       type="button"
       onClick={onCopy}
-      className={`inline-flex items-center gap-1.5 text-xs font-mono transition-colors ${
-        copied ? "text-[#34D399]" : "text-[#A8ADB6] hover:text-[#DAFA9C]"
-      }`}
+      aria-label={copied ? "Copied" : label}
+      title={copied ? "Copied" : label}
+      className={`inline-flex items-center gap-1.5 text-xs font-mono transition-colors cursor-pointer ${
+        compact ? "p-1 rounded-[4px] hover:bg-[#1C1E23]" : ""
+      } ${copied ? "text-[#34D399]" : "text-[#A8ADB6] hover:text-[#DAFA9C]"}`}
     >
       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-      <span>{copied ? "Copied" : label}</span>
+      {!compact && <span>{copied ? "Copied" : label}</span>}
     </button>
   );
 };
 
 const Section = ({ icon, title, action, children }) => (
   <div className="border border-[#22242A] rounded-[4px] bg-[#141518] overflow-hidden">
-    <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#22242A] bg-[#17181B]">
-      <div className="flex items-center gap-2">
-        {React.createElement(icon, { className: "w-3.5 h-3.5 text-[#DAFA9C]" })}
-        <span className="text-xs font-mono uppercase tracking-wider text-[#F4F4F0]">
+    <div className="flex items-center justify-between gap-2 px-4 py-2.5 border-b border-[#22242A] bg-[#17181B]">
+      <div className="flex items-center gap-2 min-w-0">
+        {React.createElement(icon, { className: "w-3.5 h-3.5 text-[#DAFA9C] shrink-0" })}
+        <span className="text-xs font-mono uppercase tracking-wider text-[#F4F4F0] truncate">
           {title}
         </span>
       </div>
-      {action}
+      {action && <div className="flex items-center gap-3 shrink-0">{action}</div>}
     </div>
     <div className="p-4">{children}</div>
   </div>
@@ -148,7 +156,7 @@ const PreSubmitReview = ({ issue }) => {
           type="button"
           onClick={runReview}
           disabled={loading || !diff.trim()}
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] text-xs font-semibold transition-colors disabled:opacity-40 disabled:pointer-events-none"
+          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] rounded-[4px] text-xs font-semibold transition-colors disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
         >
           {loading ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -207,6 +215,8 @@ const PreSubmitReview = ({ issue }) => {
 const ContributionKitModal = ({ issue, isOpen, onClose }) => {
   const { user } = useAuth();
   const { isSupporter } = useSupporter();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { generateKit } = useContributionKit();
   const { remaining, limit, applyServerQuota, markExhausted } = useKitQuota(
     user?.id,
@@ -215,8 +225,12 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
 
   const [loading, setLoading] = useState(false);
   const [kit, setKit] = useState(null);
+  const [isCachedHit, setIsCachedHit] = useState(false);
+  const [issueMeta, setIssueMeta] = useState(null);
   const [error, setError] = useState(null);
   const [limitReached, setLimitReached] = useState(false);
+
+  const parsedIssue = parseIssueUrl(issue?.url);
 
   const load = useCallback(async () => {
     if (!issue?.url) return;
@@ -227,9 +241,26 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
       );
       return;
     }
+
+    const cacheKey = ["contribution-kit", user?.id || "anon", parsed.repo, parsed.issueNumber];
+    const cachedClient = queryClient.getQueryData(cacheKey);
+    if (cachedClient?.kit) {
+      setKit(cachedClient.kit);
+      setIsCachedHit(true);
+      setIssueMeta(cachedClient.issueMeta || null);
+      setError(null);
+      setLimitReached(false);
+      setLoading(false);
+      return;
+    }
+
+    setKit(null);
     setLoading(true);
     setError(null);
     setLimitReached(false);
+    setIsCachedHit(false);
+    setIssueMeta(null);
+
     try {
       const res = await generateKit({
         repo: parsed.repo,
@@ -239,6 +270,9 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
         issueUrl: issue.url,
       });
       setKit(res.kit);
+      setIsCachedHit(Boolean(res.cached));
+      setIssueMeta(res.issueMeta || null);
+      queryClient.setQueryData(cacheKey, res);
       applyServerQuota(res.quota);
     } catch (e) {
       if (e.status === 429 || e.code === "monthly_limit_reached") {
@@ -250,13 +284,10 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
     } finally {
       setLoading(false);
     }
-  }, [issue, generateKit, applyServerQuota, markExhausted]);
+  }, [issue, user?.id, queryClient, generateKit, applyServerQuota, markExhausted]);
 
   useEffect(() => {
     if (isOpen && issue) {
-      setKit(null);
-      setError(null);
-      setLimitReached(false);
       load();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -271,7 +302,41 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
     return () => window.removeEventListener("keydown", onKey);
   }, [isOpen, onClose]);
 
+  const handleCopyAndOpenIssue = () => {
+    if (!kit?.claimComment) return;
+    navigator.clipboard.writeText(kit.claimComment);
+    toast.success("Claim comment copied — paste it on GitHub!");
+    if (issue?.url) {
+      window.open(`${issue.url}#new_comment_field`, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const handleAskFirstMate = () => {
+    const repo = parsedIssue?.repo || issue?.repo || "";
+    const issueContext = {
+      repo,
+      issueNumber: parsedIssue?.issueNumber || null,
+      issueTitle: issue?.title || "",
+      issueUrl: issue?.url || "",
+      language: issue?.language || "",
+      summary: kit?.summary || "",
+      setupSteps: Array.isArray(kit?.setupSteps) ? kit.setupSteps.slice(0, 6) : [],
+      filesToTouch: Array.isArray(kit?.filesToTouch)
+        ? kit.filesToTouch.slice(0, 6).map((f) => f.path).filter(Boolean)
+        : [],
+      gotchas: Array.isArray(kit?.gotchas) ? kit.gotchas.slice(0, 4) : [],
+      source: "contribution_kit",
+    };
+
+    onClose();
+    navigate("/firstmate", { state: { issueContext } });
+  };
+
   if (!isOpen) return null;
+
+  const defaultBranch = kit?.defaultBranch || "HEAD";
+  const showFreshnessWarning =
+    issueMeta && (issueMeta.state === "closed" || issueMeta.assigned);
 
   return createPortal(
     <div
@@ -291,13 +356,25 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
               <Wrench className="w-4 h-4" />
             </div>
             <div className="min-w-0">
-              <h2
-                id="kit-modal-title"
-                className="text-sm font-semibold text-[#F4F4F0]"
-              >
-                Contribution Kit
-              </h2>
-              <p className="text-xs text-[#8C929C] truncate max-w-[22rem]">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2
+                  id="kit-modal-title"
+                  className="text-sm font-semibold text-[#F4F4F0]"
+                >
+                  Contribution Kit
+                </h2>
+                {isCachedHit && kit && !loading && (
+                  <span
+                    title="Loaded from your saved cache — does not consume a credit"
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-[4px] bg-[#34D399]/10 border border-[#34D399]/30 text-[10px] font-mono text-[#34D399]"
+                  >
+                    <Database className="w-2.5 h-2.5" />
+                    Cached · 0 credits
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-[#8C929C] truncate max-w-[24rem] mt-0.5">
+                {parsedIssue?.repo ? `${parsedIssue.repo} #${parsedIssue.issueNumber} · ` : ""}
                 {issue?.title}
               </p>
             </div>
@@ -306,7 +383,7 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
             type="button"
             onClick={onClose}
             aria-label="Close Contribution Kit"
-            className="p-1.5 rounded-[4px] text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#1C1E23] transition-colors shrink-0"
+            className="p-1.5 rounded-[4px] text-[#A8ADB6] hover:text-[#F4F4F0] hover:bg-[#1C1E23] transition-colors shrink-0 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -330,8 +407,8 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
           {loading && (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <Loader2 className="w-6 h-6 text-[#DAFA9C] animate-spin" />
-              <p className="text-xs font-mono text-[#A8ADB6]">
-                Inspecting repository files and building Contribution Kit...
+              <p className="text-xs font-mono text-[#A8ADB6] text-center">
+                Inspecting repository file tree, docs, and manifest...
               </p>
             </div>
           )}
@@ -346,7 +423,7 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
                   Monthly free kit limit reached
                 </h3>
                 <p className="text-xs text-[#A8ADB6] max-w-sm leading-relaxed">
-                  Free allowances reset on the 1st of each month. Supporters get unlimited kits and pre-submit diff reviews.
+                  You&apos;ve used all {limit} free kits this month. Allowances reset on the 1st of each month, and any kit you already generated stays free to reopen.
                 </p>
               </div>
               <Link
@@ -369,7 +446,7 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
               <button
                 type="button"
                 onClick={load}
-                className="px-4 py-2 bg-[#141518] border border-[#2B2E36] hover:border-[#3A3E48] text-[#F4F4F0] rounded-[4px] text-xs font-semibold transition-colors"
+                className="px-4 py-2 bg-[#141518] border border-[#2B2E36] hover:border-[#3A3E48] text-[#F4F4F0] rounded-[4px] text-xs font-semibold transition-colors cursor-pointer"
               >
                 Retry
               </button>
@@ -378,6 +455,19 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
 
           {kit && !loading && (
             <>
+              {showFreshnessWarning && (
+                <div className="flex items-start gap-2.5 p-3.5 rounded-[4px] bg-[#F59E0B]/10 border border-[#F59E0B]/35 text-xs text-[#F4F4F0]">
+                  <AlertTriangle className="w-4 h-4 text-[#F59E0B] shrink-0 mt-0.5" />
+                  <p className="leading-relaxed">
+                    <span className="font-semibold text-[#F59E0B]">Heads up:</span>{" "}
+                    {issueMeta.state === "closed"
+                      ? "This issue is now closed on GitHub."
+                      : "This issue already has an assignee on GitHub."}{" "}
+                    Double-check the thread before investing time.
+                  </p>
+                </div>
+              )}
+
               {kit.summary && (
                 <Section icon={FileText} title="Issue summary">
                   <p className="text-xs text-[#F4F4F0] leading-relaxed">
@@ -387,17 +477,31 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
               )}
 
               {Array.isArray(kit.setupSteps) && kit.setupSteps.length > 0 && (
-                <Section icon={ListChecks} title="Local setup steps">
+                <Section
+                  icon={ListChecks}
+                  title="Local setup steps"
+                  action={
+                    <CopyButton
+                      text={kit.setupSteps.join("\n")}
+                      label="Copy all"
+                    />
+                  }
+                >
                   <ol className="space-y-2">
                     {kit.setupSteps.map((step, i) => (
                       <li
                         key={i}
-                        className="flex gap-2.5 text-xs text-[#F4F4F0] leading-relaxed"
+                        className="flex items-start justify-between gap-2.5 text-xs text-[#F4F4F0] leading-relaxed bg-[#0B0C0E] border border-[#22242A] rounded-[4px] px-2.5 py-2"
                       >
-                        <span className="shrink-0 w-5 h-5 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] text-xs font-mono text-[#DAFA9C] flex items-center justify-center">
-                          {i + 1}
-                        </span>
-                        <span className="font-mono break-all">{step}</span>
+                        <div className="flex gap-2.5 min-w-0">
+                          <span className="shrink-0 w-5 h-5 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-[11px] font-mono text-[#DAFA9C] flex items-center justify-center tabular-nums">
+                            {i + 1}
+                          </span>
+                          <span className="font-mono break-all pt-0.5">{step}</span>
+                        </div>
+                        <div className="shrink-0">
+                          <CopyButton text={step} label={`Copy step ${i + 1}`} compact />
+                        </div>
                       </li>
                     ))}
                   </ol>
@@ -406,18 +510,64 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
 
               {Array.isArray(kit.filesToTouch) &&
                 kit.filesToTouch.length > 0 && (
-                  <Section icon={FileCode2} title="Candidate files">
+                  <Section
+                    icon={FileCode2}
+                    title="Candidate files"
+                    action={
+                      kit.treeVerified ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-mono text-[#34D399]">
+                          <CheckCircle2 className="w-3 h-3" />
+                          Tree-checked
+                        </span>
+                      ) : null
+                    }
+                  >
                     <ul className="space-y-2.5">
-                      {kit.filesToTouch.map((f, i) => (
-                        <li key={i} className="text-xs">
-                          <code className="px-2 py-0.5 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-xs text-[#DAFA9C] font-mono">
-                            {f.path}
-                          </code>
-                          <p className="text-[#A8ADB6] mt-1 leading-relaxed">
-                            {f.reason}
-                          </p>
-                        </li>
-                      ))}
+                      {kit.filesToTouch.map((f, i) => {
+                        const encodedBranch = defaultBranch
+                          .split("/")
+                          .map(encodeURIComponent)
+                          .join("/");
+                        const encodedPath = f.path
+                          .split("/")
+                          .map(encodeURIComponent)
+                          .join("/");
+                        const fileUrl =
+                          f.verified && parsedIssue?.repo
+                            ? `https://github.com/${parsedIssue.repo}/${
+                                f.kind === "dir" ? "tree" : "blob"
+                              }/${encodedBranch}/${encodedPath}`
+                            : null;
+                        return (
+                          <li key={i} className="text-xs">
+                            <div className="flex flex-wrap items-center gap-2">
+                              {fileUrl ? (
+                                <a
+                                  href={fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-[#0B0C0E] border border-[#2B2E36] hover:border-[#DAFA9C]/60 rounded-[4px] text-xs text-[#DAFA9C] font-mono transition-colors break-all"
+                                >
+                                  <span>{f.path}</span>
+                                  <ExternalLink className="w-3 h-3 shrink-0 opacity-75" />
+                                </a>
+                              ) : (
+                                <code className="px-2 py-0.5 bg-[#0B0C0E] border border-[#2B2E36] rounded-[4px] text-xs text-[#DAFA9C] font-mono break-all">
+                                  {f.path}
+                                </code>
+                              )}
+                              {f.verified && (
+                                <span className="text-[10px] font-mono text-[#34D399] bg-[#34D399]/10 border border-[#34D399]/30 px-1.5 py-0.5 rounded-[4px]">
+                                  Verified
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[#A8ADB6] mt-1 leading-relaxed">
+                              {f.reason}
+                            </p>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </Section>
                 )}
@@ -426,7 +576,21 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
                 <Section
                   icon={MessageSquarePlus}
                   title="Claim comment"
-                  action={<CopyButton text={kit.claimComment} />}
+                  action={
+                    <>
+                      <CopyButton text={kit.claimComment} />
+                      {issue?.url && (
+                        <button
+                          type="button"
+                          onClick={handleCopyAndOpenIssue}
+                          className="inline-flex items-center gap-1 text-xs font-mono text-[#DAFA9C] hover:text-[#C7F275] transition-colors cursor-pointer"
+                        >
+                          <span>Copy &amp; Open</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </button>
+                      )}
+                    </>
+                  }
                 >
                   <p className="text-xs text-[#F4F4F0] leading-relaxed whitespace-pre-wrap">
                     {kit.claimComment}
@@ -466,6 +630,34 @@ const ContributionKitModal = ({ issue, isOpen, onClose }) => {
             </>
           )}
         </div>
+
+        {/* Sticky Action Footer — direct handoff to GitHub & FirstMate */}
+        {!loading && (kit || parsedIssue) && (
+          <div className="flex flex-wrap items-center justify-between gap-2.5 px-5 py-3.5 border-t border-[#22242A] bg-[#141518] shrink-0">
+            {issue?.url ? (
+              <a
+                href={issue.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] hover:border-[#3A3E48] text-xs font-medium text-[#A8ADB6] hover:text-[#F4F4F0] transition-colors"
+              >
+                <span>Open on GitHub</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            ) : (
+              <span />
+            )}
+
+            <button
+              type="button"
+              onClick={handleAskFirstMate}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[4px] bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] text-xs font-semibold transition-colors cursor-pointer"
+            >
+              <BotMessageSquare className="w-3.5 h-3.5" />
+              <span>Stuck on Git or setup? Ask FirstMate</span>
+            </button>
+          </div>
+        )}
       </div>
     </div>,
     document.body

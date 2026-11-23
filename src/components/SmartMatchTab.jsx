@@ -26,7 +26,9 @@ import {
   GitPullRequest,
   EyeOff,
   RotateCcw,
+  Wrench,
 } from "lucide-react";
+import ContributionKitModal from "./ContributionKitModal";
 import { withUTM } from "../utils/utm";
 import { trackIssueClick } from "../utils/analytics";
 import { formatCompactNumber } from "../utils/issueQualityFilter";
@@ -173,6 +175,7 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
   const [preferredLabels, setPreferredLabels] = useState(getStoredLabels);
   const [hiddenUrls, setHiddenUrls] = useState(() => getLocalDismissedUrls());
   const [lastDismissed, setLastDismissed] = useState(null);
+  const [kitIssue, setKitIssue] = useState(null);
 
   const {
     matches,
@@ -459,6 +462,18 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
                   isBookmarked={bookmarkedIssues?.has(issue.url)}
                   onToggleBookmark={() => onToggleBookmark?.(issue)}
                   onDismiss={() => handleDismissMatch(issue)}
+                  onOpenKit={() =>
+                    setKitIssue({
+                      url: issue.url,
+                      title: issue.title,
+                      body: issue.body,
+                      repo: issue.repo,
+                      language:
+                        issue.language ||
+                        userProfile?.topLanguages?.[0]?.language ||
+                        "",
+                    })
+                  }
                 />
               ))}
               {limited && (
@@ -517,11 +532,17 @@ const SmartMatchTab = ({ username, token, userId, bookmarkedIssues, onToggleBook
           </div>
         </div>
       )}
+
+      <ContributionKitModal
+        issue={kitIssue}
+        isOpen={Boolean(kitIssue)}
+        onClose={() => setKitIssue(null)}
+      />
     </div>
   );
 };
 
-const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark, onDismiss }) => {
+const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark, onDismiss, onOpenKit }) => {
   const matchPercentage = Math.round((issue.matchScore || 0) * 100);
 
   const getScoreStyle = (pct) => {
@@ -682,23 +703,35 @@ const SmartMatchCard = ({ issue, isBookmarked, onToggleBookmark, onDismiss }) =>
           ))}
         </div>
 
-        <a
-          href={withUTM(issue.url, { medium: "smart_match", content: "view_issue_btn" })}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#DAFA9C] hover:underline shrink-0"
-          onClick={() =>
-            trackIssueClick({
-              issueUrl: issue.url,
-              source: "smart_match",
-              repo: issue.repo,
-              action: "view_issue",
-            })
-          }
-        >
-          Open Issue
-          <ArrowRight className="w-3.5 h-3.5" />
-        </a>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => onOpenKit?.()}
+            title="Generate a Contribution Kit for this issue"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] text-[#F4F4F0] hover:border-[#DAFA9C]/60 hover:text-[#DAFA9C] transition-colors text-xs font-medium cursor-pointer"
+          >
+            <Wrench className="w-3 h-3" />
+            Kit
+          </button>
+
+          <a
+            href={withUTM(issue.url, { medium: "smart_match", content: "view_issue_btn" })}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#DAFA9C] hover:underline shrink-0"
+            onClick={() =>
+              trackIssueClick({
+                issueUrl: issue.url,
+                source: "smart_match",
+                repo: issue.repo,
+                action: "view_issue",
+              })
+            }
+          >
+            Open Issue
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
       </div>
     </div>
   );

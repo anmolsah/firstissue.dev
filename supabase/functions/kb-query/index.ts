@@ -6,6 +6,72 @@ import { createUserClient, createAdminClient } from "../_shared/supabaseClient.t
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { isActiveSupporter, FREE_DAILY_COPILOT_MESSAGES } from "../_shared/supporter.ts";
 
+function sanitizeLine(val: unknown, maxLen: number): string {
+  if (typeof val !== "string") return "";
+  return val.replace(/\s+/g, " ").trim().slice(0, maxLen);
+}
+
+function sanitizeGitHubUrl(val: unknown): string {
+  if (typeof val !== "string") return "";
+  const trimmed = val.trim();
+  if (!/^https:\/\/github\.com\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+/.test(trimmed)) {
+    return "";
+  }
+  return trimmed.slice(0, 300);
+}
+
+function buildIssueContextBlock(raw: any): string {
+  if (!raw || typeof raw !== "object") return "";
+
+  const repo = sanitizeLine(raw.repo, 120);
+  const issueTitle = sanitizeLine(raw.issueTitle, 240);
+  if (!repo && !issueTitle) return "";
+
+  const issueNumber = Number.isInteger(Number(raw.issueNumber)) && Number(raw.issueNumber) > 0
+    ? Number(raw.issueNumber)
+    : null;
+  const issueUrl = sanitizeGitHubUrl(raw.issueUrl);
+  const prUrl = sanitizeGitHubUrl(raw.prUrl);
+  const prStatus = sanitizeLine(raw.prStatus, 32);
+  const language = sanitizeLine(raw.language, 48);
+  const summary = sanitizeLine(raw.summary, 500);
+
+  const setupSteps = Array.isArray(raw.setupSteps)
+    ? raw.setupSteps.map((s: unknown) => sanitizeLine(s, 180)).filter(Boolean).slice(0, 6)
+    : [];
+  const filesToTouch = Array.isArray(raw.filesToTouch)
+    ? raw.filesToTouch
+        .map((f: any) => sanitizeLine(typeof f === "string" ? f : f?.path, 160))
+        .filter(Boolean)
+        .slice(0, 6)
+    : [];
+  const gotchas = Array.isArray(raw.gotchas)
+    ? raw.gotchas.map((g: unknown) => sanitizeLine(g, 180)).filter(Boolean).slice(0, 4)
+    : [];
+
+  const lines: string[] = ["\n\nActive Issue / PR Context:"];
+  if (repo) lines.push(`- Repository: ${repo}`);
+  if (issueTitle || issueNumber) {
+    lines.push(`- Issue: ${issueNumber ? `#${issueNumber} ` : ""}${issueTitle || "(untitled)"}`);
+  }
+  if (language) lines.push(`- Primary Language: ${language}`);
+  if (issueUrl) lines.push(`- Issue URL: ${issueUrl}`);
+  if (prUrl) lines.push(`- Pull Request URL: ${prUrl}${prStatus ? ` (status: ${prStatus})` : ""}`);
+  else if (prStatus) lines.push(`- Contribution Status: ${prStatus}`);
+  if (summary) lines.push(`- Issue Summary: ${summary}`);
+  if (setupSteps.length > 0) {
+    lines.push(`- Known Repo Setup Steps:\n${setupSteps.map((s, i) => `  ${i + 1}. ${s}`).join("\n")}`);
+  }
+  if (filesToTouch.length > 0) {
+    lines.push(`- Candidate Files to Inspect: ${filesToTouch.join(", ")}`);
+  }
+  if (gotchas.length > 0) {
+    lines.push(`- Repo Gotchas: ${gotchas.join(" | ")}`);
+  }
+
+  return lines.join("\n");
+}
+
 serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
   if (req.method === "OPTIONS") {
@@ -196,9 +262,7 @@ serve(async (req: Request) => {
           .join("\n\n---\n\n")
       : "";
 
-    const issueContextBlock = issueContext && (issueContext.repo || issueContext.issueTitle)
-      ? `\n\nActive Issue Context:\n- Repository: ${issueContext.repo || "unknown"}\n- Issue: ${issueContext.issueTitle || "not provided"}${issueContext.language ? `\n- Primary Language: ${issueContext.language}` : ""}`
-      : "";
+    const issueContextBlock = buildIssueContextBlock(issueContext);
 
     const systemPrompt = `You are FirstMate, an expert open-source engineering copilot for FirstIssue.dev.
 You have deep expertise across the full open-source contribution lifecycle:
@@ -215,6 +279,7 @@ CRITICAL INSTRUCTIONS & RESPONSE STRUCTURE:
 4. Safety Warnings & Local Verification: Flag destructive operations (history rewrites, force pushes, hard resets) and include a quick command to verify the fix locally before pushing.
 5. Self-Improvement: When learned community solutions are provided below, incorporate their validated insights.
 6. Documentation Citations: Cite retrieved sources at the end under a "Sources:" heading using Markdown links.
+7. Active Issue / PR Grounding: When Active Issue / PR Context is provided below, tailor git commands (repo clone/remote URLs, branch names, file paths, setup/test commands, and PR/CI troubleshooting) directly to that specific repository and issue instead of generic placeholders.
 
 ${contextText ? `Retrieved Documentation Knowledge:\n${contextText}` : "No specific vector chunk matched above threshold. Rely on your comprehensive knowledge of Git, GitHub, GitLab, Forgejo, open-source licenses, CI/CD, and contribution best practices."}${issueContextBlock}${learnedPromptBlock}`;
 

@@ -1447,6 +1447,7 @@ const ExplorePage = () => {
                         <IssueCard
                           key={issue.id}
                           issue={issue}
+                          activeLanguage={filters.language}
                           isBookmarked={bookmarkedIssues.has(issue.html_url)}
                           onToggleBookmark={() => handleBookmark(issue)}
                           onDismiss={() => handleDismissIssue(issue)}
@@ -1549,7 +1550,7 @@ const TabButton = ({ label, active, onClick, icon: Icon, isPremium }) => (
   </button>
 );
 
-const IssueCard = ({ issue, isBookmarked, onToggleBookmark, onDismiss, onFindSimilar }) => {
+const IssueCard = ({ issue, activeLanguage, isBookmarked, onToggleBookmark, onDismiss, onFindSimilar }) => {
   const repoName = issue.repository_url.split("/").slice(-2).join("/");
   const timeAgo = formatTimeAgo(issue.created_at);
   const [kitOpen, setKitOpen] = useState(false);
@@ -1750,7 +1751,13 @@ const IssueCard = ({ issue, isBookmarked, onToggleBookmark, onDismiss, onFindSim
       </div>
 
       <ContributionKitModal
-        issue={{ url: issue.html_url, title: issue.title, body: issue.body }}
+        issue={{
+          url: issue.html_url,
+          title: issue.title,
+          body: issue.body,
+          repo: repoName,
+          language: activeLanguage || issue.language || "",
+        }}
         isOpen={kitOpen}
         onClose={() => setKitOpen(false)}
       />

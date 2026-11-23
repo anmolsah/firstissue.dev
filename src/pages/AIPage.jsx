@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   Send,
   Bot,
@@ -18,6 +18,9 @@ import {
   Sparkles,
   Lightbulb,
   Loader2,
+  X,
+  Wrench,
+  GitPullRequest,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -244,10 +247,98 @@ const renderMarkdown = (text) => {
   });
 };
 
+const ISSUE_CONTEXT_STORAGE_KEY = "firstmate_active_issue_context";
+
+function normalizeIssueContext(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const repo = typeof raw.repo === "string" ? raw.repo.trim() : "";
+  const issueTitle = typeof raw.issueTitle === "string" ? raw.issueTitle.trim() : "";
+  if (!repo && !issueTitle) return null;
+
+  const num = Number(raw.issueNumber);
+  return {
+    repo,
+    issueNumber: Number.isInteger(num) && num > 0 ? num : null,
+    issueTitle,
+    issueUrl: typeof raw.issueUrl === "string" ? raw.issueUrl.trim() : "",
+    prUrl: typeof raw.prUrl === "string" ? raw.prUrl.trim() : "",
+    prStatus: typeof raw.prStatus === "string" ? raw.prStatus.trim() : "",
+    language: typeof raw.language === "string" ? raw.language.trim() : "",
+    summary: typeof raw.summary === "string" ? raw.summary.trim() : "",
+    setupSteps: Array.isArray(raw.setupSteps) ? raw.setupSteps.filter(Boolean).slice(0, 6) : [],
+    filesToTouch: Array.isArray(raw.filesToTouch)
+      ? raw.filesToTouch
+          .map((f) => (typeof f === "string" ? f : f?.path))
+          .filter(Boolean)
+          .slice(0, 6)
+      : [],
+    gotchas: Array.isArray(raw.gotchas) ? raw.gotchas.filter(Boolean).slice(0, 4) : [],
+    source: typeof raw.source === "string" ? raw.source : "",
+  };
+}
+
+function parseIssueContextFromSearch(search) {
+  if (!search) return null;
+  const params = new URLSearchParams(search);
+  const repo = params.get("repo") || "";
+  const issueTitle = params.get("title") || "";
+  if (!repo && !issueTitle) return null;
+  return normalizeIssueContext({
+    repo,
+    issueNumber: params.get("issue"),
+    issueTitle,
+    issueUrl: params.get("url") || "",
+    prUrl: params.get("prUrl") || "",
+    prStatus: params.get("status") || "",
+    language: params.get("lang") || "",
+    source: "url",
+  });
+}
+
+function loadStoredIssueContext() {
+  try {
+    const raw = sessionStorage.getItem(ISSUE_CONTEXT_STORAGE_KEY);
+    return raw ? normalizeIssueContext(JSON.parse(raw)) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredIssueContext(ctx) {
+  try {
+    if (ctx) {
+      sessionStorage.setItem(ISSUE_CONTEXT_STORAGE_KEY, JSON.stringify(ctx));
+    } else {
+      sessionStorage.removeItem(ISSUE_CONTEXT_STORAGE_KEY);
+    }
+  } catch {
+    /* ignore storage write errors */
+  }
+}
+
+function buildWelcomeMessage(ctx) {
+  if (ctx && (ctx.repo || ctx.issueTitle)) {
+    const target = ctx.repo
+      ? `**${ctx.repo}${ctx.issueNumber ? ` #${ctx.issueNumber}` : ""}**`
+      : "your active issue";
+    return {
+      role: "assistant",
+      issueContext: ctx,
+      content: `Hi! I am **FirstMate**, your AI Copilot — now locked onto ${target}.\n\nAsk me anything about setting up this repo locally, navigating the candidate files, resolving Git rebase/merge conflicts, or polishing your PR before submitting.`,
+    };
+  }
+  return {
+    role: "assistant",
+    content:
+      "Hi! I am **FirstMate**, your AI Copilot.\n\nAsk me anything about git commands, codebase architecture, open-source workflow steps, or platform features. I search our indexed documentation knowledge base to retrieve exact references.",
+  };
+}
+
 const AIPage = () => {
   const { user, loading: authLoading } = useAuth();
   const { isSupporter } = useSupporter();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
 
   const { remaining, limit, applyServerQuota, markExhausted } = useCopilotQuota(user?.id, {
@@ -255,15 +346,17 @@ const AIPage = () => {
   });
   const outOfMessages = !isSupporter && remaining <= 0;
 
-  const initialMessage = {
-    role: "assistant",
-    content:
-      "Hi! I am **FirstMate**, your AI Copilot.\n\nAsk me anything about git commands, codebase architecture, open-source workflow steps, or platform features. I search our indexed documentation knowledge base to retrieve exact references.",
-  };
+  const [activeIssueContext, setActiveIssueContext] = useState(() => {
+    const fromNav = normalizeIssueContext(location.state?.issueContext);
+    if (fromNav) return fromNav;
+    const fromUrl = parseIssueContextFromSearch(location.search);
+    if (fromUrl) return fromUrl;
+    return loadStoredIssueContext();
+  });
 
   const [chatHistory, setChatHistory] = useState([]);
   const [currentChatId, setCurrentChatId] = useState(null);
-  const [messages, setMessages] = useState([initialMessage]);
+  const [messages, setMessages] = useState(() => [buildWelcomeMessage(activeIssueContext)]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [renamingChatId, setRenamingChatId] = useState(null);
@@ -274,6 +367,31 @@ const AIPage = () => {
   const [copiedMsgIdx, setCopiedMsgIdx] = useState(null);
 
   const messagesEndRef = useRef(null);
+
+  // Sync incoming router state / URL query params when navigating from Kit or Status
+  useEffect(() => {
+    const fromNav = normalizeIssueContext(location.state?.issueContext);
+    const fromUrl = !fromNav ? parseIssueContextFromSearch(location.search) : null;
+    const incoming = fromNav || fromUrl;
+
+    if (incoming) {
+      setActiveIssueContext(incoming);
+      saveStoredIssueContext(incoming);
+      setCurrentChatId(null);
+      setMessages([buildWelcomeMessage(incoming)]);
+      setFeedbackMap({});
+      setActiveCorrectionIdx(null);
+
+      if (fromNav) {
+        // Clear router state so browser refresh does not wipe an active conversation
+        navigate(location.pathname, { replace: true, state: {} });
+      }
+    }
+  }, [location.state, location.search, location.pathname, navigate]);
+
+  useEffect(() => {
+    saveStoredIssueContext(activeIssueContext);
+  }, [activeIssueContext]);
 
   useEffect(() => {
     if (!user) return;
@@ -289,6 +407,8 @@ const AIPage = () => {
     if (chat) {
       setCurrentChatId(id);
       setMessages(chat.messages);
+      const savedCtx = normalizeIssueContext(chat.messages?.[0]?.issueContext);
+      setActiveIssueContext(savedCtx);
       setFeedbackMap({});
       setActiveCorrectionIdx(null);
     }
@@ -323,7 +443,7 @@ const AIPage = () => {
     await renameChatDB(id, newTitle);
   };
 
-  const suggestions = [
+  const defaultSuggestions = [
     "How do I prepare a proposal for Google Summer of Code (GSoC)?",
     "How do I fix a merge conflict using git rebase upstream/main?",
     "What is the difference between MIT, Apache 2.0, and GPLv3 licenses?",
@@ -331,6 +451,29 @@ const AIPage = () => {
     "What is Developer Certificate of Origin (DCO) and git commit -s?",
     "How do I debug failed GitHub Actions CI checks on my PR?",
   ];
+
+  const contextSuggestions = activeIssueContext
+    ? [
+        `Walk me through setting up ${activeIssueContext.repo || "this repository"} locally and creating a clean branch`,
+        `How should I approach ${activeIssueContext.issueNumber ? `issue #${activeIssueContext.issueNumber}` : "this issue"} and verify my changes with tests?`,
+        `I hit a git rebase or merge conflict on my branch for ${activeIssueContext.repo || "this repo"} — how do I fix it safely?`,
+        `Help me write a clean commit message and PR description for ${activeIssueContext.repo || "this issue"}`,
+        activeIssueContext.prUrl
+          ? "My GitHub Actions CI checks failed on this PR — how do I reproduce and fix them locally?"
+          : "What git workflow should I follow to keep my fork synced with upstream before opening a PR?",
+        "How should I respond professionally to maintainer review feedback or request a re-review?",
+      ]
+    : defaultSuggestions;
+
+  const suggestions = contextSuggestions;
+
+  const handleClearIssueContext = () => {
+    setActiveIssueContext(null);
+    saveStoredIssueContext(null);
+    if (messages.length <= 1) {
+      setMessages([buildWelcomeMessage(null)]);
+    }
+  };
 
   const handleVote = async (msgIdx, voteType) => {
     const msg = messages[msgIdx];
@@ -422,7 +565,9 @@ const AIPage = () => {
 
   const handleNewChat = () => {
     setCurrentChatId(null);
-    setMessages([initialMessage]);
+    setActiveIssueContext(null);
+    saveStoredIssueContext(null);
+    setMessages([buildWelcomeMessage(null)]);
     setFeedbackMap({});
     setActiveCorrectionIdx(null);
   };
@@ -438,11 +583,19 @@ const AIPage = () => {
     setIsLoading(true);
 
     const userMessage = { role: "user", content: text };
-    const newMessages = [...messages, userMessage];
+    const baseMessages =
+      activeIssueContext && messages.length > 0 && !messages[0]?.issueContext
+        ? [{ ...messages[0], issueContext: activeIssueContext }, ...messages.slice(1)]
+        : messages;
+    const newMessages = [...baseMessages, userMessage];
     setMessages(newMessages);
 
     let chatId = currentChatId;
-    const title = text.slice(0, 50) + (text.length > 50 ? "..." : "");
+    const contextPrefix = activeIssueContext?.repo
+      ? `[${activeIssueContext.repo}${activeIssueContext.issueNumber ? `#${activeIssueContext.issueNumber}` : ""}] `
+      : "";
+    const rawTitle = `${contextPrefix}${text}`;
+    const title = rawTitle.slice(0, 56) + (rawTitle.length > 56 ? "..." : "");
 
     if (!chatId) {
       const created = await createChatDB(user.id, title, newMessages);
@@ -486,6 +639,7 @@ const AIPage = () => {
               .slice(1)
               .map((m) => ({ role: m.role, content: m.content })),
             learnedContext: learned,
+            issueContext: activeIssueContext || null,
           }),
         },
       );
@@ -701,6 +855,75 @@ const AIPage = () => {
           </button>
         </header>
 
+        {/* Active Issue / PR Context Banner */}
+        {activeIssueContext && (
+          <div className="border-b border-[#22242A] bg-[#141518] px-4 sm:px-6 py-2.5">
+            <div className="max-w-3xl mx-auto flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="p-1.5 rounded-[4px] bg-[#0B0C0E] border border-[#DAFA9C]/40 text-[#DAFA9C] shrink-0">
+                  {activeIssueContext.prUrl || activeIssueContext.source === "status" ? (
+                    <GitPullRequest className="w-3.5 h-3.5" />
+                  ) : (
+                    <Wrench className="w-3.5 h-3.5" />
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-[11px] font-mono font-semibold text-[#DAFA9C] truncate">
+                      {activeIssueContext.repo || "Active Issue"}
+                      {activeIssueContext.issueNumber ? ` #${activeIssueContext.issueNumber}` : ""}
+                    </span>
+                    {activeIssueContext.language && (
+                      <span className="px-1.5 py-0.5 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] text-[10px] font-mono text-[#A8ADB6]">
+                        {activeIssueContext.language}
+                      </span>
+                    )}
+                    {activeIssueContext.prStatus && (
+                      <span className="px-1.5 py-0.5 rounded-[4px] bg-[#34D399]/10 border border-[#34D399]/30 text-[10px] font-mono uppercase text-[#34D399]">
+                        {activeIssueContext.prStatus.replace("_", " ")}
+                      </span>
+                    )}
+                    {(activeIssueContext.setupSteps?.length > 0 || activeIssueContext.filesToTouch?.length > 0) && (
+                      <span className="hidden sm:inline-flex px-1.5 py-0.5 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] text-[10px] font-mono text-[#8C929C]">
+                        Kit context attached
+                      </span>
+                    )}
+                  </div>
+                  {activeIssueContext.issueTitle && (
+                    <p className="text-xs text-[#F4F4F0] truncate mt-0.5">
+                      {activeIssueContext.issueTitle}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                {(activeIssueContext.prUrl || activeIssueContext.issueUrl) && (
+                  <a
+                    href={activeIssueContext.prUrl || activeIssueContext.issueUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    title="Open on GitHub"
+                    aria-label="Open attached issue or PR on GitHub"
+                    className="p-1.5 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] text-[#A8ADB6] hover:text-[#DAFA9C] hover:border-[#3A3E48] transition-colors"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+                <button
+                  type="button"
+                  onClick={handleClearIssueContext}
+                  title="Detach issue context"
+                  aria-label="Detach issue context"
+                  className="p-1.5 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] text-[#8C929C] hover:text-[#F4F4F0] hover:border-[#3A3E48] transition-colors cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Chat Message Panel */}
         <div className="flex-1 overflow-y-auto w-full pb-36 pt-6">
           <div className="max-w-3xl mx-auto px-4 sm:px-6 md:px-8 space-y-5">
@@ -713,10 +936,14 @@ const AIPage = () => {
 
                 <div className="space-y-1.5">
                   <h1 className="text-xl sm:text-2xl font-bold text-[#F4F4F0] tracking-tight">
-                    How can I help you ship today?
+                    {activeIssueContext?.repo
+                      ? `Need a hand with ${activeIssueContext.repo}?`
+                      : "How can I help you ship today?"}
                   </h1>
                   <p className="text-xs text-[#A8ADB6] max-w-md mx-auto leading-relaxed">
-                    Ask about git branch workflows, rebase conflicts, repository setup, CI failures, or licensing conventions.
+                    {activeIssueContext?.repo
+                      ? "FirstMate has your issue details loaded. Ask about local setup, Git conflicts, test runs, or PR conventions."
+                      : "Ask about git branch workflows, rebase conflicts, repository setup, CI failures, or licensing conventions."}
                   </p>
                 </div>
 
@@ -988,7 +1215,11 @@ const AIPage = () => {
                   aria-label="Ask FirstMate a question"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="Ask FirstMate about git commands, PR workflow, or codebase structure..."
+                  placeholder={
+                    activeIssueContext?.repo
+                      ? `Ask FirstMate about ${activeIssueContext.repo}${activeIssueContext.issueNumber ? ` #${activeIssueContext.issueNumber}` : ""} (git, setup, tests, PR)...`
+                      : "Ask FirstMate about git commands, PR workflow, or codebase structure..."
+                  }
                   disabled={isLoading}
                   className="flex-1 bg-transparent px-3 py-2 text-xs text-[#F4F4F0] placeholder:text-[#8C929C] focus:outline-none disabled:opacity-50"
                 />

@@ -23,6 +23,7 @@ import {
   Activity,
   ChevronLeft,
   ChevronRight,
+  BotMessageSquare,
 } from "lucide-react";
 import { withUTM, extractRepo } from "../utils/utm";
 import { trackIssueClick } from "../utils/analytics";
@@ -195,6 +196,27 @@ const StatusPage = () => {
 
   const handleSync = async () => {
     await sync();
+  };
+
+  const handleAskFirstMate = (contribution, status) => {
+    const repo =
+      contribution.github_repo_owner && contribution.github_repo_name
+        ? `${contribution.github_repo_owner}/${contribution.github_repo_name}`
+        : extractRepo(contribution.issue_url || contribution.pr_url || "") || "";
+    navigate("/firstmate", {
+      state: {
+        issueContext: {
+          repo,
+          issueNumber: contribution.github_issue_number || null,
+          issueTitle: contribution.issue_title || contribution.title || "",
+          issueUrl: contribution.issue_url || "",
+          prUrl: contribution.pr_url || "",
+          prStatus: status || "",
+          language: contribution.language || "",
+          source: "status",
+        },
+      },
+    });
   };
 
   useEffect(() => {
@@ -510,6 +532,7 @@ const StatusPage = () => {
                       status={status}
                       statusConfig={statusConfig}
                       formatDate={formatDate}
+                      onAskFirstMate={() => handleAskFirstMate(item, status)}
                     />
                   );
                 })}
@@ -611,6 +634,7 @@ const ContributionCard = ({
   status,
   statusConfig,
   formatDate,
+  onAskFirstMate,
 }) => {
   const StatusIcon =
     status === "saved"
@@ -672,6 +696,16 @@ const ContributionCard = ({
 
         {/* Actions */}
         <div className="flex items-center gap-1.5 self-end sm:self-auto pt-2 sm:pt-0 border-t border-[#22242A] sm:border-0 w-full sm:w-auto justify-end">
+          <button
+            type="button"
+            onClick={onAskFirstMate}
+            title="Stuck on Git, CI, or review? Ask FirstMate with this context"
+            aria-label={`Ask FirstMate about ${contribution.issue_title}`}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] text-[#A8ADB6] hover:border-[#DAFA9C]/60 hover:text-[#DAFA9C] transition-colors text-xs font-medium cursor-pointer whitespace-nowrap"
+          >
+            <BotMessageSquare className="w-3.5 h-3.5" />
+            <span>Ask FirstMate</span>
+          </button>
           {contribution.pr_url && (
             <a
               href={contribution.pr_url}
