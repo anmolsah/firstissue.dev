@@ -125,9 +125,9 @@ export function useVerifyContribution() {
 
       return data?.data || data;
     },
-    onSuccess: (data, variables, context) => {
-      // Invalidate the query to fetch the new attestation
-      queryClient.invalidateQueries(['attestations']);
+    onSuccess: () => {
+      // Invalidate the query to fetch the new attestation (TanStack Query v5 syntax)
+      queryClient.invalidateQueries({ queryKey: ['attestations'] });
     }
   });
 }
@@ -163,7 +163,7 @@ export function useGenerateQuantifiedImpact() {
       return data?.data || data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['attestations']);
+      queryClient.invalidateQueries({ queryKey: ['attestations'] });
     }
   });
 }

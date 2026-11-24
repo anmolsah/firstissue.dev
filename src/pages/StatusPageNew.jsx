@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import { useAuth } from "../contexts/AuthContext";
+import { useSupporter } from "../contexts/SupporterContext";
 import { useGitHubSync } from "../hooks/useGitHubSync";
 import { getContributionStatus, getStatusConfig } from "../services/githubSync";
 import { useBookmarks } from "../hooks/queries/useBookmarks";
+import { useAttestations, useVerifyContribution } from "../hooks/useProofOfWork";
+import { FREE_ATTESTATION_LIMIT } from "../lib/limits";
 import AppSidebar from "../components/AppSidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
 import BrandMark from "../components/BrandMark";
@@ -24,17 +28,51 @@ import {
   ChevronLeft,
   ChevronRight,
   BotMessageSquare,
+  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { withUTM, extractRepo } from "../utils/utm";
 import { trackIssueClick } from "../utils/analytics";
 
 const StatusPage = () => {
   const { user, loading: authLoading } = useAuth();
+  const { isSupporter } = useSupporter();
   const navigate = useNavigate();
   const [selectedStatus, setSelectedStatus] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [verifyingId, setVerifyingId] = useState(null);
   const ITEMS_PER_PAGE = 10;
+
+  // Proof of Work attestations & one-click PR verification
+  const { data: attestations = [] } = useAttestations(user?.id);
+  const verifyMutation = useVerifyContribution();
+
+  const verifiedPrKeys = React.useMemo(() => {
+    const set = new Set();
+    for (const att of attestations) {
+      if (att?.repo_name && att?.pr_number != null) {
+        set.add(`${att.repo_name.toLowerCase()}#${att.pr_number}`);
+      }
+    }
+    return set;
+  }, [attestations]);
+
+  const isContributionVerified = (contribution) => {
+    if (contribution?.pr_url) {
+      const m = contribution.pr_url.match(/github\.com\/([^/]+\/[^/]+)\/pull\/(\d+)/i);
+      if (m && verifiedPrKeys.has(`${m[1].toLowerCase()}#${m[2]}`)) {
+        return true;
+      }
+    }
+    if (contribution?.github_repo_owner && contribution?.github_repo_name && contribution?.pr_number != null) {
+      const key = `${contribution.github_repo_owner}/${contribution.github_repo_name}`.toLowerCase();
+      if (verifiedPrKeys.has(`${key}#${contribution.pr_number}`)) {
+        return true;
+      }
+    }
+    return false;
+  };
 
   // GitHub sync hook
   const {
@@ -196,6 +234,48 @@ const StatusPage = () => {
 
   const handleSync = async () => {
     await sync();
+  };
+
+  const handleVerifyPR = async (contribution) => {
+    if (!contribution?.pr_url || verifyingId) return;
+
+    const githubUsername =
+      user?.user_metadata?.user_name ||
+      user?.user_metadata?.preferred_username ||
+      user?.identities?.[0]?.identity_data?.user_name;
+
+    if (!githubUsername) {
+      toast.error("Could not resolve your GitHub username. Please reconnect GitHub.");
+      return;
+    }
+
+    if (!isSupporter && attestations.length >= FREE_ATTESTATION_LIMIT) {
+      toast.error(
+        `Core tier is limited to ${FREE_ATTESTATION_LIMIT} Proofs of Work. Upgrade to Supporter for unlimited attestations.`,
+        { duration: 5000 },
+      );
+      return;
+    }
+
+    setVerifyingId(contribution.id);
+    const loadingToast = toast.loading("Verifying merged PR via GitHub API...");
+    try {
+      await verifyMutation.mutateAsync({
+        prUrl: contribution.pr_url,
+        userId: user?.id,
+        githubUsername,
+      });
+      toast.success("PR verified! SHA-256 Proof of Work saved to your profile.", {
+        id: loadingToast,
+      });
+    } catch (err) {
+      console.error("Failed to verify PR:", err);
+      toast.error(err.message || "Failed to verify pull request", {
+        id: loadingToast,
+      });
+    } finally {
+      setVerifyingId(null);
+    }
   };
 
   const handleAskFirstMate = (contribution, status) => {
@@ -532,6 +612,9 @@ const StatusPage = () => {
                       status={status}
                       statusConfig={statusConfig}
                       formatDate={formatDate}
+                      isVerified={isContributionVerified(item)}
+                      isVerifying={verifyingId === item.id}
+                      onVerifyPR={() => handleVerifyPR(item)}
                       onAskFirstMate={() => handleAskFirstMate(item, status)}
                     />
                   );
@@ -634,6 +717,9 @@ const ContributionCard = ({
   status,
   statusConfig,
   formatDate,
+  isVerified,
+  isVerifying,
+  onVerifyPR,
   onAskFirstMate,
 }) => {
   const StatusIcon =
@@ -695,7 +781,40 @@ const ContributionCard = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1.5 self-end sm:self-auto pt-2 sm:pt-0 border-t border-[#22242A] sm:border-0 w-full sm:w-auto justify-end">
+        <div className="flex flex-wrap items-center gap-1.5 self-end sm:self-auto pt-2 sm:pt-0 border-t border-[#22242A] sm:border-0 w-full sm:w-auto justify-end">
+          {status === "merged" && contribution.pr_url && (
+            isVerified ? (
+              <Link
+                to="/profile"
+                title="View SHA-256 Proof of Work on your profile"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-[#34D399]/10 border border-[#34D399]/35 text-[#34D399] hover:bg-[#34D399]/15 transition-colors text-xs font-mono font-semibold whitespace-nowrap"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Verified</span>
+              </Link>
+            ) : (
+              <button
+                type="button"
+                onClick={onVerifyPR}
+                disabled={isVerifying}
+                title="Verify this merged PR and generate a SHA-256 Proof of Work card"
+                aria-label={`Verify pull request for ${contribution.issue_title}`}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[4px] bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] transition-colors text-xs font-semibold disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer whitespace-nowrap"
+              >
+                {isVerifying ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Verifying...</span>
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Verify PR</span>
+                  </>
+                )}
+              </button>
+            )
+          )}
           <button
             type="button"
             onClick={onAskFirstMate}

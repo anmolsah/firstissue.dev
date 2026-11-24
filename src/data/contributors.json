@@ -99,14 +99,24 @@
       "joinedAt": "2026-11-23",
       "branch": "center"
     },
-    {
-      "id": "11",
-      "name": "Kuntal Kundu",
-      "github": "kundukuntal",
-      "avatar": "https://github.com/kundukuntal.png",
-      "role": "Contributor",
-      "message": "Excited to make my first open source contribution! 🌱",
-      "joinedAt": "2026-11-23",
-      "branch": "center"
-    }
-  ]
+  {
+    "id": "11",
+    "name": "Kuntal Kundu",
+    "github": "kundukuntal",
+    "avatar": "https://github.com/kundukuntal.png",
+    "role": "Contributor",
+    "message": "Excited to make my first open source contribution! 🌱",
+    "joinedAt": "2026-11-23",
+    "branch": "center"
+  },
+  {
+    "id": "12",
+    "name": "rohanroday",
+    "github": "rohanroday",
+    "avatar": "https://github.com/rohanroday.png",
+    "role": "Contributor",
+    "message": "Excited to make my first open source contribution! 🌱",
+    "joinedAt": "2026-11-24",
+    "branch": "center"
+  }
+]
