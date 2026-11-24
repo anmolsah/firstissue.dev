@@ -21,6 +21,9 @@ import {
   X,
   Wrench,
   GitPullRequest,
+  Rocket,
+  Star,
+  Globe,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -444,24 +447,52 @@ const AIPage = () => {
   };
 
   const defaultSuggestions = [
-    "How do I prepare a proposal for Google Summer of Code (GSoC)?",
-    "How do I fix a merge conflict using git rebase upstream/main?",
-    "What is the difference between MIT, Apache 2.0, and GPLv3 licenses?",
-    "Show me how to squash commits with interactive rebase before a PR",
-    "What is Developer Certificate of Origin (DCO) and git commit -s?",
-    "How do I debug failed GitHub Actions CI checks on my PR?",
+    {
+      text: "I use TypeScript, React, and Python — suggest a few new open-source startups I can contribute to",
+      badge: "Startup Orgs",
+      featured: true,
+    },
+    {
+      text: "How do I prepare a proposal for Google Summer of Code (GSoC)?",
+    },
+    {
+      text: "How do I fix a merge conflict using git rebase upstream/main?",
+    },
+    {
+      text: "What is the difference between MIT, Apache 2.0, and GPLv3 licenses?",
+    },
+    {
+      text: "Show me how to squash commits with interactive rebase before a PR",
+    },
+    {
+      text: "How do I debug failed GitHub Actions CI checks on my PR?",
+    },
   ];
 
   const contextSuggestions = activeIssueContext
     ? [
-        `Walk me through setting up ${activeIssueContext.repo || "this repository"} locally and creating a clean branch`,
-        `How should I approach ${activeIssueContext.issueNumber ? `issue #${activeIssueContext.issueNumber}` : "this issue"} and verify my changes with tests?`,
-        `I hit a git rebase or merge conflict on my branch for ${activeIssueContext.repo || "this repo"} — how do I fix it safely?`,
-        `Help me write a clean commit message and PR description for ${activeIssueContext.repo || "this issue"}`,
-        activeIssueContext.prUrl
-          ? "My GitHub Actions CI checks failed on this PR — how do I reproduce and fix them locally?"
-          : "What git workflow should I follow to keep my fork synced with upstream before opening a PR?",
-        "How should I respond professionally to maintainer review feedback or request a re-review?",
+        {
+          text: `Walk me through setting up ${activeIssueContext.repo || "this repository"} locally and creating a clean branch`,
+        },
+        {
+          text: `How should I approach ${activeIssueContext.issueNumber ? `issue #${activeIssueContext.issueNumber}` : "this issue"} and verify my changes with tests?`,
+        },
+        {
+          text: `I hit a git rebase or merge conflict on my branch for ${activeIssueContext.repo || "this repo"} — how do I fix it safely?`,
+        },
+        {
+          text: `Help me write a clean commit message and PR description for ${activeIssueContext.repo || "this issue"}`,
+        },
+        {
+          text: activeIssueContext.prUrl
+            ? "My GitHub Actions CI checks failed on this PR — how do I reproduce and fix them locally?"
+            : "What git workflow should I follow to keep my fork synced with upstream before opening a PR?",
+        },
+        {
+          text: "Suggest a few new open-source startups matching my stack that I can contribute to next",
+          badge: "Startup Orgs",
+          featured: true,
+        },
       ]
     : defaultSuggestions;
 
@@ -679,6 +710,7 @@ const AIPage = () => {
         role: "assistant",
         content: data.answer,
         sources: data.sources || [],
+        startupOrgs: Array.isArray(data.startup_orgs) ? data.startup_orgs : [],
         userQuery: text,
         learnedApplied: data.learned_applied || learned.length > 0,
       };
@@ -949,22 +981,39 @@ const AIPage = () => {
 
                 {/* Suggestions Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-2xl pt-2">
-                  {suggestions.map((sug, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => handleSuggestionClick(sug)}
-                      className="text-left p-4 rounded-[4px] bg-[#141518] border border-[#2B2E36] hover:border-[#DAFA9C]/60 hover:bg-[#17181B] transition-colors flex flex-col justify-between group cursor-pointer"
-                    >
-                      <span className="font-medium text-xs text-[#F4F4F0] mb-3 leading-relaxed">
-                        {sug}
-                      </span>
-                      <span className="text-[11px] text-[#8C929C] group-hover:text-[#DAFA9C] flex items-center gap-1 transition-colors font-semibold font-mono">
-                        <span>Ask FirstMate</span>
-                        <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
-                      </span>
-                    </button>
-                  ))}
+                  {suggestions.map((sug, idx) => {
+                    const sugText = typeof sug === "string" ? sug : sug.text;
+                    const isFeatured = typeof sug === "object" && sug.featured;
+                    const badge = typeof sug === "object" ? sug.badge : null;
+                    return (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => handleSuggestionClick(sugText)}
+                        className={`text-left p-4 rounded-[4px] border transition-colors flex flex-col justify-between group cursor-pointer ${
+                          isFeatured
+                            ? "bg-[#141518] border-[#DAFA9C]/40 hover:border-[#DAFA9C] hover:bg-[#17181B]"
+                            : "bg-[#141518] border-[#2B2E36] hover:border-[#DAFA9C]/60 hover:bg-[#17181B]"
+                        }`}
+                      >
+                        <div className="space-y-2 mb-3">
+                          {badge && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[4px] bg-[#DAFA9C]/10 border border-[#DAFA9C]/30 text-[10px] font-mono uppercase tracking-wider text-[#DAFA9C] font-semibold">
+                              <Rocket className="w-3 h-3" />
+                              <span>{badge}</span>
+                            </span>
+                          )}
+                          <span className="font-medium text-xs text-[#F4F4F0] leading-relaxed block">
+                            {sugText}
+                          </span>
+                        </div>
+                        <span className="text-[11px] text-[#8C929C] group-hover:text-[#DAFA9C] flex items-center gap-1 transition-colors font-semibold font-mono">
+                          <span>{isFeatured ? "Search Startup Orgs" : "Ask FirstMate"}</span>
+                          <ChevronRight className="w-3 h-3 transition-transform group-hover:translate-x-0.5" />
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -1003,6 +1052,111 @@ const AIPage = () => {
                     <div className="text-xs text-[#F4F4F0] leading-relaxed break-words">
                       {isAssistant ? renderMarkdown(msg.content) : msg.content}
                     </div>
+
+                    {/* Matched Startup Orgs Cards */}
+                    {isAssistant && Array.isArray(msg.startupOrgs) && msg.startupOrgs.length > 0 && (
+                      <div className="pt-3 border-t border-[#22242A] space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[11px] text-[#DAFA9C] font-bold uppercase tracking-wider font-mono inline-flex items-center gap-1.5">
+                            <Rocket className="w-3.5 h-3.5" />
+                            <span>Matched Startup Orgs ({msg.startupOrgs.length})</span>
+                          </span>
+                          <Link
+                            to="/explore"
+                            className="text-[11px] font-mono text-[#8C929C] hover:text-[#DAFA9C] transition-colors inline-flex items-center gap-1"
+                          >
+                            <span>Browse all in Explore</span>
+                            <ChevronRight className="w-3 h-3" />
+                          </Link>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {msg.startupOrgs.map((org) => (
+                            <div
+                              key={org.id || org.github_name}
+                              className="p-3 rounded-[4px] bg-[#0B0C0E] border border-[#2B2E36] hover:border-[#DAFA9C]/50 transition-colors flex flex-col justify-between gap-2"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <img
+                                    src={`https://github.com/${org.github_name}.png?size=40`}
+                                    alt={org.display_name || org.github_name}
+                                    className="w-7 h-7 rounded-[4px] border border-[#22242A] bg-[#141518] object-cover shrink-0"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = "none";
+                                    }}
+                                  />
+                                  <div className="min-w-0">
+                                    <a
+                                      href={org.github_url || `https://github.com/${org.github_name}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs font-semibold text-[#F4F4F0] hover:text-[#DAFA9C] transition-colors truncate block"
+                                    >
+                                      {org.display_name || org.github_name}
+                                    </a>
+                                    <span className="text-[10px] font-mono text-[#8C929C] truncate block">
+                                      @{org.github_name}
+                                    </span>
+                                  </div>
+                                </div>
+                                {org.category && (
+                                  <span className="text-[10px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded-[4px] bg-[#141518] border border-[#2B2E36] text-[#DAFA9C] shrink-0">
+                                    {org.category}
+                                  </span>
+                                )}
+                              </div>
+
+                              <p className="text-[11px] text-[#A8ADB6] leading-relaxed line-clamp-2">
+                                {org.description}
+                              </p>
+
+                              <div className="flex items-center justify-between pt-2 border-t border-[#22242A] text-[10px] font-mono text-[#8C929C]">
+                                <div className="flex items-center gap-2.5 tabular-nums">
+                                  {org.stars != null && (
+                                    <span className="inline-flex items-center gap-1 text-[#A8ADB6]">
+                                      <Star className="w-3 h-3 text-[#DAFA9C]" />
+                                      {org.stars >= 1000
+                                        ? `${(org.stars / 1000).toFixed(1)}k`
+                                        : org.stars.toLocaleString()}
+                                    </span>
+                                  )}
+                                  {org.founded_year && <span>Est. {org.founded_year}</span>}
+                                  {org.country && (
+                                    <span className="inline-flex items-center gap-0.5">
+                                      <Globe className="w-2.5 h-2.5" />
+                                      {org.country}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  {org.website && (
+                                    <a
+                                      href={org.website}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-[#8C929C] hover:text-[#F4F4F0] transition-colors"
+                                      title="Visit website"
+                                    >
+                                      Site
+                                    </a>
+                                  )}
+                                  <a
+                                    href={org.github_url || `https://github.com/${org.github_name}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-[#DAFA9C] hover:underline font-semibold"
+                                  >
+                                    <span>GitHub</span>
+                                    <ExternalLink className="w-2.5 h-2.5" />
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Sources Section */}
                     {isAssistant && msg.sources && msg.sources.length > 0 && (
