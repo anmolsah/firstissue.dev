@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import AppSidebar from "../components/AppSidebar";
+import MobileBottomNav from "../components/MobileBottomNav";
+import BrandMark from "../components/BrandMark";
 import {
   GitFork,
   Terminal,
@@ -52,19 +55,43 @@ const ContributionBookPage = () => {
   }`;
 
   return (
-    <main className="min-h-screen bg-[#0F0F0F] text-[#F4F4F0] pt-[96px] pb-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs font-mono text-[#8C929C] mb-6">
-          <Link to="/" className="hover:text-[#F4F4F0] transition-colors">
-            Home
-          </Link>
-          <span>/</span>
-          <span className="text-[#A8ADB6]">Contribution Book</span>
-        </nav>
+    <div className="flex bg-[#0F0F0F] min-h-screen text-[#F4F4F0] font-sans">
+      <AppSidebar />
 
-        {/* Hero Header */}
-        <div className="max-w-2xl mb-10">
+      <main className="flex-1 min-w-0 pb-20 lg:pb-0">
+        {/* Sticky Top Workspace Header */}
+        <header className="h-14 sm:h-16 border-b border-[#22242A] bg-[#0F0F0F]/95 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between gap-3 px-4 sm:px-6">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Link
+              to="/"
+              className="lg:hidden shrink-0"
+              aria-label="FirstIssue.dev home"
+            >
+              <BrandMark size="sm" />
+            </Link>
+            <Sprout className="w-4 h-4 text-[#DAFA9C] shrink-0 hidden sm:inline-block" />
+            <span className="text-sm sm:text-base font-bold text-[#F4F4F0] tracking-tight truncate">
+              Contribution Book
+            </span>
+            <span className="hidden md:inline-flex items-center px-2 py-0.5 rounded-[4px] border border-[#2B2E36] bg-[#141518] text-[11px] font-mono text-[#A8ADB6]">
+              Contribution Tree Guide
+            </span>
+          </div>
+
+          <a
+            href={repoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#F4F4F0] bg-[#141518] hover:bg-[#17181B] border border-[#2B2E36] hover:border-[#3A3E48] rounded-[4px] transition-colors shrink-0"
+          >
+            <span>Open Repository</span>
+            <ExternalLink className="w-3.5 h-3.5 text-[#A8ADB6]" />
+          </a>
+        </header>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+          {/* Hero Header */}
+          <div className="max-w-2xl mb-10">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#F4F4F0] mb-3 text-balance">
             The Contribution Book
           </h1>
@@ -517,8 +544,11 @@ const ContributionBookPage = () => {
             </div>
           </div>
         </div>
-      </div>
-    </main>
+        </div>
+      </main>
+
+      <MobileBottomNav />
+    </div>
   );
 };
 

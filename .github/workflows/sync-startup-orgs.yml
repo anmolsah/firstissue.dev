@@ -1,0 +1,41 @@
+name: Weekly Sync & Discover Startup Orgs
+
+on:
+  schedule:
+    # Runs once every week on Sunday at 03:00 UTC
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      max_discover:
+        description: 'Maximum newly discovered startup orgs to insert in this run'
+        required: false
+        default: '15'
+
+permissions:
+  contents: read
+
+jobs:
+  sync-startup-orgs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Discover new startup orgs and refresh stars in Supabase
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAX_DISCOVER: ${{ github.event.inputs.max_discover || '15' }}
+        run: npm run sync-startups

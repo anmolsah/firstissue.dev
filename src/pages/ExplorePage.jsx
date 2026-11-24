@@ -1,8 +1,18 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useAddBookmark, useRemoveBookmark, bookmarkKeys } from "../hooks/queries/useBookmarks";
-import { useQueryClient } from "@tanstack/react-query";
+import {
+  useBookmarks,
+  useAddBookmark,
+  useRemoveBookmark,
+  bookmarkKeys,
+} from "../hooks/queries/useBookmarks";
+import {
+  useQuery,
+  useInfiniteQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import SmartMatchTab from "../components/SmartMatchTab";
 import AppSidebar from "../components/AppSidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
@@ -91,15 +101,319 @@ const LABEL_OPTIONS = [
   { id: "bug", label: "Bug Fix" },
 ];
 
+const EXPLORE_STALE_TIME = 5 * 60 * 1000; // 5 minutes
+const EXPLORE_GC_TIME = 15 * 60 * 1000; // 15 minutes
+
+const DEFAULT_EXPLORE_FILTERS = {
+  language: "",
+  labels: ["good first issue"],
+  keywords: "",
+  sort: "updated",
+  minStars: "0",
+};
+
+// Preserves active tab & filter state across intra-session sidebar navigation
+let cachedExploreSessionState = {
+  selectedTab: "all",
+  filters: DEFAULT_EXPLORE_FILTERS,
+  searchDraft: "",
+  activePresetId: null,
+  nlSummary: "",
+};
+
+const getClientGithubHeaders = () => ({
+  Accept: "application/vnd.github.v3+json",
+  "User-Agent": "OpenSourceBuddy/1.0",
+  ...(import.meta.env.VITE_GITHUB_TOKEN && {
+    Authorization: `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
+  }),
+});
+
+const enrichClientIssuesWithRepoMeta = async (rawItems, minStarsInt, trustedReposList = []) => {
+  const trustedStarMap = new Map(
+    (trustedReposList || []).map((repo) => [
+      repo.full_name || `${repo.owner}/${repo.name}`,
+      repo.stars,
+    ])
+  );
+
+  const repoNames = Array.from(
+    new Set(
+      rawItems
+        .map((item) => item.repository_url?.split("/").slice(-2).join("/"))
+        .filter(Boolean)
+    )
+  );
+
+  const metaMap = new Map();
+  const healthMap = new Map();
+  const uncached = [];
+
+  if (repoNames.length > 0) {
+    try {
+      const { data: healthRows, error: healthErr } = await supabase
+        .from("repo_health")
+        .select("*")
+        .in("repo_full_name", repoNames);
+      if (!healthErr && Array.isArray(healthRows)) {
+        for (const row of healthRows) {
+          healthMap.set(row.repo_full_name, row);
+          metaMap.set(row.repo_full_name, {
+            stars: Number(row.stars ?? 0),
+            pushed_at: row.last_pushed_at ?? null,
+            archived: Boolean(row.is_archived),
+          });
+        }
+      }
+    } catch {
+      // Table may not be migrated yet; continue silently
+    }
+  }
+
+  for (const repoName of repoNames) {
+    if (metaMap.has(repoName)) continue;
+    const cached = getCache(`repo_meta_v1_${repoName}`);
+    if (cached && typeof cached.stars === "number") {
+      metaMap.set(repoName, cached);
+      continue;
+    }
+    if (trustedStarMap.has(repoName) && typeof trustedStarMap.get(repoName) === "number") {
+      const meta = { stars: trustedStarMap.get(repoName), pushed_at: null, archived: false };
+      metaMap.set(repoName, meta);
+      continue;
+    }
+    uncached.push(repoName);
+  }
+
+  const clientToken = import.meta.env.VITE_GITHUB_TOKEN;
+  if (uncached.length > 0 && clientToken) {
+    const chunk = uncached.slice(0, 30);
+    const fields = chunk
+      .map((fullName, idx) => {
+        const [owner, name] = fullName.split("/");
+        if (!/^[a-zA-Z0-9._-]+$/.test(owner) || !/^[a-zA-Z0-9._-]+$/.test(name)) return "";
+        return `r${idx}: repository(owner: "${owner}", name: "${name}") { stargazerCount pushedAt isArchived }`;
+      })
+      .filter(Boolean)
+      .join("\n");
+
+    if (fields) {
+      try {
+        const gqlRes = await fetch("https://api.github.com/graphql", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${clientToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ query: `query {\n${fields}\n}` }),
+        });
+        if (gqlRes.ok) {
+          const payload = await gqlRes.json();
+          const data = payload?.data || {};
+          chunk.forEach((fullName, idx) => {
+            const node = data[`r${idx}`];
+            if (!node) return;
+            const meta = {
+              stars: Number(node.stargazerCount ?? 0),
+              pushed_at: node.pushedAt ?? null,
+              archived: Boolean(node.isArchived),
+            };
+            metaMap.set(fullName, meta);
+            setCache(`repo_meta_v1_${fullName}`, meta, 6 * 60 * 60 * 1000);
+          });
+        }
+      } catch (err) {
+        console.warn("GraphQL repo metadata fallback skipped:", err);
+      }
+    }
+  } else if (uncached.length > 0 && minStarsInt > 0) {
+    await Promise.all(
+      uncached.slice(0, 24).map(async (fullName) => {
+        try {
+          const res = await fetch(`https://api.github.com/repos/${fullName}`, {
+            headers: getClientGithubHeaders(),
+          });
+          if (!res.ok) return;
+          const repo = await res.json();
+          const meta = {
+            stars: Number(repo.stargazers_count ?? 0),
+            pushed_at: repo.pushed_at ?? null,
+            archived: Boolean(repo.archived),
+          };
+          metaMap.set(fullName, meta);
+          setCache(`repo_meta_v1_${fullName}`, meta, 6 * 60 * 60 * 1000);
+        } catch {
+          // Keep graceful fallback when GitHub unauthenticated limit is tight
+        }
+      })
+    );
+  }
+
+  return rawItems.map((item) => {
+    const repoName = item.repository_url?.split("/").slice(-2).join("/") || "";
+    const meta = metaMap.get(repoName);
+    const health = healthMap.get(repoName) || null;
+    if (!meta && !health) return item;
+    return {
+      ...item,
+      repo_stars: meta?.stars ?? item.repo_stars ?? null,
+      repo_pushed_at: meta?.pushed_at ?? item.repo_pushed_at ?? null,
+      repo_archived: meta?.archived ?? item.repo_archived ?? false,
+      repo_health: health || item.repo_health || null,
+    };
+  });
+};
+
+const findClientReposByStars = async (language, minStarsInt) => {
+  const cacheKey = `explore_repos_v2_${language || "all"}_${minStarsInt}`;
+  const cached = getCache(cacheKey);
+  if (Array.isArray(cached) && cached.length > 0) return cached;
+
+  const cleanLang = (language || "").trim();
+  const langPart = cleanLang
+    ? /\s/.test(cleanLang)
+      ? `language:"${cleanLang}"`
+      : `language:${cleanLang}`
+    : "";
+
+  for (const extra of ["good-first-issues:>0", ""]) {
+    const repoQuery = `stars:>=${minStarsInt} archived:false is:public ${langPart} ${extra}`
+      .replace(/\s+/g, " ")
+      .trim();
+    try {
+      const res = await fetch(
+        `https://api.github.com/search/repositories?q=${encodeURIComponent(repoQuery)}&sort=updated&order=desc&per_page=15`,
+        { headers: getClientGithubHeaders() }
+      );
+      if (!res.ok) continue;
+      const data = await res.json();
+      const repoItems = (data.items || []).filter((repo) => Boolean(repo?.full_name));
+      if (repoItems.length > 0) {
+        const repos = repoItems.map((repo) => {
+          setCache(
+            `repo_meta_v1_${repo.full_name}`,
+            {
+              stars: Number(repo.stargazers_count ?? 0),
+              pushed_at: repo.pushed_at ?? null,
+              archived: Boolean(repo.archived),
+            },
+            6 * 60 * 60 * 1000
+          );
+          return repo.full_name;
+        });
+        setCache(cacheKey, repos, 10 * 60 * 1000);
+        return repos;
+      }
+    } catch {
+      // Ignore transient repo lookup failure and fall back to unrestricted issue search
+    }
+  }
+
+  return [];
+};
+
+const fetchExploreIssuesPage = async ({
+  pageParam = 1,
+  labels,
+  language,
+  keywords,
+  sort,
+  minStarsInt,
+  isTrending,
+  trustedReposList,
+}) => {
+  let rawItems = [];
+  let rawCount = 0;
+  let rawTotalCount = 0;
+  let loadedViaEdge = false;
+
+  // 1. Try Supabase Edge Function (`exploreSearch`) for server-token GraphQL stars + Redis caching
+  try {
+    const { data: edgeData, error: edgeError } = await supabase.functions.invoke("github-data", {
+      body: {
+        action: "exploreSearch",
+        labels,
+        language,
+        keywords,
+        sort,
+        minStars: minStarsInt,
+        trending: isTrending,
+        page: pageParam,
+      },
+    });
+    if (!edgeError && edgeData && Array.isArray(edgeData.items)) {
+      rawItems = edgeData.items;
+      rawCount = Number(edgeData.raw_count ?? edgeData.items.length);
+      rawTotalCount = Number(edgeData.total_count ?? edgeData.items.length);
+      loadedViaEdge = true;
+    }
+  } catch {
+    // Fallback smoothly to direct GitHub Search API when Edge Function is unavailable
+  }
+
+  // 2. Direct GitHub Search API fallback
+  if (!loadedViaEdge) {
+    let extraRepoQualifiers = [];
+    if (minStarsInt > 0 && !keywords.trim()) {
+      extraRepoQualifiers = await findClientReposByStars(language, minStarsInt);
+    }
+
+    const query = buildGitHubIssueSearchQuery({
+      labels,
+      language: extraRepoQualifiers.length === 0 ? language : "",
+      keywords,
+      trending: isTrending,
+      trendingDays: 30,
+      extraRepoQualifiers,
+    });
+
+    const githubSort = isTrending
+      ? "interactions"
+      : sort === "created"
+        ? "created"
+        : "updated";
+
+    const response = await fetch(
+      `https://api.github.com/search/issues?q=${encodeURIComponent(
+        query
+      )}&sort=${githubSort}&order=desc&per_page=30&page=${pageParam}`,
+      { headers: getClientGithubHeaders() }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      const fetchedItems = data.items || [];
+      rawCount = fetchedItems.length;
+      rawTotalCount = Number(data.total_count ?? fetchedItems.length);
+      rawItems = await enrichClientIssuesWithRepoMeta(fetchedItems, minStarsInt, trustedReposList);
+    }
+  }
+
+  const hasResolvedStars = rawItems.some((item) => typeof item.repo_stars === "number");
+  const filteredIssues = filterStaleIssues(rawItems, {
+    minStars: minStarsInt,
+    requireKnownStars: minStarsInt > 0 && hasResolvedStars,
+  });
+
+  return {
+    items: filteredIssues,
+    rawCount,
+    cappedTotal: Math.min(rawTotalCount, 1000),
+    page: pageParam,
+  };
+};
+
 const ExplorePage = () => {
   const { user, loading: authLoading } = useAuth();
+  const userId = user?.id || null;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!authLoading && !user) {
+    if (!authLoading && !userId) {
       navigate("/login");
     }
-  }, [user, authLoading, navigate]);
+  }, [userId, authLoading, navigate]);
 
   useEffect(() => {
     document.title = "Explore Beginner-Friendly Open Source Issues | FirstIssue.dev";
@@ -112,35 +426,21 @@ const ExplorePage = () => {
     }
   }, []);
 
-  const [issues, setIssues] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [bookmarkedIssues, setBookmarkedIssues] = useState(new Set());
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(0);
-  const [selectedTab, setSelectedTab] = useState("all");
+  const [selectedTab, setSelectedTab] = useState(() => cachedExploreSessionState.selectedTab);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-
-  const [trustedRepos, setTrustedRepos] = useState([]);
-  const [loadingTrustedRepos, setLoadingTrustedRepos] = useState(true);
-
-  const [startupOrgs, setStartupOrgs] = useState([]);
-  const [loadingStartupOrgs, setLoadingStartupOrgs] = useState(true);
-
   const [orgSearchQuery, setOrgSearchQuery] = useState("");
 
-  const [filters, setFilters] = useState({
-    language: "",
-    labels: ["good first issue"],
-    keywords: "",
-    sort: "updated",
-    minStars: "0",
-  });
+  const [filters, setFilters] = useState(() => cachedExploreSessionState.filters);
+  const [debouncedInput, setDebouncedInput] = useState(() => ({
+    keywords: cachedExploreSessionState.filters.keywords,
+    minStars: cachedExploreSessionState.filters.minStars,
+  }));
 
-  const [searchDraft, setSearchDraft] = useState("");
-  const [activePresetId, setActivePresetId] = useState(null);
-  const [nlSummary, setNlSummary] = useState("");
+  const [searchDraft, setSearchDraft] = useState(() => cachedExploreSessionState.searchDraft);
+  const [activePresetId, setActivePresetId] = useState(
+    () => cachedExploreSessionState.activePresetId
+  );
+  const [nlSummary, setNlSummary] = useState(() => cachedExploreSessionState.nlSummary);
   const [parsingIntent, setParsingIntent] = useState(false);
 
   const [affinityProfile, setAffinityProfile] = useState(null);
@@ -155,17 +455,48 @@ const ExplorePage = () => {
   const sortDropdownRef = useRef(null);
   const searchInputRef = useRef(null);
 
+  // Sync session state so navigating to another sidebar page and returning restores exact context
   useEffect(() => {
-    let active = true;
-    fetchUserAffinitySignals(user?.id).then(({ affinityProfile: prof, dismissedUrls: hidden }) => {
-      if (!active) return;
-      setAffinityProfile(prof);
-      setDismissedUrls(hidden);
-    });
-    return () => {
-      active = false;
+    cachedExploreSessionState = {
+      selectedTab,
+      filters,
+      searchDraft,
+      activePresetId,
+      nlSummary,
     };
-  }, [user?.id]);
+  }, [selectedTab, filters, searchDraft, activePresetId, nlSummary]);
+
+  // Only debounce continuous inputs (typing keywords or dragging minStars); skip on mount & tab return
+  useEffect(() => {
+    if (
+      debouncedInput.keywords === filters.keywords &&
+      debouncedInput.minStars === filters.minStars
+    ) {
+      return undefined;
+    }
+    const timer = setTimeout(() => {
+      setDebouncedInput({
+        keywords: filters.keywords,
+        minStars: filters.minStars,
+      });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [filters.keywords, filters.minStars, debouncedInput.keywords, debouncedInput.minStars]);
+
+  // Cached user affinity & dismissed URLs (keyed on userId, never refetches on tab focus)
+  const { data: affinityData } = useQuery({
+    queryKey: ["explore", "affinity", userId],
+    queryFn: () => fetchUserAffinitySignals(userId),
+    staleTime: EXPLORE_STALE_TIME,
+    gcTime: EXPLORE_GC_TIME,
+    refetchOnWindowFocus: false,
+  });
+
+  useEffect(() => {
+    if (!affinityData) return;
+    setAffinityProfile(affinityData.affinityProfile);
+    setDismissedUrls(new Set(affinityData.dismissedUrls || []));
+  }, [affinityData]);
 
   // Keyboard shortcut Cmd/Ctrl + K focuses search input
   useEffect(() => {
@@ -189,84 +520,142 @@ const ExplorePage = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    if (user) fetchBookmarkedIssues();
-    if (selectedTab === "trusted" || selectedTab === "startups" || selectedTab === "smart") {
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      resetAndFetch();
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [filters, selectedTab, user]);
-
-  useEffect(() => {
-    fetchTrustedRepos();
-  }, []);
-
-  useEffect(() => {
-    fetchStartupOrgs();
-  }, []);
-
-  const fetchTrustedRepos = async () => {
-    try {
-      setLoadingTrustedRepos(true);
+  // Trusted Repositories via TanStack Query (5m staleTime, keepPreviousData, no window-focus refetch)
+  const { data: trustedRepos = [], isLoading: loadingTrustedRepos } = useQuery({
+    queryKey: ["explore", "trusted_repos"],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("trusted_repos")
         .select("*")
         .eq("is_active", true)
         .order("stars", { ascending: false })
         .limit(69);
-
       if (error) throw error;
-      setTrustedRepos(data || []);
-    } catch (error) {
-      console.error("Error fetching trusted repos:", error);
-    } finally {
-      setLoadingTrustedRepos(false);
-    }
-  };
+      return data || [];
+    },
+    staleTime: EXPLORE_STALE_TIME,
+    gcTime: EXPLORE_GC_TIME,
+    placeholderData: keepPreviousData,
+    refetchOnWindowFocus: false,
+  });
 
-  const fetchStartupOrgs = async () => {
-    try {
-      setLoadingStartupOrgs(true);
+  // Startup Orgs via TanStack Query (.limit(200) for newly added + weekly discovered startups)
+  const { data: startupOrgs = [], isLoading: loadingStartupOrgs } = useQuery({
+    queryKey: ["explore", "startup_orgs"],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("startup_orgs")
         .select("*")
         .eq("is_active", true)
         .eq("is_startup", true)
         .order("stars", { ascending: false })
-        .limit(63);
-
+        .limit(200);
       if (error) throw error;
-      setStartupOrgs(data || []);
-    } catch (error) {
-      console.error("Error fetching startup orgs:", error);
-    } finally {
-      setLoadingStartupOrgs(false);
-    }
-  };
+      return data || [];
+    },
+    staleTime: EXPLORE_STALE_TIME,
+    gcTime: EXPLORE_GC_TIME,
+    placeholderData: keepPreviousData,
+    refetchOnWindowFocus: false,
+  });
 
-  const resetAndFetch = () => {
-    setCurrentPage(1);
-    setIssues([]);
-    setHasMore(true);
-    fetchIssues(1, true);
+  const issueTabMode = selectedTab === "trending" ? "trending" : "all";
+  const isIssueTabActive = selectedTab === "all" || selectedTab === "trending";
+  const sortedLabelsKey = useMemo(
+    () => [...filters.labels].sort().join("|"),
+    [filters.labels]
+  );
+  const effectiveKeywords = debouncedInput.keywords.trim();
+  const effectiveMinStarsInt = Math.max(0, parseInt(debouncedInput.minStars, 10) || 0);
+
+  // Paginated Explore Issues via TanStack useInfiniteQuery
+  const {
+    data: issuesInfiniteData,
+    isLoading: loading,
+    isFetching: isIssuesFetching,
+    isPlaceholderData: isIssuesPlaceholder,
+    isFetchingNextPage: loadingMore,
+    hasNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery({
+    queryKey: [
+      "explore",
+      "issues",
+      {
+        mode: issueTabMode,
+        language: filters.language,
+        labelsKey: sortedLabelsKey,
+        keywords: effectiveKeywords,
+        sort: filters.sort,
+        minStars: effectiveMinStarsInt,
+      },
+    ],
+    queryFn: ({ pageParam }) =>
+      fetchExploreIssuesPage({
+        pageParam,
+        labels: filters.labels,
+        language: filters.language,
+        keywords: effectiveKeywords,
+        sort: filters.sort,
+        minStarsInt: effectiveMinStarsInt,
+        isTrending: issueTabMode === "trending",
+        trustedReposList: queryClient.getQueryData(["explore", "trusted_repos"]) || [],
+      }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => {
+      const more = lastPage.rawCount === 30 && lastPage.page * 30 < lastPage.cappedTotal;
+      return more ? lastPage.page + 1 : undefined;
+    },
+    enabled: Boolean(userId) && isIssueTabActive,
+    staleTime: EXPLORE_STALE_TIME,
+    gcTime: EXPLORE_GC_TIME,
+    placeholderData: keepPreviousData,
+    refetchOnWindowFocus: false,
+  });
+
+  const issues = useMemo(() => {
+    const pages = issuesInfiniteData?.pages || [];
+    if (pages.length === 0) return [];
+    const seenIds = new Set();
+    const merged = [];
+    for (const page of pages) {
+      for (const item of page.items || []) {
+        if (!seenIds.has(item.id)) {
+          seenIds.add(item.id);
+          merged.push(item);
+        }
+      }
+    }
+    return applyUserAffinity(
+      enrichAndSortIssues(merged, filters.sort),
+      filters.sort,
+      affinityProfile
+    );
+  }, [issuesInfiniteData, filters.sort, affinityProfile]);
+
+  const visibleIssues = useMemo(
+    () => issues.filter((issue) => !dismissedUrls.has(issue.html_url)),
+    [issues, dismissedUrls]
+  );
+
+  const totalCount = issuesInfiniteData?.pages?.[0]?.cappedTotal ?? 0;
+  const hasMore = Boolean(hasNextPage);
+
+  const loadMore = () => {
+    if (!loadingMore && hasNextPage) {
+      fetchNextPage();
+    }
   };
 
   const handleClearFilters = () => {
     setSearchDraft("");
     setActivePresetId(null);
     setNlSummary("");
-    setFilters({
-      language: "",
-      labels: ["good first issue"],
-      keywords: "",
-      sort: "updated",
-      minStars: "0",
+    setDebouncedInput({
+      keywords: DEFAULT_EXPLORE_FILTERS.keywords,
+      minStars: DEFAULT_EXPLORE_FILTERS.minStars,
     });
+    setFilters(DEFAULT_EXPLORE_FILTERS);
   };
 
   const handleSearchInputChange = (val) => {
@@ -283,12 +672,14 @@ const ExplorePage = () => {
     const raw = searchDraft.trim();
     if (!raw) {
       setNlSummary("");
+      setDebouncedInput((prev) => ({ ...prev, keywords: "" }));
       setFilters((prev) => ({ ...prev, keywords: "" }));
       return;
     }
 
     if (!looksLikeNaturalLanguage(raw)) {
       setNlSummary("");
+      setDebouncedInput((prev) => ({ ...prev, keywords: raw }));
       setFilters((prev) => ({ ...prev, keywords: raw }));
       return;
     }
@@ -296,6 +687,10 @@ const ExplorePage = () => {
     const localParsed = parseNaturalLanguageQuery(raw, filters);
     setActivePresetId(localParsed.presetId || null);
     setNlSummary(localParsed.summary || "");
+    setDebouncedInput({
+      keywords: localParsed.filters.keywords,
+      minStars: localParsed.filters.minStars,
+    });
     setFilters(localParsed.filters);
 
     // Optional AI enhancement if server Edge Function supports parseNaturalQuery
@@ -307,14 +702,22 @@ const ExplorePage = () => {
         });
         if (!error && data && !data.fallback) {
           setNlSummary(data.summary || localParsed.summary || "");
-          setFilters((prev) => ({
-            ...prev,
-            language: data.language ?? prev.language,
-            labels: Array.isArray(data.labels) && data.labels.length > 0 ? data.labels : prev.labels,
-            keywords: typeof data.keywords === "string" ? data.keywords : prev.keywords,
-            minStars: data.minStars || prev.minStars,
-            sort: data.sort || prev.sort,
-          }));
+          setFilters((prev) => {
+            const nextKeywords = typeof data.keywords === "string" ? data.keywords : prev.keywords;
+            const nextMinStars = data.minStars || prev.minStars;
+            setDebouncedInput({
+              keywords: nextKeywords,
+              minStars: nextMinStars,
+            });
+            return {
+              ...prev,
+              language: data.language ?? prev.language,
+              labels: Array.isArray(data.labels) && data.labels.length > 0 ? data.labels : prev.labels,
+              keywords: nextKeywords,
+              minStars: nextMinStars,
+              sort: data.sort || prev.sort,
+            };
+          });
         }
       } catch {
         // Keep fast deterministic parse result silently
@@ -333,6 +736,7 @@ const ExplorePage = () => {
       setActivePresetId(null);
       setSearchDraft("");
       setNlSummary("");
+      setDebouncedInput((prev) => ({ ...prev, keywords: "" }));
       setFilters((prev) => ({
         ...prev,
         labels: ["good first issue"],
@@ -345,6 +749,10 @@ const ExplorePage = () => {
     setActivePresetId(preset.id);
     setNlSummary(`Preset: ${preset.label}`);
     setSearchDraft(preset.keywords || "");
+    setDebouncedInput((prev) => ({
+      keywords: preset.keywords || "",
+      minStars: preset.minStars ?? prev.minStars,
+    }));
     setFilters((prev) => ({
       ...prev,
       labels: preset.labels,
@@ -354,40 +762,55 @@ const ExplorePage = () => {
     }));
   };
 
+  const syncAffinityCache = (updatedSet) => {
+    setDismissedUrls(updatedSet);
+    setAffinityProfile((prev) => {
+      const nextProf = prev ? { ...prev, dismissedUrls: updatedSet } : prev;
+      queryClient.setQueryData(["explore", "affinity", userId], {
+        affinityProfile: nextProf,
+        dismissedUrls: updatedSet,
+      });
+      return nextProf;
+    });
+  };
+
   const handleDismissIssue = async (issue) => {
     const issueUrl = issue.html_url;
-    setIssues((prev) => prev.filter((item) => item.html_url !== issueUrl));
+    const optimisticSet = new Set(dismissedUrls);
+    optimisticSet.add(issueUrl);
+    syncAffinityCache(optimisticSet);
     setLastDismissed({ url: issueUrl, title: issue.title });
+
     const nextSet = await recordDismissal({
-      userId: user?.id,
+      userId,
       issue,
       language: filters.language || null,
     });
-    const updatedSet = new Set(nextSet);
-    setDismissedUrls(updatedSet);
-    setAffinityProfile((prev) => (prev ? { ...prev, dismissedUrls: updatedSet } : prev));
+    syncAffinityCache(new Set(nextSet));
   };
 
   const handleUndoDismissal = async () => {
     if (!lastDismissed?.url) return;
-    const nextSet = await undoDismissal({
-      userId: user?.id,
-      issueUrl: lastDismissed.url,
-    });
-    const updatedSet = new Set(nextSet);
-    setDismissedUrls(updatedSet);
-    setAffinityProfile((prev) => (prev ? { ...prev, dismissedUrls: updatedSet } : prev));
+    const targetUrl = lastDismissed.url;
     setLastDismissed(null);
-    resetAndFetch();
+
+    const optimisticSet = new Set(dismissedUrls);
+    optimisticSet.delete(targetUrl);
+    syncAffinityCache(optimisticSet);
+
+    const nextSet = await undoDismissal({
+      userId,
+      issueUrl: targetUrl,
+    });
+    syncAffinityCache(new Set(nextSet));
   };
 
   const handleResetDismissals = async () => {
-    const cleared = await clearAllDismissals({ userId: user?.id });
-    const updatedSet = new Set(cleared);
-    setDismissedUrls(updatedSet);
-    setAffinityProfile((prev) => (prev ? { ...prev, dismissedUrls: updatedSet } : prev));
     setLastDismissed(null);
-    resetAndFetch();
+    syncAffinityCache(new Set());
+
+    const cleared = await clearAllDismissals({ userId });
+    syncAffinityCache(new Set(cleared));
   };
 
   const handleOpenSimilar = async (sourceIssue) => {
@@ -461,356 +884,36 @@ const ExplorePage = () => {
     }
   };
 
-  const getClientGithubHeaders = () => ({
-    Accept: "application/vnd.github.v3+json",
-    "User-Agent": "OpenSourceBuddy/1.0",
-    ...(import.meta.env.VITE_GITHUB_TOKEN && {
-      Authorization: `token ${import.meta.env.VITE_GITHUB_TOKEN}`,
-    }),
-  });
+  // Shared TanStack Query bookmarks cache (no redundant Supabase fetch on tab/filter switch)
+  const { data: userBookmarks = [] } = useBookmarks(userId);
+  const bookmarkedIssues = useMemo(
+    () => new Set(userBookmarks.map((b) => b.issue_url).filter(Boolean)),
+    [userBookmarks]
+  );
 
-  const enrichClientIssuesWithRepoMeta = async (rawItems, minStarsInt) => {
-    const trustedStarMap = new Map(
-      (trustedRepos || []).map((repo) => [
-        repo.full_name || `${repo.owner}/${repo.name}`,
-        repo.stars,
-      ])
-    );
-
-    const repoNames = Array.from(
-      new Set(
-        rawItems
-          .map((item) => item.repository_url?.split("/").slice(-2).join("/"))
-          .filter(Boolean)
-      )
-    );
-
-    const metaMap = new Map();
-    const healthMap = new Map();
-    const uncached = [];
-
-    // Best-effort lookup from persisted Supabase repo_health table
-    if (repoNames.length > 0) {
-      try {
-        const { data: healthRows, error: healthErr } = await supabase
-          .from("repo_health")
-          .select("*")
-          .in("repo_full_name", repoNames);
-        if (!healthErr && Array.isArray(healthRows)) {
-          for (const row of healthRows) {
-            healthMap.set(row.repo_full_name, row);
-            metaMap.set(row.repo_full_name, {
-              stars: Number(row.stars ?? 0),
-              pushed_at: row.last_pushed_at ?? null,
-              archived: Boolean(row.is_archived),
-            });
-          }
-        }
-      } catch {
-        // Table may not be migrated yet; continue silently
-      }
-    }
-
-    for (const repoName of repoNames) {
-      if (metaMap.has(repoName)) continue;
-      const cached = getCache(`repo_meta_v1_${repoName}`);
-      if (cached && typeof cached.stars === "number") {
-        metaMap.set(repoName, cached);
-        continue;
-      }
-      if (trustedStarMap.has(repoName) && typeof trustedStarMap.get(repoName) === "number") {
-        const meta = { stars: trustedStarMap.get(repoName), pushed_at: null, archived: false };
-        metaMap.set(repoName, meta);
-        continue;
-      }
-      uncached.push(repoName);
-    }
-
-    const clientToken = import.meta.env.VITE_GITHUB_TOKEN;
-    if (uncached.length > 0 && clientToken) {
-      const chunk = uncached.slice(0, 30);
-      const fields = chunk
-        .map((fullName, idx) => {
-          const [owner, name] = fullName.split("/");
-          if (!/^[a-zA-Z0-9._-]+$/.test(owner) || !/^[a-zA-Z0-9._-]+$/.test(name)) return "";
-          return `r${idx}: repository(owner: "${owner}", name: "${name}") { stargazerCount pushedAt isArchived }`;
-        })
-        .filter(Boolean)
-        .join("\n");
-
-      if (fields) {
-        try {
-          const gqlRes = await fetch("https://api.github.com/graphql", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${clientToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ query: `query {\n${fields}\n}` }),
-          });
-          if (gqlRes.ok) {
-            const payload = await gqlRes.json();
-            const data = payload?.data || {};
-            chunk.forEach((fullName, idx) => {
-              const node = data[`r${idx}`];
-              if (!node) return;
-              const meta = {
-                stars: Number(node.stargazerCount ?? 0),
-                pushed_at: node.pushedAt ?? null,
-                archived: Boolean(node.isArchived),
-              };
-              metaMap.set(fullName, meta);
-              setCache(`repo_meta_v1_${fullName}`, meta, 6 * 60 * 60 * 1000);
-            });
-          }
-        } catch (err) {
-          console.warn("GraphQL repo metadata fallback skipped:", err);
-        }
-      }
-    } else if (uncached.length > 0 && minStarsInt > 0) {
-      // Only perform lightweight REST repo lookups when filtering by stars without a client token.
-      await Promise.all(
-        uncached.slice(0, 24).map(async (fullName) => {
-          try {
-            const res = await fetch(`https://api.github.com/repos/${fullName}`, {
-              headers: getClientGithubHeaders(),
-            });
-            if (!res.ok) return;
-            const repo = await res.json();
-            const meta = {
-              stars: Number(repo.stargazers_count ?? 0),
-              pushed_at: repo.pushed_at ?? null,
-              archived: Boolean(repo.archived),
-            };
-            metaMap.set(fullName, meta);
-            setCache(`repo_meta_v1_${fullName}`, meta, 6 * 60 * 60 * 1000);
-          } catch {
-            // Keep graceful fallback when GitHub unauthenticated limit is tight
-          }
-        })
-      );
-    }
-
-    return rawItems.map((item) => {
-      const repoName = item.repository_url?.split("/").slice(-2).join("/") || "";
-      const meta = metaMap.get(repoName);
-      const health = healthMap.get(repoName) || null;
-      if (!meta && !health) return item;
-      return {
-        ...item,
-        repo_stars: meta?.stars ?? item.repo_stars ?? null,
-        repo_pushed_at: meta?.pushed_at ?? item.repo_pushed_at ?? null,
-        repo_archived: meta?.archived ?? item.repo_archived ?? false,
-        repo_health: health || item.repo_health || null,
-      };
-    });
-  };
-
-  const findClientReposByStars = async (minStarsInt) => {
-    const cacheKey = `explore_repos_v2_${filters.language || "all"}_${minStarsInt}`;
-    const cached = getCache(cacheKey);
-    if (Array.isArray(cached) && cached.length > 0) return cached;
-
-    const cleanLang = (filters.language || "").trim();
-    const langPart = cleanLang
-      ? /\s/.test(cleanLang)
-        ? `language:"${cleanLang}"`
-        : `language:${cleanLang}`
-      : "";
-
-    for (const extra of ["good-first-issues:>0", ""]) {
-      const repoQuery = `stars:>=${minStarsInt} archived:false is:public ${langPart} ${extra}`
-        .replace(/\s+/g, " ")
-        .trim();
-      try {
-        const res = await fetch(
-          `https://api.github.com/search/repositories?q=${encodeURIComponent(repoQuery)}&sort=updated&order=desc&per_page=15`,
-          { headers: getClientGithubHeaders() }
-        );
-        if (!res.ok) continue;
-        const data = await res.json();
-        const repoItems = (data.items || []).filter((repo) => Boolean(repo?.full_name));
-        if (repoItems.length > 0) {
-          const repos = repoItems.map((repo) => {
-            setCache(
-              `repo_meta_v1_${repo.full_name}`,
-              {
-                stars: Number(repo.stargazers_count ?? 0),
-                pushed_at: repo.pushed_at ?? null,
-                archived: Boolean(repo.archived),
-              },
-              6 * 60 * 60 * 1000
-            );
-            return repo.full_name;
-          });
-          setCache(cacheKey, repos, 10 * 60 * 1000);
-          return repos;
-        }
-      } catch {
-        // Ignore transient repo lookup failure and fall back to unrestricted issue search
-      }
-    }
-
-    return [];
-  };
-
-  const fetchIssues = async (page = 1, reset = false) => {
-    if (page === 1) setLoading(true);
-    else setLoadingMore(true);
-
-    const minStarsInt = Math.max(0, parseInt(filters.minStars, 10) || 0);
-    const isTrending = selectedTab === "trending";
-
-    try {
-      let rawItems = [];
-      let rawCount = 0;
-      let rawTotalCount = 0;
-      let loadedViaEdge = false;
-
-      // 1. Try Supabase Edge Function (`exploreSearch`) for server-token GraphQL stars + Redis caching
-      try {
-        const { data: edgeData, error: edgeError } = await supabase.functions.invoke("github-data", {
-          body: {
-            action: "exploreSearch",
-            labels: filters.labels,
-            language: filters.language,
-            keywords: filters.keywords,
-            sort: filters.sort,
-            minStars: minStarsInt,
-            trending: isTrending,
-            page,
-          },
-        });
-        if (!edgeError && edgeData && Array.isArray(edgeData.items)) {
-          rawItems = edgeData.items;
-          rawCount = Number(edgeData.raw_count ?? edgeData.items.length);
-          rawTotalCount = Number(edgeData.total_count ?? edgeData.items.length);
-          loadedViaEdge = true;
-        }
-      } catch {
-        // Fallback smoothly to direct GitHub Search API when Edge Function is unavailable
-      }
-
-      // 2. Direct GitHub Search API fallback
-      if (!loadedViaEdge) {
-        let extraRepoQualifiers = [];
-        if (minStarsInt > 0 && !filters.keywords.trim()) {
-          extraRepoQualifiers = await findClientReposByStars(minStarsInt);
-        }
-
-        const query = buildGitHubIssueSearchQuery({
-          labels: filters.labels,
-          language: extraRepoQualifiers.length === 0 ? filters.language : "",
-          keywords: filters.keywords,
-          trending: isTrending,
-          trendingDays: 30,
-          extraRepoQualifiers,
-        });
-
-        const githubSort = isTrending
-          ? "interactions"
-          : filters.sort === "created"
-            ? "created"
-            : "updated";
-
-        const response = await fetch(
-          `https://api.github.com/search/issues?q=${encodeURIComponent(
-            query
-          )}&sort=${githubSort}&order=desc&per_page=30&page=${page}`,
-          { headers: getClientGithubHeaders() }
-        );
-
-        if (response.ok) {
-          const data = await response.json();
-          const fetchedItems = data.items || [];
-          rawCount = fetchedItems.length;
-          rawTotalCount = Number(data.total_count ?? fetchedItems.length);
-          rawItems = await enrichClientIssuesWithRepoMeta(fetchedItems, minStarsInt);
-        }
-      }
-
-      const hasResolvedStars = rawItems.some((item) => typeof item.repo_stars === "number");
-      const filteredIssues = filterStaleIssues(rawItems, {
-        minStars: minStarsInt,
-        requireKnownStars: minStarsInt > 0 && hasResolvedStars,
-      });
-      const preparedIssues = applyUserAffinity(
-        enrichAndSortIssues(filteredIssues, filters.sort),
-        filters.sort,
-        affinityProfile
-      );
-
-      if (reset) {
-        setIssues(preparedIssues);
-      } else {
-        setIssues((prev) => {
-          const seenIds = new Set(prev.map((item) => item.id));
-          const merged = [...prev, ...preparedIssues.filter((item) => !seenIds.has(item.id))];
-          return filters.sort === "best" || filters.sort === "health"
-            ? applyUserAffinity(enrichAndSortIssues(merged, filters.sort), filters.sort, affinityProfile)
-            : merged;
-        });
-      }
-
-      const cappedTotal = Math.min(rawTotalCount, 1000);
-      setTotalCount(cappedTotal);
-      setHasMore(rawCount === 30 && page * 30 < cappedTotal);
-      setCurrentPage(page);
-    } catch (error) {
-      console.error("Error fetching issues:", error);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  };
-
-  const loadMore = () => {
-    if (!loadingMore && hasMore) fetchIssues(currentPage + 1, false);
-  };
-
-  const addBookmarkMutation = useAddBookmark(user?.id);
-  const removeBookmarkMutation = useRemoveBookmark(user?.id);
-  const queryClient = useQueryClient();
-
-  const fetchBookmarkedIssues = async () => {
-    if (!user) return;
-    try {
-      const { data, error } = await supabase
-        .from("bookmarks")
-        .select("issue_url")
-        .eq("user_id", user.id);
-      if (error) throw error;
-      setBookmarkedIssues(new Set(data.map((b) => b.issue_url)));
-    } catch (error) {
-      console.error("Error fetching bookmarks:", error);
-    }
-  };
+  const addBookmarkMutation = useAddBookmark(userId);
+  const removeBookmarkMutation = useRemoveBookmark(userId);
 
   const handleBookmark = async (issue) => {
-    if (!user) {
+    if (!userId) {
       navigate("/login");
       return;
     }
     const isBookmarked = bookmarkedIssues.has(issue.html_url);
     try {
       if (isBookmarked) {
-        const cachedBookmarks = queryClient.getQueryData(bookmarkKeys.all(user.id)) || [];
+        const cachedBookmarks = queryClient.getQueryData(bookmarkKeys.all(userId)) || [];
         const bookmark = cachedBookmarks.find((b) => b.issue_url === issue.html_url);
-        if (bookmark) {
+        if (bookmark && !String(bookmark.id).startsWith("temp-")) {
           await removeBookmarkMutation.mutateAsync(bookmark.id);
         } else {
           await supabase
             .from("bookmarks")
             .delete()
-            .eq("user_id", user.id)
+            .eq("user_id", userId)
             .eq("issue_url", issue.html_url);
-          queryClient.invalidateQueries({ queryKey: bookmarkKeys.all(user.id) });
+          queryClient.invalidateQueries({ queryKey: bookmarkKeys.all(userId) });
         }
-        setBookmarkedIssues((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(issue.html_url);
-          return newSet;
-        });
       } else {
         const detectedLanguage =
           filters.language ||
@@ -828,9 +931,8 @@ const ExplorePage = () => {
           language: detectedLanguage,
           status: "saved",
         });
-        setBookmarkedIssues((prev) => new Set([...prev, issue.html_url]));
         recordPositiveSignal({
-          userId: user.id,
+          userId,
           issue,
           feedback: "bookmarked",
           language: detectedLanguage,
@@ -970,7 +1072,7 @@ const ExplorePage = () => {
       </AppSidebar>
 
       {/* Main Workspace */}
-      <main className="flex-1 lg:ml-64 min-w-0 pb-20 lg:pb-0">
+      <main className="flex-1 min-w-0 pb-20 lg:pb-0">
         {/* Sticky Top Header */}
         <header className="h-16 border-b border-[#22242A] bg-[#0F0F0F]/95 backdrop-blur-sm sticky top-0 z-20 flex items-center justify-between px-4 sm:px-6 gap-3">
           <form onSubmit={handleNaturalSearchSubmit} className="flex flex-1 items-center max-w-xl relative">
@@ -1074,8 +1176,11 @@ const ExplorePage = () => {
               selectedTab !== "smart" &&
               selectedTab !== "startups" &&
               totalCount > 0 && (
-                <span className="text-xs font-mono text-[#8C929C] tabular-nums">
-                  {totalCount.toLocaleString()} matching issues
+                <span className="text-xs font-mono text-[#8C929C] tabular-nums inline-flex items-center gap-1.5">
+                  {isIssuesFetching && !loadingMore && visibleIssues.length > 0 && (
+                    <Loader2 className="w-3 h-3 animate-spin text-[#DAFA9C]" />
+                  )}
+                  <span>{totalCount.toLocaleString()} matching issues</span>
                 </span>
               )}
           </div>
@@ -1432,7 +1537,7 @@ const ExplorePage = () => {
             </div>
           ) : (
             <>
-              {loading && issues.length === 0 ? (
+              {loading && visibleIssues.length === 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
                     <IssueSkeleton key={i} />
@@ -1440,23 +1545,25 @@ const ExplorePage = () => {
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {issues
-                      .filter((issue) => !dismissedUrls.has(issue.html_url))
-                      .map((issue) => (
-                        <IssueCard
-                          key={issue.id}
-                          issue={issue}
-                          activeLanguage={filters.language}
-                          isBookmarked={bookmarkedIssues.has(issue.html_url)}
-                          onToggleBookmark={() => handleBookmark(issue)}
-                          onDismiss={() => handleDismissIssue(issue)}
-                          onFindSimilar={() => handleOpenSimilar(issue)}
-                        />
-                      ))}
+                  <div
+                    className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 transition-opacity duration-150 ${
+                      isIssuesPlaceholder && isIssuesFetching ? "opacity-65" : "opacity-100"
+                    }`}
+                  >
+                    {visibleIssues.map((issue) => (
+                      <IssueCard
+                        key={issue.id}
+                        issue={issue}
+                        activeLanguage={filters.language}
+                        isBookmarked={bookmarkedIssues.has(issue.html_url)}
+                        onToggleBookmark={() => handleBookmark(issue)}
+                        onDismiss={() => handleDismissIssue(issue)}
+                        onFindSimilar={() => handleOpenSimilar(issue)}
+                      />
+                    ))}
                   </div>
 
-                  {issues.length === 0 && !loading && (
+                  {visibleIssues.length === 0 && !loading && !isIssuesFetching && (
                     <div className="text-center py-16 bg-[#141518] border border-[#2B2E36] rounded-[4px]">
                       <Search className="w-8 h-8 text-[#8C929C] mx-auto mb-3" />
                       <h3 className="text-lg font-medium text-[#F4F4F0] mb-1.5">
@@ -1475,12 +1582,12 @@ const ExplorePage = () => {
                     </div>
                   )}
 
-                  {hasMore && issues.length > 0 && (
+                  {hasMore && visibleIssues.length > 0 && (
                     <div className="flex justify-center mt-10 pb-8">
                       <button
                         type="button"
                         onClick={loadMore}
-                        disabled={loadingMore}
+                        disabled={loadingMore || isIssuesPlaceholder}
                         className="flex items-center gap-2 px-5 py-2.5 bg-[#141518] border border-[#2B2E36] hover:border-[#3A3E48] text-[#F4F4F0] rounded-[4px] transition-colors disabled:opacity-50 text-xs font-semibold cursor-pointer min-h-[40px]"
                       >
                         {loadingMore ? (

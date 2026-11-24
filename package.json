@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "seed-kb": "node scripts/seed_kb.js",
-    "scrape-docs": "node scripts/scrape_docs.js"
+    "scrape-docs": "node scripts/scrape_docs.js",
+    "sync-startups": "node scripts/sync-startup-orgs.mjs"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

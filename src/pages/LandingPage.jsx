@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import ComparisonSection from "../components/ComparisonSection";
@@ -111,10 +111,48 @@ const DISPATCH_QUEUE = [
   },
 ];
 
+const WALKTHROUGH_POSTER_URL =
+  "https://res.cloudinary.com/dl3czd3ib/video/upload/f_auto,q_auto,w_1440,c_limit,so_0/v1795534742/Screen_Recording_2026-11-24_205943_hwbvkn.jpg";
+const WALKTHROUGH_OPTIMIZED_URL =
+  "https://res.cloudinary.com/dl3czd3ib/video/upload/f_auto,q_auto:good,vc_auto,w_1440,c_limit,ac_none/v1795534742/Screen_Recording_2026-11-24_205943_hwbvkn.mp4";
+const WALKTHROUGH_RAW_URL =
+  "https://res.cloudinary.com/dl3czd3ib/video/upload/v1795534742/Screen_Recording_2026-11-24_205943_hwbvkn.mp4";
+
 const LandingPage = () => {
   const { user } = useAuth();
   const [selectedId, setSelectedId] = useState(DISPATCH_QUEUE[0].id);
   const [copiedCmds, setCopiedCmds] = useState(false);
+  const walkthroughVideoRef = useRef(null);
+  const [videoSrc, setVideoSrc] = useState(null);
+
+  useEffect(() => {
+    const videoEl = walkthroughVideoRef.current;
+    if (!videoEl || typeof IntersectionObserver === "undefined") {
+      setVideoSrc(WALKTHROUGH_OPTIMIZED_URL);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (!entry) return;
+
+        if (entry.isIntersecting) {
+          setVideoSrc((prev) => prev || WALKTHROUGH_OPTIMIZED_URL);
+          const playPromise = videoEl.play();
+          if (playPromise && typeof playPromise.catch === "function") {
+            playPromise.catch(() => {});
+          }
+        } else if (!videoEl.paused) {
+          videoEl.pause();
+        }
+      },
+      { rootMargin: "400px 0px", threshold: 0.05 }
+    );
+
+    observer.observe(videoEl);
+    return () => observer.disconnect();
+  }, []);
 
   const selectedDispatch =
     DISPATCH_QUEUE.find((item) => item.id === selectedId) || DISPATCH_QUEUE[0];
@@ -337,7 +375,7 @@ const LandingPage = () => {
 
       {/* Product Walkthrough Clip */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 border-b border-[#22242A]">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
             <div>
               <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#F4F4F0] text-balance">
@@ -353,16 +391,34 @@ const LandingPage = () => {
             </Link>
           </div>
 
-          <div className="rounded-[4px] border border-[#2B2E36] overflow-hidden bg-[#0B0C0E]">
-            <video
-              src="https://res.cloudinary.com/dl3czd3ib/video/upload/f_auto,q_auto/v1768837375/firstissue.dev_f8gqfj.mp4"
-              aria-label="FirstIssue.dev Workspace Walkthrough"
-              className="w-full h-auto object-cover block"
-              autoPlay
-              loop
-              muted
-              playsInline
-            />
+          <div className="video-animated-border transform-gpu">
+            <div className="rounded-[4.5px] overflow-hidden bg-[#0B0C0E]">
+              <video
+                ref={walkthroughVideoRef}
+                src={videoSrc || undefined}
+                poster={WALKTHROUGH_POSTER_URL}
+                preload={videoSrc ? "auto" : "none"}
+                onLoadedData={(e) => {
+                  const playPromise = e.currentTarget.play();
+                  if (playPromise && typeof playPromise.catch === "function") {
+                    playPromise.catch(() => {});
+                  }
+                }}
+                onError={() => {
+                  if (videoSrc !== WALKTHROUGH_RAW_URL) {
+                    setVideoSrc(WALKTHROUGH_RAW_URL);
+                  }
+                }}
+                aria-label="FirstIssue.dev Workspace Walkthrough"
+                className="w-full h-auto object-contain block"
+                autoPlay
+                loop
+                muted
+                playsInline
+                disablePictureInPicture
+                disableRemotePlayback
+              />
+            </div>
           </div>
         </div>
       </section>

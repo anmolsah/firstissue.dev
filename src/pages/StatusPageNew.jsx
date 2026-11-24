@@ -343,7 +343,7 @@ const StatusPage = () => {
     <div className="flex bg-[#0F0F0F] min-h-screen text-[#F4F4F0] font-sans">
       <AppSidebar />
 
-      <main className="flex-1 lg:ml-64 min-w-0 pb-20 lg:pb-0">
+      <main className="flex-1 min-w-0 pb-20 lg:pb-0">
         {/* Top Header */}
         <header className="h-14 sm:h-16 border-b border-[#22242A] bg-[#0F0F0F]/95 backdrop-blur-sm sticky top-0 z-10 flex items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-3 flex-1 max-w-xl">

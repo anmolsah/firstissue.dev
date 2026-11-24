@@ -44,6 +44,7 @@ const AppLayout = ({ children }) => {
   // Pages with their own sidebar layout - hide global Navbar/Footer
   const dashboardPages = [
     "/explore",
+    "/contribution-book",
     "/profile",
     "/bookmarks",
     "/status",

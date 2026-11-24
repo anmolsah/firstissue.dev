@@ -394,6 +394,36 @@ textarea:focus-visible {
   opacity: 1;
 }
 
+/* Smooth animated theme border for showcase media */
+@property --video-border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes video-border-spin {
+  to {
+    --video-border-angle: 360deg;
+  }
+}
+
+.video-animated-border {
+  position: relative;
+  padding: 1.5px;
+  border-radius: 6px;
+  background: conic-gradient(
+    from var(--video-border-angle),
+    var(--border-default) 0deg,
+    var(--border-default) 215deg,
+    rgba(52, 211, 153, 0.7) 265deg,
+    var(--accent) 300deg,
+    rgba(52, 211, 153, 0.7) 330deg,
+    var(--border-default) 360deg
+  );
+  box-shadow: 0 0 36px -14px rgba(218, 250, 156, 0.22);
+  animation: video-border-spin 6s linear infinite;
+}
+
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
   *,
