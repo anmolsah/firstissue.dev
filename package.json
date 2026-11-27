@@ -14,7 +14,8 @@
     "preview": "vite preview",
     "seed-kb": "node scripts/seed_kb.js",
     "scrape-docs": "node scripts/scrape_docs.js",
-    "sync-startups": "node scripts/sync-startup-orgs.mjs"
+    "sync-startups": "node scripts/sync-startup-orgs.mjs",
+    "backfill-embeddings": "node scripts/backfill_rag_embeddings.js"
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",

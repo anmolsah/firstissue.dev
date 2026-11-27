@@ -1,10 +1,22 @@
-// Supabase Edge Function: kb-query (RAG Assistant)
+// Supabase Edge Function: kb-query (FirstMate Hybrid RAG Assistant)
 // Deploy: supabase functions deploy kb-query
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createUserClient, createAdminClient } from "../_shared/supabaseClient.ts";
 import { getCorsHeaders } from "../_shared/cors.ts";
 import { isActiveSupporter, FREE_DAILY_COPILOT_MESSAGES } from "../_shared/supporter.ts";
+import {
+  type HybridChunk,
+  type LearnedSolutionItem,
+  type StartupOrgMatch,
+  isStartupDiscoveryQuery,
+  extractStartupSearchParams,
+  selectDiversifiedChunks,
+  extractCitationSources,
+  mergeLearnedSolutions,
+  filterLearnedSolutionsByKeywords,
+  buildLearnedSolutionEmbeddingText,
+} from "../_shared/ragHelpers.ts";
 
 function sanitizeLine(val: unknown, maxLen: number): string {
   if (typeof val !== "string") return "";
@@ -72,90 +84,57 @@ function buildIssueContextBlock(raw: any): string {
   return lines.join("\n");
 }
 
-interface StartupOrgMatch {
-  id: string | number;
-  github_name: string;
-  display_name: string;
-  description: string;
-  github_url: string;
-  website: string;
-  category: string;
-  stars: number | null;
-  country: string | null;
-  founded_year: number | null;
+function normalizeStartupOrgRow(org: any): StartupOrgMatch {
+  return {
+    id: org.id,
+    github_name: org.github_name,
+    display_name: org.display_name || org.github_name,
+    description: org.description || "Open-source startup organization",
+    github_url: org.github_url || `https://github.com/${org.github_name}`,
+    website: org.website || "",
+    category: org.category || "DevTools",
+    stars: typeof org.stars === "number" ? org.stars : null,
+    country: org.country || null,
+    founded_year: typeof org.founded_year === "number" ? org.founded_year : null,
+  };
 }
 
-const STARTUP_INTENT_REGEX =
-  /\b(startup|startups|startup org|startup orgs|new org|new orgs|early[- ]stage|yc\b|y combinator|fast[- ]growing|emerging org|suggest.*startup|recommend.*startup|contribute.*startup|companies to contribute|tech stack.*contribute|contribute.*tech stack)\b/i;
-
-const STARTUP_FOLLOWUP_REGEX =
-  /\b(more startups|other startups|newer ones|any in (rust|python|go|typescript|javascript|ai|fintech|security|cloud|data|india|us|uk|europe))\b/i;
-
-const TECH_CATEGORY_HINTS: Array<{ pattern: RegExp; categories: string[]; keywords: string[] }> = [
-  {
-    pattern: /\b(ai|ml|llm|agent|agents|mcp|rag|langchain|openai|pytorch|genai|nlp|embedding|inference|vision)\b/i,
-    categories: ["AI/ML"],
-    keywords: ["ai", "llm", "agent", "mcp", "model", "inference", "embedding", "vector", "rag", "python"],
-  },
-  {
-    pattern: /\b(typescript|javascript|react|next\.?js|node\.?js|frontend|vue|svelte|tailwind|web|email|sdk|cli|editor|linter|devtools)\b/i,
-    categories: ["DevTools", "AI/ML", "Infrastructure"],
-    keywords: ["typescript", "react", "web", "editor", "cli", "sdk", "email", "linter", "formatter", "developer", "framework"],
-  },
-  {
-    pattern: /\b(python|fastapi|django|pydantic|ruff|uv|data science)\b/i,
-    categories: ["AI/ML", "DevTools", "Data"],
-    keywords: ["python", "pydantic", "ruff", "uv", "agent", "llm", "data", "ai"],
-  },
-  {
-    pattern: /\b(rust|cargo|systems|compiler|wasm)\b/i,
-    categories: ["DevTools", "Data", "Infrastructure", "FinTech"],
-    keywords: ["rust", "vector", "editor", "linter", "payment", "fast", "binary", "engine"],
-  },
-  {
-    pattern: /\b(go|golang|docker|kubernetes|k8s|ci\/cd|devops|queue|workflow|infra|infrastructure|distributed|backend)\b/i,
-    categories: ["Infrastructure", "Cloud"],
-    keywords: ["go", "workflow", "queue", "container", "ci/cd", "backend", "distributed", "cloud", "infrastructure"],
-  },
-  {
-    pattern: /\b(postgres|postgresql|sql|sqlite|database|db|vector|analytics|warehouse|etl|duckdb|data)\b/i,
-    categories: ["Data"],
-    keywords: ["postgres", "sql", "sqlite", "database", "vector", "embedding", "storage", "analytics"],
-  },
-  {
-    pattern: /\b(security|auth|oauth|secret|secrets|kms|iam|cybersecurity|infosec|zero[- ]trust)\b/i,
-    categories: ["Security"],
-    keywords: ["security", "secret", "auth", "authorization", "kms", "pki", "access"],
-  },
-  {
-    pattern: /\b(cloud|serverless|edge|redis|self[- ]hosted|hosting|paas|deploy)\b/i,
-    categories: ["Cloud", "Infrastructure"],
-    keywords: ["cloud", "serverless", "edge", "redis", "self-host", "deploy", "hosting"],
-  },
-  {
-    pattern: /\b(fintech|payment|payments|commerce|ecommerce|ledger|billing|stripe|banking)\b/i,
-    categories: ["FinTech"],
-    keywords: ["payment", "ledger", "commerce", "financial", "fintech", "billing"],
-  },
-];
-
-function isStartupDiscoveryQuery(message: string, history: any[] = []): boolean {
-  if (STARTUP_INTENT_REGEX.test(message)) return true;
-  if (STARTUP_FOLLOWUP_REGEX.test(message)) return true;
-  const recentHistory = Array.isArray(history) ? history.slice(-3) : [];
-  const hadStartupContext = recentHistory.some((h: any) =>
-    STARTUP_INTENT_REGEX.test(String(h?.content || ""))
-  );
-  if (hadStartupContext && /\b(more|another|other|suggest|recommend|filter|rust|python|typescript|go|ai|fintech|security|cloud|data|new)\b/i.test(message)) {
-    return true;
-  }
-  return false;
-}
-
+/**
+ * Query-filtered Postgres FTS + pgvector startup org search.
+ * Falls back gracefully to bounded in-memory scoring if the SQL RPC has not been applied yet.
+ */
 async function searchStartupOrgs(
   adminClient: any,
-  message: string
+  message: string,
+  queryEmbedding: number[] | null
 ): Promise<StartupOrgMatch[]> {
+  const params = extractStartupSearchParams(message);
+
+  try {
+    const { data: rpcData, error: rpcError } = await adminClient.rpc("search_startup_orgs", {
+      query_text: message,
+      query_embedding: queryEmbedding,
+      preferred_categories: params.preferredCategories.length > 0 ? params.preferredCategories : null,
+      expanded_keywords: params.expandedKeywords.length > 0 ? params.expandedKeywords : null,
+      country_filter: params.countryFilter.length > 0 ? params.countryFilter : null,
+      wants_new: params.wantsNew,
+      match_count: 6,
+    });
+
+    if (!rpcError && Array.isArray(rpcData)) {
+      return rpcData
+        .filter((org: any) => org?.github_name)
+        .map(normalizeStartupOrgRow);
+    }
+
+    if (rpcError) {
+      console.warn("[kb-query] search_startup_orgs RPC fallback:", rpcError.message);
+    }
+  } catch (err) {
+    console.warn("[kb-query] search_startup_orgs RPC threw, falling back:", err);
+  }
+
+  // Fallback path (pre-migration safety)
   try {
     const { data, error } = await adminClient
       .from("startup_orgs")
@@ -167,62 +146,26 @@ async function searchStartupOrgs(
 
     if (error || !Array.isArray(data) || data.length === 0) return [];
 
-    const lowerMsg = message.toLowerCase();
-    const wantsNew = /\b(new|newest|recent|recently|emerging|latest|fresh|early|2023|2024|2025|2026)\b/i.test(lowerMsg);
-
-    const preferredCategories = new Set<string>();
-    const expandedKeywords = new Set<string>();
-
-    for (const hint of TECH_CATEGORY_HINTS) {
-      if (hint.pattern.test(lowerMsg)) {
-        for (const cat of hint.categories) preferredCategories.add(cat);
-        for (const kw of hint.keywords) expandedKeywords.add(kw);
-      }
-    }
-
-    // Raw meaningful user words (length >= 3, excluding generic stopwords)
-    const stopWords = new Set([
-      "the", "and", "for", "with", "that", "this", "have", "having", "want", "contribute",
-      "contributing", "startup", "startups", "org", "orgs", "suggest", "recommend", "few",
-      "some", "good", "best", "new", "ones", "can", "you", "please", "find", "show", "tech",
-      "stack", "stacks", "open", "source", "opensource", "projects", "repos", "using", "use",
-    ]);
-    const rawTokens = lowerMsg
-      .replace(/[^a-z0-9.+#/-]+/g, " ")
-      .split(/\s+/)
-      .filter((t) => t.length >= 2 && !stopWords.has(t));
-
-    const countryMatch = lowerMsg.match(/\b(india|us|usa|uk|germany|france|canada|europe|sweden|denmark|global)\b/i)?.[1]?.toLowerCase() || "";
+    const preferredCategorySet = new Set(params.preferredCategories);
+    const countrySet = new Set(params.countryFilter);
 
     const scored = data.map((org: any) => {
       const hay = `${org.display_name || ""} ${org.github_name || ""} ${org.description || ""} ${org.category || ""}`.toLowerCase();
       let score = 0;
 
-      if (org.category && preferredCategories.has(org.category)) {
-        score += 18;
-      }
-
-      for (const kw of expandedKeywords) {
+      if (org.category && preferredCategorySet.has(org.category)) score += 18;
+      for (const kw of params.expandedKeywords) {
         if (hay.includes(kw)) score += 7;
       }
-
-      for (const tok of rawTokens) {
+      for (const tok of params.rawTokens) {
         if (hay.includes(tok)) score += 10;
       }
-
-      if (countryMatch && org.country) {
-        const c = String(org.country).toLowerCase();
-        if (
-          c === countryMatch ||
-          (countryMatch === "usa" && c === "us") ||
-          (countryMatch === "europe" && ["uk", "germany", "france", "sweden", "denmark", "netherlands", "switzerland", "hungary"].includes(c))
-        ) {
-          score += 20;
-        }
+      if (countrySet.size > 0 && org.country && countrySet.has(String(org.country).toLowerCase())) {
+        score += 20;
       }
 
       const foundedYear = Number(org.founded_year) || 0;
-      if (wantsNew) {
+      if (params.wantsNew) {
         if (foundedYear >= 2024) score += 22;
         else if (foundedYear >= 2023) score += 15;
         else if (foundedYear >= 2022) score += 8;
@@ -230,7 +173,6 @@ async function searchStartupOrgs(
         score += 4;
       }
 
-      // Mild popularity tie-breaker without letting mega-orgs drown out relevant niche matches
       const stars = Number(org.stars) || 0;
       score += Math.min(8, Math.log10(Math.max(10, stars)) * 1.6);
 
@@ -239,7 +181,6 @@ async function searchStartupOrgs(
 
     scored.sort((a, b) => b.score - a.score);
 
-    // Diversify across categories slightly when no single category was requested
     const selected: StartupOrgMatch[] = [];
     const seenLogins = new Set<string>();
     for (const item of scored) {
@@ -247,24 +188,168 @@ async function searchStartupOrgs(
       const login = String(item.org.github_name || "").toLowerCase();
       if (!login || seenLogins.has(login)) continue;
       seenLogins.add(login);
-      selected.push({
-        id: item.org.id,
-        github_name: item.org.github_name,
-        display_name: item.org.display_name || item.org.github_name,
-        description: item.org.description || "Open-source startup organization",
-        github_url: item.org.github_url || `https://github.com/${item.org.github_name}`,
-        website: item.org.website || "",
-        category: item.org.category || "DevTools",
-        stars: typeof item.org.stars === "number" ? item.org.stars : null,
-        country: item.org.country || null,
-        founded_year: typeof item.org.founded_year === "number" ? item.org.founded_year : null,
-      });
+      selected.push(normalizeStartupOrgRow(item.org));
     }
 
     return selected;
   } catch (err) {
-    console.warn("[kb-query] startup_orgs lookup skipped:", err);
+    console.warn("[kb-query] startup_orgs fallback lookup skipped:", err);
     return [];
+  }
+}
+
+/**
+ * Hybrid KB retrieval: Postgres FTS + pgvector RRF via `match_kb_chunks_hybrid`,
+ * falling back to vector-only `match_kb_chunks` if the migration hasn't been pushed yet.
+ */
+async function retrieveKbChunks(
+  supabaseClient: any,
+  message: string,
+  queryEmbedding: number[]
+): Promise<{ chunks: HybridChunk[]; error: any }> {
+  const { data: hybridData, error: hybridError } = await supabaseClient.rpc(
+    "match_kb_chunks_hybrid",
+    {
+      query_text: message,
+      query_embedding: queryEmbedding,
+      match_threshold: 0.25,
+      match_count: 12,
+      full_text_weight: 1.0,
+      semantic_weight: 1.0,
+      rrf_k: 50,
+    }
+  );
+
+  if (!hybridError && Array.isArray(hybridData)) {
+    return { chunks: hybridData, error: null };
+  }
+
+  console.warn(
+    "[kb-query] match_kb_chunks_hybrid unavailable, falling back to match_kb_chunks:",
+    hybridError?.message
+  );
+
+  const { data: vecData, error: vecError } = await supabaseClient.rpc("match_kb_chunks", {
+    query_embedding: queryEmbedding,
+    match_threshold: 0.28,
+    match_count: 10,
+  });
+
+  return { chunks: Array.isArray(vecData) ? vecData : [], error: vecError };
+}
+
+/**
+ * Semantic + FTS retrieval for `ai_learned_solutions` via `match_learned_solutions`.
+ * Falls back to keyword-filtered lookup (never injects unrelated global top rows).
+ */
+async function retrieveLearnedSolutions(
+  adminClient: any,
+  message: string,
+  queryEmbedding: number[]
+): Promise<LearnedSolutionItem[]> {
+  try {
+    const { data: rpcData, error: rpcError } = await adminClient.rpc(
+      "match_learned_solutions",
+      {
+        p_query_text: message,
+        query_embedding: queryEmbedding,
+        match_threshold: 0.35,
+        match_count: 4,
+        rrf_k: 50,
+      }
+    );
+
+    if (!rpcError && Array.isArray(rpcData)) {
+      return rpcData;
+    }
+
+    if (rpcError) {
+      console.warn(
+        "[kb-query] match_learned_solutions unavailable, falling back to keyword filter:",
+        rpcError.message
+      );
+    }
+
+    // Pre-migration fallback: fetch recent validated entries and filter strictly by query keywords
+    const { data: fallbackRows } = await adminClient
+      .from("ai_learned_solutions")
+      .select("id, query_text, assistant_response, user_correction, helpful_count, is_verified")
+      .or("user_feedback.eq.up,user_correction.neq.null")
+      .order("helpful_count", { ascending: false })
+      .limit(40);
+
+    if (Array.isArray(fallbackRows) && fallbackRows.length > 0) {
+      return filterLearnedSolutionsByKeywords(message, fallbackRows, 3);
+    }
+  } catch (err) {
+    console.warn("[kb-query] Learned solutions lookup skipped:", err);
+  }
+
+  return [];
+}
+
+/**
+ * Non-blocking self-healing backfill: embeds up to 5 validated `ai_learned_solutions`
+ * rows whose `embedding` is still NULL (e.g. recently submitted from the browser)
+ * in a single batched OpenRouter embeddings call.
+ */
+async function backfillUnembeddedLearnedSolutions(
+  adminClient: any,
+  apiKey: string
+): Promise<void> {
+  try {
+    const { data: pendingRows, error } = await adminClient
+      .from("ai_learned_solutions")
+      .select("id, query_text, user_correction, assistant_response")
+      .is("embedding", null)
+      .or("user_feedback.eq.up,user_correction.neq.null")
+      .order("created_at", { ascending: false })
+      .limit(5);
+
+    if (error || !Array.isArray(pendingRows) || pendingRows.length === 0) {
+      return;
+    }
+
+    const validRows = pendingRows
+      .map((row: any) => ({
+        id: row.id,
+        text: buildLearnedSolutionEmbeddingText(row),
+      }))
+      .filter((r) => r.text.length > 0);
+
+    if (validRows.length === 0) return;
+
+    const embRes = await fetch("https://openrouter.ai/api/v1/embeddings", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+        "HTTP-Referer": "https://firstissue.dev",
+        "X-Title": "FirstIssue Learned Solutions Embedding",
+      },
+      body: JSON.stringify({
+        model: "openai/text-embedding-3-small",
+        input: validRows.map((r) => r.text),
+      }),
+    });
+
+    if (!embRes.ok) return;
+
+    const embJson = await embRes.json();
+    const vectors = Array.isArray(embJson?.data) ? embJson.data : [];
+
+    for (let i = 0; i < validRows.length; i++) {
+      const vec = vectors[i]?.embedding;
+      if (!Array.isArray(vec) || vec.length === 0) continue;
+      await adminClient
+        .from("ai_learned_solutions")
+        .update({ embedding: vec })
+        .eq("id", validRows[i].id);
+    }
+
+    console.log(`[kb-query] Backfilled embeddings for ${validRows.length} learned solution(s)`);
+  } catch (err) {
+    console.warn("[kb-query] Lazy learned-solution embedding backfill skipped:", err);
   }
 }
 
@@ -374,7 +459,7 @@ serve(async (req: Request) => {
 
     console.log(`[kb-query] Processing query: "${message.substring(0, 60)}..." (Auth: User)`);
 
-    // 1. Generate text embedding using OpenRouter
+    // 1. Generate text embedding once via OpenRouter (reused across KB, learned solutions, and startup orgs)
     // Model used: openai/text-embedding-3-small (1536 dimensions)
     const embeddingResponse = await fetch("https://openrouter.ai/api/v1/embeddings", {
       method: "POST",
@@ -409,78 +494,62 @@ serve(async (req: Request) => {
       );
     }
 
-    // 2. Query Supabase vector similarity search
-    // We use the service client (admin client) to read from kb_chunks table if necessary,
-    // but the anonymous user also has read permission on kb_chunks. We will use the request's client.
-    const { data: chunks, error: rpcError } = await supabaseClient.rpc("match_kb_chunks", {
-      query_embedding: queryEmbedding,
-      match_threshold: 0.28, // broader recall across Git, GitHub, GitLab, Licenses & OSS docs
-      match_count: 10 // retrieve top 10 before source diversification
-    });
+    // 2. Run all three Postgres retrieval pipelines in parallel:
+    //    - Hybrid FTS + pgvector search on kb_chunks
+    //    - Semantic + FTS search on ai_learned_solutions
+    //    - Query-filtered FTS + pgvector search on startup_orgs (when startup discovery intent is detected)
+    const startupIntent = isStartupDiscoveryQuery(message, history);
 
-    if (rpcError) {
-      console.error("[kb-query] RPC similarity search failed:", rpcError);
+    const [kbResult, dbLearned, matchedStartupOrgs] = await Promise.all([
+      retrieveKbChunks(supabaseClient, message, queryEmbedding),
+      retrieveLearnedSolutions(adminClient, message, queryEmbedding),
+      startupIntent
+        ? searchStartupOrgs(adminClient, message, queryEmbedding)
+        : Promise.resolve([] as StartupOrgMatch[]),
+    ]);
+
+    if (kbResult.error) {
+      console.error("[kb-query] RPC similarity search failed:", kbResult.error);
       return new Response(
-        JSON.stringify({ error: "Failed to query similar chunks", details: rpcError }),
+        JSON.stringify({ error: "Failed to query similar chunks", details: kbResult.error }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`[kb-query] Found ${chunks?.length || 0} matching document chunks`);
+    const chunks = kbResult.chunks;
+    console.log(
+      `[kb-query] Retrieved ${chunks.length} KB chunks, ${dbLearned.length} learned solutions, ${matchedStartupOrgs.length} startup orgs`
+    );
 
-    // 3. Retrieve learned community solutions & corrections
-    let dbLearned: any[] = [];
-    try {
-      const { data: learnedData } = await adminClient
-        .from("ai_learned_solutions")
-        .select("query_text, assistant_response, user_correction, helpful_count")
-        .or("user_feedback.eq.up,user_correction.neq.null")
-        .order("helpful_count", { ascending: false })
-        .limit(4);
-      if (learnedData && Array.isArray(learnedData)) {
-        dbLearned = learnedData;
-      }
-    } catch {
-      // Table might be initializing or connection error
+    // Schedule non-blocking lazy embedding backfill for any recently added learned solutions
+    const edgeRuntime = (globalThis as any).EdgeRuntime;
+    if (typeof edgeRuntime?.waitUntil === "function") {
+      edgeRuntime.waitUntil(backfillUnembeddedLearnedSolutions(adminClient, OPENROUTER_API_KEY));
     }
 
-    const combinedLearned = [...(Array.isArray(learnedContext) ? learnedContext : []), ...dbLearned];
+    // 3. Merge & deduplicate learned community solutions & corrections
+    const combinedLearned = mergeLearnedSolutions(learnedContext, dbLearned, 3);
     const learnedApplied = combinedLearned.length > 0;
 
     const learnedPromptBlock = learnedApplied
       ? `\n\nVerified Community Best Practices & Self-Learned Corrections:\n` +
         combinedLearned
-          .slice(0, 3)
-          .map((item: any, idx: number) => 
-            `[Pattern ${idx + 1}] User Question Context: "${item.query_text || ''}"\nValidated Best Solution / Correction: "${item.user_correction || item.assistant_response || ''}"`
+          .map((item, idx) =>
+            `[Pattern ${idx + 1}] User Question Context: "${item.query_text || ""}"\nValidated Best Solution / Correction: "${item.user_correction || item.assistant_response || ""}"`
           )
           .join("\n---\n")
       : "";
 
     // 4. Construct Advanced FirstMate System Prompt (diversified across sources)
-    const sourceChunkCounts: Record<string, number> = {};
-    const diversifiedChunks = (chunks || [])
-      .filter((c: any) => c.similarity > 0.30)
-      .filter((c: any) => {
-        const key = c.source || c.path || "unknown";
-        sourceChunkCounts[key] = (sourceChunkCounts[key] || 0) + 1;
-        return sourceChunkCounts[key] <= 2;
-      })
-      .slice(0, 6);
+    const diversifiedChunks = selectDiversifiedChunks(chunks);
 
     const contextText = diversifiedChunks.length > 0
       ? diversifiedChunks
-          .map((c: any) => `Source: ${c.source} | Title: ${c.title}\nContent:\n${c.content}`)
+          .map((c) => `Source: ${c.source} | Title: ${c.title}\nContent:\n${c.content}`)
           .join("\n\n---\n\n")
       : "";
 
     const issueContextBlock = buildIssueContextBlock(issueContext);
-
-    // 4b. Live Startup Orgs Directory Search when user asks for startup recommendations / tech-stack matches
-    const startupIntent = isStartupDiscoveryQuery(message, history);
-    const matchedStartupOrgs = startupIntent
-      ? await searchStartupOrgs(adminClient, message)
-      : [];
     const startupOrgsBlock = buildStartupOrgsPromptBlock(matchedStartupOrgs);
 
     const systemPrompt = `You are FirstMate, an expert open-source engineering copilot for FirstIssue.dev.
@@ -502,11 +571,11 @@ CRITICAL INSTRUCTIONS & RESPONSE STRUCTURE:
 7. Active Issue / PR Grounding: When Active Issue / PR Context is provided below, tailor git commands (repo clone/remote URLs, branch names, file paths, setup/test commands, and PR/CI troubleshooting) directly to that specific repository and issue instead of generic placeholders.
 8. Startup Org Discovery: When "Matched Open-Source Startup Orgs from FirstIssue.dev Directory" are provided below, recommend specifically from those verified startups (do not invent fake orgs), explain clearly why each fits the user's tech stack or request (category, founded year, focus), include their clickable GitHub links, and give a quick tip on how to pick their first issue in those orgs. Note that interactive startup cards will also render right below your message.
 
-${contextText ? `Retrieved Documentation Knowledge:\n${contextText}` : "No specific vector chunk matched above threshold. Rely on your comprehensive knowledge of Git, GitHub, GitLab, Forgejo, open-source licenses, CI/CD, and contribution best practices."}${issueContextBlock}${startupOrgsBlock}${learnedPromptBlock}`;
+${contextText ? `Retrieved Documentation Knowledge:\n${contextText}` : "No specific knowledge base chunk matched above threshold. Rely on your comprehensive knowledge of Git, GitHub, GitLab, Forgejo, open-source licenses, CI/CD, and contribution best practices."}${issueContextBlock}${startupOrgsBlock}${learnedPromptBlock}`;
 
     // 5. Call OpenRouter for chat completion
     const completionModel = Deno.env.get("RAG_COMPLETION_MODEL") || "google/gemini-2.5-flash-lite";
-    
+
     // Standardize history formatting to avoid issues
     const formattedHistory = history.map((h: any) => ({
       role: h.role === "user" ? "user" : "assistant",
@@ -546,19 +615,7 @@ ${contextText ? `Retrieved Documentation Knowledge:\n${contextText}` : "No speci
     const answer = completionJson.choices?.[0]?.message?.content || "Sorry, I couldn't generate a response.";
 
     // 6. Gather sources/citations for the frontend
-    const sources = [];
-    const seenPaths = new Set();
-    for (const chunk of diversifiedChunks) {
-      if (chunk.similarity > 0.32 && chunk.path && !seenPaths.has(chunk.path)) {
-        seenPaths.add(chunk.path);
-        sources.push({
-          source: chunk.source,
-          title: chunk.title,
-          path: chunk.path,
-          similarity: chunk.similarity
-        });
-      }
-    }
+    const sources = extractCitationSources(diversifiedChunks);
 
     return new Response(
       JSON.stringify({
