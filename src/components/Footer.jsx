@@ -53,9 +53,6 @@ const Footer = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-6 border-t border-[#22242A] text-xs text-[#8C929C]">
-          <p className="font-mono text-pretty">
-            GitHub REST/GraphQL issue indexing &amp; SHA-256 PR attestations
-          </p>
           <p>© {new Date().getFullYear()} FirstIssue.dev</p>
         </div>
       </div>
