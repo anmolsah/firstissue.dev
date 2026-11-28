@@ -28,6 +28,7 @@ const PublicProfilePage = () => {
   const { data, isLoading, error } = usePublicProfileAndAttestations(username);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
   const [ghStats, setGhStats] = useState(null);
+  const [activeTab, setActiveTab] = useState("proof-of-work");
 
   // Live GitHub contribution totals (past 12 months).
   // Strategy: edge function -> GraphQL (client token) -> REST events API -> graceful zeros.
@@ -184,25 +185,30 @@ const PublicProfilePage = () => {
   const { profile, attestations, projects = [] } = data;
   const totalImpact = attestations.reduce((acc, curr) => acc + (curr.impact_score || 0), 0);
 
+  const tabs = [
+    { key: "proof-of-work", label: "Proof of Work", icon: ShieldCheck, count: attestations.length },
+    { key: "projects", label: "Projects", icon: FolderGit2, count: projects.length },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#0F0F0F] text-[#F4F4F0] pt-[104px] pb-20">
+    <div className="min-h-screen bg-[#0F0F0F] text-[#F4F4F0] pt-[88px] sm:pt-[104px] pb-16 sm:pb-20 overflow-x-hidden">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Open to work banner */}
         {profile.open_to_work && (
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between bg-[#141518] border border-[#34D399]/40 rounded-[4px] px-5 py-4 mb-6">
-            <div>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 justify-between bg-[#141518] border border-[#34D399]/40 rounded-[4px] px-4 sm:px-5 py-4 mb-5 sm:mb-6">
+            <div className="min-w-0">
               <p className="text-[#34D399] font-semibold text-sm flex items-center gap-2">
-                <Briefcase className="w-4 h-4" /> Open to engineering roles
+                <Briefcase className="w-4 h-4 shrink-0" /> Open to engineering roles
               </p>
               {profile.open_to_work_blurb && (
-                <p className="text-[#A8ADB6] text-sm mt-1">{profile.open_to_work_blurb}</p>
+                <p className="text-[#A8ADB6] text-sm mt-1 break-words">{profile.open_to_work_blurb}</p>
               )}
             </div>
             <a
               href={`https://github.com/${profile.github_username}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] font-semibold text-xs rounded-[4px] transition-colors whitespace-nowrap shrink-0"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#DAFA9C] hover:bg-[#C7F275] text-[#0F0F0F] font-semibold text-xs rounded-[4px] transition-colors whitespace-nowrap shrink-0 w-full sm:w-auto"
             >
               <Github className="w-4 h-4" /> Reach out on GitHub
             </a>
@@ -210,18 +216,29 @@ const PublicProfilePage = () => {
         )}
 
         {/* Header / Profile Info */}
-        <div className="flex flex-col md:flex-row gap-6 items-start md:items-center bg-[#141518] border border-[#2B2E36] rounded-[4px] p-6 sm:p-8 mb-8">
-          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[4px] overflow-hidden border border-[#2B2E36] bg-[#0B0C0E] shrink-0">
-            <img
-              src={profile.github_avatar_url || `https://github.com/${profile.github_username}.png`}
-              alt={profile.github_username}
-              className="w-full h-full object-cover"
-            />
+        <div className="flex flex-col md:flex-row gap-5 sm:gap-6 items-start md:items-center bg-[#141518] border border-[#2B2E36] rounded-[4px] p-5 sm:p-8 mb-6 sm:mb-8">
+          <div className="flex items-center gap-4 md:block w-full md:w-auto">
+            <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-[4px] overflow-hidden border border-[#2B2E36] bg-[#0B0C0E] shrink-0">
+              <img
+                src={profile.github_avatar_url || `https://github.com/${profile.github_username}.png`}
+                alt={profile.github_username}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            {/* Mobile-only name next to avatar */}
+            <div className="md:hidden min-w-0 flex-1">
+              <h1 className="text-xl font-bold text-[#F4F4F0] tracking-tight break-words">
+                {profile.name || profile.github_username}
+              </h1>
+              <p className="text-[11px] font-mono uppercase tracking-wider text-[#34D399] mt-1">
+                Verified Open-Source Contributor
+              </p>
+            </div>
           </div>
 
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full">
             <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#F4F4F0] tracking-tight mr-1">
+              <h1 className="hidden md:block text-3xl font-bold text-[#F4F4F0] tracking-tight mr-1 break-words">
                 {profile.name || profile.github_username}
               </h1>
               <a
@@ -229,10 +246,10 @@ const PublicProfilePage = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`View ${profile.github_username} on GitHub`}
-                className="text-[#8C929C] hover:text-[#F4F4F0] transition-colors inline-flex items-center gap-1.5 text-xs font-mono px-2 py-1 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] hover:border-[#3A3E48]"
+                className="text-[#8C929C] hover:text-[#F4F4F0] transition-colors inline-flex items-center gap-1.5 text-xs font-mono px-2 py-1 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] hover:border-[#3A3E48] max-w-full"
               >
-                <Github className="w-3.5 h-3.5" />
-                <span>@{profile.github_username}</span>
+                <Github className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">@{profile.github_username}</span>
               </a>
               <ProfileSocialBadges
                 linkedinUrl={profile.linkedin_url}
@@ -240,21 +257,24 @@ const PublicProfilePage = () => {
                 size="sm"
               />
             </div>
-            <p className="text-xs font-mono uppercase tracking-wider text-[#34D399] mt-2">
+            <p className="hidden md:block text-xs font-mono uppercase tracking-wider text-[#34D399] mt-2">
               Verified Open-Source Contributor
             </p>
-            <p className="text-[#A8ADB6] text-sm mt-2 max-w-2xl leading-relaxed">
+            <p className="text-[#A8ADB6] text-sm mt-3 md:mt-2 max-w-2xl leading-relaxed">
               Verified pull request record generated from live GitHub API merge data, diff metrics, and SHA-256 attestation digests stored in PostgreSQL.
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[210px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-col gap-3 w-full md:w-auto md:min-w-[210px]">
             <div className="bg-[#0B0C0E] p-4 rounded-[4px] border border-[#22242A] relative">
               <div className="text-[11px] font-mono text-[#8C929C] uppercase tracking-wider mb-1 flex items-center gap-1.5">
                 Total Impact Score
                 <div className="relative group/tooltip">
-                  <Info className="w-3.5 h-3.5 text-[#8C929C] hover:text-[#F4F4F0] cursor-help transition-colors" />
-                  <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-[#17181B] border border-[#2B2E36] rounded-[4px] shadow-2xl text-left opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none">
+                  <Info
+                    tabIndex={0}
+                    className="w-3.5 h-3.5 text-[#8C929C] hover:text-[#F4F4F0] cursor-help transition-colors outline-none"
+                  />
+                  <div className="absolute bottom-full left-0 md:left-auto md:right-0 mb-2 w-60 sm:w-64 p-3 bg-[#17181B] border border-[#2B2E36] rounded-[4px] shadow-2xl text-left opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible group-focus-within/tooltip:opacity-100 group-focus-within/tooltip:visible transition-all duration-200 z-50 pointer-events-none">
                     <p className="text-xs text-[#A8ADB6] leading-relaxed normal-case font-sans">
                       <span className="font-semibold text-[#F4F4F0]">Impact Score</span>{" "}
                       measures pull request scope from diff lines, files touched, repository stars, and merge status (0–100 per PR).
@@ -262,7 +282,7 @@ const PublicProfilePage = () => {
                   </div>
                 </div>
               </div>
-              <div className="text-3xl font-bold font-mono tabular-nums text-[#DAFA9C]">
+              <div className="text-2xl sm:text-3xl font-bold font-mono tabular-nums text-[#DAFA9C]">
                 {totalImpact}
               </div>
             </div>
@@ -285,13 +305,14 @@ const PublicProfilePage = () => {
         </div>
 
         {/* Stats grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8 sm:mb-10">
           <PublicStat icon={GitMerge} label="Merged PRs" value={attestations.length} />
           <PublicStat
             icon={Trophy}
             label="Total Impact"
             value={totalImpact}
             tooltip="measures pull request scope from diff lines, files touched, repository stars, and merge status (0–100 per PR)."
+            tooltipAlign="right"
           />
           <PublicStat
             icon={Activity}
@@ -305,45 +326,62 @@ const PublicProfilePage = () => {
           />
         </div>
 
-        {/* Proof of Work Credentials & Live Projects (side-by-side on desktop when projects exist) */}
+        {/* Tab Navigation (mirrors the private Profile dashboard tabs) */}
         <div
-          className={
-            projects.length > 0
-              ? "grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
-              : ""
-          }
+          role="tablist"
+          aria-label="Public profile sections"
+          className="flex gap-6 border-b border-[#22242A] mb-6 overflow-x-auto"
         >
-          {/* Credentials Grid */}
-          <div className={projects.length > 0 ? "lg:col-span-8 space-y-6" : "space-y-6"}>
-            <div className="flex items-center gap-3 border-b border-[#22242A] pb-4">
-              <ShieldCheck className="w-5 h-5 text-[#34D399]" />
-              <h2 className="text-xl font-semibold text-[#F4F4F0]">Proof of Work Credentials</h2>
-              <span className="bg-[#141518] text-[#A8ADB6] text-xs font-mono py-0.5 px-2.5 rounded-[4px] border border-[#2B2E36] tabular-nums">
-                {attestations.length}
-              </span>
-            </div>
-
-            {attestations.length > 0 ? (
-              <div
-                className={
-                  projects.length > 0
-                    ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
-                    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                }
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                role="tab"
+                id={`public-tab-${tab.key}`}
+                aria-selected={isActive}
+                aria-controls={`public-panel-${tab.key}`}
+                onClick={() => setActiveTab(tab.key)}
+                className={`px-1 py-2.5 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 -mb-[1px] flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                  isActive
+                    ? "border-[#DAFA9C] text-[#F4F4F0]"
+                    : "border-transparent text-[#8C929C] hover:text-[#F4F4F0]"
+                }`}
               >
+                <Icon className={`w-3.5 h-3.5 ${isActive ? "text-[#DAFA9C]" : "text-[#8C929C]"}`} />
+                {tab.label}
+                <span className="px-1.5 py-0.5 text-[10px] rounded-[3px] bg-[#141518] border border-[#2B2E36] text-[#A8ADB6] tabular-nums">
+                  {tab.count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {activeTab === "proof-of-work" ? (
+          <section
+            id="public-panel-proof-of-work"
+            role="tabpanel"
+            aria-labelledby="public-tab-proof-of-work"
+          >
+            {attestations.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {attestations.map((attestation, index) => (
                   <Motion.div
                     key={attestation.id}
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.3) }}
+                    className="min-w-0"
                   >
                     <MetalCard attestation={attestation} showActions={false} />
                   </Motion.div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-16 px-4 border border-dashed border-[#2B2E36] rounded-[4px] bg-[#141518]">
+              <div className="text-center py-14 sm:py-16 px-4 border border-dashed border-[#2B2E36] rounded-[4px] bg-[#141518]">
                 <ShieldCheck className="mx-auto h-10 w-10 text-[#8C929C] mb-3" />
                 <h3 className="text-base font-medium text-[#F4F4F0] mb-1.5">No credentials yet</h3>
                 <p className="text-sm text-[#A8ADB6] max-w-sm mx-auto">
@@ -351,58 +389,73 @@ const PublicProfilePage = () => {
                 </p>
               </div>
             )}
-          </div>
-
-          {/* Live Projects Section (right side column alongside Proof of Work Credentials) */}
-          {projects.length > 0 && (
-            <aside className="lg:col-span-4 space-y-6">
-              <div className="flex items-center gap-3 border-b border-[#22242A] pb-4">
-                <FolderGit2 className="w-5 h-5 text-[#DAFA9C]" />
-                <h2 className="text-xl font-semibold text-[#F4F4F0]">Live Projects</h2>
-                <span className="bg-[#141518] text-[#A8ADB6] text-xs font-mono py-0.5 px-2.5 rounded-[4px] border border-[#2B2E36] tabular-nums">
-                  {projects.length}
-                </span>
-              </div>
-
-              <div className="space-y-5">
+          </section>
+        ) : (
+          <section
+            id="public-panel-projects"
+            role="tabpanel"
+            aria-labelledby="public-tab-projects"
+          >
+            {projects.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {projects.map((project, index) => (
                   <Motion.div
                     key={project.id}
                     initial={{ opacity: 0, y: 16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.3) }}
+                    className="min-w-0"
                   >
                     <LiveProjectCard project={project} isOwner={false} />
                   </Motion.div>
                 ))}
               </div>
-            </aside>
-          )}
-        </div>
+            ) : (
+              <div className="text-center py-14 sm:py-16 px-4 border border-dashed border-[#2B2E36] rounded-[4px] bg-[#141518]">
+                <FolderGit2 className="mx-auto h-10 w-10 text-[#8C929C] mb-3" />
+                <h3 className="text-base font-medium text-[#F4F4F0] mb-1.5">No live projects yet</h3>
+                <p className="text-sm text-[#A8ADB6] max-w-sm mx-auto">
+                  @{profile.github_username} hasn&apos;t added any live projects yet.
+                </p>
+              </div>
+            )}
+          </section>
+        )}
       </div>
     </div>
   );
 };
 
-const PublicStat = ({ icon, label, value, tooltip }) => {
+const PublicStat = ({ icon, label, value, tooltip, tooltipAlign = "center" }) => {
   const Icon = icon;
+  const tooltipPosition =
+    tooltipAlign === "right"
+      ? "right-0 sm:right-auto sm:left-1/2 sm:-translate-x-1/2"
+      : "left-1/2 -translate-x-1/2";
   return (
-    <div className="bg-[#141518] border border-[#2B2E36] rounded-[4px] p-4 relative">
+    <div className="bg-[#141518] border border-[#2B2E36] rounded-[4px] p-3.5 sm:p-4 relative min-w-0">
       <div className="w-8 h-8 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] flex items-center justify-center text-[#A8ADB6] mb-3">
         <Icon className="w-4 h-4" />
       </div>
       {value == null ? (
         <div className="h-7 w-16 bg-[#17181B] rounded-[4px] mb-1" />
       ) : (
-        <div className="text-2xl font-bold text-[#F4F4F0] font-mono tabular-nums mb-1">{value}</div>
+        <div className="text-xl sm:text-2xl font-bold text-[#F4F4F0] font-mono tabular-nums mb-1 truncate">
+          {value}
+        </div>
       )}
-      <div className="text-xs text-[#8C929C] font-mono uppercase tracking-wider flex items-center gap-1.5">
-        <span>{label}</span>
+      <div className="text-[10px] sm:text-xs text-[#8C929C] font-mono uppercase tracking-wider flex items-center gap-1.5">
+        <span className="truncate">{label}</span>
         {tooltip && (
-          <div className="relative group/tooltip">
-            <Info className="w-3.5 h-3.5 text-[#8C929C] hover:text-[#F4F4F0] cursor-help transition-colors" />
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-[#17181B] border border-[#2B2E36] rounded-[4px] shadow-2xl text-left opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none">
-              <p className="text-xs text-[#A8ADB6] leading-relaxed normal-case font-sans">
+          <div className="relative group/tooltip shrink-0">
+            <Info
+              tabIndex={0}
+              className="w-3.5 h-3.5 text-[#8C929C] hover:text-[#F4F4F0] cursor-help transition-colors outline-none"
+            />
+            <div
+              className={`absolute bottom-full ${tooltipPosition} mb-2 w-56 sm:w-64 p-3 bg-[#17181B] border border-[#2B2E36] rounded-[4px] shadow-2xl text-left opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible group-focus-within/tooltip:opacity-100 group-focus-within/tooltip:visible transition-all duration-200 z-50 pointer-events-none`}
+            >
+              <p className="text-xs text-[#A8ADB6] leading-relaxed normal-case font-sans tracking-normal">
                 <span className="font-semibold text-[#F4F4F0]">Impact Score</span>{" "}
                 {tooltip}
               </p>
