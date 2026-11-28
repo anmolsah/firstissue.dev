@@ -12,9 +12,11 @@ import {
   ThumbsDown,
   Loader2,
   Link2,
+  GitPullRequest,
 } from "lucide-react";
 import Footer from "../components/Footer";
 import TechnicalDiagram from "../components/diagrams/TechnicalDiagrams";
+import DocContributeModal from "../components/DocContributeModal";
 import { docContent } from "../data/docContent";
 import { supabase } from "../lib/supabase";
 
@@ -24,6 +26,7 @@ const DocsArticlePage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [copiedCode, setCopiedCode] = useState(null);
   const [activeId, setActiveId] = useState("");
+  const [isContributeModalOpen, setIsContributeModalOpen] = useState(false);
 
   const currentArticle = docContent[section]?.[article];
   const sectionData = docContent[section];
@@ -606,16 +609,16 @@ const DocsArticlePage = () => {
                   )}
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-[#22242A]/70 flex flex-wrap items-center justify-between gap-2 text-xs text-[#8C929C]">
-                  <span>Want to improve or fix this guide?</span>
-                  <a
-                    href={`https://github.com/anmolsah/firstissue.dev/blob/main/firstissue-doc/${section}/${article}.md`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono text-[#A8ADB6] hover:text-[#DAFA9C] transition-colors underline underline-offset-4"
+                <div className="mt-5 pt-4 border-t border-[#22242A]/70 flex flex-wrap items-center justify-between gap-3 text-xs text-[#8C929C]">
+                  <span>Want to improve this guide or add a new one?</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsContributeModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-3.5 py-2 bg-[#141518] hover:bg-[#17181B] border border-[#2B2E36] hover:border-[#DAFA9C]/60 text-[#F4F4F0] hover:text-[#DAFA9C] rounded-[4px] font-mono text-xs font-semibold transition-colors cursor-pointer"
                   >
-                    Edit this page on GitHub →
-                  </a>
+                    <GitPullRequest className="w-3.5 h-3.5 text-[#DAFA9C]" />
+                    Contribute to this doc
+                  </button>
                 </div>
               </div>
             </article>
@@ -664,6 +667,13 @@ const DocsArticlePage = () => {
       </div>
 
       <Footer />
+
+      <DocContributeModal
+        isOpen={isContributeModalOpen}
+        onClose={() => setIsContributeModalOpen(false)}
+        section={section}
+        article={article}
+      />
     </div>
   );
 };

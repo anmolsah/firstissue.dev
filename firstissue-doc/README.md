@@ -80,3 +80,29 @@ caption: "High-level architecture of FirstIssue.dev"
 ## Updating FirstMate AI Knowledge Base
 
 FirstMate's RAG pipeline (`scripts/seed_kb.js`) reads directly from `firstissue-doc/`, so merged documentation PRs automatically keep the AI assistant up to date when `npm run seed-kb` is run.
+
+---
+
+## How to Raise a Documentation PR
+
+1. **Fork & Clone** the repository:
+   ```bash
+   git clone https://github.com/<your-username>/firstissue.dev.git
+   cd firstissue.dev
+   git checkout -b docs/my-guide-update
+   ```
+2. **Copy `_template.md`** (for a new guide) into the target section folder `firstissue-doc/<section>/<slug>.md`, or edit an existing `.md` file.
+3. **Preview & Verify Locally**:
+   ```bash
+   npm install
+   npm run dev
+   node --test src/utils/__tests__/docMarkdownParser.test.js
+   ```
+4. **Commit & Open a Pull Request**:
+   ```bash
+   git add firstissue-doc/
+   git commit -m "docs(<section>): <short description>"
+   git push -u origin docs/my-guide-update
+   ```
+   Open a PR against `main` on GitHub and select the **Docs PR template** (`.github/PULL_REQUEST_TEMPLATE/docs.md`).
+
