@@ -1,0 +1,8 @@
+{
+  "id": "licenses-and-legal",
+  "title": "Licenses, CLAs & Legal Guide",
+  "description": "Permissive vs Copyleft licenses, CLAs, and Developer Certificate of Origin (DCO)",
+  "icon": "ShieldCheck",
+  "color": "text-[#34D399]",
+  "order": 9
+}

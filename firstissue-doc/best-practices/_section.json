@@ -1,0 +1,8 @@
+{
+  "id": "best-practices",
+  "title": "Best Practices",
+  "description": "Best practices for open source contributions",
+  "icon": "Code",
+  "color": "text-[#34D399]",
+  "order": 6
+}

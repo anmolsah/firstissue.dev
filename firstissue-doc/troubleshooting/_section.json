@@ -1,0 +1,8 @@
+{
+  "id": "troubleshooting",
+  "title": "Troubleshooting",
+  "description": "Common issues and solutions",
+  "icon": "AlertTriangle",
+  "color": "text-[#F59E0B]",
+  "order": 5
+}

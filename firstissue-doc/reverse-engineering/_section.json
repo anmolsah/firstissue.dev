@@ -1,0 +1,8 @@
+{
+  "id": "reverse-engineering",
+  "title": "Reverse Engineering & Security",
+  "description": "Understand software internals, clean room design, security analysis, and interoperability",
+  "icon": "Cpu",
+  "color": "text-[#F87171]",
+  "order": 11
+}

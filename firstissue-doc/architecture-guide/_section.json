@@ -1,0 +1,8 @@
+{
+  "id": "architecture-guide",
+  "title": "Architecture & Workflow",
+  "description": "Platform workflow, database design, and system architecture",
+  "icon": "Code",
+  "color": "text-[#DAFA9C]",
+  "order": 7
+}

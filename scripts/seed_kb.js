@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
+import process from 'process';
 import { createClient } from '@supabase/supabase-js';
-import { docContent } from '../src/data/docContent.js';
+import { parseDocMarkdown } from '../src/utils/docMarkdownParser.js';
 
 // Manual .env loader to support all Node versions without external dependencies
 function loadEnv() {
@@ -114,14 +115,32 @@ function chunkMarkdown(filename, content) {
   return chunks;
 }
 
-// Parser for docContent.js
+// Parser for firstissue-doc/**/*.md
 function parseDocContent() {
   const chunks = [];
-  for (const [catKey, category] of Object.entries(docContent)) {
-    if (typeof category !== 'object' || !category.title) continue;
-    for (const [secKey, section] of Object.entries(category)) {
-      if (typeof section !== 'object' || !section.content) continue;
-      
+  const docRoot = path.join(process.cwd(), 'firstissue-doc');
+  if (!fs.existsSync(docRoot)) {
+    console.warn('Warning: firstissue-doc/ directory not found.');
+    return chunks;
+  }
+
+  const sectionDirs = fs
+    .readdirSync(docRoot, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => d.name);
+
+  for (const catKey of sectionDirs) {
+    const secDir = path.join(docRoot, catKey);
+    const files = fs
+      .readdirSync(secDir)
+      .filter((f) => f.endsWith('.md') && f.toUpperCase() !== 'README.MD');
+
+    for (const file of files) {
+      const secKey = file.replace(/\.md$/i, '');
+      const raw = fs.readFileSync(path.join(secDir, file), 'utf-8');
+      const section = parseDocMarkdown(raw, secKey);
+      if (!section?.content?.length) continue;
+
       let currentTitle = section.title;
       let currentText = [];
 
@@ -129,7 +148,7 @@ function parseDocContent() {
         if (item.type === 'heading') {
           if (currentText.length > 0) {
             chunks.push({
-              source: 'docContent.js',
+              source: `firstissue-doc/${catKey}/${file}`,
               title: `${section.title} - ${currentTitle}`,
               path: `/docs/${catKey}/${secKey}`,
               content: currentText.join('\n').trim()
@@ -150,7 +169,7 @@ function parseDocContent() {
       }
       if (currentText.length > 0) {
         chunks.push({
-          source: 'docContent.js',
+          source: `firstissue-doc/${catKey}/${file}`,
           title: `${section.title} - ${currentTitle}`,
           path: `/docs/${catKey}/${secKey}`,
           content: currentText.join('\n').trim()
@@ -165,14 +184,14 @@ async function main() {
   console.log('--- Starting Knowledge Base Seeding ---');
   let allChunks = [];
 
-  // 1. Parse docContent.js
-  console.log('Parsing docContent.js...');
+  // 1. Parse firstissue-doc/*.md
+  console.log('Parsing firstissue-doc/*.md...');
   try {
     const docChunks = parseDocContent();
-    console.log(`Parsed ${docChunks.length} chunks from docContent.js`);
+    console.log(`Parsed ${docChunks.length} chunks from firstissue-doc/`);
     allChunks = allChunks.concat(docChunks);
   } catch (err) {
-    console.error('Error parsing docContent.js:', err);
+    console.error('Error parsing firstissue-doc/:', err);
   }
 
   // 2. Parse docs/*.md

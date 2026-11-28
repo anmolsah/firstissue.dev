@@ -1,0 +1,8 @@
+{
+  "id": "advanced-git-workflows",
+  "title": "Advanced Git & GitHub Mastery",
+  "description": "Interactive rebase, squash commits, fork syncing, worktrees, and CI debugging",
+  "icon": "GitMerge",
+  "color": "text-[#DAFA9C]",
+  "order": 10
+}

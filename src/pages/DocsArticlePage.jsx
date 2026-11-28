@@ -605,6 +605,18 @@ const DocsArticlePage = () => {
                     </span>
                   )}
                 </div>
+
+                <div className="mt-5 pt-4 border-t border-[#22242A]/70 flex flex-wrap items-center justify-between gap-2 text-xs text-[#8C929C]">
+                  <span>Want to improve or fix this guide?</span>
+                  <a
+                    href={`https://github.com/anmolsah/firstissue.dev/blob/main/firstissue-doc/${section}/${article}.md`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono text-[#A8ADB6] hover:text-[#DAFA9C] transition-colors underline underline-offset-4"
+                  >
+                    Edit this page on GitHub →
+                  </a>
+                </div>
               </div>
             </article>
           </main>

@@ -1,0 +1,8 @@
+{
+  "id": "git-commands",
+  "title": "Git Commands",
+  "description": "Essential Git commands for version control and collaboration",
+  "icon": "GitBranch",
+  "color": "text-[#A8ADB6]",
+  "order": 4
+}
