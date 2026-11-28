@@ -12,11 +12,14 @@ import {
   Activity,
   GitMerge,
   Trophy,
+  FolderGit2,
 } from "lucide-react";
 import { usePublicProfileAndAttestations } from "../hooks/useProofOfWork";
 import { generateResumePdf } from "../utils/generateResumePdf";
 import { supabase } from "../lib/supabase";
 import MetalCard from "../components/MetalCard";
+import { LiveProjectCard } from "../components/ProjectsTab";
+import { ProfileSocialBadges } from "../components/SocialBrandIcons";
 import toast from "react-hot-toast";
 
 const PublicProfilePage = () => {
@@ -177,7 +180,7 @@ const PublicProfilePage = () => {
     );
   }
 
-  const { profile, attestations } = data;
+  const { profile, attestations, projects = [] } = data;
   const totalImpact = attestations.reduce((acc, curr) => acc + (curr.impact_score || 0), 0);
 
   return (
@@ -216,8 +219,8 @@ const PublicProfilePage = () => {
           </div>
 
           <div className="flex-1 min-w-0">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl sm:text-3xl font-bold text-[#F4F4F0] tracking-tight">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#F4F4F0] tracking-tight mr-1">
                 {profile.name || profile.github_username}
               </h1>
               <a
@@ -225,11 +228,16 @@ const PublicProfilePage = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`View ${profile.github_username} on GitHub`}
-                className="text-[#8C929C] hover:text-[#F4F4F0] transition-colors inline-flex items-center gap-1.5 text-xs font-mono px-2 py-1 rounded-[4px] bg-[#0B0C0E] border border-[#22242A]"
+                className="text-[#8C929C] hover:text-[#F4F4F0] transition-colors inline-flex items-center gap-1.5 text-xs font-mono px-2 py-1 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] hover:border-[#3A3E48]"
               >
                 <Github className="w-3.5 h-3.5" />
                 <span>@{profile.github_username}</span>
               </a>
+              <ProfileSocialBadges
+                linkedinUrl={profile.linkedin_url}
+                twitterUrl={profile.twitter_url}
+                size="sm"
+              />
             </div>
             <p className="text-xs font-mono uppercase tracking-wider text-[#34D399] mt-2">
               Verified Open-Source Contributor
@@ -315,6 +323,32 @@ const PublicProfilePage = () => {
             </div>
           )}
         </div>
+
+        {/* Live Projects Section (shown when user has added live projects) */}
+        {projects.length > 0 && (
+          <div className="space-y-6 mt-12">
+            <div className="flex items-center gap-3 border-b border-[#22242A] pb-4">
+              <FolderGit2 className="w-5 h-5 text-[#DAFA9C]" />
+              <h2 className="text-xl font-semibold text-[#F4F4F0]">Live Projects</h2>
+              <span className="bg-[#141518] text-[#A8ADB6] text-xs font-mono py-0.5 px-2.5 rounded-[4px] border border-[#2B2E36] tabular-nums">
+                {projects.length}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {projects.map((project, index) => (
+                <Motion.div
+                  key={project.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.3) }}
+                >
+                  <LiveProjectCard project={project} isOwner={false} />
+                </Motion.div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

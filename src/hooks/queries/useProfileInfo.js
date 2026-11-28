@@ -10,6 +10,17 @@ export const profileInfoKeys = {
   custom: (userId) => ['profileInfo', userId, 'custom'],
 };
 
+function isMissingColumnError(error) {
+  if (!error) return false;
+  const msg = String(error.message || '').toLowerCase();
+  return (
+    error.code === 'PGRST204' ||
+    error.code === '42703' ||
+    msg.includes('column') ||
+    msg.includes('schema cache')
+  );
+}
+
 /**
  * Fetch signup_index from profiles table
  */
@@ -25,23 +36,36 @@ async function fetchSignupIndex(userId) {
 }
 
 /**
- * Fetch custom profile fields (name, bio, college, location, company, website)
+ * Fetch custom profile fields (name, bio, college, location, company, website, linkedin_url, twitter_url)
  */
 async function fetchCustomProfile(userId) {
   let { data, error } = await supabase
     .from('profiles')
-    .select('name, bio, college, location, company, website')
+    .select('name, bio, college, location, company, website, linkedin_url, twitter_url')
     .eq('id', userId)
     .single();
 
-  if (error && (error.message?.toLowerCase().includes('college') || error.code === 'PGRST204' || error.code === '42703')) {
-    const fallback = await supabase
+  if (error && isMissingColumnError(error)) {
+    const fallbackWithCollege = await supabase
       .from('profiles')
-      .select('name, bio, location, company, website')
+      .select('name, bio, college, location, company, website')
       .eq('id', userId)
       .single();
-    data = fallback.data;
-    error = fallback.error;
+
+    if (!fallbackWithCollege.error) {
+      data = fallbackWithCollege.data;
+      error = null;
+    } else if (isMissingColumnError(fallbackWithCollege.error)) {
+      const baseFallback = await supabase
+        .from('profiles')
+        .select('name, bio, location, company, website')
+        .eq('id', userId)
+        .single();
+      data = baseFallback.data;
+      error = baseFallback.error;
+    } else {
+      error = fallbackWithCollege.error;
+    }
   }
 
   if (error && error.code !== 'PGRST116') throw error;

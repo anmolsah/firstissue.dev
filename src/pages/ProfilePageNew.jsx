@@ -15,13 +15,17 @@ import BadgeUnlockedNotification from "../components/BadgeUnlockedNotification";
 import AppSidebar from "../components/AppSidebar";
 import MobileBottomNav from "../components/MobileBottomNav";
 import ProofOfWorkTab from "../components/ProofOfWorkTab";
+import ProjectsTab from "../components/ProjectsTab";
+import { ProfileSocialBadges } from "../components/SocialBrandIcons";
 import { BrandLogo } from "../components/BrandMark";
 import { useBadges } from "../hooks/useBadges";
 import { useAttestations } from "../hooks/useProofOfWork";
+import { useUserProjects } from "../hooks/useProjects";
 import {
   Bookmark,
   Compass,
   FileText,
+  FolderGit2,
   Plus,
   GitMerge,
   Github,
@@ -78,6 +82,7 @@ const ProfilePageNew = () => {
   const { data: githubProfile = null } = useGitHubProfile(getGitHubUsername());
   const { data: customProfile = null } = useCustomProfile(user?.id);
   const { data: attestations = [] } = useAttestations(user?.id);
+  const { data: userProjects = [] } = useUserProjects(user?.id);
 
   const { newlyUnlockedBadge, dismissNotification } = useBadges(
     ghStats,
@@ -415,14 +420,14 @@ const ProfilePageNew = () => {
           <div
             role="tablist"
             aria-label="Profile dashboard views"
-            className="flex space-x-6 border-b border-[#22242A] mb-6"
+            className="flex space-x-6 border-b border-[#22242A] mb-6 overflow-x-auto"
           >
             <button
               type="button"
               role="tab"
               aria-selected={activeTab === "overview"}
               onClick={() => setActiveTab("overview")}
-              className={`px-1 py-2.5 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 -mb-[1px] cursor-pointer ${
+              className={`px-1 py-2.5 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 -mb-[1px] whitespace-nowrap cursor-pointer ${
                 activeTab === "overview"
                   ? "border-[#DAFA9C] text-[#F4F4F0]"
                   : "border-transparent text-[#8C929C] hover:text-[#F4F4F0]"
@@ -435,7 +440,7 @@ const ProfilePageNew = () => {
               role="tab"
               aria-selected={activeTab === "proof-of-work"}
               onClick={() => setActiveTab("proof-of-work")}
-              className={`px-1 py-2.5 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 -mb-[1px] flex items-center gap-1.5 cursor-pointer ${
+              className={`px-1 py-2.5 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 -mb-[1px] flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
                 activeTab === "proof-of-work"
                   ? "border-[#DAFA9C] text-[#F4F4F0]"
                   : "border-transparent text-[#8C929C] hover:text-[#F4F4F0]"
@@ -447,6 +452,29 @@ const ProfilePageNew = () => {
                 }`}
               />
               Proof of Work
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === "projects"}
+              onClick={() => setActiveTab("projects")}
+              className={`px-1 py-2.5 text-xs font-mono font-bold uppercase tracking-wider transition-colors border-b-2 -mb-[1px] flex items-center gap-1.5 whitespace-nowrap cursor-pointer ${
+                activeTab === "projects"
+                  ? "border-[#DAFA9C] text-[#F4F4F0]"
+                  : "border-transparent text-[#8C929C] hover:text-[#F4F4F0]"
+              }`}
+            >
+              <FolderGit2
+                className={`w-3.5 h-3.5 ${
+                  activeTab === "projects" ? "text-[#DAFA9C]" : "text-[#8C929C]"
+                }`}
+              />
+              Projects
+              {userProjects.length > 0 && (
+                <span className="px-1.5 py-0.5 text-[10px] rounded-[3px] bg-[#141518] border border-[#2B2E36] text-[#A8ADB6] tabular-nums">
+                  {userProjects.length}
+                </span>
+              )}
             </button>
           </div>
 
@@ -497,6 +525,10 @@ const ProfilePageNew = () => {
                         </span>
                       </a>
                     )}
+                    <ProfileSocialBadges
+                      linkedinUrl={customProfile?.linkedin_url || user?.user_metadata?.linkedin_url}
+                      twitterUrl={customProfile?.twitter_url || user?.user_metadata?.twitter_url}
+                    />
                     {githubProfile?.created_at && (
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5 shrink-0 text-[#8C929C]" />
@@ -809,8 +841,10 @@ const ProfilePageNew = () => {
                 </div>
               )}
             </>
-          ) : (
+          ) : activeTab === "proof-of-work" ? (
             <ProofOfWorkTab />
+          ) : (
+            <ProjectsTab />
           )}
         </div>
       </main>

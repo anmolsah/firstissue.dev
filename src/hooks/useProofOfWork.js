@@ -1,6 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '../lib/supabase';
 
+function isMissingSchemaError(err) {
+  if (!err) return false;
+  const msg = String(err.message || '').toLowerCase();
+  return (
+    err.code === '42703' ||
+    err.code === '42P01' ||
+    err.code === 'PGRST204' ||
+    err.code === 'PGRST205' ||
+    msg.includes('column') ||
+    msg.includes('does not exist') ||
+    msg.includes('schema cache')
+  );
+}
+
 export function useAttestations(userId) {
   return useQuery({
     queryKey: ['attestations', userId],
@@ -25,32 +39,62 @@ export function usePublicProfileAndAttestations(githubUsername) {
     queryFn: async () => {
       if (!githubUsername) return null;
 
-      // 1. Fetch user ID from profiles using github_username
-      const { data: profileData, error: profileError } = await supabase
+      const fullCols =
+        'id, github_username, github_avatar_url, name, bio, linkedin_url, twitter_url, open_to_work, open_to_work_blurb';
+      const legacyCols =
+        'id, github_username, github_avatar_url, name, open_to_work, open_to_work_blurb';
+
+      // 1. Fetch profile using github_username (case-insensitive match fallback)
+      let { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, github_username, github_avatar_url, name, open_to_work, open_to_work_blurb')
-        .eq('github_username', githubUsername)
-        .single();
+        .select(fullCols)
+        .ilike('github_username', githubUsername)
+        .maybeSingle();
+
+      if (profileError && isMissingSchemaError(profileError)) {
+        const fallbackRes = await supabase
+          .from('profiles')
+          .select(legacyCols)
+          .ilike('github_username', githubUsername)
+          .maybeSingle();
+        profileData = fallbackRes.data;
+        profileError = fallbackRes.error;
+      }
 
       if (profileError) {
-        if (profileError.code === 'PGRST116') return null; // Not found
+        if (profileError.code === 'PGRST116') return null;
         throw profileError;
       }
 
       if (!profileData?.id) return null;
 
-      // 2. Fetch attestations for this user ID
-      const { data: attestations, error: attestationsError } = await supabase
-        .from('user_attestations')
-        .select('*')
-        .eq('user_id', profileData.id)
-        .order('created_at', { ascending: false });
+      // 2. Fetch verified attestations and live projects in parallel
+      const [attestationsRes, projectsRes] = await Promise.all([
+        supabase
+          .from('user_attestations')
+          .select('*')
+          .eq('user_id', profileData.id)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('user_projects')
+          .select('*')
+          .eq('user_id', profileData.id)
+          .order('created_at', { ascending: false }),
+      ]);
 
-      if (attestationsError) throw attestationsError;
+      if (attestationsRes.error) throw attestationsRes.error;
+
+      let projects = [];
+      if (!projectsRes.error) {
+        projects = projectsRes.data || [];
+      } else if (!isMissingSchemaError(projectsRes.error)) {
+        console.warn('Error fetching public user_projects:', projectsRes.error);
+      }
 
       return {
         profile: profileData,
-        attestations: attestations || []
+        attestations: attestationsRes.data || [],
+        projects,
       };
     },
     enabled: !!githubUsername,
@@ -88,6 +132,7 @@ export function useUpdateOpenToWork() {
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['openToWork', variables.userId] });
+      queryClient.invalidateQueries({ queryKey: ['publicProfile'] });
     },
   });
 }
@@ -102,9 +147,6 @@ export function useVerifyContribution() {
       });
 
       if (error) {
-        // Supabase client wraps non-2xx Edge Function responses in a generic error.
-        // The actual JSON body with the user-friendly message is in error.context.
-        // We need to parse it to show the real reason (e.g. "PR not merged", "author mismatch").
         let message = 'Verification failed';
         try {
           if (error.context && typeof error.context.json === 'function') {
@@ -126,8 +168,8 @@ export function useVerifyContribution() {
       return data?.data || data;
     },
     onSuccess: () => {
-      // Invalidate the query to fetch the new attestation (TanStack Query v5 syntax)
       queryClient.invalidateQueries({ queryKey: ['attestations'] });
+      queryClient.invalidateQueries({ queryKey: ['publicProfile'] });
     }
   });
 }
@@ -164,6 +206,7 @@ export function useGenerateQuantifiedImpact() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['attestations'] });
+      queryClient.invalidateQueries({ queryKey: ['publicProfile'] });
     }
   });
 }
