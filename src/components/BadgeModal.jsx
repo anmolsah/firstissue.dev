@@ -16,6 +16,9 @@ import MonthMasterBadge from './badges/MonthMasterBadge';
 import PerfectScoreBadge from './badges/PerfectScoreBadge';
 import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
+import ProofOfWorkLegendBadge from './badges/ProofOfWorkLegendBadge';
+import ProjectBuilderBadge from './badges/ProjectBuilderBadge';
+import ProjectArchitectBadge from './badges/ProjectArchitectBadge';
 import CenturionBadge from './badges/CenturionBadge';
 import MergeLegendBadge from './badges/MergeLegendBadge';
 import FirstMateMentorBadge from './badges/FirstMateMentorBadge';
@@ -106,6 +109,9 @@ const BadgeModal = ({ badge, earned, onClose, username }) => {
                 badge.id === 'perfect-score' ? <PerfectScoreBadge earned={earned} variant="raw" /> :
                 badge.id === 'pow-1' ? <VerifiedContributorBadge earned={earned} variant="raw" /> :
                 badge.id === 'pow-10' ? <ImpactMakerBadge earned={earned} variant="raw" /> :
+                badge.id === 'pow-20' ? <ProofOfWorkLegendBadge earned={earned} variant="raw" /> :
+                badge.id === 'project-1' ? <ProjectBuilderBadge earned={earned} variant="raw" /> :
+                badge.id === 'project-5' ? <ProjectArchitectBadge earned={earned} variant="raw" /> :
                 badge.id === 'firstmate-mentor' ? <FirstMateMentorBadge earned={earned} variant="raw" /> :
                 <BadgeIcon className={`w-10 h-10 ${rarityInfo.color}`} />
               ) : (

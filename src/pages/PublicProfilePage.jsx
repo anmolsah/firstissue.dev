@@ -305,63 +305,78 @@ const PublicProfilePage = () => {
           />
         </div>
 
-        {/* Live Projects Section (shown above Proof of Work Credentials when added) */}
-        {projects.length > 0 && (
-          <div className="space-y-6 mb-12">
+        {/* Proof of Work Credentials & Live Projects (side-by-side on desktop when projects exist) */}
+        <div
+          className={
+            projects.length > 0
+              ? "grid grid-cols-1 lg:grid-cols-12 gap-8 items-start"
+              : ""
+          }
+        >
+          {/* Credentials Grid */}
+          <div className={projects.length > 0 ? "lg:col-span-8 space-y-6" : "space-y-6"}>
             <div className="flex items-center gap-3 border-b border-[#22242A] pb-4">
-              <FolderGit2 className="w-5 h-5 text-[#DAFA9C]" />
-              <h2 className="text-xl font-semibold text-[#F4F4F0]">Live Projects</h2>
+              <ShieldCheck className="w-5 h-5 text-[#34D399]" />
+              <h2 className="text-xl font-semibold text-[#F4F4F0]">Proof of Work Credentials</h2>
               <span className="bg-[#141518] text-[#A8ADB6] text-xs font-mono py-0.5 px-2.5 rounded-[4px] border border-[#2B2E36] tabular-nums">
-                {projects.length}
+                {attestations.length}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {projects.map((project, index) => (
-                <Motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.3) }}
-                >
-                  <LiveProjectCard project={project} isOwner={false} />
-                </Motion.div>
-              ))}
-            </div>
+            {attestations.length > 0 ? (
+              <div
+                className={
+                  projects.length > 0
+                    ? "grid grid-cols-1 sm:grid-cols-2 gap-6"
+                    : "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                }
+              >
+                {attestations.map((attestation, index) => (
+                  <Motion.div
+                    key={attestation.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.3) }}
+                  >
+                    <MetalCard attestation={attestation} showActions={false} />
+                  </Motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-16 px-4 border border-dashed border-[#2B2E36] rounded-[4px] bg-[#141518]">
+                <ShieldCheck className="mx-auto h-10 w-10 text-[#8C929C] mb-3" />
+                <h3 className="text-base font-medium text-[#F4F4F0] mb-1.5">No credentials yet</h3>
+                <p className="text-sm text-[#A8ADB6] max-w-sm mx-auto">
+                  @{profile.github_username} hasn&apos;t verified any pull request attestations yet.
+                </p>
+              </div>
+            )}
           </div>
-        )}
 
-        {/* Credentials Grid */}
-        <div className="space-y-6">
-          <div className="flex items-center gap-3 border-b border-[#22242A] pb-4">
-            <ShieldCheck className="w-5 h-5 text-[#34D399]" />
-            <h2 className="text-xl font-semibold text-[#F4F4F0]">Proof of Work Credentials</h2>
-            <span className="bg-[#141518] text-[#A8ADB6] text-xs font-mono py-0.5 px-2.5 rounded-[4px] border border-[#2B2E36] tabular-nums">
-              {attestations.length}
-            </span>
-          </div>
+          {/* Live Projects Section (right side column alongside Proof of Work Credentials) */}
+          {projects.length > 0 && (
+            <aside className="lg:col-span-4 space-y-6">
+              <div className="flex items-center gap-3 border-b border-[#22242A] pb-4">
+                <FolderGit2 className="w-5 h-5 text-[#DAFA9C]" />
+                <h2 className="text-xl font-semibold text-[#F4F4F0]">Live Projects</h2>
+                <span className="bg-[#141518] text-[#A8ADB6] text-xs font-mono py-0.5 px-2.5 rounded-[4px] border border-[#2B2E36] tabular-nums">
+                  {projects.length}
+                </span>
+              </div>
 
-          {attestations.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {attestations.map((attestation, index) => (
-                <Motion.div
-                  key={attestation.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.3) }}
-                >
-                  <MetalCard attestation={attestation} showActions={false} />
-                </Motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 px-4 border border-dashed border-[#2B2E36] rounded-[4px] bg-[#141518]">
-              <ShieldCheck className="mx-auto h-10 w-10 text-[#8C929C] mb-3" />
-              <h3 className="text-base font-medium text-[#F4F4F0] mb-1.5">No credentials yet</h3>
-              <p className="text-sm text-[#A8ADB6] max-w-sm mx-auto">
-                @{profile.github_username} hasn&apos;t verified any pull request attestations yet.
-              </p>
-            </div>
+              <div className="space-y-5">
+                {projects.map((project, index) => (
+                  <Motion.div
+                    key={project.id}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.3) }}
+                  >
+                    <LiveProjectCard project={project} isOwner={false} />
+                  </Motion.div>
+                ))}
+              </div>
+            </aside>
           )}
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Award, X, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, Brain } from 'lucide-react';
+import { Award, X, Star, Zap, Trophy, Flame, Target, Crown, Sparkles, GitMerge, Brain, FolderGit2, Layers, ShieldCheck } from 'lucide-react';
 import { getBadgeRarityInfo } from '../utils/badgeSystem';
 
 const BADGE_ICONS = {
@@ -17,6 +17,11 @@ const BADGE_ICONS = {
   'streak-30': Flame,
   'perfect-score': Crown,
   'early-adopter': Sparkles,
+  'pow-1': ShieldCheck,
+  'pow-10': ShieldCheck,
+  'pow-20': ShieldCheck,
+  'project-1': FolderGit2,
+  'project-5': Layers,
   'firstmate-mentor': Brain,
 };
 
