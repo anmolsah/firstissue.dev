@@ -9,7 +9,7 @@ import {
 /**
  * Official LinkedIn "in" rounded-square brand mark (#0A66C2 with crisp white glyph).
  */
-export const LinkedInOfficialLogo = ({ className = "w-4 h-4" }) => (
+export const LinkedInOfficialLogo = ({ className = "w-5 h-5" }) => (
   <svg
     viewBox="0 0 24 24"
     aria-hidden="true"
@@ -25,9 +25,9 @@ export const LinkedInOfficialLogo = ({ className = "w-4 h-4" }) => (
 );
 
 /**
- * Official X (formerly Twitter) brand mark inside a crisp dark tile.
+ * Official X (formerly Twitter) brand mark in official black & white.
  */
-export const XTwitterOfficialLogo = ({ className = "w-4 h-4" }) => (
+export const XTwitterOfficialLogo = ({ className = "w-5 h-5" }) => (
   <svg
     viewBox="0 0 24 24"
     aria-hidden="true"
@@ -43,13 +43,12 @@ export const XTwitterOfficialLogo = ({ className = "w-4 h-4" }) => (
 );
 
 /**
- * Renders clickable official-logo badges for LinkedIn and X (Twitter)
- * only when the user has configured them.
+ * Renders icon-only clickable official logos for LinkedIn and X (Twitter)
+ * with their official brand colors (no accompanying text).
  */
 export const ProfileSocialBadges = ({
   linkedinUrl,
   twitterUrl,
-  showHandles = true,
   size = "sm",
 }) => {
   const validLinkedIn = normalizeLinkedInUrl(linkedinUrl);
@@ -57,27 +56,20 @@ export const ProfileSocialBadges = ({
 
   if (!validLinkedIn && !validTwitter) return null;
 
-  const iconSize = size === "md" ? "w-4 h-4" : "w-3.5 h-3.5";
-  const pillClasses =
-    size === "md"
-      ? "inline-flex items-center gap-2 px-2.5 py-1 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] hover:border-[#3A3E48] text-xs font-mono text-[#A8ADB6] hover:text-[#F4F4F0] transition-colors"
-      : "inline-flex items-center gap-1.5 px-2 py-1 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] hover:border-[#3A3E48] text-xs text-[#A8ADB6] hover:text-[#F4F4F0] transition-colors";
+  const iconSize = size === "md" ? "w-6 h-6" : "w-5 h-5";
 
   return (
-    <>
+    <div className="inline-flex items-center gap-2">
       {validLinkedIn && (
         <a
           href={validLinkedIn}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="LinkedIn profile"
+          aria-label={`LinkedIn (${formatLinkedInDisplay(validLinkedIn)})`}
           title={`LinkedIn (${formatLinkedInDisplay(validLinkedIn)})`}
-          className={pillClasses}
+          className="inline-flex items-center justify-center rounded-[4px] hover:opacity-85 hover:scale-105 transition-all"
         >
           <LinkedInOfficialLogo className={`${iconSize} shrink-0`} />
-          <span className="truncate max-w-[160px]">
-            {showHandles ? formatLinkedInDisplay(validLinkedIn) : "LinkedIn"}
-          </span>
         </a>
       )}
       {validTwitter && (
@@ -85,16 +77,13 @@ export const ProfileSocialBadges = ({
           href={validTwitter}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="X (Twitter) profile"
+          aria-label={`X / Twitter (${formatTwitterDisplay(validTwitter)})`}
           title={`X / Twitter (${formatTwitterDisplay(validTwitter)})`}
-          className={pillClasses}
+          className="inline-flex items-center justify-center rounded-[4px] hover:opacity-85 hover:scale-105 transition-all"
         >
           <XTwitterOfficialLogo className={`${iconSize} shrink-0`} />
-          <span className="truncate max-w-[150px]">
-            {showHandles ? formatTwitterDisplay(validTwitter) : "X"}
-          </span>
         </a>
       )}
-    </>
+    </div>
   );
 };

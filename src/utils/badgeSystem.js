@@ -312,6 +312,63 @@ export const BADGE_DEFINITIONS = {
     color: 'cyan'
   },
 
+  PROOF_OF_WORK_20: {
+    id: 'pow-20',
+    name: 'Proof of Work Legend',
+    description: 'Verified 20 merged PRs in Proof of Work',
+    image: '/badges/pow-20.svg',
+    criteria: {
+      narrative: 'User must verify at least 20 merged Pull Requests as Proof of Work credentials'
+    },
+    issuer: {
+      name: 'FirstIssue.dev',
+      url: 'https://firstissue.dev',
+      email: 'badges@firstissue.dev'
+    },
+    type: 'BadgeClass',
+    requirement: (stats, contributions, attestations) => attestations && attestations.length >= 20,
+    rarity: 'epic',
+    color: 'orange'
+  },
+
+  PROJECT_BUILDER_1: {
+    id: 'project-1',
+    name: 'Project Builder',
+    description: 'Added your first live project',
+    image: '/badges/project-1.svg',
+    criteria: {
+      narrative: 'User must add at least 1 live project with its tech stack to their profile'
+    },
+    issuer: {
+      name: 'FirstIssue.dev',
+      url: 'https://firstissue.dev',
+      email: 'badges@firstissue.dev'
+    },
+    type: 'BadgeClass',
+    requirement: (stats, contributions, attestations, projects) => Array.isArray(projects) && projects.length >= 1,
+    rarity: 'common',
+    color: 'lime'
+  },
+
+  PROJECT_ARCHITECT_5: {
+    id: 'project-5',
+    name: 'Project Architect',
+    description: 'Added 5 live projects to your profile',
+    image: '/badges/project-5.svg',
+    criteria: {
+      narrative: 'User must add at least 5 live projects with their tech stacks to their profile'
+    },
+    issuer: {
+      name: 'FirstIssue.dev',
+      url: 'https://firstissue.dev',
+      email: 'badges@firstissue.dev'
+    },
+    type: 'BadgeClass',
+    requirement: (stats, contributions, attestations, projects) => Array.isArray(projects) && projects.length >= 5,
+    rarity: 'rare',
+    color: 'amber'
+  },
+
   FIRSTMATE_MENTOR: {
     id: 'firstmate-mentor',
     name: 'FirstMate Mentor',
@@ -372,7 +429,7 @@ function calculateStreak(contributions) {
 }
 
 // Check which badges a user has earned
-export function checkEarnedBadges(stats, contributions = [], attestations = []) {
+export function checkEarnedBadges(stats, contributions = [], attestations = [], projects = []) {
   const earnedBadges = [];
 
   // Derive a stable "earned at" timestamp from the contributions data
@@ -385,7 +442,7 @@ export function checkEarnedBadges(stats, contributions = [], attestations = []) 
   const baseDate = sortedDates.length > 0 ? sortedDates[0] : new Date().toISOString();
 
   Object.entries(BADGE_DEFINITIONS).forEach(([key, badge]) => {
-    if (badge.requirement(stats, contributions, attestations)) {
+    if (badge.requirement(stats, contributions, attestations, projects)) {
       // Use a stable earnedAt: the date of the Nth contribution that triggered this badge,
       // or the base date for badges that don't depend on contribution count
       let earnedAt = baseDate;
@@ -404,8 +461,19 @@ export function checkEarnedBadges(stats, contributions = [], attestations = []) 
           earnedAt = sortedAttestations[0].created_at;
         } else if (key === 'PROOF_OF_WORK_10' && sortedAttestations[9]) {
           earnedAt = sortedAttestations[9].created_at;
+        } else if (key === 'PROOF_OF_WORK_20' && sortedAttestations[19]) {
+          earnedAt = sortedAttestations[19].created_at;
         } else {
           earnedAt = sortedAttestations[sortedAttestations.length - 1].created_at;
+        }
+      } else if (key.startsWith('PROJECT_') && projects && projects.length > 0) {
+        const sortedProjects = [...projects].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+        if (key === 'PROJECT_BUILDER_1' && sortedProjects[0]?.created_at) {
+          earnedAt = sortedProjects[0].created_at;
+        } else if (key === 'PROJECT_ARCHITECT_5' && sortedProjects[4]?.created_at) {
+          earnedAt = sortedProjects[4].created_at;
+        } else if (sortedProjects[sortedProjects.length - 1]?.created_at) {
+          earnedAt = sortedProjects[sortedProjects.length - 1].created_at;
         }
       } else if (key === 'FIRSTMATE_MENTOR') {
         earnedAt = getTaughtFirstMateDate(stats?.userId);
@@ -494,9 +562,9 @@ export function getBadgeRarityInfo(rarity) {
 }
 
 // Get next badge to unlock
-export function getNextBadgeToUnlock(stats, contributions = [], attestations = []) {
+export function getNextBadgeToUnlock(stats, contributions = [], attestations = [], projects = []) {
   const allBadges = Object.values(BADGE_DEFINITIONS);
-  const unearnedBadges = allBadges.filter(badge => !badge.requirement(stats, contributions, attestations));
+  const unearnedBadges = allBadges.filter(badge => !badge.requirement(stats, contributions, attestations, projects));
   
   // Sort by difficulty/requirement
   return unearnedBadges[0] || null;

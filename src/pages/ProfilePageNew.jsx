@@ -88,6 +88,7 @@ const ProfilePageNew = () => {
     ghStats,
     contributions,
     attestations,
+    userProjects,
   );
 
   const loading = syncLoading || bookmarksLoading;
@@ -579,6 +580,7 @@ const ProfilePageNew = () => {
                   stats={contributionStats}
                   contributions={contributions}
                   attestations={attestations}
+                  projects={userProjects}
                   username={ghUsername}
                 />
               </div>

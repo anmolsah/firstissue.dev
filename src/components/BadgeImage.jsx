@@ -14,6 +14,9 @@ import MonthMasterBadge from './badges/MonthMasterBadge';
 import PerfectScoreBadge from './badges/PerfectScoreBadge';
 import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
+import ProofOfWorkLegendBadge from './badges/ProofOfWorkLegendBadge';
+import ProjectBuilderBadge from './badges/ProjectBuilderBadge';
+import ProjectArchitectBadge from './badges/ProjectArchitectBadge';
 import CenturionBadge from './badges/CenturionBadge';
 import MergeLegendBadge from './badges/MergeLegendBadge';
 import FirstMateMentorBadge from './badges/FirstMateMentorBadge';
@@ -153,6 +156,18 @@ const BadgeImage = ({ badge, size = 'large', showDetails = true, disableBlur = f
         ) : badge.id === 'pow-10' ? (
           <div className="w-full h-full flex items-center justify-center scale-125">
             <ImpactMakerBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'pow-20' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <ProofOfWorkLegendBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'project-1' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <ProjectBuilderBadge earned={true} variant="raw" />
+          </div>
+        ) : badge.id === 'project-5' ? (
+          <div className="w-full h-full flex items-center justify-center scale-125">
+            <ProjectArchitectBadge earned={true} variant="raw" />
           </div>
         ) : badge.id === 'firstmate-mentor' ? (
           <div className="w-full h-full flex items-center justify-center scale-125">

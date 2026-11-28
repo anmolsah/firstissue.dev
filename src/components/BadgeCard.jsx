@@ -14,6 +14,9 @@ import MonthMasterBadge from './badges/MonthMasterBadge';
 import PerfectScoreBadge from './badges/PerfectScoreBadge';
 import VerifiedContributorBadge from './badges/VerifiedContributorBadge';
 import ImpactMakerBadge from './badges/ImpactMakerBadge';
+import ProofOfWorkLegendBadge from './badges/ProofOfWorkLegendBadge';
+import ProjectBuilderBadge from './badges/ProjectBuilderBadge';
+import ProjectArchitectBadge from './badges/ProjectArchitectBadge';
 import CenturionBadge from './badges/CenturionBadge';
 import MergeLegendBadge from './badges/MergeLegendBadge';
 import FirstMateMentorBadge from './badges/FirstMateMentorBadge';
@@ -53,6 +56,9 @@ const BadgeCard = ({ badge, earned = false, onClick }) => {
   if (badge.id === 'perfect-score') return <PerfectScoreBadge earned={earned} onClick={onClick} />;
   if (badge.id === 'pow-1') return <VerifiedContributorBadge earned={earned} onClick={onClick} />;
   if (badge.id === 'pow-10') return <ImpactMakerBadge earned={earned} onClick={onClick} />;
+  if (badge.id === 'pow-20') return <ProofOfWorkLegendBadge earned={earned} onClick={onClick} />;
+  if (badge.id === 'project-1') return <ProjectBuilderBadge earned={earned} onClick={onClick} />;
+  if (badge.id === 'project-5') return <ProjectArchitectBadge earned={earned} onClick={onClick} />;
   if (badge.id === 'firstmate-mentor') return <FirstMateMentorBadge earned={earned} onClick={onClick} />;
 
   const rarityInfo = getBadgeRarityInfo(badge.rarity);

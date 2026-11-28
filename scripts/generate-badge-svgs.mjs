@@ -1047,6 +1047,126 @@ const badges = {
 
   <path d="M 82 50 L 118 50 L 118 135 L 100 120 L 82 135 Z" fill="none" stroke="url(#bookmarkBlue)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
   <polygon class="node-pulse-anim" points="100,82 108,95 100,108 92,95" fill="#60A5FA" filter="url(#bookmarkBlur)" />
+</svg>`,
+
+  // 19. Proof of Work Legend (20 verified PRs)
+  'pow-20': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="pow20Gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="50%" stop-color="#FB923C" />
+      <stop offset="100%" stop-color="#EA580C" />
+    </linearGradient>
+    <linearGradient id="pow20Emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6EE7B7" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+    <radialGradient id="pow20Glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FB923C" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#12131C" stop-opacity="0" />
+    </radialGradient>
+    <filter id="pow20Blur">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <style>${commonStyles}</style>
+  </defs>
+
+  <circle cx="100" cy="100" r="82" fill="url(#pow20Glow)" class="glow-core" />
+  <g class="orbit-outer-fast">
+    <polygon points="100,10 178,55 178,145 100,190 22,145 22,55" fill="none" stroke="url(#pow20Gold)" stroke-width="2" stroke-dasharray="10 8" stroke-opacity="0.7" />
+    <circle cx="100" cy="10" r="3.5" fill="#FDE68A" />
+    <circle cx="100" cy="190" r="3.5" fill="#FB923C" />
+  </g>
+  <g class="orbit-inner-fast">
+    <circle cx="100" cy="100" r="72" fill="none" stroke="url(#pow20Emerald)" stroke-width="1.5" stroke-dasharray="40 20" stroke-opacity="0.55" />
+  </g>
+  <polygon points="100,32 158,62 158,138 100,168 42,138 42,62" fill="#1B130E" stroke="#1E293B" stroke-width="3.5" />
+  <polygon points="100,40 150,66 150,134 100,160 50,134 50,66" fill="none" stroke="url(#pow20Gold)" stroke-width="1.5" stroke-opacity="0.85" />
+  <path d="M 85 52 L 90 60 L 100 48 L 110 60 L 115 52 L 109 65 L 91 65 Z" fill="url(#pow20Gold)" stroke="#EA580C" stroke-width="1" />
+  <text x="100" y="112" font-family="system-ui, -apple-system, sans-serif" font-size="44" font-weight="900" fill="url(#pow20Gold)" text-anchor="middle" filter="url(#pow20Blur)">20</text>
+  <path d="M 80 128 L 94 140 L 122 118" fill="none" stroke="url(#pow20Emerald)" stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round" />
+</svg>`,
+
+  // 20. Project Builder (1 live project)
+  'project-1': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="projBuilderLime" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DAFA9C" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+    <linearGradient id="projBuilderEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6EE7B7" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <radialGradient id="projBuilderGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#34D399" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#12131C" stop-opacity="0" />
+    </radialGradient>
+    <filter id="projBuilderBlur">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <style>${commonStyles}</style>
+  </defs>
+
+  <circle cx="100" cy="100" r="80" fill="url(#projBuilderGlow)" class="glow-core" />
+  <g class="orbit-outer">
+    <circle cx="100" cy="100" r="84" fill="none" stroke="url(#projBuilderLime)" stroke-width="2" stroke-dasharray="10 8" stroke-opacity="0.65" />
+    <circle cx="100" cy="16" r="3.5" fill="#DAFA9C" />
+    <circle cx="100" cy="184" r="3.5" fill="#34D399" />
+  </g>
+  <g class="orbit-inner">
+    <circle cx="100" cy="100" r="71" fill="none" stroke="url(#projBuilderEmerald)" stroke-width="1.5" stroke-dasharray="36 18" stroke-opacity="0.5" />
+  </g>
+  <polygon points="100,34 156,66 156,134 100,166 44,134 44,66" fill="#101915" stroke="#1E293B" stroke-width="3.5" />
+  <polygon points="100,41 149,69 149,131 100,159 51,131 51,69" fill="none" stroke="url(#projBuilderLime)" stroke-width="1.5" stroke-opacity="0.85" />
+  <g class="rocket-anim" filter="url(#projBuilderBlur)">
+    <rect x="66" y="72" width="68" height="54" rx="6" fill="#0B130F" stroke="url(#projBuilderLime)" stroke-width="3" />
+    <line x1="66" y1="86" x2="134" y2="86" stroke="#34D399" stroke-width="2" stroke-opacity="0.7" />
+    <circle cx="75" cy="79" r="2.3" fill="#DAFA9C" />
+    <circle cx="83" cy="79" r="2.3" fill="#34D399" />
+    <path d="M 88 113 L 109 94 M 96 94 L 109 94 L 109 107" fill="none" stroke="#DAFA9C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>`,
+
+  // 21. Project Architect (5 live projects)
+  'project-5': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="projArchGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="projArchSky" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7DD3FC" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <radialGradient id="projArchGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#12131C" stop-opacity="0" />
+    </radialGradient>
+    <filter id="projArchBlur">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <style>${commonStyles}</style>
+  </defs>
+
+  <circle cx="100" cy="100" r="82" fill="url(#projArchGlow)" class="glow-core" />
+  <g class="orbit-outer-fast">
+    <polygon points="100,12 176,56 176,144 100,188 24,144 24,56" fill="none" stroke="url(#projArchGold)" stroke-width="2" stroke-dasharray="10 8" stroke-opacity="0.65" />
+    <circle cx="100" cy="12" r="3.5" fill="#FDE68A" />
+    <circle cx="100" cy="188" r="3.5" fill="#F59E0B" />
+  </g>
+  <g class="orbit-inner">
+    <circle cx="100" cy="100" r="72" fill="none" stroke="url(#projArchSky)" stroke-width="1.5" stroke-dasharray="34 20" stroke-opacity="0.55" />
+  </g>
+  <polygon points="100,32 158,64 158,136 100,168 42,136 42,64" fill="#1A1510" stroke="#1E293B" stroke-width="3.5" />
+  <polygon points="100,40 150,68 150,132 100,160 50,132 50,68" fill="none" stroke="url(#projArchGold)" stroke-width="1.5" stroke-opacity="0.85" />
+  <polygon points="100,60 134,76 100,92 66,76" fill="none" stroke="url(#projArchSky)" stroke-width="2.5" stroke-linejoin="round" />
+  <polyline points="66,92 100,108 134,92" fill="none" stroke="url(#projArchGold)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  <text x="100" y="142" font-family="system-ui, -apple-system, sans-serif" font-size="34" font-weight="900" fill="url(#projArchGold)" text-anchor="middle" filter="url(#projArchBlur)">5</text>
 </svg>`
 };
 

@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="projBuilderLime" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#DAFA9C" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+    <linearGradient id="projBuilderEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6EE7B7" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+    <radialGradient id="projBuilderGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#34D399" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#12131C" stop-opacity="0" />
+    </radialGradient>
+    <filter id="projBuilderBlur">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    <style>
+    @keyframes spin-cw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    @keyframes spin-ccw {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.35; transform: scale(0.97); }
+      50% { opacity: 0.85; transform: scale(1.03); }
+    }
+    @keyframes pulse-node {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.2); opacity: 1; }
+    }
+    @keyframes sparkle-pulse {
+      0%, 100% { opacity: 0.25; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+    @keyframes flame-flicker {
+      0%, 100% { transform: scale(1) translateY(0); }
+      50% { transform: scale(1.04, 0.96) translateY(-2.5px); }
+    }
+    @keyframes rocket-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+    @keyframes rocket-fire {
+      0%, 100% { transform: scaleY(1); opacity: 0.8; }
+      50% { transform: scaleY(1.35) scaleX(0.9); opacity: 1; }
+    }
+    @keyframes brain-pulse {
+      0%, 100% { transform: scale(1); opacity: 0.85; }
+      50% { transform: scale(1.15); opacity: 1; }
+    }
+    .orbit-outer {
+      transform-origin: 100px 100px;
+      animation: spin-cw 25s linear infinite;
+    }
+    .orbit-outer-fast {
+      transform-origin: 100px 100px;
+      animation: spin-cw 20s linear infinite;
+    }
+    .orbit-outer-slow {
+      transform-origin: 100px 100px;
+      animation: spin-cw 28s linear infinite;
+    }
+    .orbit-inner {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 15s linear infinite;
+    }
+    .orbit-inner-fast {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 12s linear infinite;
+    }
+    .orbit-inner-slow {
+      transform-origin: 100px 100px;
+      animation: spin-ccw 18s linear infinite;
+    }
+    .glow-core {
+      transform-origin: 100px 100px;
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    .sparkle-a {
+      transform-origin: 65px 45px;
+      animation: sparkle-pulse 1.8s ease-in-out infinite;
+    }
+    .sparkle-b {
+      transform-origin: 135px 95px;
+      animation: sparkle-pulse 2.2s ease-in-out infinite 0.7s;
+    }
+    .sparkle-c {
+      transform-origin: 100px 60px;
+      animation: sparkle-pulse 2s ease-in-out infinite 0.3s;
+    }
+    .node-pulse-anim {
+      transform-origin: 85px 110px;
+      animation: pulse-node 2s ease-in-out infinite;
+    }
+    .flame-anim {
+      transform-origin: 100px 135px;
+      animation: flame-flicker 0.85s ease-in-out infinite;
+    }
+    .rocket-anim {
+      transform-origin: 100px 90px;
+      animation: rocket-float 2.5s ease-in-out infinite;
+    }
+    .rocket-flame-anim {
+      transform-origin: 100px 125px;
+      animation: rocket-fire 0.4s ease-in-out infinite;
+    }
+    .brain-anim {
+      transform-origin: 100px 98px;
+      animation: brain-pulse 2s ease-in-out infinite;
+    }
+</style>
+  </defs>
+
+  <circle cx="100" cy="100" r="80" fill="url(#projBuilderGlow)" class="glow-core" />
+  <g class="orbit-outer">
+    <circle cx="100" cy="100" r="84" fill="none" stroke="url(#projBuilderLime)" stroke-width="2" stroke-dasharray="10 8" stroke-opacity="0.65" />
+    <circle cx="100" cy="16" r="3.5" fill="#DAFA9C" />
+    <circle cx="100" cy="184" r="3.5" fill="#34D399" />
+  </g>
+  <g class="orbit-inner">
+    <circle cx="100" cy="100" r="71" fill="none" stroke="url(#projBuilderEmerald)" stroke-width="1.5" stroke-dasharray="36 18" stroke-opacity="0.5" />
+  </g>
+  <polygon points="100,34 156,66 156,134 100,166 44,134 44,66" fill="#101915" stroke="#1E293B" stroke-width="3.5" />
+  <polygon points="100,41 149,69 149,131 100,159 51,131 51,69" fill="none" stroke="url(#projBuilderLime)" stroke-width="1.5" stroke-opacity="0.85" />
+  <g class="rocket-anim" filter="url(#projBuilderBlur)">
+    <rect x="66" y="72" width="68" height="54" rx="6" fill="#0B130F" stroke="url(#projBuilderLime)" stroke-width="3" />
+    <line x1="66" y1="86" x2="134" y2="86" stroke="#34D399" stroke-width="2" stroke-opacity="0.7" />
+    <circle cx="75" cy="79" r="2.3" fill="#DAFA9C" />
+    <circle cx="83" cy="79" r="2.3" fill="#34D399" />
+    <path d="M 88 113 L 109 94 M 96 94 L 109 94 L 109 107" fill="none" stroke="#DAFA9C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+</svg>

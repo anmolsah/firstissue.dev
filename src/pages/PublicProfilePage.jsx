@@ -13,6 +13,7 @@ import {
   GitMerge,
   Trophy,
   FolderGit2,
+  Info,
 } from "lucide-react";
 import { usePublicProfileAndAttestations } from "../hooks/useProofOfWork";
 import { generateResumePdf } from "../utils/generateResumePdf";
@@ -248,9 +249,18 @@ const PublicProfilePage = () => {
           </div>
 
           <div className="flex flex-col gap-3 w-full md:w-auto md:min-w-[210px]">
-            <div className="bg-[#0B0C0E] p-4 rounded-[4px] border border-[#22242A]">
-              <div className="text-[11px] font-mono text-[#8C929C] uppercase tracking-wider mb-1">
+            <div className="bg-[#0B0C0E] p-4 rounded-[4px] border border-[#22242A] relative">
+              <div className="text-[11px] font-mono text-[#8C929C] uppercase tracking-wider mb-1 flex items-center gap-1.5">
                 Total Impact Score
+                <div className="relative group/tooltip">
+                  <Info className="w-3.5 h-3.5 text-[#8C929C] hover:text-[#F4F4F0] cursor-help transition-colors" />
+                  <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-[#17181B] border border-[#2B2E36] rounded-[4px] shadow-2xl text-left opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none">
+                    <p className="text-xs text-[#A8ADB6] leading-relaxed normal-case font-sans">
+                      <span className="font-semibold text-[#F4F4F0]">Impact Score</span>{" "}
+                      measures pull request scope from diff lines, files touched, repository stars, and merge status (0–100 per PR).
+                    </p>
+                  </div>
+                </div>
               </div>
               <div className="text-3xl font-bold font-mono tabular-nums text-[#DAFA9C]">
                 {totalImpact}
@@ -277,7 +287,12 @@ const PublicProfilePage = () => {
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           <PublicStat icon={GitMerge} label="Merged PRs" value={attestations.length} />
-          <PublicStat icon={Trophy} label="Total Impact" value={totalImpact} />
+          <PublicStat
+            icon={Trophy}
+            label="Total Impact"
+            value={totalImpact}
+            tooltip="measures pull request scope from diff lines, files touched, repository stars, and merge status (0–100 per PR)."
+          />
           <PublicStat
             icon={Activity}
             label="Contributions (1y)"
@@ -289,6 +304,32 @@ const PublicProfilePage = () => {
             value={ghStats ? ghStats.totalCommits.toLocaleString() : null}
           />
         </div>
+
+        {/* Live Projects Section (shown above Proof of Work Credentials when added) */}
+        {projects.length > 0 && (
+          <div className="space-y-6 mb-12">
+            <div className="flex items-center gap-3 border-b border-[#22242A] pb-4">
+              <FolderGit2 className="w-5 h-5 text-[#DAFA9C]" />
+              <h2 className="text-xl font-semibold text-[#F4F4F0]">Live Projects</h2>
+              <span className="bg-[#141518] text-[#A8ADB6] text-xs font-mono py-0.5 px-2.5 rounded-[4px] border border-[#2B2E36] tabular-nums">
+                {projects.length}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {projects.map((project, index) => (
+                <Motion.div
+                  key={project.id}
+                  initial={{ opacity: 0, y: 16 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.3) }}
+                >
+                  <LiveProjectCard project={project} isOwner={false} />
+                </Motion.div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Credentials Grid */}
         <div className="space-y-6">
@@ -323,41 +364,15 @@ const PublicProfilePage = () => {
             </div>
           )}
         </div>
-
-        {/* Live Projects Section (shown when user has added live projects) */}
-        {projects.length > 0 && (
-          <div className="space-y-6 mt-12">
-            <div className="flex items-center gap-3 border-b border-[#22242A] pb-4">
-              <FolderGit2 className="w-5 h-5 text-[#DAFA9C]" />
-              <h2 className="text-xl font-semibold text-[#F4F4F0]">Live Projects</h2>
-              <span className="bg-[#141518] text-[#A8ADB6] text-xs font-mono py-0.5 px-2.5 rounded-[4px] border border-[#2B2E36] tabular-nums">
-                {projects.length}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {projects.map((project, index) => (
-                <Motion.div
-                  key={project.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.3) }}
-                >
-                  <LiveProjectCard project={project} isOwner={false} />
-                </Motion.div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
 };
 
-const PublicStat = ({ icon, label, value }) => {
+const PublicStat = ({ icon, label, value, tooltip }) => {
   const Icon = icon;
   return (
-    <div className="bg-[#141518] border border-[#2B2E36] rounded-[4px] p-4">
+    <div className="bg-[#141518] border border-[#2B2E36] rounded-[4px] p-4 relative">
       <div className="w-8 h-8 rounded-[4px] bg-[#0B0C0E] border border-[#22242A] flex items-center justify-center text-[#A8ADB6] mb-3">
         <Icon className="w-4 h-4" />
       </div>
@@ -366,7 +381,20 @@ const PublicStat = ({ icon, label, value }) => {
       ) : (
         <div className="text-2xl font-bold text-[#F4F4F0] font-mono tabular-nums mb-1">{value}</div>
       )}
-      <div className="text-xs text-[#8C929C] font-mono uppercase tracking-wider">{label}</div>
+      <div className="text-xs text-[#8C929C] font-mono uppercase tracking-wider flex items-center gap-1.5">
+        <span>{label}</span>
+        {tooltip && (
+          <div className="relative group/tooltip">
+            <Info className="w-3.5 h-3.5 text-[#8C929C] hover:text-[#F4F4F0] cursor-help transition-colors" />
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-3 bg-[#17181B] border border-[#2B2E36] rounded-[4px] shadow-2xl text-left opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-50 pointer-events-none">
+              <p className="text-xs text-[#A8ADB6] leading-relaxed normal-case font-sans">
+                <span className="font-semibold text-[#F4F4F0]">Impact Score</span>{" "}
+                {tooltip}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
